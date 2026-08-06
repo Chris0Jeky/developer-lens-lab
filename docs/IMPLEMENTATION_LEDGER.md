@@ -108,3 +108,20 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - NOT verified: hosted Linux CI. The official GitHub incident remained critical, with Actions and
   Pages in major outage and most webhook triggers throttled. No missing hosted result is called
   green and neither dependency is merged around it.
+
+## 2026-08-06 - Late producer-contract reconciliation
+
+- Delayed review of product PR #178 found blocking producer-contract gaps. The lab is now synced to
+  product head `61f9bdbd2fddcf8cbec7cd6a6f49c00249522374`; the vendored schema SHA-256 is
+  `dbeb7c88434dc0849567d3f756304ee25b9f4f0d4b7f985ca16232675bb788b0` and the invented fixture
+  SHA-256 is `a05803604ea33cabc72183b5e7db96efe316a4365197256d9b836ed134631da3`.
+- The Pydantic consumer mirrors token-aware, case-insensitive person/performance exclusions across
+  dot, underscore, and hyphen separators; the closed interpretation-code vocabulary with required
+  `NOT_PERSON_MEASURE`; and the C1 Monday 00:00:00Z week floor. Its generated schema publishes the
+  required-code `contains` and C1-midnight conditional; typed validation enforces the weekday.
+- Focused pre-state-sync proof passed Ruff, strict Pyright, schema drift, seven contract tests, and
+  the full 38-test suite with one declared Windows directory-symlink skip. Final exact-head proof
+  is recorded in PR #3 after the state commit.
+- The remaining mixed-case/numeric-suffix feature-ID grammar edge and five lower-severity semantic
+  refinements are explicitly deferred to product #182 and this repository's hardening backlog.
+  Hosted Linux proof remains absent during the declared Actions incident and is not called green.

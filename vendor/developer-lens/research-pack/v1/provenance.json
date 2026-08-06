@@ -2,16 +2,16 @@
   "files": [
     {
       "name": "invented.fixture.json",
-      "sha256": "sha256:935950d529ca51080996bcd40f8aea9a47561b1448009ac1290502505b969555",
+      "sha256": "sha256:a05803604ea33cabc72183b5e7db96efe316a4365197256d9b836ed134631da3",
       "size_bytes": 2653
     },
     {
       "name": "schema.json",
-      "sha256": "sha256:8b3bf6551c362db59f676ab427295720b3130bb87816a328c2787a06de58c46b",
-      "size_bytes": 26761
+      "sha256": "sha256:dbeb7c88434dc0849567d3f756304ee25b9f4f0d4b7f985ca16232675bb788b0",
+      "size_bytes": 28702
     }
   ],
   "identity_semantics": "provenance_only_not_a_join_key",
-  "product_commit": "337d815f5af22691889f00b0ffa5e3cf61b65e74",
+  "product_commit": "61f9bdbd2fddcf8cbec7cd6a6f49c00249522374",
   "schema_version": "DeveloperLensContractSnapshot.v1"
 }

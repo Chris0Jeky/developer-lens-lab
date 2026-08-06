@@ -42,6 +42,43 @@ def test_research_pack_rejects_unknown_fields_and_non_z_timestamps() -> None:
     with pytest.raises(ValidationError, match="person-scoring"):
         ResearchPack.model_validate_json(json.dumps(person_feature))
 
+    for feature_id in (
+        "DL.DEVELOPER.OUTPUT.v1",
+        "DL.WEEK.HOURS.WORKED.v1",
+        "DL.WEEK.BUS-FACTOR.v1",
+    ):
+        prohibited = research_pack()
+        prohibited["feature_registry"][0]["feature_id"] = feature_id
+        with pytest.raises(ValidationError, match="person-scoring"):
+            ResearchPack.model_validate_json(json.dumps(prohibited))
+
+    authorization_state = research_pack()
+    authorization_state["feature_registry"][0]["feature_id"] = "DL.WEEK.AUTHORIZATION_STATE.v1"
+    parsed_authorization = ResearchPack.model_validate_json(json.dumps(authorization_state))
+    assert parsed_authorization.feature_registry[0].feature_id == "DL.WEEK.AUTHORIZATION_STATE.v1"
+
+    missing_no_person = research_pack()
+    missing_no_person["feature_registry"][0]["prohibited_interpretation_codes"] = [
+        "NOT_PRODUCTIVITY",
+        "NOT_EFFORT",
+    ]
+    with pytest.raises(ValidationError, match="NOT_PERSON_MEASURE"):
+        ResearchPack.model_validate_json(json.dumps(missing_no_person))
+
+    unknown_code = research_pack()
+    unknown_code["feature_registry"][0]["prohibited_interpretation_codes"] = [
+        "NOT_PERSON_MEASURE",
+        "ALLOW_PERSON_RANKING",
+    ]
+    with pytest.raises(ValidationError):
+        ResearchPack.model_validate_json(json.dumps(unknown_code))
+
+    c1_midday = research_pack(classification="C1", generated_at="2026-08-03T12:00:00Z")
+    with pytest.raises(ValidationError, match="UTC Monday"):
+        ResearchPack.model_validate_json(json.dumps(c1_midday))
+    c1_monday = research_pack(classification="C1", generated_at="2026-08-03T00:00:00Z")
+    assert ResearchPack.model_validate_json(json.dumps(c1_monday)).classification == "C1"
+
     integral_json_numbers = research_pack()
     integral_json_numbers["relations"]["repository_week"] = {
         "state": "present",
@@ -61,10 +98,33 @@ def test_research_pack_rejects_unknown_fields_and_non_z_timestamps() -> None:
 def test_consumer_schema_rejects_person_productivity_feature_standalone() -> None:
     jsonschema = pytest.importorskip("jsonschema")
     schema = json.loads(Path("schemas/research-pack/v1/consumer.schema.json").read_text())
+    interpretation_codes = schema["$defs"]["FeatureDefinition"]["properties"][
+        "prohibited_interpretation_codes"
+    ]
+    assert interpretation_codes["items"]["enum"] == [
+        "NOT_PERSON_MEASURE",
+        "NOT_PRODUCTIVITY",
+        "NOT_EFFORT",
+    ]
+    assert interpretation_codes["contains"] == {"const": "NOT_PERSON_MEASURE"}
+    assert schema["allOf"][0]["if"]["properties"]["classification"] == {"const": "C1"}
+    assert schema["allOf"][0]["then"]["properties"]["generated_at"]["pattern"].endswith(
+        "T00:00:00Z$"
+    )
     invalid = research_pack()
     invalid["feature_registry"][0]["feature_id"] = "DL.PERSON.PRODUCTIVITY.v1"
     errors = list(jsonschema.Draft202012Validator(schema).iter_errors(invalid))
     assert errors
+
+    missing_no_person = research_pack()
+    missing_no_person["feature_registry"][0]["prohibited_interpretation_codes"] = [
+        "NOT_PRODUCTIVITY",
+        "NOT_EFFORT",
+    ]
+    assert list(jsonschema.Draft202012Validator(schema).iter_errors(missing_no_person))
+
+    c1_midday = research_pack(classification="C1", generated_at="2026-08-03T12:00:00Z")
+    assert list(jsonschema.Draft202012Validator(schema).iter_errors(c1_midday))
 
 
 def test_generated_schemas_enforce_json_integer_bounds() -> None:

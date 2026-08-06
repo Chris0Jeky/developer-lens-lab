@@ -21,11 +21,11 @@ capabilities:
   real_data: disabled
   product_promotion: owner_gated
 blockers: GitHub Actions is in a declared critical outage and webhook triggers are heavily
-  throttled, so Developer Lens producer PR #178 and the lab WB-C1 PR cannot claim hosted exact-head
-  proof; no remaining local implementation or owner blocker exists for the invented vertical
+  throttled, so Developer Lens producer PR #178 and lab PR #3 cannot claim hosted exact-head proof;
+  no remaining local implementation or owner blocker exists for the invented vertical
 hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
   irreversible secret/private-data/out-of-root/person-shape boundary
-exact_resume_point: publish the reviewed lab branch and open its ready PR dependency-gated on
-  Developer Lens producer PR #178; refresh both hosted checks after the GitHub Actions incident and
-  merge neither around a missing required hosted check
+exact_resume_point: refresh hosted checks on Developer Lens producer PR #178 at 61f9bdb and lab PR
+  #3 at its latest head after the GitHub Actions incident; merge the producer first, then refresh
+  and merge the lab only when both required exact-head checks are green
 ```

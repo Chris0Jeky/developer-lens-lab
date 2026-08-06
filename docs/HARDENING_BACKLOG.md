@@ -53,6 +53,11 @@ only when measurement, real-data scope, external users, or an irreversible bound
 - Add product-side promotion/audit/rollback controls only after an owner-approved candidate exists.
 - Add schema-evolution compatibility fixtures in both repositories and a signed release manifest
   before third-party producers or consumers exist.
+- Define and enforce one canonical versioned ResearchPack feature-ID token grammar in both
+  repositories. The current separator-token rule rejects dot/underscore/hyphen person terms but
+  still admits mixed-case or numeric-suffixed forms such as `DL.developerOutput.v1`; product issue
+  [#182](https://github.com/Chris0Jeky/developer-lens/issues/182) owns the paired producer/consumer
+  hardening and hostile fixtures.
 - Encode every runtime-only cross-record invariant in portable JSON Schema or publish a versioned
   standalone validator before claiming schema-only interoperability outside the two repositories.
 

@@ -1,6 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "C1"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "$comment": "Runtime and typed consumers additionally require this UTC midnight to be a Monday.",
+        "properties": {
+          "generated_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+          }
+        },
+        "required": [
+          "generated_at"
+        ]
+      }
+    }
+  ],
   "properties": {
     "classification": {
       "enum": [
@@ -21,12 +46,19 @@
             "type": "string"
           },
           "feature_id": {
-            "pattern": "^(?!.*(?:[pP][eE][rR][sS][oO][nN]|[pP][rR][oO][dD][uU][cC][tT][iI][vV]|[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE]|[eE][fF][fF][oO][rR][tT]|[aA][tT][tT][eE][nN][dD][aA][nN][cC][eE]|[hH][oO][uU][rR][sS][_-]?[wW][oO][rR][kK][eE][dD]|[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT][yY]|[dD][iI][lL][iI][gG][eE][nN][cC][eE]|[qQ][uU][aA][lL][iI][tT][yY]|[wW][oO][rR][tT][hH]|[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT][yY]|[sS][eE][nN][tT][iI][mM][eE][nN][tT]|[bB][uU][rR][nN][oO][uU][tT]|[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC][eE]|[bB][uU][sS][_-]?[fF][aA][cC][tT][oO][rR]|[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][_-]?[oO][uU][tT][pP][uU][tT]))[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "pattern": "^(?!.*(?:(?:^|[._-])[pP][eE][rR][sS][oO][nN](?:$|[._-])|(?:^|[._-])[pP][eE][oO][pP][lL][eE](?:$|[._-])|(?:^|[._-])[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:$|[._-])|(?:^|[._-])[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR](?:$|[._-])|(?:^|[._-])[dD][eE][vV][eE][lL][oO][pP][eE][rR](?:$|[._-])|(?:^|[._-])[aA][uU][tT][hH][oO][rR](?:$|[._-])|(?:^|[._-])[cC][oO][mM][mM][iI][tT][tT][eE][rR](?:$|[._-])|(?:^|[._-])[rR][eE][vV][iI][eE][wW][eE][rR](?:$|[._-])|(?:^|[._-])[eE][mM][pP][lL][oO][yY][eE][eE](?:$|[._-])|(?:^|[._-])[eE][nN][gG][iI][nN][eE][eE][rR](?:$|[._-])|(?:^|[._-])[tT][eE][aA][mM][mM][aA][tT][eE](?:$|[._-])|(?:^|[._-])[tT][eE][aA][mM][._-]+[mM][eE][mM][bB][eE][rR](?:$|[._-])|(?:^|[._-])[uU][sS][eE][rR][nN][aA][mM][eE](?:$|[._-])|(?:^|[._-])[uU][sS][eE][rR][._-]+[lL][oO][gG][iI][nN](?:$|[._-])|(?:^|[._-])[hH][eE][aA][dD][cC][oO][uU][nN][tT](?:$|[._-])|(?:^|[._-])[sS][eE][nN][iI][oO][rR][iI][tT][yY](?:$|[._-])|(?:^|[._-])[pP][rR][oO][dD][uU][cC][tT][iI][vV][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-])[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-])[eE][fF][fF][oO][rR][tT](?:$|[._-])|(?:^|[._-])[aA][tT][tT][eE][nN][dD][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-])[hH][oO][uU][rR][sS][._-]+[wW][oO][rR][kK][eE][dD](?:$|[._-])|(?:^|[._-])[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-])[dD][iI][lL][iI][gG][eE][nN][cC][eE](?:$|[._-])|(?:^|[._-])[qQ][uU][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-])[wW][oO][rR][tT][hH](?:$|[._-])|(?:^|[._-])[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-])[sS][eE][nN][tT][iI][mM][eE][nN][tT](?:$|[._-])|(?:^|[._-])[bB][uU][rR][nN][oO][uU][tT](?:$|[._-])|(?:^|[._-])[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-])[bB][uU][sS][._-]+[fF][aA][cC][tT][oO][rR](?:$|[._-])|(?:^|[._-])[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][._-]+[oO][uU][tT][pP][uU][tT](?:$|[._-])))[A-Za-z][A-Za-z0-9_.-]{0,95}$",
             "type": "string"
           },
           "prohibited_interpretation_codes": {
+            "contains": {
+              "const": "NOT_PERSON_MEASURE"
+            },
             "items": {
-              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "enum": [
+                "NOT_PERSON_MEASURE",
+                "NOT_PRODUCTIVITY",
+                "NOT_EFFORT"
+              ],
               "type": "string"
             },
             "maxItems": 12,
