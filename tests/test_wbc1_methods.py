@@ -67,10 +67,10 @@ def test_bocpd_matches_adams_mackay_reference_vector() -> None:
             - np.log(scales)
             - ((degrees + 1.0) / 2.0) * np.log1p((standardized**2) / degrees)
         )
-        predictive = np.exp(log_density)
+        predictive = np.asarray(np.exp(log_density), dtype=np.float64)
         updated = np.concatenate(
             (
-                [float(np.sum(probabilities * hazard * predictive))],
+                np.asarray([float(np.sum(probabilities * hazard * predictive))], dtype=np.float64),
                 probabilities * (1.0 - hazard) * predictive,
             )
         )

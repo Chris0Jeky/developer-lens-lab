@@ -281,7 +281,7 @@ def evaluate_pelt(partition: Partition) -> PeltSummary:
     return PeltSummary(evaluated, boundary_count, localized, tuple(errors))
 
 
-def _decision(
+def decide_benchmark(
     baseline: AggregateMetrics,
     candidate: AggregateMetrics,
     plan: EvaluationPlan,
@@ -349,7 +349,7 @@ def run_evaluation(
     )
     candidate_holdout = evaluate_partition(holdout, "bocpd_gaussian", candidate_selection.threshold)
     pelt = evaluate_pelt(holdout)
-    decision, reasons = _decision(baseline_holdout, candidate_holdout, frozen)
+    decision, reasons = decide_benchmark(baseline_holdout, candidate_holdout, frozen)
     return BenchmarkEvaluation(
         baseline_selection,
         candidate_selection,

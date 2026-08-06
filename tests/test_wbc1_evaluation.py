@@ -13,7 +13,7 @@ from developer_lens_lab.wbc1.evaluation import (
     EvaluationPlan,
     MethodCode,
     ThresholdSelection,
-    _decision,
+    decide_benchmark,
     evaluate_partition,
     evaluate_pelt,
     prepare_evaluation,
@@ -140,7 +140,7 @@ def test_false_alert_rate_uses_non_event_risk_time(
 def test_decision_rejects_nonviable_threshold_selection_even_with_good_holdout() -> None:
     baseline = _metrics("rolling_median_mad", 1.0)
     candidate = _metrics("bocpd_gaussian", 0.5)
-    decision, reasons = _decision(
+    decision, reasons = decide_benchmark(
         baseline, candidate, _plan(baseline_viable=False, candidate_viable=True)
     )
     assert decision == "reject"
@@ -150,7 +150,7 @@ def test_decision_rejects_nonviable_threshold_selection_even_with_good_holdout()
 def test_decision_requires_real_false_alert_improvement_when_baseline_is_zero() -> None:
     baseline = _metrics("rolling_median_mad", 0.0)
     candidate = _metrics("bocpd_gaussian", 0.1)
-    decision, reasons = _decision(
+    decision, reasons = decide_benchmark(
         baseline, candidate, _plan(baseline_viable=True, candidate_viable=True)
     )
     assert decision == "reject"
