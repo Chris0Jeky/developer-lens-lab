@@ -192,10 +192,11 @@ def bundle_validate(
 @benchmark_app.command("wb-c1")
 def benchmark_wb_c1(
     smoke: Annotated[bool, typer.Option("--smoke/--full")] = True,
+    run_id: Annotated[str | None, typer.Option("--run-id")] = None,
 ) -> None:
     """Run the invented WB-C1 benchmark after a producer snapshot is synchronized."""
     try:
-        result = run_benchmark(smoke=smoke)
+        result = run_benchmark(smoke=smoke, run_id=run_id)
     except (RunnerError, ArtifactError, OSError, ValidationError) as exc:
         typer.echo(f"ERROR: WB-C1 benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc

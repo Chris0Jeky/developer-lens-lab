@@ -9,13 +9,45 @@ from numpy.typing import NDArray
 import developer_lens_lab.wbc1.evaluation as evaluation_module
 from developer_lens_lab.wbc1.evaluation import (
     DETECTION_DELAY_BUDGET,
+    AggregateMetrics,
+    EvaluationPlan,
     MethodCode,
+    ThresholdSelection,
+    _decision,
     evaluate_partition,
     evaluate_pelt,
     prepare_evaluation,
     run_evaluation,
 )
 from developer_lens_lab.wbc1.generator import Partition, WeeklySeries, build_benchmark_dataset
+
+
+def _metrics(method: MethodCode, false_alerts_per_year: float) -> AggregateMetrics:
+    return AggregateMetrics(
+        method_code=method,
+        threshold=0.5,
+        eligible_series=1,
+        abstained_series=0,
+        true_changes=1,
+        detected_changes=1,
+        false_alerts=0,
+        observed_weeks=52,
+        false_alerts_per_year=false_alerts_per_year,
+        detection_rate=1.0,
+        detection_delays=(1,),
+        median_detection_delay=1.0,
+        coverage_confound_false_alert_rate=0.0,
+        calibration_brier=0.0,
+    )
+
+
+def _plan(*, baseline_viable: bool, candidate_viable: bool) -> EvaluationPlan:
+    baseline_metrics = _metrics("rolling_median_mad", 0.0)
+    candidate_metrics = _metrics("bocpd_gaussian", 0.0)
+    return EvaluationPlan(
+        ThresholdSelection("rolling_median_mad", 2.5, baseline_metrics, baseline_viable),
+        ThresholdSelection("bocpd_gaussian", 0.5, candidate_metrics, candidate_viable),
+    )
 
 
 def test_smoke_evaluation_freezes_thresholds_before_holdout() -> None:
@@ -103,3 +135,23 @@ def test_false_alert_rate_uses_non_event_risk_time(
     non_event_weeks = len(series.values) - DETECTION_DELAY_BUDGET - 1
     assert metrics.false_alerts == 1
     assert math.isclose(metrics.false_alerts_per_year, 52 / non_event_weeks)
+
+
+def test_decision_rejects_nonviable_threshold_selection_even_with_good_holdout() -> None:
+    baseline = _metrics("rolling_median_mad", 1.0)
+    candidate = _metrics("bocpd_gaussian", 0.5)
+    decision, reasons = _decision(
+        baseline, candidate, _plan(baseline_viable=False, candidate_viable=True)
+    )
+    assert decision == "reject"
+    assert reasons == ("BASELINE_SELECTION_VIABLE",)
+
+
+def test_decision_requires_real_false_alert_improvement_when_baseline_is_zero() -> None:
+    baseline = _metrics("rolling_median_mad", 0.0)
+    candidate = _metrics("bocpd_gaussian", 0.1)
+    decision, reasons = _decision(
+        baseline, candidate, _plan(baseline_viable=True, candidate_viable=True)
+    )
+    assert decision == "reject"
+    assert "CANDIDATE_FALSE_ALERT_IMPROVEMENT" in reasons

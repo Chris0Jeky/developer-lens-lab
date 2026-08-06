@@ -28,6 +28,13 @@ class BocpdParameters:
     recent_run_lengths: int = 3
     maximum_run_length: int = 104
     cooldown: int = 6
+    # Fixed Normal-Inverse-Gamma prior; these are deliberately independent of
+    # the observations so the first samples are not used once to set a prior
+    # and again as likelihood evidence.
+    prior_mean: float = 20.0
+    prior_kappa: float = 1.0
+    prior_alpha: float = 2.0
+    prior_beta: float = 4.0
 
 
 @dataclass(frozen=True)
@@ -83,14 +90,14 @@ def _student_t_pdf(
 def bocpd_scores(
     values: FloatArray, parameters: BocpdParameters = DEFAULT_BOCPD_PARAMETERS
 ) -> BocpdOutput:
-    finite = values[np.isfinite(values)]
-    initial = finite[: min(12, len(finite))]
-    prior_mean = float(np.median(initial)) if len(initial) else 0.0
-    prior_variance = float(np.var(initial)) if len(initial) > 1 else 1.0
-    prior_variance = max(prior_variance, 0.25)
-    prior_kappa = 1.0
-    prior_alpha = 2.0
-    prior_beta = prior_variance
+    # Adams--MacKay Algorithm 1.  State arrays describe the posterior
+    # sufficient statistics for each run length *before* the current value.
+    # The r=0 state is always the fixed prior; only grown states incorporate
+    # the current observation.
+    prior_mean = float(parameters.prior_mean)
+    prior_kappa = float(parameters.prior_kappa)
+    prior_alpha = float(parameters.prior_alpha)
+    prior_beta = float(parameters.prior_beta)
     hazard = 1.0 / parameters.expected_run_length
 
     probabilities = np.asarray([1.0], dtype=np.float64)
@@ -102,23 +109,16 @@ def bocpd_scores(
     surprise = np.zeros(len(values), dtype=np.float64)
 
     for index, raw_value in enumerate(values):
-        if np.isnan(raw_value):
+        if not np.isfinite(raw_value):
             continue
         value = float(raw_value)
         degrees = 2.0 * alphas
         scales = np.sqrt(betas * (kappas + 1.0) / (alphas * kappas))
         predictive = _student_t_pdf(value, means, scales, degrees)
-        prior_scale = np.sqrt(prior_beta * (prior_kappa + 1.0) / (prior_alpha * prior_kappa))
-        prior_predictive = float(
-            _student_t_pdf(
-                value,
-                np.asarray([prior_mean]),
-                np.asarray([prior_scale]),
-                np.asarray([2.0 * prior_alpha]),
-            )[0]
-        )
         growth = probabilities * (1.0 - hazard) * predictive
-        changepoint = hazard * prior_predictive * float(probabilities.sum())
+        # A changepoint has the same predictive term as every other run
+        # length, then resets to the fixed prior at r=0.
+        changepoint = float(np.sum(probabilities * hazard * predictive))
         updated_probabilities = np.concatenate((np.asarray([changepoint]), growth))
         evidence = float(updated_probabilities.sum())
         if not np.isfinite(evidence) or evidence <= 0.0:
@@ -128,26 +128,20 @@ def bocpd_scores(
         updated_probabilities = updated_probabilities[: parameters.maximum_run_length + 1]
         updated_probabilities /= float(updated_probabilities.sum())
 
-        prior_updated_kappa = prior_kappa + 1.0
-        prior_updated_mean = (prior_kappa * prior_mean + value) / prior_updated_kappa
-        prior_updated_alpha = prior_alpha + 0.5
-        prior_updated_beta = prior_beta + prior_kappa * (value - prior_mean) ** 2 / (
-            2.0 * prior_updated_kappa
-        )
         grown_kappas = kappas + 1.0
         grown_means = (kappas * means + value) / grown_kappas
         grown_alphas = alphas + 0.5
         grown_betas = betas + kappas * (value - means) ** 2 / (2.0 * grown_kappas)
-        means = np.concatenate((np.asarray([prior_updated_mean]), grown_means))[
+        means = np.concatenate((np.asarray([prior_mean]), grown_means))[
             : len(updated_probabilities)
         ]
-        kappas = np.concatenate((np.asarray([prior_updated_kappa]), grown_kappas))[
+        kappas = np.concatenate((np.asarray([prior_kappa]), grown_kappas))[
             : len(updated_probabilities)
         ]
-        alphas = np.concatenate((np.asarray([prior_updated_alpha]), grown_alphas))[
+        alphas = np.concatenate((np.asarray([prior_alpha]), grown_alphas))[
             : len(updated_probabilities)
         ]
-        betas = np.concatenate((np.asarray([prior_updated_beta]), grown_betas))[
+        betas = np.concatenate((np.asarray([prior_beta]), grown_betas))[
             : len(updated_probabilities)
         ]
         probabilities = updated_probabilities

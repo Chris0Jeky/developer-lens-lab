@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.special import gammaln
 
 from developer_lens_lab.wbc1.generator import build_benchmark_dataset
-from developer_lens_lab.wbc1.methods import bocpd_scores, rolling_median_mad_scores
+from developer_lens_lab.wbc1.methods import (
+    BocpdParameters,
+    bocpd_scores,
+    parameters_sha256,
+    rolling_median_mad_scores,
+)
 
 
 def test_online_methods_are_prefix_causal_and_finite() -> None:
@@ -24,4 +30,81 @@ def test_online_methods_are_prefix_causal_and_finite() -> None:
     assert bool(((candidate >= 0.0) & (candidate <= 1.0)).all())
     assert float(candidate[series.change_index : series.change_index + 9].max()) > float(
         np.median(candidate[12 : series.change_index])
+    )
+
+
+def test_bocpd_matches_adams_mackay_reference_vector() -> None:
+    parameters = BocpdParameters(
+        expected_run_length=4.0,
+        warmup=0,
+        recent_run_lengths=1,
+        maximum_run_length=16,
+        prior_mean=0.0,
+        prior_kappa=1.0,
+        prior_alpha=2.0,
+        prior_beta=1.0,
+    )
+    values = np.asarray([0.5, 0.75, -0.25], dtype=np.float64)
+
+    # Independent implementation of Algorithm 1's predictive/growth and
+    # changepoint recurrence, kept deliberately small for a formula-level
+    # regression against the vectorized production code.
+    probabilities = np.asarray([1.0], dtype=np.float64)
+    means = np.asarray([parameters.prior_mean], dtype=np.float64)
+    kappas = np.asarray([parameters.prior_kappa], dtype=np.float64)
+    alphas = np.asarray([parameters.prior_alpha], dtype=np.float64)
+    betas = np.asarray([parameters.prior_beta], dtype=np.float64)
+    expected: list[float] = []
+    hazard = 1.0 / parameters.expected_run_length
+    for value in values:
+        degrees = 2.0 * alphas
+        scales = np.sqrt(betas * (kappas + 1.0) / (alphas * kappas))
+        standardized = (value - means) / scales
+        log_density = (
+            gammaln((degrees + 1.0) / 2.0)
+            - gammaln(degrees / 2.0)
+            - 0.5 * np.log(degrees * np.pi)
+            - np.log(scales)
+            - ((degrees + 1.0) / 2.0) * np.log1p((standardized**2) / degrees)
+        )
+        predictive = np.exp(log_density)
+        updated = np.concatenate(
+            (
+                [float(np.sum(probabilities * hazard * predictive))],
+                probabilities * (1.0 - hazard) * predictive,
+            )
+        )
+        evidence = float(updated.sum())
+        updated /= evidence
+        assert np.isclose(float(updated.sum()), 1.0)
+        expected.append(float(updated[0]))
+        grown_kappas = kappas + 1.0
+        grown_means = (kappas * means + value) / grown_kappas
+        grown_alphas = alphas + 0.5
+        grown_betas = betas + kappas * (value - means) ** 2 / (2.0 * grown_kappas)
+        probabilities = updated
+        means = np.concatenate(([parameters.prior_mean], grown_means))
+        kappas = np.concatenate(([parameters.prior_kappa], grown_kappas))
+        alphas = np.concatenate(([parameters.prior_alpha], grown_alphas))
+        betas = np.concatenate(([parameters.prior_beta], grown_betas))
+
+    actual = bocpd_scores(values, parameters).change_probability
+    np.testing.assert_allclose(actual, np.asarray(expected), rtol=1e-12, atol=1e-12)
+
+
+def test_bocpd_missing_observation_is_causal_and_prior_is_hashed() -> None:
+    parameters = BocpdParameters(warmup=0, recent_run_lengths=1, prior_mean=0.0)
+    values = np.asarray([0.1, 0.2, 0.3, 0.4], dtype=np.float64)
+    missing = values.copy()
+    missing[2] = np.nan
+    observed = bocpd_scores(values, parameters).change_probability
+    censored = bocpd_scores(missing, parameters).change_probability
+    np.testing.assert_allclose(observed[:2], censored[:2])
+    assert censored[2] == 0.0
+    np.testing.assert_allclose(
+        censored[3], bocpd_scores(values[[0, 1, 3]], parameters).change_probability[2]
+    )
+    assert np.isfinite(censored).all()
+    assert parameters_sha256(parameters) != parameters_sha256(
+        BocpdParameters(warmup=0, recent_run_lengths=1, prior_mean=1.0)
     )

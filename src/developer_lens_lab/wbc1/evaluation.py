@@ -282,9 +282,19 @@ def evaluate_pelt(partition: Partition) -> PeltSummary:
 
 
 def _decision(
-    baseline: AggregateMetrics, candidate: AggregateMetrics
+    baseline: AggregateMetrics,
+    candidate: AggregateMetrics,
+    plan: EvaluationPlan,
 ) -> tuple[Literal["reject", "benchmarked"], tuple[str, ...]]:
     gates: tuple[tuple[str, Callable[[], bool]], ...] = (
+        (
+            "BASELINE_SELECTION_VIABLE",
+            lambda: plan.baseline_selection.viable,
+        ),
+        (
+            "CANDIDATE_SELECTION_VIABLE",
+            lambda: plan.candidate_selection.viable,
+        ),
         ("CANDIDATE_DETECTION_FLOOR", lambda: (candidate.detection_rate or 0.0) >= 0.75),
         (
             "CANDIDATE_DELAY_BUDGET",
@@ -295,9 +305,7 @@ def _decision(
         ),
         (
             "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
-            lambda: (
-                candidate.false_alerts_per_year <= max(0.1, baseline.false_alerts_per_year * 0.8)
-            ),
+            lambda: candidate.false_alerts_per_year <= baseline.false_alerts_per_year * 0.8,
         ),
         (
             "CANDIDATE_NOT_WORSE_DETECTION",
@@ -341,7 +349,7 @@ def run_evaluation(
     )
     candidate_holdout = evaluate_partition(holdout, "bocpd_gaussian", candidate_selection.threshold)
     pelt = evaluate_pelt(holdout)
-    decision, reasons = _decision(baseline_holdout, candidate_holdout)
+    decision, reasons = _decision(baseline_holdout, candidate_holdout, frozen)
     return BenchmarkEvaluation(
         baseline_selection,
         candidate_selection,

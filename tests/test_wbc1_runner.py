@@ -8,7 +8,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from developer_lens_lab.artifacts import ArtifactStore
+from developer_lens_lab.artifacts import ArtifactError, ArtifactStore
 from developer_lens_lab.contracts import ArtifactRef, ResearchPack
 from developer_lens_lab.wbc1.generator import build_benchmark_dataset
 from developer_lens_lab.wbc1.runner import (
@@ -85,6 +85,57 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
         result.markdown_artifact,
         result.html_artifact,
     )
+
+    custody_ref = ArtifactRef.model_validate(manifest["custody"])
+    custody_digest = custody_ref.sha256.removeprefix("sha256:")
+    custody_object = (
+        tmp_path / "scopes" / result.scope / "objects" / custody_digest[:2] / custody_digest
+    )
+    custody_object.unlink()
+    with pytest.raises(ArtifactError, match="artifact object is missing"):
+        reproduce_run(result.manifest_path, root=ROOT)
+
+
+def test_run_identity_and_custody_record_are_append_only(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_once")
+    original_manifest = result.manifest_path.read_bytes()
+
+    with pytest.raises(RunnerError, match="run identity is single-use"):
+        run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_once")
+    assert result.manifest_path.read_bytes() == original_manifest
+
+    custody_path = result.manifest_path.with_name("custody.json")
+    custody_path.write_bytes(b"{}\n")
+    with pytest.raises(RunnerError, match="custody record differs"):
+        reproduce_run(result.manifest_path, root=ROOT)
+
+
+def test_crash_after_custody_consumes_run_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+
+    def fail_after_custody(*_args: object, **_kwargs: object) -> None:
+        raise RunnerError("simulated crash after custody")
+
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.runner._materialize_research_pack", fail_after_custody
+    )
+    with pytest.raises(RunnerError, match="simulated crash"):
+        run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_crash")
+
+    custody_path = tmp_path / "scopes" / "wbc1_crash" / "custody.json"
+    custody = json.loads(custody_path.read_text(encoding="utf-8"))
+    assert custody["event"] == "final_holdout_custody"
+    assert custody["run_id"] == "wbc1_crash"
+    assert custody["generator_revision"] == "wbc1.generator.v1"
+    assert custody["evaluation_plan_sha256"].startswith("sha256:")
+
+    with pytest.raises(RunnerError, match="run identity is single-use"):
+        run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_crash")
 
 
 def test_reproduction_recomputes_result_artifacts(

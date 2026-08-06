@@ -6,7 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -14,7 +14,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from jsonschema import Draft202012Validator
 
-from developer_lens_lab.artifacts import ArtifactStore, canonical_json_bytes
+from developer_lens_lab.artifacts import ArtifactError, ArtifactStore, canonical_json_bytes
 from developer_lens_lab.contracts import ArtifactRef, EvaluationBundle, ResearchPack
 from developer_lens_lab.contracts.common import MetricValue, TimeWindow
 from developer_lens_lab.contracts.evaluation_bundle import (
@@ -67,6 +67,7 @@ MediaType = Literal["application/json", "application/x-parquet", "text/markdown"
 
 
 LOGICAL_RUN_TIME = "2026-01-01T00:00:00Z"
+CUSTODY_RECORD_NAME = "custody.json"
 
 
 def _sha256(payload: bytes) -> str:
@@ -358,11 +359,15 @@ def _unique_refs(references: tuple[ArtifactRef, ...]) -> tuple[ArtifactRef, ...]
     return tuple(by_digest.values())
 
 
-def _custody_bytes(dataset_sha256: str, plan: EvaluationPlan) -> bytes:
+def _custody_bytes(run_id: str, dataset_sha256: str, plan: EvaluationPlan) -> bytes:
+    plan_sha256 = _sha256(canonical_json_bytes(asdict(plan)))
     return canonical_json_bytes(
         {
             "event": "final_holdout_custody",
+            "run_id": run_id,
+            "generator_revision": "wbc1.generator.v1",
             "dataset_sha256": dataset_sha256,
+            "evaluation_plan_sha256": plan_sha256,
             "baseline_threshold": plan.baseline_selection.threshold,
             "candidate_threshold": plan.candidate_selection.threshold,
             "baseline_parameters_sha256": parameters_sha256(DEFAULT_BASELINE_PARAMETERS),
@@ -563,12 +568,18 @@ def run_benchmark(
     plan = prepare_evaluation(dataset.train)
     scope = run_id
     store = ArtifactStore(artifact_root or (root / ".dllab"))
+    try:
+        store.reserve_scope(scope)
+    except ArtifactError as exc:
+        raise RunnerError(f"run identity is single-use and already exists: {run_id}") from exc
     receipt_holder: list[ArtifactRef] = []
 
     def write_receipt(dataset_sha256: str) -> None:
-        receipt_holder.append(
-            store.put_bytes(scope, _custody_bytes(dataset_sha256, plan), "application/json")
-        )
+        if receipt_holder:
+            raise RunnerError("holdout custody receipt may be written only once")
+        receipt_bytes = _custody_bytes(run_id, dataset_sha256, plan)
+        store.write_scope_file_once(scope, CUSTODY_RECORD_NAME, receipt_bytes + b"\n")
+        receipt_holder.append(store.put_bytes(scope, receipt_bytes, "application/json"))
 
     final_holdout = dataset.open_final_holdout(write_receipt)
     if not receipt_holder:
@@ -635,7 +646,7 @@ def run_benchmark(
             canonical_json_bytes(bundle.model_dump(mode="json"))
         ),
     }
-    manifest_path = store.write_scope_file(
+    manifest_path = store.write_scope_file_once(
         scope, "run.json", canonical_json_bytes(manifest) + b"\n"
     )
     store.write_scope_manifest(scope, (*tuple(bundle.artifact_manifest), bundle_ref))
@@ -669,6 +680,7 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     if _sha256(expected) != expected_digest:
         raise RunnerError("recorded bundle digest does not match stored bundle")
     for name in (
+        "custody",
         "baseline",
         "candidate",
         "pelt",
@@ -701,7 +713,14 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     if dataset.dataset_sha256 != manifest.get("dataset_sha256"):
         raise RunnerError("reproduced dataset recipe differs from the recorded run")
     plan = prepare_evaluation(dataset.train)
-    custody_bytes = _custody_bytes(dataset.dataset_sha256, plan)
+    custody_bytes = _custody_bytes(scope, dataset.dataset_sha256, plan)
+    custody_path = store.scope_root(scope) / CUSTODY_RECORD_NAME
+    try:
+        recorded_custody = custody_path.read_bytes()
+    except FileNotFoundError as exc:
+        raise RunnerError("append-only holdout custody record is missing") from exc
+    if recorded_custody != custody_bytes + b"\n":
+        raise RunnerError("append-only holdout custody record differs from the reproduced plan")
     custody_ref = _assert_reproduced_reference(
         "custody", custody_bytes, "application/json", manifest["custody"]
     )

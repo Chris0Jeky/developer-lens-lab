@@ -50,6 +50,18 @@ class ArtifactStore:
         """Return the validated scope directory for runner metadata."""
         return self._scope_root(scope_id)
 
+    def reserve_scope(self, scope_id: str) -> Path:
+        """Create one new scope and refuse reuse of an existing run identity."""
+        scope_root = self._scope_root(scope_id)
+        scopes_root = scope_root.parent
+        self._ensure_no_symlink_parents(scopes_root, self.root)
+        scopes_root.mkdir(parents=True, exist_ok=True)
+        try:
+            scope_root.mkdir()
+        except FileExistsError as exc:
+            raise ArtifactError(f"artifact scope already exists: {scope_id}") from exc
+        return scope_root
+
     def _object_path(self, scope_id: str, digest: str) -> Path:
         match = _DIGEST_RE.fullmatch(digest)
         if match is None:
@@ -86,6 +98,23 @@ class ArtifactStore:
         path = self._scope_root(scope_id) / name
         self._ensure_no_symlink_parents(path.parent, self.root)
         self._atomic_write(path, payload)
+        return path
+
+    def write_scope_file_once(self, scope_id: str, name: str, payload: bytes) -> Path:
+        """Publish an append-only scope record with exclusive creation."""
+        if Path(name).name != name or not name:
+            raise ArtifactError("scope file name must be a simple file name")
+        path = self._scope_root(scope_id) / name
+        self._ensure_no_symlink_parents(path.parent, self.root)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            handle = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError as exc:
+            raise ArtifactError(f"scope file already exists: {name}") from exc
+        with os.fdopen(handle, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
         return path
 
     def put_bytes(
