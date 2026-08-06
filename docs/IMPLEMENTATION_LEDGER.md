@@ -42,3 +42,31 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   repository hygiene, and PR-range `git diff --check` passed on Windows/Python 3.12.7.
 - NOT verified: hosted Linux CI, exact-head independent review, the producer-side Developer Lens
   snapshot, and the WB-C1 benchmark remain subsequent gates.
+
+## 2026-08-06 — M2 WB-C1 invented smoke benchmark
+
+- Pinned the product-owned ResearchPack contract snapshot from Developer Lens producer commit
+  `337d815f5af22691889f00b0ffa5e3cf61b65e74` (PR #178). Sync verified the declared schema/fixture
+  bytes; the lab validates both the product fixture and its materialized WB-C1 pack against that
+  producer schema plus the strict Pydantic runtime contract.
+- Added deterministic Gaussian/heavy-tail weekly generators with no-change controls, four planted
+  change shapes, missingness, and coverage/permission/parser confounds across disjoint train, test,
+  and final-holdout repository/seed/time partitions.
+- Added symmetric train-only inner-fit/inner-validation threshold selection, rolling median/MAD and
+  online BOCPD arms, non-event false-alert exposure at an eight-week delay budget, measured Brier
+  calibration, and PELT as complete-series offline description only.
+- The custody callback writes dataset, frozen thresholds, and parameter hashes before holdout
+  materialization. The resulting C0 ResearchPack contains real `coverage` and `repository_week`
+  Parquet objects; the EvaluationBundle contains Parquet results, PELT/custody JSON, deterministic
+  workload evidence, and standalone Markdown/HTML reports.
+- Clean code head `f42a9b8de42b9847453d105364fc496e081a7024` ran `dllab benchmark wb-c1
+  --smoke`, `dllab run reproduce wbc1_smoke`, and `dllab report build wbc1_smoke`. Replay regenerated
+  and byte-compared every recorded artifact. The bundle decision was honestly `reject`: baseline
+  false alerts/year `2.966666666666667` and detection `0.75`; candidate `4.133333333333334` and
+  `0.625`; candidate Brier `0.02697459311457855`. The deterministic fallback remains complete.
+- Pre-commit/full local proof on Windows/Python 3.12.7: locked uv resolution/sync, Ruff
+  format/lint, strict Pyright, context/card/schema checks, 29 tests passed plus one Windows symlink
+  skip with 88% package coverage, strict MkDocs build, repository hygiene, and `git diff --check`.
+- NOT verified: hosted Linux CI. GitHub Status reported a critical Actions outage and neither the
+  product producer PR nor the lab branch received a hosted run; no green result or waiver is
+  inferred. Product PR #178 and the lab consumer change remain dependency-gated until both land.
