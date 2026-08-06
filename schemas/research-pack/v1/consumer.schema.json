@@ -34,6 +34,41 @@
     },
     "AvailableWindow": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "reason_code": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "window": {
+                "type": "null"
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "state": {
+                "const": "present"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_code": {
+                "type": "null"
+              },
+              "window": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "reason_code": {
           "anyOf": [
@@ -145,6 +180,57 @@
     },
     "RelationDescriptor": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "artifact": {
+                "type": "null"
+              },
+              "reason_code": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "row_count": {
+                "type": "null"
+              },
+              "schema_id": {
+                "type": "null"
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "state": {
+                "const": "present"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "reason_code": {
+                "type": "null"
+              },
+              "row_count": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "schema_id": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "artifact": {
           "anyOf": [
@@ -316,10 +402,12 @@
       "additionalProperties": false,
       "properties": {
         "end": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
           "title": "End",
           "type": "string"
         },
         "start": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
           "title": "Start",
           "type": "string"
         }
@@ -352,6 +440,7 @@
       "type": "array"
     },
     "generated_at": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
       "title": "Generated At",
       "type": "string"
     },

@@ -68,3 +68,36 @@ def test_sync_requires_full_commit(tmp_path: Path) -> None:
     product, commit = _invented_product_repo(tmp_path)
     with pytest.raises(ContractSyncError, match="40-hex"):
         sync_product_contract(tmp_path / "lab", product, commit[:12])
+
+
+def test_sync_rejects_schema_name_drop_and_symlink_destination(tmp_path: Path) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    schema_path = product / "research-contracts" / "research-pack" / "v1" / "schema.json"
+    schema_path.write_text('["DeveloperLensResearchPack.v1"]\n', encoding="utf-8")
+    _run_git(product, "add", str(schema_path))
+    _run_git(
+        product,
+        "-c",
+        "user.name=Invented Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "Break schema shape",
+    )
+    bad_commit = _run_git(product, "rev-parse", "HEAD")
+    with pytest.raises(ContractSyncError, match="JSON Schema object"):
+        sync_product_contract(tmp_path / "bad-lab", product, bad_commit)
+
+    valid_commit = _run_git(product, "rev-parse", "HEAD^")
+    destination = tmp_path / "linked-lab"
+    outside = tmp_path / "outside"
+    destination.mkdir()
+    outside.mkdir()
+    try:
+        (destination / "vendor").symlink_to(outside, target_is_directory=True)
+    except OSError:
+        pytest.skip("directory symlinks are unavailable on this host")
+    with pytest.raises(ContractSyncError, match="symlink or junction"):
+        sync_product_contract(destination, product, valid_commit)
+    assert list(outside.iterdir()) == []

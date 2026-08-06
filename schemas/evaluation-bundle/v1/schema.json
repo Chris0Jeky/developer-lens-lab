@@ -239,6 +239,41 @@
     },
     "MetricValue": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "reason_code": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "value": {
+                "type": "null"
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "state": {
+                "const": "present"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_code": {
+                "type": "null"
+              },
+              "value": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "metric_code": {
           "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
@@ -480,6 +515,7 @@
       "additionalProperties": false,
       "properties": {
         "completed_at": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
           "title": "Completed At",
           "type": "string"
         },
@@ -512,6 +548,7 @@
           "type": "array"
         },
         "started_at": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
           "title": "Started At",
           "type": "string"
         }
@@ -594,10 +631,12 @@
       "additionalProperties": false,
       "properties": {
         "end": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
           "title": "End",
           "type": "string"
         },
         "start": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
           "title": "Start",
           "type": "string"
         }
@@ -646,6 +685,7 @@
       "$ref": "#/$defs/ResultSet"
     },
     "created_at": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
       "title": "Created At",
       "type": "string"
     },

@@ -33,3 +33,12 @@ def test_store_detects_tampering_and_rejects_unscoped_names(tmp_path: Path) -> N
         store.get_bytes("scope_demo", reference)
     with pytest.raises(ArtifactError, match="scope_id"):
         store.put_bytes("../escape", b"x", "application/json")
+
+
+def test_json_store_rejects_non_finite_values_before_writing(tmp_path: Path) -> None:
+    root = tmp_path / ".dllab"
+    store = ArtifactStore(root)
+
+    with pytest.raises(ArtifactError, match="non-finite"):
+        store.put_json("scope_demo", {"metric": float("nan")})
+    assert not root.exists()

@@ -47,6 +47,8 @@ only when measurement, real-data scope, external users, or an irreversible bound
 - Add product-side promotion/audit/rollback controls only after an owner-approved candidate exists.
 - Add schema-evolution compatibility fixtures in both repositories and a signed release manifest
   before third-party producers or consumers exist.
+- Encode every runtime-only cross-record invariant in portable JSON Schema or publish a versioned
+  standalone validator before claiming schema-only interoperability outside the two repositories.
 
 ## Always blocking despite this deferral
 

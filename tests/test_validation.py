@@ -59,6 +59,8 @@ def test_pack_artifact_validation_and_profile_preserve_states(tmp_path: Path) ->
 def test_manifest_path_filter_and_read_only_cli(tmp_path: Path) -> None:
     with pytest.raises(ManifestError, match="local path"):
         assert_path_free_manifest({"note": "C:\\Users\\someone\\private"})
+    with pytest.raises(ManifestError, match="local path"):
+        assert_path_free_manifest({"note": "\\\\server\\share\\private"})
 
     manifest = tmp_path / "pack.json"
     manifest.write_text(json.dumps(research_pack()), encoding="utf-8")
@@ -74,3 +76,33 @@ def test_manifest_path_filter_and_read_only_cli(tmp_path: Path) -> None:
     bundle_manifest.write_text(json.dumps(evaluation_bundle()), encoding="utf-8")
     bundle = CliRunner().invoke(app, ["bundle", "validate", str(bundle_manifest)])
     assert bundle.exit_code == 0, bundle.output
+
+
+def test_cli_sanitizes_unknown_input_and_malformed_parquet(tmp_path: Path) -> None:
+    secret = "invented-sensitive-value"
+    unknown = research_pack()
+    unknown["unexpected"] = secret
+    unknown_manifest = tmp_path / "unknown.json"
+    unknown_manifest.write_text(json.dumps(unknown), encoding="utf-8")
+    unknown_result = CliRunner().invoke(app, ["pack", "validate", str(unknown_manifest)])
+    assert unknown_result.exit_code == 1
+    assert secret not in unknown_result.output
+
+    store_root = tmp_path / ".dllab"
+    store = ArtifactStore(store_root)
+    reference = store.put_bytes("pack_demo", b"not parquet", "application/x-parquet")
+    descriptor = {
+        "state": "present",
+        "schema_id": "developer-lens.repository-week.v1",
+        "row_count": 1,
+        "artifact": reference.model_dump(mode="json"),
+        "reason_code": None,
+    }
+    malformed_manifest = tmp_path / "malformed.json"
+    malformed_manifest.write_text(json.dumps(research_pack(descriptor)), encoding="utf-8")
+    malformed = CliRunner().invoke(
+        app,
+        ["pack", "validate", str(malformed_manifest), "--artifact-root", str(store_root)],
+    )
+    assert malformed.exit_code == 1
+    assert "ERROR: relation repository_week is not valid Parquet" in malformed.output

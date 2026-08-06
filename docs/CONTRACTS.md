@@ -41,6 +41,12 @@ The resource record contains deterministic workload counts, a workload checksum,
 budgets so byte-equivalent replay remains possible. Volatile observed wall-clock and RSS
 measurements belong in the run report and never participate in bundle identity.
 
+The generated schemas encode closed object shapes, scalar bounds, canonical UTC patterns, and the
+present-versus-unavailable null rules. Runtime Pydantic/Zod validation remains required for
+cross-record invariants such as split disjointness, schema-ID matching, artifact linkage, and a
+failed leakage check blocking a benchmarked decision. Third-party schema-only interoperability is
+not claimed during bootstrap.
+
 ## Artifact resolution
 
 Manifests carry `{sha256, size_bytes, media_type}` only. `.dllab/scopes/<opaque scope>/objects/`

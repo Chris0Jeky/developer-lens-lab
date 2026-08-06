@@ -20,9 +20,17 @@ class ArtifactError(RuntimeError):
 
 
 def canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode(
-        "utf-8"
-    )
+    try:
+        rendered = json.dumps(
+            value,
+            allow_nan=False,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+    except (TypeError, ValueError) as exc:
+        raise ArtifactError("JSON artifact contains a non-finite or unsupported value") from exc
+    return rendered.encode("utf-8")
 
 
 class ArtifactStore:

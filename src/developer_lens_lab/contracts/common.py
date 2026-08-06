@@ -13,15 +13,21 @@ from pydantic import (
     model_validator,
 )
 
+UTC_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$"
+
 
 def _canonical_utc(value: str) -> str:
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z", value):
+    if not re.fullmatch(UTC_PATTERN, value):
         raise ValueError("timestamp must be an RFC 3339 UTC instant ending in Z")
     datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
     return value
 
 
-CanonicalUtc = Annotated[str, AfterValidator(_canonical_utc)]
+CanonicalUtc = Annotated[
+    str,
+    StringConstraints(pattern=UTC_PATTERN),
+    AfterValidator(_canonical_utc),
+]
 Code = Annotated[str, StringConstraints(pattern=r"^[A-Za-z][A-Za-z0-9_.-]{0,95}$")]
 OpaqueId = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]{2,63}$")]
 Sha256 = Annotated[str, StringConstraints(pattern=r"^sha256:[0-9a-f]{64}$")]
@@ -47,6 +53,28 @@ class TimeWindow(StrictModel):
 
 
 class AvailableWindow(StrictModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "allOf": [
+                {
+                    "if": {"properties": {"state": {"const": "present"}}},
+                    "then": {
+                        "properties": {
+                            "window": {"not": {"type": "null"}},
+                            "reason_code": {"type": "null"},
+                        }
+                    },
+                    "else": {
+                        "properties": {
+                            "window": {"type": "null"},
+                            "reason_code": {"not": {"type": "null"}},
+                        }
+                    },
+                }
+            ]
+        }
+    )
+
     state: AvailabilityState
     window: TimeWindow | None
     reason_code: Code | None
@@ -74,6 +102,28 @@ class ArtifactRef(StrictModel):
 
 
 class MetricValue(StrictModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "allOf": [
+                {
+                    "if": {"properties": {"state": {"const": "present"}}},
+                    "then": {
+                        "properties": {
+                            "value": {"not": {"type": "null"}},
+                            "reason_code": {"type": "null"},
+                        }
+                    },
+                    "else": {
+                        "properties": {
+                            "value": {"type": "null"},
+                            "reason_code": {"not": {"type": "null"}},
+                        }
+                    },
+                }
+            ]
+        }
+    )
+
     metric_code: Code
     state: AvailabilityState
     value: Annotated[float, Field(allow_inf_nan=False)] | None

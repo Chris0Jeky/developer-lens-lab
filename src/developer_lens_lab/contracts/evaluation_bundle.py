@@ -214,6 +214,12 @@ class EvaluationBundle(StrictModel):
             raise ValueError("baseline_model_card must have baseline role")
         if self.candidate_model_card.role != "candidate":
             raise ValueError("candidate_model_card must have candidate role")
+        if self.baseline_model_card.model_id == self.candidate_model_card.model_id:
+            raise ValueError("baseline and candidate model_id values must differ")
+        if self.preregistration.baseline_method_code != self.baseline_model_card.method_code:
+            raise ValueError("preregistered baseline method does not match its model card")
+        if self.preregistration.candidate_method_code != self.candidate_model_card.method_code:
+            raise ValueError("preregistered candidate method does not match its model card")
         if self.baseline_results.model_id != self.baseline_model_card.model_id:
             raise ValueError("baseline result model_id does not match its model card")
         if self.candidate_results.model_id != self.candidate_model_card.model_id:
@@ -224,4 +230,15 @@ class EvaluationBundle(StrictModel):
             raise ValueError("result artifacts must be present in artifact_manifest")
         if len(declared) != len(self.artifact_manifest):
             raise ValueError("artifact_manifest contains duplicate digests")
+        split_seed_families = {
+            *self.split_manifest.train.seed_families,
+            *self.split_manifest.test.seed_families,
+            *self.split_manifest.final_holdout.seed_families,
+        }
+        if split_seed_families != set(self.preregistration.seed_families):
+            raise ValueError("preregistered seed_families must match the split manifest")
+        if self.decision.outcome == "benchmarked" and any(
+            check.outcome == "fail" for check in self.leakage
+        ):
+            raise ValueError("a failed leakage check blocks a benchmarked decision")
         return self

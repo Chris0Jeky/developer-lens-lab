@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal, Self
 
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from .common import (
     ArtifactRef,
@@ -44,6 +44,32 @@ class ResearchPackProvenance(StrictModel):
 
 
 class RelationDescriptor(StrictModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "allOf": [
+                {
+                    "if": {"properties": {"state": {"const": "present"}}},
+                    "then": {
+                        "properties": {
+                            "schema_id": {"not": {"type": "null"}},
+                            "row_count": {"not": {"type": "null"}},
+                            "artifact": {"not": {"type": "null"}},
+                            "reason_code": {"type": "null"},
+                        }
+                    },
+                    "else": {
+                        "properties": {
+                            "schema_id": {"type": "null"},
+                            "row_count": {"type": "null"},
+                            "artifact": {"type": "null"},
+                            "reason_code": {"not": {"type": "null"}},
+                        }
+                    },
+                }
+            ]
+        }
+    )
+
     state: AvailabilityState
     schema_id: Code | None
     row_count: Annotated[int, Field(ge=0, le=100_000_000)] | None

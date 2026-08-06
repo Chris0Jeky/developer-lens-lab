@@ -25,7 +25,7 @@ FORBIDDEN_KEY_FRAGMENTS = {
     "username",
 }
 FORBIDDEN_EXACT_KEYS = {"environment_name", "environment_value", "environment_variables"}
-ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|/home/|/Users/|/var/|/tmp/)")
+ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\|/|~[\\/]|file://)", re.IGNORECASE)
 
 RELATION_COLUMNS: dict[str, tuple[str, ...]] = {
     "coverage": (
@@ -173,18 +173,21 @@ def validate_pack_artifacts(pack: ResearchPack, store: ArtifactStore) -> None:
         payload = store.get_bytes(pack.pack_id, descriptor.artifact)
         if descriptor.artifact.media_type != "application/x-parquet":
             raise ManifestError(f"present relation {relation_name} must use Parquet")
-        parquet = pq.ParquetFile(pa.BufferReader(payload))
-        if parquet.metadata.num_rows != descriptor.row_count:
-            raise ManifestError(f"relation {relation_name} row_count does not match Parquet")
-        actual_columns = tuple(parquet.schema_arrow.names)
-        if actual_columns != RELATION_COLUMNS[relation_name]:
-            raise ManifestError(
-                f"relation {relation_name} columns differ: expected "
-                f"{RELATION_COLUMNS[relation_name]}, got {actual_columns}"
-            )
+        try:
+            parquet = pq.ParquetFile(pa.BufferReader(payload))
+            if parquet.metadata.num_rows != descriptor.row_count:
+                raise ManifestError(f"relation {relation_name} row_count does not match Parquet")
+            actual_columns = tuple(parquet.schema_arrow.names)
+            if actual_columns != RELATION_COLUMNS[relation_name]:
+                raise ManifestError(
+                    f"relation {relation_name} columns differ: expected "
+                    f"{RELATION_COLUMNS[relation_name]}, got {actual_columns}"
+                )
+        except pa.ArrowException as exc:
+            raise ManifestError(f"relation {relation_name} is not valid Parquet") from exc
 
 
 def explain_validation_error(error: Exception) -> str:
     if isinstance(error, ValidationError):
-        return json.dumps(error.errors(include_url=False), sort_keys=True)
+        return json.dumps(error.errors(include_input=False, include_url=False), sort_keys=True)
     return str(error)
