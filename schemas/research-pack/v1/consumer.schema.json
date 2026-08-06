@@ -1,0 +1,390 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "media_type": {
+          "enum": [
+            "application/json",
+            "application/x-parquet",
+            "text/markdown"
+          ],
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "maximum": 10000000000,
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sha256",
+        "size_bytes",
+        "media_type"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "AvailableWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason Code"
+        },
+        "state": {
+          "enum": [
+            "present",
+            "absent",
+            "unsupported",
+            "intentionally_omitted"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "window": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeWindow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "window",
+        "reason_code"
+      ],
+      "title": "AvailableWindow",
+      "type": "object"
+    },
+    "FeatureDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_layer": {
+          "enum": [
+            "observed",
+            "deterministic"
+          ],
+          "title": "Evidence Layer",
+          "type": "string"
+        },
+        "feature_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Feature Id",
+          "type": "string"
+        },
+        "prohibited_interpretation_codes": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Prohibited Interpretation Codes",
+          "type": "array"
+        },
+        "relation": {
+          "enum": [
+            "coverage",
+            "repository_week",
+            "pr_episode",
+            "ci_attempt",
+            "release_episode",
+            "collection_probe",
+            "system_event"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "unit_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Unit Code",
+          "type": "string"
+        },
+        "value_kind": {
+          "enum": [
+            "count",
+            "duration_hours",
+            "ratio",
+            "category",
+            "boolean"
+          ],
+          "title": "Value Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feature_id",
+        "relation",
+        "value_kind",
+        "unit_code",
+        "evidence_layer",
+        "prohibited_interpretation_codes"
+      ],
+      "title": "FeatureDefinition",
+      "type": "object"
+    },
+    "RelationDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason Code"
+        },
+        "row_count": {
+          "anyOf": [
+            {
+              "maximum": 100000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Row Count"
+        },
+        "schema_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Schema Id"
+        },
+        "state": {
+          "enum": [
+            "present",
+            "absent",
+            "unsupported",
+            "intentionally_omitted"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "schema_id",
+        "row_count",
+        "artifact",
+        "reason_code"
+      ],
+      "title": "RelationDescriptor",
+      "type": "object"
+    },
+    "ResearchPackProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Contract Sha256",
+          "type": "string"
+        },
+        "fixture_revision": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fixture Revision"
+        },
+        "producer_code": {
+          "const": "developer-lens.research-pack.v1",
+          "title": "Producer Code",
+          "type": "string"
+        },
+        "product_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "title": "Product Commit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_commit",
+        "contract_sha256",
+        "producer_code",
+        "fixture_revision"
+      ],
+      "title": "ResearchPackProvenance",
+      "type": "object"
+    },
+    "ResearchRelations": {
+      "additionalProperties": false,
+      "properties": {
+        "ci_attempt": {
+          "$ref": "#/$defs/RelationDescriptor"
+        },
+        "collection_probe": {
+          "$ref": "#/$defs/RelationDescriptor"
+        },
+        "coverage": {
+          "$ref": "#/$defs/RelationDescriptor"
+        },
+        "pr_episode": {
+          "$ref": "#/$defs/RelationDescriptor"
+        },
+        "release_episode": {
+          "$ref": "#/$defs/RelationDescriptor"
+        },
+        "repository_week": {
+          "$ref": "#/$defs/RelationDescriptor"
+        },
+        "system_event": {
+          "$ref": "#/$defs/RelationDescriptor"
+        }
+      },
+      "required": [
+        "coverage",
+        "repository_week",
+        "pr_episode",
+        "ci_attempt",
+        "release_episode",
+        "collection_probe",
+        "system_event"
+      ],
+      "title": "ResearchRelations",
+      "type": "object"
+    },
+    "TemporalAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "collection": {
+          "$ref": "#/$defs/AvailableWindow"
+        },
+        "event": {
+          "$ref": "#/$defs/AvailableWindow"
+        },
+        "feature": {
+          "$ref": "#/$defs/AvailableWindow"
+        }
+      },
+      "required": [
+        "event",
+        "collection",
+        "feature"
+      ],
+      "title": "TemporalAvailability",
+      "type": "object"
+    },
+    "TimeWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TimeWindow",
+      "type": "object"
+    }
+  },
+  "$id": "https://developer-lens-lab.invalid/schemas/research-pack/v1/consumer.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "classification": {
+      "enum": [
+        "C0",
+        "C1"
+      ],
+      "title": "Classification",
+      "type": "string"
+    },
+    "feature_registry": {
+      "items": {
+        "$ref": "#/$defs/FeatureDefinition"
+      },
+      "maxItems": 128,
+      "title": "Feature Registry",
+      "type": "array"
+    },
+    "generated_at": {
+      "title": "Generated At",
+      "type": "string"
+    },
+    "pack_id": {
+      "pattern": "^[a-z][a-z0-9_]{2,63}$",
+      "title": "Pack Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/ResearchPackProvenance"
+    },
+    "relations": {
+      "$ref": "#/$defs/ResearchRelations"
+    },
+    "schema_version": {
+      "const": "DeveloperLensResearchPack.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "temporal_availability": {
+      "$ref": "#/$defs/TemporalAvailability"
+    }
+  },
+  "required": [
+    "schema_version",
+    "pack_id",
+    "generated_at",
+    "classification",
+    "provenance",
+    "temporal_availability",
+    "relations",
+    "feature_registry"
+  ],
+  "title": "ResearchPack",
+  "type": "object"
+}

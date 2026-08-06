@@ -5,7 +5,7 @@
       "depends_on": [],
       "id": "LAB-OS-01",
       "outcome": "Fresh-agent resume",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Repository OS and context verifier"
     },
     {
@@ -14,7 +14,7 @@
       ],
       "id": "LAB-TOOL-01",
       "outcome": "Locked checks",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Python, uv, tooling, and CI"
     },
     {
@@ -23,7 +23,7 @@
       ],
       "id": "LAB-CONTRACT-01",
       "outcome": "Pack validation",
-      "status": "ACTIVE",
+      "status": "IN_REVIEW",
       "title": "ResearchPack.v1 contracts"
     },
     {
@@ -32,7 +32,7 @@
       ],
       "id": "LAB-CONTRACT-02",
       "outcome": "Decision bundle validation",
-      "status": "ACTIVE",
+      "status": "IN_REVIEW",
       "title": "EvaluationBundle.v1 contracts"
     },
     {
@@ -41,7 +41,7 @@
       ],
       "id": "LAB-ART-01",
       "outcome": "Replayable objects",
-      "status": "ACTIVE",
+      "status": "IN_REVIEW",
       "title": "Confined content-addressed artifact store"
     },
     {

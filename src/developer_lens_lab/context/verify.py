@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
+from developer_lens_lab.schemas import check_schemas
+
 REQUIRED_FILES = (
     "AGENTS.md",
     ".agent-harness/tier.json",
@@ -29,6 +31,8 @@ REQUIRED_FILES = (
     "docs/ROADMAP.md",
     ".agents/skills/developer-lens-lab-continuation/SKILL.md",
     ".agents/skills/developer-lens-lab-continuation/agents/openai.yaml",
+    "schemas/research-pack/v1/consumer.schema.json",
+    "schemas/evaluation-bundle/v1/schema.json",
 )
 
 ALLOWED_TIER_KEYS = {
@@ -164,4 +168,5 @@ def verify_repository(root: Path) -> VerificationReport:
     failures.extend(verify_markdown_links(root))
     if (root / "tools" / "cards.py").is_file():
         failures.extend(_verify_cards(root))
+    failures.extend(check_schemas(root))
     return VerificationReport(tuple(failures))

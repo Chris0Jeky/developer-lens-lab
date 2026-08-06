@@ -4,14 +4,12 @@ Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
 updated: 2026-08-06
-phase: M0_REPOSITORY_OS_PUBLICATION_GATE
+phase: M1_CONTRACTS_AND_ARTIFACT_FOUNDATION
 posture: public C0 invented-data-only; value-first with non-essential hardening deferred
 repository: Chris0Jeky/developer-lens-lab (public)
-branch: codex/bootstrap-lab-os
+branch: codex/lab-contracts-foundation
 head: refresh with git rev-parse HEAD
 active_horizon:
-  - LAB-OS-01
-  - LAB-TOOL-01
   - LAB-CONTRACT-01
   - LAB-CONTRACT-02
   - LAB-ART-01
@@ -25,6 +23,7 @@ capabilities:
 blockers: none for invented bootstrap; q-1 through q-6 gate expansion only
 hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
   irreversible secret/private-data/out-of-root/person-shape boundary
-exact_resume_point: continue the stacked M1 contracts branch while the green M0 bootstrap PR ages;
-  do not mark M0 done or merge dependent work to main until M0 lands, then retarget and re-prove M1
+exact_resume_point: finish and review the M1 ResearchPack/EvaluationBundle contracts, validation
+  CLI, and confined artifact store; then sync the separately reviewed product-owned synthetic
+  contract snapshot before the WB-C1 benchmark consumes it
 ```
