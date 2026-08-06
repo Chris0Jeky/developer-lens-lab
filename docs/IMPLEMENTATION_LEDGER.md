@@ -125,3 +125,16 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The remaining mixed-case/numeric-suffix feature-ID grammar edge and five lower-severity semantic
   refinements are explicitly deferred to product #182 and this repository's hardening backlog.
   Hosted Linux proof remains absent during the declared Actions incident and is not called green.
+- Exact clean code/state head `fd094995353dbacee7be40d4cf982f17c3dda3af` completed
+  `wbc1_contract_final`, reproduced every recorded artifact byte-for-byte, and rebuilt both reports.
+  It retained the conservative `reject`: baseline false alerts/year `2.966666666666667` and
+  detection `0.75`; candidate false alerts/year `4.2`, detection `0.75`, and Brier
+  `0.017341137335170863`. The bundle digest is
+  `sha256:bb40574ec6284d28f14eb4e76e141d981fec484c01eaba89cd51bc34c1befbe7`; custody is
+  `sha256:4177b3cdb85533d990de5e9ea836ad493e0caf479afe797556216d545aef4b5a`; Markdown is
+  `sha256:f129fd5746f1841e173bad17c80ab966a926d781ebb7c95c7bf3be5fe1697824`; HTML is
+  `sha256:d7b8bd1344fa13f76eb65161ee3863bfca24610c0f6ccec47d0a269ec7e13ebf`.
+- The first full local pass found only one formatting drift in the changed Python contract. Ruff
+  formatted that file; format/lint, strict Pyright, contract drift, and whitespace were rerun green.
+  The full proof also passed runtime-only locked installation, context/tasks, 38 tests plus one
+  declared Windows directory-symlink skip with 88% coverage, strict MkDocs, and hygiene.
