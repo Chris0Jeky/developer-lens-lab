@@ -48,6 +48,16 @@ ALLOWED_FLAGS = {
     "relaxed_work_loss_guards",
 }
 LOCAL_LINK_RE = re.compile(r"\[[^]]+\]\((?!https?://|mailto:|#)([^)]+)\)")
+SKIPPED_MARKDOWN_PARTS = {
+    ".dllab",
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "artifacts",
+    "htmlcov",
+    "site",
+}
 
 
 @dataclass(frozen=True)
@@ -59,10 +69,13 @@ class VerificationReport:
         return not self.failures
 
 
-def _verify_links(root: Path) -> list[str]:
+def verify_markdown_links(root: Path) -> list[str]:
     failures: list[str] = []
     for path in sorted(root.rglob("*.md")):
-        if any(part in {".git", ".venv", "site"} for part in path.parts):
+        relative_parts = path.relative_to(root).parts
+        if any(part in SKIPPED_MARKDOWN_PARTS for part in relative_parts):
+            continue
+        if relative_parts[:2] == ("reports", "generated"):
             continue
         text = path.read_text(encoding="utf-8")
         for raw_target in LOCAL_LINK_RE.findall(text):
@@ -148,7 +161,7 @@ def verify_repository(root: Path) -> VerificationReport:
     if (root / "developer_lens_lab_bootstrap_agent_prompt.md").exists():
         failures.append("the commissioning prompt must not become a competing repo authority")
     failures.extend(_verify_tier(root))
-    failures.extend(_verify_links(root))
+    failures.extend(verify_markdown_links(root))
     if (root / "tools" / "cards.py").is_file():
         failures.extend(_verify_cards(root))
     return VerificationReport(tuple(failures))

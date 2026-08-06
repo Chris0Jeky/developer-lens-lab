@@ -152,6 +152,10 @@ CARDS = (
     ),
 )
 
+# ACTIVE and IN_REVIEW prerequisites deliberately permit speculative stacked work. They do not
+# mean the prerequisite is complete or allow dependent work to merge ahead of it.
+STACKABLE_DEPENDENCY_STATUSES = {"ACTIVE", "IN_REVIEW", "DONE"}
+
 
 def _validate() -> None:
     by_id = {card.id: card for card in CARDS}
@@ -168,7 +172,7 @@ def _validate() -> None:
             inactive_dependencies = {
                 dependency
                 for dependency in card.depends_on
-                if by_id[dependency].status not in {"ACTIVE", "IN_REVIEW", "DONE"}
+                if by_id[dependency].status not in STACKABLE_DEPENDENCY_STATUSES
             }
             if inactive_dependencies:
                 raise ValueError(

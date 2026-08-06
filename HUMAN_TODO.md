@@ -6,8 +6,10 @@ newer instruction the same day explicitly made the repository public and chose a
 productivity-oriented sequence with non-essential security hardening documented for later. It did
 not authorize a credential, private dataset, person-shaped analysis, or automatic model promotion.
 
-- [ ] **q-1 — Choose a license before any public/open-source release.** The repository remains
-  private and intentionally has no `LICENSE` file. This is not blocking private development.
+- [ ] **q-1 — Choose a license before an open-source release.** The repository is public and
+  intentionally has no `LICENSE` file, so it is source-visible but does not grant reuse rights.
+  This does not block the public invented-data bootstrap; resolve it before packaging or promoting
+  the project as open source.
 - [ ] **q-2 — Approve any networked public-metadata corpus task.** Bootstrap performs no network
   collection. A future task must name the exact allowlist, fields, request/time/storage budgets,
   in-memory parsing and deletion behavior. The initial design has no token and no raw response

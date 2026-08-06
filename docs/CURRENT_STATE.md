@@ -25,6 +25,6 @@ capabilities:
 blockers: none for invented bootstrap; q-1 through q-6 gate expansion only
 hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
   irreversible secret/private-data/out-of-root/person-shape boundary
-exact_resume_point: publish and merge the green M0 bootstrap PR, then start M1 on a fresh branch
-  from main with ResearchPack/EvaluationBundle contracts, the confined artifact store, and validation CLI
+exact_resume_point: continue the stacked M1 contracts branch while the green M0 bootstrap PR ages;
+  do not mark M0 done or merge dependent work to main until M0 lands, then retarget and re-prove M1
 ```
