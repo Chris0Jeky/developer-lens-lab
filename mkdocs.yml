@@ -1,0 +1,24 @@
+site_name: Developer Lens Lab
+site_description: Synthetic-first research and evaluation engine for Developer Lens
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Product boundary: PRODUCT_BOUNDARY.md
+  - Data policy: DATA_POLICY.md
+  - Contracts: CONTRACTS.md
+  - Operating model: OPERATING_MODEL.md
+  - Research programme: RESEARCH_PROGRAMME.md
+  - Corpus pipeline: CORPUS_PIPELINE.md
+  - Reproducibility: REPRODUCIBILITY.md
+  - Review protocol: REVIEW_PROTOCOL.md
+  - Deferred hardening: HARDENING_BACKLOG.md
+  - Roadmap: ROADMAP.md
+  - Card index: CARD_INDEX.md
+  - Current state: CURRENT_STATE.md
+  - Implementation ledger: IMPLEMENTATION_LEDGER.md
+  - Experiment ledger: EXPERIMENT_LEDGER.md
+  - Failure archive: FAILURE_ARCHIVE.md
+  - Decisions:
+      - Product/lab boundary: DECISIONS/0001-product-lab-boundary.md
+strict: true

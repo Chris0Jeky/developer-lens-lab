@@ -1,0 +1,46 @@
+# Deferred hardening backlog
+
+The owner explicitly chose a faster, productivity-oriented bootstrap on 2026-08-06. These items are
+visible debt, not prerequisites to the first runnable contracts and WB-C1 benchmark. Promote an item
+only when measurement, real-data scope, external users, or an irreversible boundary makes it timely.
+
+## Repository and supply chain
+
+- Add required branch protection and review/check rules after the first three bootstrap PRs prove
+  the stable check name and delivery time.
+- Add dependency-update automation, dependency review, CodeQL, and secret scanning after the
+  dependency surface settles.
+- Pin GitHub Actions by immutable commit and add build provenance/signing if release artifacts begin.
+- Add a multi-platform/Python-version CI matrix after the Windows/Linux single lanes expose actual
+  portability risks.
+
+## Artifact and filesystem lifecycle
+
+- Add hostile same-user race, symlink/reparse-point, path-casing, disk-full, process-crash, fsync,
+  and partial-manifest recovery tests before `.dllab` stores valuable or non-regenerable artifacts.
+- Add quotas, garbage-collection plans, repair tooling, and explicit tombstones before long-running
+  corpora or trained objects exist.
+- Add encrypted-at-rest storage or OS ACL guidance only if real C2/C3 data is approved.
+
+## Data and network collection
+
+- Add request mocking, pagination/rate-limit fault injection, response-schema drift canaries,
+  deletion/invalidation stress, and provider-ID/prose poison canaries before the first network run.
+- Reassess tier/overlay, retention, consent, raw-byte disposal, and credential handling before any
+  real/public provider collection or optional token path.
+- Add an allowlist review/approval surface before collecting more than the initial bounded pilot.
+
+## Evaluation and model lifecycle
+
+- Add independent statistical review, mutation tests, stress corpora, online-FDR mechanics,
+  calibration drift, resource enforcement, and sealed-holdout custody hardening before a candidate
+  can move beyond invented `benchmarked` evidence.
+- Add model artifact signing, sandboxing, adversarial deserialization tests, and removal/demotion
+  drills before retaining or loading trained artifacts.
+- Add product-side promotion/audit/rollback controls only after an owner-approved candidate exists.
+
+## Always blocking despite this deferral
+
+Do not defer a demonstrated secret/private-data leak, destructive operation outside the lab root,
+person-scoring analytical shape, public publication of real/private outputs, or automatic product
+promotion. Those remain stop conditions, not backlog items.
