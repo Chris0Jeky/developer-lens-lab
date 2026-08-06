@@ -18,8 +18,21 @@ uv sync --locked --all-groups
 uv run dllab doctor
 uv run dllab context verify
 uv run dllab tasks check
+uv run dllab contracts check
 uv run pytest
 ```
+
+The M1 contract vertical is runnable without a collector or dataset:
+
+```powershell
+uv run dllab pack validate path\to\invented-pack.json
+uv run dllab pack profile path\to\invented-pack.json
+uv run dllab bundle validate path\to\evaluation-bundle.json
+uv run dllab contracts sync --from path\to\developer-lens --ref <40-hex-commit>
+```
+
+`contracts sync` reads only the fixed schema and invented-fixture paths from the pinned Git object.
+It records commit and byte checksums as provenance, never as a cross-repository join key.
 
 The smoke benchmark command will become `uv run dllab benchmark wb-c1 --smoke` in milestone M2.
 Until then, `docs/CURRENT_STATE.md` is the exact resume point.
@@ -33,6 +46,8 @@ Until then, `docs/CURRENT_STATE.md` is the exact resume point.
 - Missing, unavailable, censored, restricted, or intentionally omitted evidence is explicit and is
   never converted to zero.
 - A candidate can be rejected. Nothing installs itself into Developer Lens.
+- `.dllab` stores scope-local content-addressed objects. Manifests contain digests and controlled
+  metadata, not filesystem paths.
 
 See `docs/PRODUCT_BOUNDARY.md`, `docs/DATA_POLICY.md`, and `docs/CONTRACTS.md` before changing a
 contract, artifact, corpus, persistence, or evaluation seam.

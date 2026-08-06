@@ -4,11 +4,11 @@ Generated from `tools/cards.py`; do not edit by hand.
 
 | Card | Title | Status | Depends on | Outcome |
 |---|---|---|---|---|
-| `LAB-OS-01` | Repository OS and context verifier | IN_REVIEW | — | Fresh-agent resume |
-| `LAB-TOOL-01` | Python, uv, tooling, and CI | IN_REVIEW | LAB-OS-01 | Locked checks |
-| `LAB-CONTRACT-01` | ResearchPack.v1 contracts | ACTIVE | LAB-OS-01 | Pack validation |
-| `LAB-CONTRACT-02` | EvaluationBundle.v1 contracts | ACTIVE | LAB-OS-01 | Decision bundle validation |
-| `LAB-ART-01` | Confined content-addressed artifact store | ACTIVE | LAB-TOOL-01 | Replayable objects |
+| `LAB-OS-01` | Repository OS and context verifier | DONE | — | Fresh-agent resume |
+| `LAB-TOOL-01` | Python, uv, tooling, and CI | DONE | LAB-OS-01 | Locked checks |
+| `LAB-CONTRACT-01` | ResearchPack.v1 contracts | IN_REVIEW | LAB-OS-01 | Pack validation |
+| `LAB-CONTRACT-02` | EvaluationBundle.v1 contracts | IN_REVIEW | LAB-OS-01 | Decision bundle validation |
+| `LAB-ART-01` | Confined content-addressed artifact store | IN_REVIEW | LAB-TOOL-01 | Replayable objects |
 | `LAB-WBC1-01` | Invented weekly-series smoke benchmark | ACTIVE | LAB-CONTRACT-01, LAB-ART-01 | Inspectible rejection decision |
 | `LAB-SYNC-01` | Generated product-contract snapshot | QUEUED | LAB-CONTRACT-01 | Pinned provenance |
 | `LAB-RUN-01` | Reproducible run manifest and replay | QUEUED | LAB-ART-01 | One-command replay |

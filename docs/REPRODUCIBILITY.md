@@ -20,3 +20,14 @@ uv run pytest
 
 The benchmark must reproduce a byte-equivalent decision bundle from the same frozen inputs. Larger
 benchmarks are opt-in until measured and never download data or weights at runtime.
+
+Contract schemas are deterministic tracked outputs:
+
+```powershell
+uv run dllab contracts check
+```
+
+The ResearchPack consumer mirror comes from lab validation models. A canonical producer snapshot is
+accepted only through `dllab contracts sync --from <checkout> --ref <full commit>`; sync reads the
+two fixed paths from Git objects and records their byte checksums without persisting the checkout
+path.

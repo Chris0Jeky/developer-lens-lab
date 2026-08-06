@@ -7,14 +7,32 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from pydantic import ValidationError
 
+from developer_lens_lab.artifacts import ArtifactError, ArtifactStore
 from developer_lens_lab.context import verify_repository
+from developer_lens_lab.contract_sync import ContractSyncError, sync_product_contract
+from developer_lens_lab.schemas import check_schemas, render_schemas
+from developer_lens_lab.validation import (
+    ManifestError,
+    explain_validation_error,
+    profile_research_pack,
+    validate_evaluation_bundle,
+    validate_pack_artifacts,
+    validate_research_pack,
+)
 
 app = typer.Typer(help="Developer Lens Lab command line.", no_args_is_help=True)
 context_app = typer.Typer(help="Verify repository authority and generated context.")
 tasks_app = typer.Typer(help="Check or render the generated task programme.")
+contracts_app = typer.Typer(help="Synchronize and verify versioned interchange contracts.")
+pack_app = typer.Typer(help="Validate or profile a ResearchPack.")
+bundle_app = typer.Typer(help="Validate an EvaluationBundle.")
 app.add_typer(context_app, name="context")
 app.add_typer(tasks_app, name="tasks")
+app.add_typer(contracts_app, name="contracts")
+app.add_typer(pack_app, name="pack")
+app.add_typer(bundle_app, name="bundle")
 
 
 def _repo_root() -> Path:
@@ -85,3 +103,80 @@ def tasks_check() -> None:
 def tasks_render() -> None:
     """Render task artifacts from the single Python source."""
     _run_cards("--render")
+
+
+@contracts_app.command("render")
+def contracts_render() -> None:
+    """Render deterministic lab-owned and consumer-mirror JSON Schemas."""
+    render_schemas(_repo_root())
+    typer.echo("rendered contract schemas")
+
+
+@contracts_app.command("check")
+def contracts_check() -> None:
+    """Fail when generated contract schemas drift from strict models."""
+    failures = check_schemas(_repo_root())
+    if failures:
+        for failure in failures:
+            typer.echo(f"ERROR: {failure}", err=True)
+        raise typer.Exit(code=1)
+    typer.echo("generated contract schemas are current")
+
+
+@contracts_app.command("sync")
+def contracts_sync(
+    source: Annotated[
+        Path,
+        typer.Option("--from", exists=True, file_okay=False, dir_okay=True, resolve_path=True),
+    ],
+    ref: Annotated[str, typer.Option("--ref")],
+) -> None:
+    """Copy the pinned producer schema and invented fixture from Developer Lens Git objects."""
+    try:
+        provenance = sync_product_contract(_repo_root(), source, ref)
+    except (ContractSyncError, ValidationError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: contract sync failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"synchronized {provenance.relative_to(_repo_root())}")
+
+
+@pack_app.command("validate")
+def pack_validate(
+    manifest: Annotated[Path, typer.Argument(exists=True, file_okay=True, dir_okay=False)],
+    artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+) -> None:
+    """Validate a C0 ResearchPack and optionally verify its scoped Parquet objects."""
+    try:
+        pack = validate_research_pack(manifest)
+        if artifact_root is not None:
+            validate_pack_artifacts(pack, ArtifactStore(artifact_root))
+    except (ArtifactError, ManifestError, OSError, ValidationError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: {explain_validation_error(exc)}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"valid {pack.schema_version} {pack.pack_id}")
+
+
+@pack_app.command("profile")
+def pack_profile(
+    manifest: Annotated[Path, typer.Argument(exists=True, file_okay=True, dir_okay=False)],
+) -> None:
+    """Report relation states without coercing unavailable evidence to zero."""
+    try:
+        profile = profile_research_pack(validate_research_pack(manifest))
+    except (ManifestError, OSError, ValidationError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: {explain_validation_error(exc)}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(json.dumps(profile, sort_keys=True))
+
+
+@bundle_app.command("validate")
+def bundle_validate(
+    manifest: Annotated[Path, typer.Argument(exists=True, file_okay=True, dir_okay=False)],
+) -> None:
+    """Validate a path-free EvaluationBundle decision record."""
+    try:
+        bundle = validate_evaluation_bundle(manifest)
+    except (ManifestError, OSError, ValidationError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: {explain_validation_error(exc)}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"valid {bundle.schema_version} {bundle.bundle_id}")

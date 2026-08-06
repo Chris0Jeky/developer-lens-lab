@@ -5,8 +5,15 @@ import subprocess
 from pathlib import Path
 
 DENIED_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".parquet", ".arrow", ".feather", ".pem", ".key"}
-DENIED_PARTS = {".dllab", ".venv", "artifacts", "reports/generated"}
+DENIED_TOP_LEVEL_DIRS = {".dllab", ".venv", "artifacts"}
 MAX_TRACKED_BYTES = 1_000_000
+
+
+def is_denied_generated_path(relative: Path) -> bool:
+    return bool(
+        (relative.parts and relative.parts[0] in DENIED_TOP_LEVEL_DIRS)
+        or relative.parts[:2] == ("reports", "generated")
+    )
 
 
 def main() -> int:
@@ -29,7 +36,7 @@ def main() -> int:
         if relative.suffix.lower() in DENIED_SUFFIXES:
             failures.append(f"tracked data/key artifact: {normalized}")
             continue
-        if any(part in normalized for part in DENIED_PARTS):
+        if is_denied_generated_path(relative):
             failures.append(f"tracked generated/private path: {normalized}")
             continue
         path = root / relative
