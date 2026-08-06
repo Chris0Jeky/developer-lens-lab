@@ -5,7 +5,7 @@
       "depends_on": [],
       "id": "LAB-OS-01",
       "outcome": "Fresh-agent resume",
-      "status": "ACTIVE",
+      "status": "IN_REVIEW",
       "title": "Repository OS and context verifier"
     },
     {
@@ -14,7 +14,7 @@
       ],
       "id": "LAB-TOOL-01",
       "outcome": "Locked checks",
-      "status": "ACTIVE",
+      "status": "IN_REVIEW",
       "title": "Python, uv, tooling, and CI"
     },
     {

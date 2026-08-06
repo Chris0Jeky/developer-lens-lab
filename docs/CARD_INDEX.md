@@ -4,8 +4,8 @@ Generated from `tools/cards.py`; do not edit by hand.
 
 | Card | Title | Status | Depends on | Outcome |
 |---|---|---|---|---|
-| `LAB-OS-01` | Repository OS and context verifier | ACTIVE | — | Fresh-agent resume |
-| `LAB-TOOL-01` | Python, uv, tooling, and CI | ACTIVE | LAB-OS-01 | Locked checks |
+| `LAB-OS-01` | Repository OS and context verifier | IN_REVIEW | — | Fresh-agent resume |
+| `LAB-TOOL-01` | Python, uv, tooling, and CI | IN_REVIEW | LAB-OS-01 | Locked checks |
 | `LAB-CONTRACT-01` | ResearchPack.v1 contracts | ACTIVE | LAB-OS-01 | Pack validation |
 | `LAB-CONTRACT-02` | EvaluationBundle.v1 contracts | ACTIVE | LAB-OS-01 | Decision bundle validation |
 | `LAB-ART-01` | Confined content-addressed artifact store | ACTIVE | LAB-TOOL-01 | Replayable objects |

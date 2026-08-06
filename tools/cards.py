@@ -16,8 +16,19 @@ class Card:
 
 
 CARDS = (
-    Card("LAB-OS-01", "Repository OS and context verifier", "ACTIVE", outcome="Fresh-agent resume"),
-    Card("LAB-TOOL-01", "Python, uv, tooling, and CI", "ACTIVE", ("LAB-OS-01",), "Locked checks"),
+    Card(
+        "LAB-OS-01",
+        "Repository OS and context verifier",
+        "IN_REVIEW",
+        outcome="Fresh-agent resume",
+    ),
+    Card(
+        "LAB-TOOL-01",
+        "Python, uv, tooling, and CI",
+        "IN_REVIEW",
+        ("LAB-OS-01",),
+        "Locked checks",
+    ),
     Card(
         "LAB-CONTRACT-01", "ResearchPack.v1 contracts", "ACTIVE", ("LAB-OS-01",), "Pack validation"
     ),
@@ -146,18 +157,18 @@ def _validate() -> None:
     by_id = {card.id: card for card in CARDS}
     if len(by_id) != len(CARDS):
         raise ValueError("duplicate card ID")
-    active = {card.id for card in CARDS if card.status == "ACTIVE"}
-    if len(active) > 6:
+    horizon = {card.id for card in CARDS if card.status in {"ACTIVE", "IN_REVIEW"}}
+    if len(horizon) > 6:
         raise ValueError("active horizon exceeds six cards")
     for card in CARDS:
         unknown = set(card.depends_on) - set(by_id)
         if unknown:
             raise ValueError(f"{card.id} has unknown dependencies: {sorted(unknown)}")
-        if card.id in active:
+        if card.id in horizon:
             inactive_dependencies = {
                 dependency
                 for dependency in card.depends_on
-                if by_id[dependency].status not in {"ACTIVE", "DONE"}
+                if by_id[dependency].status not in {"ACTIVE", "IN_REVIEW", "DONE"}
             }
             if inactive_dependencies:
                 raise ValueError(
