@@ -6,12 +6,12 @@ from typing import Annotated, Literal, Self
 from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from .common import (
+    JSON_INTEGER_COERCION,
     ArtifactRef,
     AvailabilityState,
     CanonicalUtc,
     Code,
     CommitSha,
-    JSON_INTEGER_COERCION,
     OpaqueId,
     Sha256,
     StrictModel,
