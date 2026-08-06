@@ -168,9 +168,12 @@ class LeakageCheck(StrictModel):
 
 
 class ResourceReport(StrictModel):
-    wall_time_ms: Annotated[int, Field(ge=0, le=86_400_000)]
-    cpu_time_ms: Annotated[int, Field(ge=0, le=86_400_000)]
-    peak_rss_bytes: Annotated[int, Field(ge=0, le=1_000_000_000_000)]
+    evaluation_points: Annotated[int, Field(ge=1, le=1_000_000_000)]
+    candidate_steps: Annotated[int, Field(ge=1, le=1_000_000_000)]
+    offline_series: Annotated[int, Field(ge=0, le=1_000_000)]
+    declared_wall_time_budget_ms: Annotated[int, Field(ge=1, le=86_400_000)]
+    declared_peak_rss_budget_bytes: Annotated[int, Field(ge=1, le=1_000_000_000_000)]
+    workload_sha256: Sha256
 
 
 class DecisionReport(StrictModel):

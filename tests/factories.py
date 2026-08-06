@@ -160,7 +160,14 @@ def evaluation_bundle() -> dict[str, Any]:
         "calibration": {"status": "measured", "metrics": [metric("brier", 0.12)]},
         "abstention": {"eligible_count": 30, "abstained_count": 3, "reason_codes": ["LOW_SUPPORT"]},
         "leakage": [{"check_code": "future_window", "outcome": "pass", "detail_code": "NO_LEAK"}],
-        "resources": {"wall_time_ms": 900, "cpu_time_ms": 700, "peak_rss_bytes": 50_000_000},
+        "resources": {
+            "evaluation_points": 468,
+            "candidate_steps": 468,
+            "offline_series": 3,
+            "declared_wall_time_budget_ms": 5_000,
+            "declared_peak_rss_budget_bytes": 256_000_000,
+            "workload_sha256": SHA_C,
+        },
         "decision": {
             "outcome": "benchmarked",
             "acceptance_gate_passed": True,

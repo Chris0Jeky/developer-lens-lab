@@ -400,29 +400,49 @@
     "ResourceReport": {
       "additionalProperties": false,
       "properties": {
-        "cpu_time_ms": {
-          "maximum": 86400000,
-          "minimum": 0,
-          "title": "Cpu Time Ms",
+        "candidate_steps": {
+          "maximum": 1000000000,
+          "minimum": 1,
+          "title": "Candidate Steps",
           "type": "integer"
         },
-        "peak_rss_bytes": {
+        "declared_peak_rss_budget_bytes": {
           "maximum": 1000000000000,
-          "minimum": 0,
-          "title": "Peak Rss Bytes",
+          "minimum": 1,
+          "title": "Declared Peak Rss Budget Bytes",
           "type": "integer"
         },
-        "wall_time_ms": {
+        "declared_wall_time_budget_ms": {
           "maximum": 86400000,
-          "minimum": 0,
-          "title": "Wall Time Ms",
+          "minimum": 1,
+          "title": "Declared Wall Time Budget Ms",
           "type": "integer"
+        },
+        "evaluation_points": {
+          "maximum": 1000000000,
+          "minimum": 1,
+          "title": "Evaluation Points",
+          "type": "integer"
+        },
+        "offline_series": {
+          "maximum": 1000000,
+          "minimum": 0,
+          "title": "Offline Series",
+          "type": "integer"
+        },
+        "workload_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Workload Sha256",
+          "type": "string"
         }
       },
       "required": [
-        "wall_time_ms",
-        "cpu_time_ms",
-        "peak_rss_bytes"
+        "evaluation_points",
+        "candidate_steps",
+        "offline_series",
+        "declared_wall_time_budget_ms",
+        "declared_peak_rss_budget_bytes",
+        "workload_sha256"
       ],
       "title": "ResourceReport",
       "type": "object"

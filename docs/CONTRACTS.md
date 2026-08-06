@@ -37,6 +37,9 @@ into Developer Lens. Repository, time, and seed-family partitions are disjoint. 
 `dllab contracts render` only when intentionally changing a contract and `dllab contracts check`
 in every proving pass. Unknown fields, non-`Z` timestamps, paths, provider/person identifiers,
 unbounded counts, non-finite metrics, missing artifact references, and `ship` decisions fail closed.
+The resource record contains deterministic workload counts, a workload checksum, and declared
+budgets so byte-equivalent replay remains possible. Volatile observed wall-clock and RSS
+measurements belong in the run report and never participate in bundle identity.
 
 ## Artifact resolution
 
