@@ -147,9 +147,12 @@ def test_decision_rejects_nonviable_threshold_selection_even_with_good_holdout()
     assert reasons == ("BASELINE_SELECTION_VIABLE",)
 
 
-def test_decision_requires_real_false_alert_improvement_when_baseline_is_zero() -> None:
+@pytest.mark.parametrize("candidate_rate", [0.0, 0.1])
+def test_decision_requires_real_false_alert_improvement_when_baseline_is_zero(
+    candidate_rate: float,
+) -> None:
     baseline = _metrics("rolling_median_mad", 0.0)
-    candidate = _metrics("bocpd_gaussian", 0.1)
+    candidate = _metrics("bocpd_gaussian", candidate_rate)
     decision, reasons = decide_benchmark(
         baseline, candidate, _plan(baseline_viable=True, candidate_viable=True)
     )

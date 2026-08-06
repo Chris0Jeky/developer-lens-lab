@@ -305,7 +305,10 @@ def decide_benchmark(
         ),
         (
             "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
-            lambda: candidate.false_alerts_per_year <= baseline.false_alerts_per_year * 0.8,
+            lambda: (
+                baseline.false_alerts_per_year > 0.0
+                and candidate.false_alerts_per_year <= baseline.false_alerts_per_year * 0.8
+            ),
         ),
         (
             "CANDIDATE_NOT_WORSE_DETECTION",
