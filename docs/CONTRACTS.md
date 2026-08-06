@@ -27,6 +27,13 @@ and invented-fixture boundary. It records the product commit and snapshot byte c
 provenance. Those values are not cross-repository identity or join keys. Snapshots are generated and
 must not be hand-edited.
 
+The synchronized product fixture is a compatibility canary and may intentionally omit every
+relation. WB-C1 separately materializes its invented `coverage` and `repository_week` Parquet
+relations under that pinned product-owned schema, validates the resulting manifest with both the
+producer JSON Schema and the lab runtime model, and hashes the actual manifest used for evaluation.
+This does not claim the product fixture contained the benchmark rows or that a product runtime
+generated the lab instance.
+
 The lab returns an EvaluationBundle with preregistration, dataset/model cards, split/run manifests,
 baseline/candidate results, calibration, abstention, leakage, resource, decision, and artifact
 manifests. Bundle manifests are path- and identity-free. Nothing automatically imports the bundle

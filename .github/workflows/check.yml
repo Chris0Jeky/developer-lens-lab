@@ -32,8 +32,17 @@ jobs:
         run: uv run pyright
       - name: Verify context
         run: uv run dllab context verify
+      - name: Check generated programme and contracts
+        run: |
+          uv run dllab tasks check
+          uv run dllab contracts check
       - name: Test
         run: uv run pytest --cov=developer_lens_lab --cov-report=term-missing
+      - name: Reproduce the WB-C1 smoke benchmark
+        run: |
+          uv run dllab benchmark wb-c1 --smoke
+          uv run dllab run reproduce wbc1_smoke
+          uv run dllab report build wbc1_smoke
       - name: Build documentation
         run: uv run mkdocs build --strict
       - name: Verify repository hygiene

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -35,6 +36,35 @@ def test_research_pack_rejects_unknown_fields_and_non_z_timestamps() -> None:
     assert schema["properties"]["generated_at"]["pattern"] == UTC_PATTERN
     assert schema["$defs"]["TimeWindow"]["properties"]["start"]["pattern"] == UTC_PATTERN
     assert schema["$defs"]["RelationDescriptor"]["allOf"]
+
+    person_feature = research_pack()
+    person_feature["feature_registry"][0]["feature_id"] = "DL.PERSON.PRODUCTIVITY.v1"
+    with pytest.raises(ValidationError, match="person-scoring"):
+        ResearchPack.model_validate_json(json.dumps(person_feature))
+
+    integral_json_numbers = research_pack()
+    integral_json_numbers["relations"]["repository_week"] = {
+        "state": "present",
+        "schema_id": "developer-lens.repository-week.v1",
+        "row_count": 1.0,
+        "artifact": {
+            "sha256": "sha256:" + "e" * 64,
+            "size_bytes": 1.0,
+            "media_type": "application/x-parquet",
+        },
+        "reason_code": None,
+    }
+    parsed = ResearchPack.model_validate_json(json.dumps(integral_json_numbers))
+    assert parsed.relations.repository_week.row_count == 1
+
+
+def test_consumer_schema_rejects_person_productivity_feature_standalone() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = json.loads(Path("schemas/research-pack/v1/consumer.schema.json").read_text())
+    invalid = research_pack()
+    invalid["feature_registry"][0]["feature_id"] = "DL.PERSON.PRODUCTIVITY.v1"
+    errors = list(jsonschema.Draft202012Validator(schema).iter_errors(invalid))
+    assert errors
 
 
 def test_missing_relation_cannot_be_encoded_as_zero() -> None:

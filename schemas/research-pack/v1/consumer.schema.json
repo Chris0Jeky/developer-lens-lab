@@ -7,7 +7,8 @@
           "enum": [
             "application/json",
             "application/x-parquet",
-            "text/markdown"
+            "text/markdown",
+            "text/html"
           ],
           "title": "Media Type",
           "type": "string"
@@ -18,8 +19,8 @@
           "type": "string"
         },
         "size_bytes": {
-          "maximum": 10000000000,
-          "minimum": 0,
+          "ge": 0,
+          "le": 10000000000,
           "title": "Size Bytes",
           "type": "integer"
         }
@@ -123,7 +124,8 @@
           "type": "string"
         },
         "feature_id": {
-          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "$comment": "Runtime validator rejects person, productivity, performance, effort, and surveillance feature identifiers.",
+          "pattern": "^(?!.*(?:[pP][eE][rR][sS][oO][nN]|[pP][rR][oO][dD][uU][cC][tT][iI][vV]|[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE]|[eE][fF][fF][oO][rR][tT]|[aA][tT][tT][eE][nN][dD][aA][nN][cC][eE]|[hH][oO][uU][rR][sS][_-]?[wW][oO][rR][kK][eE][dD]|[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT][yY]|[dD][iI][lL][iI][gG][eE][nN][cC][eE]|[qQ][uU][aA][lL][iI][tT][yY]|[wW][oO][rR][tT][hH]|[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT][yY]|[sS][eE][nN][tT][iI][mM][eE][nN][tT]|[bB][uU][rR][nN][oO][uU][tT]|[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC][eE]|[bB][uU][sS][_-]?[fF][aA][cC][tT][oO][rR]|[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][_-]?[oO][uU][tT][pP][uU][tT]))[A-Za-z][A-Za-z0-9_.-]{0,95}$",
           "title": "Feature Id",
           "type": "string"
         },
@@ -257,8 +259,8 @@
         "row_count": {
           "anyOf": [
             {
-              "maximum": 100000000,
-              "minimum": 0,
+              "ge": 0,
+              "le": 100000000,
               "type": "integer"
             },
             {

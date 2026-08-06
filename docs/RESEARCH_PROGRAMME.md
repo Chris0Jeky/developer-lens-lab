@@ -10,6 +10,13 @@ primary online metric is false alerts per year at a fixed detection-delay budget
 descriptive only and receives localisation/segmentation metrics, never an invented online delay.
 The final holdout opens once through an explicit custody event.
 
+The smoke design uses two train seed families: one inner-fit family and one inner-validation family.
+A threshold is viable only when it meets the fixed detection and delay floor on both; selection then
+uses the inner-validation false-alert objective. Test and final-holdout families cannot influence
+that choice. False-alert exposure and its numerator both exclude the fixed nine-week event window
+(change week plus the eight-week delay budget). Incomplete series are ineligible for the PELT arm;
+they are never interpolated into a complete offline history.
+
 An invented result proves mechanics, privacy, negative controls, failure handling, removability,
 and planted-effect recovery only. It cannot establish real validity. The initial decision may be
 rejection; the deterministic fallback remains complete.

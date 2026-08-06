@@ -20,6 +20,9 @@ uv run dllab context verify
 uv run dllab tasks check
 uv run dllab contracts check
 uv run pytest
+uv run dllab benchmark wb-c1 --smoke
+uv run dllab run reproduce wbc1_smoke
+uv run dllab report build wbc1_smoke
 ```
 
 The M1 contract vertical is runnable without a collector or dataset:
@@ -34,8 +37,12 @@ uv run dllab contracts sync --from path\to\developer-lens --ref <40-hex-commit>
 `contracts sync` reads only the fixed schema and invented-fixture paths from the pinned Git object.
 It records commit and byte checksums as provenance, never as a cross-repository join key.
 
-The smoke benchmark command will become `uv run dllab benchmark wb-c1 --smoke` in milestone M2.
-Until then, `docs/CURRENT_STATE.md` is the exact resume point.
+The WB-C1 command writes an ignored, content-addressed run beneath
+`.dllab/scopes/wbc1_smoke/`. It freezes train-only threshold selection before writing the final
+holdout custody receipt, then materializes the invented ResearchPack, evaluates the online arms,
+records PELT only as offline descriptive evidence, and emits an EvaluationBundle plus standalone
+Markdown and HTML reports. `run reproduce` regenerates and byte-compares every recorded artifact.
+Use `uv run dllab benchmark wb-c1 --full` only for the larger opt-in lane.
 
 ## Boundaries
 

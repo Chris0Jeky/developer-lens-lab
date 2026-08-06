@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import re
 from typing import Annotated, Literal, Self
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from .common import (
     ArtifactRef,
@@ -10,6 +11,7 @@ from .common import (
     CanonicalUtc,
     Code,
     CommitSha,
+    JsonInteger,
     OpaqueId,
     Sha256,
     StrictModel,
@@ -34,6 +36,36 @@ RELATION_SCHEMA_IDS = {
     "collection_probe": "developer-lens.collection-probe.v1",
     "system_event": "developer-lens.system-event.v1",
 }
+PROHIBITED_FEATURE_TERMS = (
+    "person",
+    "productiv",
+    "performance",
+    "effort",
+    "attendance",
+    "hours[_-]?worked",
+    "availability",
+    "diligence",
+    "quality",
+    "worth",
+    "personality",
+    "sentiment",
+    "burnout",
+    "surveillance",
+    "bus[_-]?factor",
+    "individual[_-]?output",
+)
+PROHIBITED_FEATURE_RE = re.compile("|".join(PROHIBITED_FEATURE_TERMS), re.IGNORECASE)
+
+
+def _ecma_casefold(term: str) -> str:
+    return "".join(f"[{char.lower()}{char.upper()}]" if char.isalpha() else char for char in term)
+
+
+FEATURE_ID_PATTERN = (
+    r"^(?!.*(?:"
+    + "|".join(_ecma_casefold(term) for term in PROHIBITED_FEATURE_TERMS)
+    + r"))[A-Za-z][A-Za-z0-9_.-]{0,95}$"
+)
 
 
 class ResearchPackProvenance(StrictModel):
@@ -72,7 +104,7 @@ class RelationDescriptor(StrictModel):
 
     state: AvailabilityState
     schema_id: Code | None
-    row_count: Annotated[int, Field(ge=0, le=100_000_000)] | None
+    row_count: Annotated[JsonInteger, Field(ge=0, le=100_000_000)] | None
     artifact: ArtifactRef | None
     reason_code: Code | None
 
@@ -104,12 +136,27 @@ class ResearchRelations(StrictModel):
 
 
 class FeatureDefinition(StrictModel):
-    feature_id: Code
+    feature_id: Code = Field(
+        json_schema_extra={
+            "pattern": FEATURE_ID_PATTERN,
+            "$comment": (
+                "Runtime validator rejects person, productivity, performance, effort, "
+                "and surveillance feature identifiers."
+            ),
+        }
+    )
     relation: RelationName
     value_kind: Literal["count", "duration_hours", "ratio", "category", "boolean"]
     unit_code: Code
     evidence_layer: Literal["observed", "deterministic"]
     prohibited_interpretation_codes: Annotated[tuple[Code, ...], Field(min_length=1, max_length=12)]
+
+    @field_validator("feature_id")
+    @classmethod
+    def feature_is_system_shaped(cls, value: str) -> str:
+        if PROHIBITED_FEATURE_RE.search(value):
+            raise ValueError("person-scoring and productivity feature identifiers are prohibited")
+        return value
 
 
 class ResearchPack(StrictModel):

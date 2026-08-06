@@ -29,7 +29,8 @@ dllab = "developer_lens_lab.cli:app"
 
 [dependency-groups]
 dev = [
-  "hypothesis>=6.138,<7",
+    "hypothesis>=6.138,<7",
+    "jsonschema>=4.25,<5",
   "mkdocs-material>=9.6,<10",
   "mkdocstrings-python>=1.16,<2",
   "pre-commit>=4.3,<5",
