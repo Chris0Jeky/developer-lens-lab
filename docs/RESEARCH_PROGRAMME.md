@@ -5,10 +5,11 @@ negative controls; level, variance, slope, and seasonal-amplitude changes; Gauss
 noise; missing blocks; and coverage/permission/parser-shift confounders with no system change.
 
 The deterministic rolling median/MAD alerter and online candidate receive symmetric nested
-threshold selection. Repository/seed-family and rolling-origin partitions prevent leakage. The
-primary online metric is false alerts per year at a fixed detection-delay budget. PELT is offline
-descriptive only and receives localisation/segmentation metrics, never an invented online delay.
-The final holdout opens once through an explicit custody event.
+threshold selection. Disjoint repository/seed-family panels and non-overlapping time windows prevent
+cross-partition leakage; this first vertical does not claim rolling-origin evaluation. The primary
+online metric is false alerts per year at a fixed detection-delay budget. PELT is offline descriptive
+only and receives a boundary/localisation summary, never an invented online delay. The final holdout
+opens once through an explicit custody event.
 
 The smoke design uses two train seed families: one inner-fit family and one inner-validation family.
 A threshold is viable only when it meets the fixed detection and delay floor on both; selection then

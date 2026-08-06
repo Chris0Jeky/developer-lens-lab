@@ -42,6 +42,12 @@ only when measurement, real-data scope, external users, or an irreversible bound
 - Add independent statistical review, mutation tests, stress corpora, online-FDR mechanics,
   calibration drift, resource enforcement, and sealed-holdout custody hardening before a candidate
   can move beyond invented `benchmarked` evidence.
+- Align false-alert exposure to each method's effective warmup before making comparative rate claims,
+  and add genuine rolling-origin evaluation before using that term.
+- Expand the PELT diagnostic with no-change false-boundary and segmentation-quality measures before
+  describing it as more than a boundary/localisation summary.
+- Record explicit generator parameters and a normalized command identifier in versioned run
+  metadata before relying on manifests without source checkout reconstruction.
 - Add model artifact signing, sandboxing, adversarial deserialization tests, and removal/demotion
   drills before retaining or loading trained artifacts.
 - Add product-side promotion/audit/rollback controls only after an owner-approved candidate exists.

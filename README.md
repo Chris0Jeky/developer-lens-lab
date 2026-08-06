@@ -38,11 +38,13 @@ uv run dllab contracts sync --from path\to\developer-lens --ref <40-hex-commit>
 It records commit and byte checksums as provenance, never as a cross-repository join key.
 
 The WB-C1 command writes an ignored, content-addressed run beneath
-`.dllab/scopes/wbc1_smoke/`. It freezes train-only threshold selection before writing the final
-holdout custody receipt, then materializes the invented ResearchPack, evaluates the online arms,
-records PELT only as offline descriptive evidence, and emits an EvaluationBundle plus standalone
-Markdown and HTML reports. `run reproduce` regenerates and byte-compares every recorded artifact.
-Use `uv run dllab benchmark wb-c1 --full` only for the larger opt-in lane.
+`.dllab/scopes/wbc1_smoke/`. Each run ID is single-use: the runner reserves its scope and writes an
+append-only custody record before materializing the final holdout, so a second process cannot reopen
+or replace the same experiment. Use `--run-id <new_opaque_id>` for another run. The runner evaluates
+the online arms, records PELT only as offline descriptive evidence, and emits an EvaluationBundle
+plus standalone Markdown and HTML reports. `run reproduce` verifies every stored object, then
+regenerates and byte-compares every recorded artifact. Use `uv run dllab benchmark wb-c1 --full`
+only for the larger opt-in lane.
 
 ## Boundaries
 

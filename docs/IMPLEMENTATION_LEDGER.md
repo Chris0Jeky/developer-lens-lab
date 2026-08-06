@@ -70,3 +70,41 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - NOT verified: hosted Linux CI. GitHub Status reported a critical Actions outage and neither the
   product producer PR nor the lab branch received a hosted run; no green result or waiver is
   inferred. Product PR #178 and the lab consumer change remain dependency-gated until both land.
+
+## 2026-08-06 - M2 methodology repair and first valid experiment entry
+
+- Exact-head implementation review first found that the eagerly imported `jsonschema` package was
+  dev-only and that generated `JsonInteger` bounds used ignored `ge`/`le` keys. The fix promotes the
+  dependency to runtime, adds an isolated `--no-dev` CLI proof, emits standard
+  `minimum`/`maximum`, and adds standalone negative-bound canaries for both schemas.
+- Fresh methodology review invalidated the original `f42a9b8` candidate metrics as evidence for
+  the named BOCPD method. The changepoint branch used a different predictive density from the growth
+  branch, the first observations informed the prior and were then processed again, final selection
+  viability did not gate promotion, and a low-alert baseline could be called improved by a worse
+  candidate. The earlier result remains historical implementation evidence only and must not be
+  cited as a valid WB-C1 method comparison.
+- The repair implements Adams–MacKay Algorithm 1 with a fixed, parameter-hashed
+  Normal-Inverse-Gamma prior; uses the same run-specific predictive density for changepoint and
+  growth mass; resets the new run to the fixed prior; and adds independent reference-vector,
+  normalization, missingness-causality, and parameter-hash tests. Both train selection viability
+  flags now gate the final decision, and false-alert improvement requires the candidate to be no
+  more than 80% of the baseline rate without an absolute escape floor.
+- Final-holdout custody now reserves a single-use scope and writes an append-only named receipt plus
+  content-addressed object before materialization. A second process/run with the same ID refuses,
+  crash-after-receipt consumes the run identity, and replay reads every stored artifact including
+  custody before regenerating bytes. Tests prove repeat-run refusal, crash/restart refusal, missing
+  custody-object refusal, and named-receipt tamper refusal.
+- Exact clean code head `a01a3fd58c78b3c1a7092c1b00e804b3d7ce5eb8` passed locked
+  runtime-only installation, Ruff format/lint, strict Pyright, context/task/schema drift checks,
+  37 tests plus one Windows directory-symlink skip with 87% coverage, strict MkDocs, hygiene, and
+  range whitespace. `wbc1_reviewed` then completed, reproduced, and rebuilt both reports.
+- The reviewed experiment is recorded in `docs/EXPERIMENT_LEDGER.md`. Its decision is `reject`:
+  baseline false alerts/year `2.966666666666667`, detection `0.75`; candidate false alerts/year
+  `4.2`, detection `0.75`; Brier `0.017341137335170863`. Both selections were nonviable and the
+  candidate did not improve false alerts. The baseline remains complete.
+- Review also found lower-severity overclaims around rolling-origin language, warmup exposure, PELT
+  segmentation evidence, and manifest contents. Prose is corrected and the remaining measurement
+  work is tracked in `docs/HARDENING_BACKLOG.md`; it does not change the conservative rejection.
+- NOT verified: hosted Linux CI. The official GitHub incident remained critical, with Actions and
+  Pages in major outage and most webhook triggers throttled. No missing hosted result is called
+  green and neither dependency is merged around it.
