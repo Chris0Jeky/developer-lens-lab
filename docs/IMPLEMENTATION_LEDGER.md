@@ -138,3 +138,9 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   formatted that file; format/lint, strict Pyright, contract drift, and whitespace were rerun green.
   The full proof also passed runtime-only locked installation, context/tasks, 38 tests plus one
   declared Windows directory-symlink skip with 88% coverage, strict MkDocs, and hygiene.
+- A delayed PR #3 connector review arrived after the bounded methodology rounds. Its person-shaped
+  feature P1 is closed by the canonical contributor/reviewer terms in `fd09499` plus exact hostile
+  regressions. Six P2 findings are consolidated in #6: confound observability, run-owned artifact
+  lifecycle, workload counts, corrupt-manifest handling, present primary-domain metrics, and
+  zero-delay fallback ordering. They do not overturn the already conservative `reject` and are not
+  silently dropped or expanded into another fix loop.

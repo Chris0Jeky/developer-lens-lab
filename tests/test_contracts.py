@@ -44,6 +44,8 @@ def test_research_pack_rejects_unknown_fields_and_non_z_timestamps() -> None:
 
     for feature_id in (
         "DL.DEVELOPER.OUTPUT.v1",
+        "DL.CONTRIBUTOR.RANK.v1",
+        "DL.REVIEWER.RESPONSE_HOURS.v1",
         "DL.WEEK.HOURS.WORKED.v1",
         "DL.WEEK.BUS-FACTOR.v1",
     ):

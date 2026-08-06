@@ -25,6 +25,8 @@ blockers: GitHub Actions is in a declared critical outage and webhook triggers a
   no remaining local implementation or owner blocker exists for the invented vertical
 hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
   irreversible secret/private-data/out-of-root/person-shape boundary
+late_review_debt: lab #6 and product #182 are explicit non-blocking follow-ups; neither changes the
+  conservative WB-C1 reject decision
 exact_resume_point: refresh hosted checks on Developer Lens producer PR #178 at 61f9bdb and lab PR
   #3 at its latest head after the GitHub Actions incident; merge the producer first, then refresh
   and merge the lab only when both required exact-head checks are green

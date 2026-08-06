@@ -42,6 +42,9 @@ only when measurement, real-data scope, external users, or an irreversible bound
 - Add independent statistical review, mutation tests, stress corpora, online-FDR mechanics,
   calibration drift, resource enforcement, and sealed-holdout custody hardening before a candidate
   can move beyond invented `benchmarked` evidence.
+- Close the six bounded WB-C1 correctness/operability findings consolidated in lab issue
+  [#6](https://github.com/Chris0Jeky/developer-lens-lab/issues/6) before treating confound, workload,
+  lifecycle, bundle-validation, or zero-delay fallback evidence as hardened.
 - Align false-alert exposure to each method's effective warmup before making comparative rate claims,
   and add genuine rolling-origin evaluation before using that term.
 - Expand the PELT diagnostic with no-change false-boundary and segmentation-quality measures before
