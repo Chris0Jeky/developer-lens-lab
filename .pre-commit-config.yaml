@@ -1,0 +1,23 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: Ruff format
+        entry: uv run ruff format --check .
+        language: system
+        pass_filenames: false
+      - id: ruff-check
+        name: Ruff lint
+        entry: uv run ruff check .
+        language: system
+        pass_filenames: false
+      - id: context
+        name: Repository context
+        entry: uv run dllab context verify
+        language: system
+        pass_filenames: false
+      - id: hygiene
+        name: Data and secret hygiene
+        entry: uv run python scripts/verify_hygiene.py
+        language: system
+        pass_filenames: false

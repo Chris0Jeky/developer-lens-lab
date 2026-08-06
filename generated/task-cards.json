@@ -1,0 +1,183 @@
+{
+  "active_limit": 6,
+  "cards": [
+    {
+      "depends_on": [],
+      "id": "LAB-OS-01",
+      "outcome": "Fresh-agent resume",
+      "status": "ACTIVE",
+      "title": "Repository OS and context verifier"
+    },
+    {
+      "depends_on": [
+        "LAB-OS-01"
+      ],
+      "id": "LAB-TOOL-01",
+      "outcome": "Locked checks",
+      "status": "ACTIVE",
+      "title": "Python, uv, tooling, and CI"
+    },
+    {
+      "depends_on": [
+        "LAB-OS-01"
+      ],
+      "id": "LAB-CONTRACT-01",
+      "outcome": "Pack validation",
+      "status": "ACTIVE",
+      "title": "ResearchPack.v1 contracts"
+    },
+    {
+      "depends_on": [
+        "LAB-OS-01"
+      ],
+      "id": "LAB-CONTRACT-02",
+      "outcome": "Decision bundle validation",
+      "status": "ACTIVE",
+      "title": "EvaluationBundle.v1 contracts"
+    },
+    {
+      "depends_on": [
+        "LAB-TOOL-01"
+      ],
+      "id": "LAB-ART-01",
+      "outcome": "Replayable objects",
+      "status": "ACTIVE",
+      "title": "Confined content-addressed artifact store"
+    },
+    {
+      "depends_on": [
+        "LAB-CONTRACT-01",
+        "LAB-ART-01"
+      ],
+      "id": "LAB-WBC1-01",
+      "outcome": "Inspectible rejection decision",
+      "status": "ACTIVE",
+      "title": "Invented weekly-series smoke benchmark"
+    },
+    {
+      "depends_on": [
+        "LAB-CONTRACT-01"
+      ],
+      "id": "LAB-SYNC-01",
+      "outcome": "Pinned provenance",
+      "status": "QUEUED",
+      "title": "Generated product-contract snapshot"
+    },
+    {
+      "depends_on": [
+        "LAB-ART-01"
+      ],
+      "id": "LAB-RUN-01",
+      "outcome": "One-command replay",
+      "status": "QUEUED",
+      "title": "Reproducible run manifest and replay"
+    },
+    {
+      "depends_on": [
+        "LAB-CONTRACT-01"
+      ],
+      "id": "LAB-SPLIT-01",
+      "outcome": "Leakage-safe splits",
+      "status": "QUEUED",
+      "title": "Repository, time, and seed-family split engine"
+    },
+    {
+      "depends_on": [
+        "LAB-SPLIT-01"
+      ],
+      "id": "LAB-HOLDOUT-01",
+      "outcome": "Single-use holdout",
+      "status": "QUEUED",
+      "title": "Explicit final-holdout custody"
+    },
+    {
+      "depends_on": [
+        "LAB-WBC1-01"
+      ],
+      "id": "LAB-WBC1-02",
+      "outcome": "Deterministic fallback",
+      "status": "QUEUED",
+      "title": "Rolling median and MAD baseline"
+    },
+    {
+      "depends_on": [
+        "LAB-WBC1-02"
+      ],
+      "id": "LAB-WBC1-03",
+      "outcome": "Baseline comparison",
+      "status": "QUEUED",
+      "title": "Online change-point candidate"
+    },
+    {
+      "depends_on": [
+        "LAB-WBC1-02"
+      ],
+      "id": "LAB-WBC1-04",
+      "outcome": "Localisation evidence",
+      "status": "QUEUED",
+      "title": "PELT offline descriptive arm"
+    },
+    {
+      "depends_on": [
+        "LAB-WBC1-03"
+      ],
+      "id": "LAB-WBC1-05",
+      "outcome": "Reviewable result",
+      "status": "QUEUED",
+      "title": "Evaluation bundle and decision report"
+    },
+    {
+      "depends_on": [
+        "LAB-SYNC-01"
+      ],
+      "id": "LAB-BRIDGE-01",
+      "outcome": "Both-end proof",
+      "status": "QUEUED",
+      "title": "Product and lab compatibility fixture"
+    },
+    {
+      "depends_on": [
+        "LAB-WBC1-05"
+      ],
+      "id": "LAB-DEMO-01",
+      "outcome": "Fresh-clone proof",
+      "status": "QUEUED",
+      "title": "End-to-end smoke demo and runbook"
+    },
+    {
+      "depends_on": [],
+      "id": "LAB-CORPUS-01",
+      "outcome": "Quality pilot only",
+      "status": "OWNER_GATED",
+      "title": "Public-repository sampler manifest"
+    },
+    {
+      "depends_on": [
+        "LAB-CORPUS-01"
+      ],
+      "id": "LAB-CORPUS-02",
+      "outcome": "No raw landing",
+      "status": "OWNER_GATED",
+      "title": "Bounded public metadata collector"
+    },
+    {
+      "depends_on": [
+        "LAB-CORPUS-02"
+      ],
+      "id": "LAB-CORPUS-03",
+      "outcome": "Explicit coverage",
+      "status": "OWNER_GATED",
+      "title": "Normalizer and coverage profiler"
+    },
+    {
+      "depends_on": [
+        "LAB-CORPUS-03"
+      ],
+      "id": "LAB-DQ-01",
+      "outcome": "Expansion decision",
+      "status": "PARKED",
+      "title": "Data-quality and candidate-support report"
+    }
+  ],
+  "schema_version": "lab-task-programme.v1"
+}
