@@ -11,7 +11,7 @@ from .common import (
     CanonicalUtc,
     Code,
     CommitSha,
-    JsonInteger,
+    JSON_INTEGER_COERCION,
     OpaqueId,
     Sha256,
     StrictModel,
@@ -104,7 +104,14 @@ class RelationDescriptor(StrictModel):
 
     state: AvailabilityState
     schema_id: Code | None
-    row_count: Annotated[JsonInteger, Field(ge=0, le=100_000_000)] | None
+    row_count: (
+        Annotated[
+            int,
+            Field(ge=0, le=100_000_000),
+            JSON_INTEGER_COERCION,
+        ]
+        | None
+    )
     artifact: ArtifactRef | None
     reason_code: Code | None
 

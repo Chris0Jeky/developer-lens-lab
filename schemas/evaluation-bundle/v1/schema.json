@@ -52,8 +52,8 @@
           "type": "string"
         },
         "size_bytes": {
-          "ge": 0,
-          "le": 10000000000,
+          "maximum": 10000000000,
+          "minimum": 0,
           "title": "Size Bytes",
           "type": "integer"
         }

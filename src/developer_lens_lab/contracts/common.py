@@ -42,7 +42,8 @@ def _json_integer(value: object) -> object:
     return value
 
 
-JsonInteger = Annotated[int, BeforeValidator(_json_integer)]
+JSON_INTEGER_COERCION = BeforeValidator(_json_integer)
+JsonInteger = Annotated[int, JSON_INTEGER_COERCION]
 
 
 class StrictModel(BaseModel):
@@ -107,7 +108,11 @@ class TemporalAvailability(StrictModel):
 
 class ArtifactRef(StrictModel):
     sha256: Sha256
-    size_bytes: Annotated[JsonInteger, Field(ge=0, le=10_000_000_000)]
+    size_bytes: Annotated[
+        int,
+        Field(ge=0, le=10_000_000_000),
+        JSON_INTEGER_COERCION,
+    ]
     media_type: Literal["application/json", "application/x-parquet", "text/markdown", "text/html"]
 
 

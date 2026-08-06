@@ -188,6 +188,7 @@ source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
     { name = "httpx" },
+    { name = "jsonschema" },
     { name = "numpy" },
     { name = "orjson" },
     { name = "polars" },
@@ -204,7 +205,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "hypothesis" },
-    { name = "jsonschema" },
     { name = "mkdocs-material" },
     { name = "mkdocstrings-python" },
     { name = "pre-commit" },
@@ -218,6 +218,7 @@ dev = [
 requires-dist = [
     { name = "duckdb", specifier = ">=1.4,<2" },
     { name = "httpx", specifier = ">=0.28,<1" },
+    { name = "jsonschema", specifier = ">=4.25,<5" },
     { name = "numpy", specifier = ">=2.3,<3" },
     { name = "orjson", specifier = ">=3.11,<4" },
     { name = "polars", specifier = ">=1.33,<2" },
@@ -234,7 +235,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "hypothesis", specifier = ">=6.138,<7" },
-    { name = "jsonschema", specifier = ">=4.25,<5" },
     { name = "mkdocs-material", specifier = ">=9.6,<10" },
     { name = "mkdocstrings-python", specifier = ">=1.16,<2" },
     { name = "pre-commit", specifier = ">=4.3,<5" },

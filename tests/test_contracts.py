@@ -67,6 +67,36 @@ def test_consumer_schema_rejects_person_productivity_feature_standalone() -> Non
     assert errors
 
 
+def test_generated_schemas_enforce_json_integer_bounds() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+    research_schema = json.loads(Path("schemas/research-pack/v1/consumer.schema.json").read_text())
+    artifact_size = research_schema["$defs"]["ArtifactRef"]["properties"]["size_bytes"]
+    row_count = research_schema["$defs"]["RelationDescriptor"]["properties"]["row_count"]
+    assert artifact_size["minimum"] == 0
+    assert artifact_size["maximum"] == 10_000_000_000
+    assert row_count["anyOf"][0]["minimum"] == 0
+    assert row_count["anyOf"][0]["maximum"] == 100_000_000
+
+    negative = research_pack()
+    negative["relations"]["repository_week"] = {
+        "state": "present",
+        "schema_id": "developer-lens.repository-week.v1",
+        "row_count": -1,
+        "artifact": {
+            "sha256": "sha256:" + "e" * 64,
+            "size_bytes": -1,
+            "media_type": "application/x-parquet",
+        },
+        "reason_code": None,
+    }
+    assert list(jsonschema.Draft202012Validator(research_schema).iter_errors(negative))
+
+    evaluation_schema = json.loads(Path("schemas/evaluation-bundle/v1/schema.json").read_text())
+    evaluation_artifact_size = evaluation_schema["$defs"]["ArtifactRef"]["properties"]["size_bytes"]
+    assert evaluation_artifact_size["minimum"] == 0
+    assert evaluation_artifact_size["maximum"] == 10_000_000_000
+
+
 def test_missing_relation_cannot_be_encoded_as_zero() -> None:
     invalid = research_pack()
     invalid["relations"]["repository_week"] = {

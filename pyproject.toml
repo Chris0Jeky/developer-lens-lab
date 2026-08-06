@@ -11,6 +11,7 @@ requires-python = ">=3.12,<3.14"
 dependencies = [
   "duckdb>=1.4,<2",
   "httpx>=0.28,<1",
+  "jsonschema>=4.25,<5",
   "numpy>=2.3,<3",
   "orjson>=3.11,<4",
   "polars>=1.33,<2",
@@ -29,8 +30,7 @@ dllab = "developer_lens_lab.cli:app"
 
 [dependency-groups]
 dev = [
-    "hypothesis>=6.138,<7",
-    "jsonschema>=4.25,<5",
+  "hypothesis>=6.138,<7",
   "mkdocs-material>=9.6,<10",
   "mkdocstrings-python>=1.16,<2",
   "pre-commit>=4.3,<5",

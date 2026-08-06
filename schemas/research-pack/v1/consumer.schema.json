@@ -19,8 +19,8 @@
           "type": "string"
         },
         "size_bytes": {
-          "ge": 0,
-          "le": 10000000000,
+          "maximum": 10000000000,
+          "minimum": 0,
           "title": "Size Bytes",
           "type": "integer"
         }
@@ -259,8 +259,8 @@
         "row_count": {
           "anyOf": [
             {
-              "ge": 0,
-              "le": 100000000,
+              "maximum": 100000000,
+              "minimum": 0,
               "type": "integer"
             },
             {
