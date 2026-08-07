@@ -1,0 +1,103 @@
+{
+  "classification": "C0",
+  "feature_registry": [
+    {
+      "evidence_layer": "deterministic",
+      "feature_id": "DL.WEEK.CHANGE_COUNT.v1",
+      "prohibited_interpretation_codes": [
+        "NOT_PRODUCTIVITY",
+        "NOT_EFFORT",
+        "NOT_PERSON_MEASURE"
+      ],
+      "relation": "repository_week",
+      "unit_code": "count",
+      "value_kind": "count"
+    }
+  ],
+  "generated_at": "2026-08-06T12:00:00Z",
+  "pack_id": "pack_demo",
+  "provenance": {
+    "contract_sha256": "sha256:7734aad6635f840d16d8dda893f885911401fb32c36a51825d2d142eb6d3c2a2",
+    "fixture_revision": "invented.v1",
+    "producer_code": "developer-lens.research-pack.v1",
+    "product_commit": "dddddddddddddddddddddddddddddddddddddddd"
+  },
+  "relations": {
+    "ci_attempt": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    },
+    "collection_probe": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    },
+    "coverage": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    },
+    "pr_episode": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    },
+    "release_episode": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    },
+    "repository_week": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    },
+    "system_event": {
+      "artifact": null,
+      "reason_code": "NOT_IN_FIXTURE",
+      "row_count": null,
+      "schema_id": null,
+      "state": "intentionally_omitted"
+    }
+  },
+  "schema_version": "DeveloperLensResearchPack.v1",
+  "temporal_availability": {
+    "collection": {
+      "reason_code": null,
+      "state": "present",
+      "window": {
+        "end": "2025-12-29T00:00:00Z",
+        "start": "2025-01-06T00:00:00Z"
+      }
+    },
+    "event": {
+      "reason_code": null,
+      "state": "present",
+      "window": {
+        "end": "2025-12-29T00:00:00Z",
+        "start": "2025-01-06T00:00:00Z"
+      }
+    },
+    "feature": {
+      "reason_code": null,
+      "state": "present",
+      "window": {
+        "end": "2025-12-29T00:00:00Z",
+        "start": "2025-01-06T00:00:00Z"
+      }
+    }
+  }
+}

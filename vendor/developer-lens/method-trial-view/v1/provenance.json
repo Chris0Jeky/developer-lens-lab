@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "name": "schema.json",
+      "sha256": "sha256:634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef",
+      "size_bytes": 525302
+    }
+  ],
+  "identity_semantics": "provenance_only_not_a_join_key",
+  "product_commit": "b48fea579936671397a0486ae7a0342197ee6e4b",
+  "schema_version": "DeveloperLensContractSnapshot.v1"
+}

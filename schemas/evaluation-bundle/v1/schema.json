@@ -1,0 +1,759 @@
+{
+  "$defs": {
+    "AbstentionReport": {
+      "additionalProperties": false,
+      "properties": {
+        "abstained_count": {
+          "maximum": 100000000,
+          "minimum": 0,
+          "title": "Abstained Count",
+          "type": "integer"
+        },
+        "eligible_count": {
+          "maximum": 100000000,
+          "minimum": 0,
+          "title": "Eligible Count",
+          "type": "integer"
+        },
+        "reason_codes": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Reason Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "eligible_count",
+        "abstained_count",
+        "reason_codes"
+      ],
+      "title": "AbstentionReport",
+      "type": "object"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "media_type": {
+          "enum": [
+            "application/json",
+            "application/x-parquet",
+            "text/markdown",
+            "text/html"
+          ],
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "maximum": 10000000000,
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sha256",
+        "size_bytes",
+        "media_type"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "CalibrationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "items": {
+            "$ref": "#/$defs/MetricValue"
+          },
+          "maxItems": 32,
+          "title": "Metrics",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "measured",
+            "not_applicable",
+            "insufficient_support"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "metrics"
+      ],
+      "title": "CalibrationReport",
+      "type": "object"
+    },
+    "CoverageCount": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "maximum": 100000000,
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "present",
+            "absent",
+            "unsupported",
+            "intentionally_omitted"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "count"
+      ],
+      "title": "CoverageCount",
+      "type": "object"
+    },
+    "DatasetCard": {
+      "additionalProperties": false,
+      "properties": {
+        "classification": {
+          "const": "C0",
+          "title": "Classification",
+          "type": "string"
+        },
+        "coverage_counts": {
+          "items": {
+            "$ref": "#/$defs/CoverageCount"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Coverage Counts",
+          "type": "array"
+        },
+        "generator_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Generator Code",
+          "type": "string"
+        },
+        "generator_revision": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Generator Revision",
+          "type": "string"
+        },
+        "observation_count": {
+          "maximum": 100000000,
+          "minimum": 1,
+          "title": "Observation Count",
+          "type": "integer"
+        },
+        "system_count": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "title": "System Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "generator_code",
+        "generator_revision",
+        "classification",
+        "observation_count",
+        "system_count",
+        "coverage_counts"
+      ],
+      "title": "DatasetCard",
+      "type": "object"
+    },
+    "DecisionReport": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_gate_passed": {
+          "title": "Acceptance Gate Passed",
+          "type": "boolean"
+        },
+        "outcome": {
+          "enum": [
+            "reject",
+            "revise_once",
+            "benchmarked"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Reason Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "outcome",
+        "acceptance_gate_passed",
+        "reason_codes"
+      ],
+      "title": "DecisionReport",
+      "type": "object"
+    },
+    "LeakageCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "check_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Check Code",
+          "type": "string"
+        },
+        "detail_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Detail Code",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail",
+            "not_applicable"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check_code",
+        "outcome",
+        "detail_code"
+      ],
+      "title": "LeakageCheck",
+      "type": "object"
+    },
+    "MetricValue": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "reason_code": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "value": {
+                "type": "null"
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "state": {
+                "const": "present"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_code": {
+                "type": "null"
+              },
+              "value": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "domain_code": {
+          "default": "primary",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Domain Code",
+          "type": "string"
+        },
+        "metric_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Metric Code",
+          "type": "string"
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason Code"
+        },
+        "state": {
+          "enum": [
+            "present",
+            "absent",
+            "unsupported",
+            "intentionally_omitted"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "metric_code",
+        "state",
+        "value",
+        "reason_code"
+      ],
+      "title": "MetricValue",
+      "type": "object"
+    },
+    "ModelCard": {
+      "additionalProperties": false,
+      "properties": {
+        "deterministic": {
+          "title": "Deterministic",
+          "type": "boolean"
+        },
+        "method_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Method Code",
+          "type": "string"
+        },
+        "method_revision": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Method Revision",
+          "type": "string"
+        },
+        "model_id": {
+          "pattern": "^[a-z][a-z0-9_]{2,63}$",
+          "title": "Model Id",
+          "type": "string"
+        },
+        "no_model_fallback_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "No Model Fallback Code",
+          "type": "string"
+        },
+        "parameter_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Parameter Sha256",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "baseline",
+            "candidate"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id",
+        "role",
+        "method_code",
+        "method_revision",
+        "deterministic",
+        "parameter_sha256",
+        "no_model_fallback_code"
+      ],
+      "title": "ModelCard",
+      "type": "object"
+    },
+    "Preregistration": {
+      "additionalProperties": false,
+      "properties": {
+        "abstention_rule_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Abstention Rule Code",
+          "type": "string"
+        },
+        "acceptance_rule_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Acceptance Rule Code",
+          "type": "string"
+        },
+        "baseline_method_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Baseline Method Code",
+          "type": "string"
+        },
+        "candidate_method_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Candidate Method Code",
+          "type": "string"
+        },
+        "primary_metric_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Primary Metric Code",
+          "type": "string"
+        },
+        "question_code": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Question Code",
+          "type": "string"
+        },
+        "seed_families": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Seed Families",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_code",
+        "baseline_method_code",
+        "candidate_method_code",
+        "primary_metric_code",
+        "acceptance_rule_code",
+        "abstention_rule_code",
+        "seed_families"
+      ],
+      "title": "Preregistration",
+      "type": "object"
+    },
+    "ResourceReport": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_steps": {
+          "maximum": 1000000000,
+          "minimum": 1,
+          "title": "Candidate Steps",
+          "type": "integer"
+        },
+        "declared_peak_rss_budget_bytes": {
+          "maximum": 1000000000000,
+          "minimum": 1,
+          "title": "Declared Peak Rss Budget Bytes",
+          "type": "integer"
+        },
+        "declared_wall_time_budget_ms": {
+          "maximum": 86400000,
+          "minimum": 1,
+          "title": "Declared Wall Time Budget Ms",
+          "type": "integer"
+        },
+        "evaluation_points": {
+          "maximum": 1000000000,
+          "minimum": 1,
+          "title": "Evaluation Points",
+          "type": "integer"
+        },
+        "offline_series": {
+          "maximum": 1000000,
+          "minimum": 0,
+          "title": "Offline Series",
+          "type": "integer"
+        },
+        "workload_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Workload Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluation_points",
+        "candidate_steps",
+        "offline_series",
+        "declared_wall_time_budget_ms",
+        "declared_peak_rss_budget_bytes",
+        "workload_sha256"
+      ],
+      "title": "ResourceReport",
+      "type": "object"
+    },
+    "ResultSet": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "metrics": {
+          "items": {
+            "$ref": "#/$defs/MetricValue"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Metrics",
+          "type": "array"
+        },
+        "model_id": {
+          "pattern": "^[a-z][a-z0-9_]{2,63}$",
+          "title": "Model Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id",
+        "metrics",
+        "artifact"
+      ],
+      "title": "ResultSet",
+      "type": "object"
+    },
+    "RunManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "completed_at": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "deterministic": {
+          "title": "Deterministic",
+          "type": "boolean"
+        },
+        "environment_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Environment Sha256",
+          "type": "string"
+        },
+        "lab_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "title": "Lab Commit",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^[a-z][a-z0-9_]{2,63}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "seeds": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 512,
+          "minItems": 1,
+          "title": "Seeds",
+          "type": "array"
+        },
+        "started_at": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+          "title": "Started At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "lab_commit",
+        "environment_sha256",
+        "started_at",
+        "completed_at",
+        "seeds",
+        "deterministic"
+      ],
+      "title": "RunManifest",
+      "type": "object"
+    },
+    "SplitManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "final_holdout": {
+          "$ref": "#/$defs/SplitPart"
+        },
+        "strategy": {
+          "const": "repository_time_seed",
+          "title": "Strategy",
+          "type": "string"
+        },
+        "test": {
+          "$ref": "#/$defs/SplitPart"
+        },
+        "train": {
+          "$ref": "#/$defs/SplitPart"
+        }
+      },
+      "required": [
+        "strategy",
+        "train",
+        "test",
+        "final_holdout"
+      ],
+      "title": "SplitManifest",
+      "type": "object"
+    },
+    "SplitPart": {
+      "additionalProperties": false,
+      "properties": {
+        "seed_families": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Seed Families",
+          "type": "array"
+        },
+        "system_aliases": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]{2,63}$",
+            "type": "string"
+          },
+          "maxItems": 10000,
+          "minItems": 1,
+          "title": "System Aliases",
+          "type": "array"
+        },
+        "window": {
+          "$ref": "#/$defs/TimeWindow"
+        }
+      },
+      "required": [
+        "window",
+        "system_aliases",
+        "seed_families"
+      ],
+      "title": "SplitPart",
+      "type": "object"
+    },
+    "TimeWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TimeWindow",
+      "type": "object"
+    }
+  },
+  "$id": "https://developer-lens-lab.invalid/schemas/evaluation-bundle/v1/schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "abstention": {
+      "$ref": "#/$defs/AbstentionReport"
+    },
+    "artifact_manifest": {
+      "items": {
+        "$ref": "#/$defs/ArtifactRef"
+      },
+      "maxItems": 128,
+      "minItems": 2,
+      "title": "Artifact Manifest",
+      "type": "array"
+    },
+    "baseline_model_card": {
+      "$ref": "#/$defs/ModelCard"
+    },
+    "baseline_results": {
+      "$ref": "#/$defs/ResultSet"
+    },
+    "bundle_id": {
+      "pattern": "^[a-z][a-z0-9_]{2,63}$",
+      "title": "Bundle Id",
+      "type": "string"
+    },
+    "calibration": {
+      "$ref": "#/$defs/CalibrationReport"
+    },
+    "candidate_model_card": {
+      "$ref": "#/$defs/ModelCard"
+    },
+    "candidate_results": {
+      "$ref": "#/$defs/ResultSet"
+    },
+    "created_at": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+      "title": "Created At",
+      "type": "string"
+    },
+    "dataset_card": {
+      "$ref": "#/$defs/DatasetCard"
+    },
+    "decision": {
+      "$ref": "#/$defs/DecisionReport"
+    },
+    "leakage": {
+      "items": {
+        "$ref": "#/$defs/LeakageCheck"
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "title": "Leakage",
+      "type": "array"
+    },
+    "preregistration": {
+      "$ref": "#/$defs/Preregistration"
+    },
+    "research_pack_sha256": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Research Pack Sha256",
+      "type": "string"
+    },
+    "resources": {
+      "$ref": "#/$defs/ResourceReport"
+    },
+    "run_manifest": {
+      "$ref": "#/$defs/RunManifest"
+    },
+    "schema_version": {
+      "const": "DeveloperLensEvaluationBundle.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "split_manifest": {
+      "$ref": "#/$defs/SplitManifest"
+    }
+  },
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "created_at",
+    "research_pack_sha256",
+    "preregistration",
+    "dataset_card",
+    "baseline_model_card",
+    "candidate_model_card",
+    "split_manifest",
+    "run_manifest",
+    "baseline_results",
+    "candidate_results",
+    "calibration",
+    "abstention",
+    "leakage",
+    "resources",
+    "decision",
+    "artifact_manifest"
+  ],
+  "title": "EvaluationBundle",
+  "type": "object"
+}

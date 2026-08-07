@@ -1,0 +1,4 @@
+interface:
+  display_name: "Developer Lens Lab Continuation"
+  short_description: "Resume synthetic-first Developer Lens lab work"
+  default_prompt: "Use $developer-lens-lab-continuation to resume the next bounded, invented-data-first lab slice from live repository evidence."

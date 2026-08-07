@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "developer-lens-lab"
+version = "0.1.0"
+description = "Synthetic-first research and evaluation engine for Developer Lens"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "duckdb>=1.4,<2",
+  "httpx>=0.28,<1",
+  "jsonschema>=4.25,<5",
+  "numpy>=2.3,<3",
+  "orjson>=3.11,<4",
+  "polars>=1.33,<2",
+  "pyarrow>=21,<23",
+  "pydantic>=2.11,<3",
+  "rich>=14,<15",
+  "ruptures>=1.1.10,<2",
+  "scikit-learn>=1.7,<2",
+  "scipy>=1.16,<2",
+  "statsmodels>=0.14,<1",
+  "typer>=0.16,<1",
+]
+
+[project.scripts]
+dllab = "developer_lens_lab.cli:app"
+
+[dependency-groups]
+dev = [
+  "hypothesis>=6.138,<7",
+  "mkdocs-material>=9.6,<10",
+  "mkdocstrings-python>=1.16,<2",
+  "pre-commit>=4.3,<5",
+  "pyright>=1.1.404,<2",
+  "pytest>=8.4,<9",
+  "pytest-cov>=6.2,<7",
+  "ruff>=0.12,<1",
+]
+
+[tool.uv]
+required-version = ">=0.12.2,<0.13"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/developer_lens_lab"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.pyright]
+include = ["src", "scripts", "tests", "tools"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
