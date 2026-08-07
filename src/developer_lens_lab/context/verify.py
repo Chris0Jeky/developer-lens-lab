@@ -219,9 +219,17 @@ def verify_context_budget(root: Path) -> list[str]:
         return []
     if not isinstance(payload_raw, dict):
         return []
-    budgets_raw = cast("dict[str, object]", payload_raw).get("budgets")
-    if not isinstance(budgets_raw, dict):
+    payload = cast("dict[str, object]", payload_raw)
+    # Distinguish an absent budgets key (legitimately unenforced) from a present-but-malformed
+    # container. A non-object budgets (string/list/null/number/bool) silently disabled the check
+    # before, the same "nothing enforces it" gap the present-but-invalid-value branch below closes.
+    # _verify_tier validates only top-level keys, not the budgets container type, so this is the
+    # sole reporter of a malformed container.
+    if "budgets" not in payload:
         return []
+    budgets_raw = payload["budgets"]
+    if not isinstance(budgets_raw, dict):
+        return ["tier.json budgets must be an object to declare a standing-context budget"]
     budgets = cast("dict[str, object]", budgets_raw)
     if "standing_context_tokens" not in budgets:
         return []

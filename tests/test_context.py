@@ -142,6 +142,26 @@ def test_context_budget_skips_when_budget_key_absent(tmp_path: Path) -> None:
     assert verify_context_budget(tmp_path) == []
 
 
+def test_context_budget_skips_when_budgets_container_absent(tmp_path: Path) -> None:
+    # No budgets key at all -> the budget is legitimately unenforced -> [].
+    (tmp_path / ".agent-harness").mkdir()
+    (tmp_path / ".agent-harness" / "tier.json").write_text('{"tier": 1}', encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("A" * 400, encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text("C" * 400, encoding="utf-8")
+    assert verify_context_budget(tmp_path) == []
+
+
+def test_context_budget_reports_a_malformed_budgets_container(tmp_path: Path) -> None:
+    # A present-but-non-object budgets silently disabled the check before; it must fail loudly, like
+    # a present-but-invalid value, not revert to the "nothing enforces it" gap.
+    (tmp_path / ".agent-harness").mkdir()
+    tier = tmp_path / ".agent-harness" / "tier.json"
+    expected = ["tier.json budgets must be an object to declare a standing-context budget"]
+    for bad_container in ('"oops"', "null", "[]"):
+        tier.write_text(f'{{"budgets": {bad_container}}}', encoding="utf-8")
+        assert verify_context_budget(tmp_path) == expected, bad_container
+
+
 def test_context_budget_reports_a_present_but_invalid_budget(tmp_path: Path) -> None:
     # A declared-but-unusable budget must fail loudly, not silently disable enforcement (the exact
     # gap the check exists to close). Absent -> [] (tested above); present-but-invalid -> failure.
