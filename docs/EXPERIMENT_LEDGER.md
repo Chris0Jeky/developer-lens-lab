@@ -111,6 +111,9 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
   Markdown `sha256:8144410775717d8b280a41b95c18dd22a8de45c765186ecaeb1fd5c6745e30f0`;
   HTML `sha256:fca7aac3e567f6de84b6dd60f476e77bf2a18f7a20cefde4563856e6ada99eec`.
 - **Verification and limits:** local full gate, exact-head independent review, hosted lab run
-  `31150109110`, and hosted product run `31150326515` passed. Product PR #187 must merge before lab
-  PR #8. This remains synthetic mechanics evidence; issues #6/#7 retain post-demo debt and no model
-  promotion is implied.
+  `31150109110`, and hosted product run `31150326515` passed. Product PR #187 then merged as
+  `7b22491b28acbe467e2facb85723a91fd37af52b`; check-only sync accepted that exact merge without
+  rewriting producer provenance. A fresh detached replay at producer `5c79236` repeated benchmark,
+  reproduction, report, and export, and its 167,935-byte fixture was byte-identical to the merged
+  product fixture. This remains synthetic mechanics evidence; issues #6/#7 retain post-demo debt
+  and no model promotion is implied.

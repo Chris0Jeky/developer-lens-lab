@@ -221,3 +221,17 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `2.966666666666667`/`4.2`, detection `0.75`/`0.75`, delay `2`/`1`, confound rate `0.5`/`0.5`,
   candidate Brier `0.017341137335170863`, and gate outcomes fail/fail/pass/pass/fail/pass/pass.
   No real/private data, full-run publication, product promotion, or additional method was added.
+
+## 2026-08-07 - Post-merge MethodTrial handshake proof
+
+- Product PR #187 merged with preserved history as
+  `7b22491b28acbe467e2facb85723a91fd37af52b`. The merged schema remains SHA-256
+  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`; the merged fixture remains
+  SHA-256 `26c3a9184adfce4ff5756e702b36d6db7af7c5f2dab9eb3eb3081ca598eafd95` and 167,935 bytes.
+- `contracts sync-method-trial --check-only` accepted the exact product merge and retained producer
+  provenance at lab commit `5c79236beb0a0b25819f14510b79bb15813d7337`. From a fresh detached
+  worktree at that producer, benchmark, reproduction, report build, and MethodTrial export passed;
+  the exported bytes were directly identical to the merged product fixture.
+- The owner-approved integration is limited to this reviewed invented C0 presentation and honest
+  `reject` story. Model promotion, real/private data, public-corpus work, and product #174 remain
+  outside the bounded programme.
