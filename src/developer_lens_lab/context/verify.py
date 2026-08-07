@@ -14,6 +14,9 @@ REQUIRED_FILES = (
     "AGENTS.md",
     "CLAUDE.md",
     ".agent-harness/tier.json",
+    ".claude/agents/dll-implementer.md",
+    ".claude/agents/dll-mechanic.md",
+    ".claude/agents/dll-reviewer.md",
     ".claude/settings.json",
     ".claude/skills/developer-lens-lab-continuation/SKILL.md",
     "HUMAN_TODO.md",
@@ -166,10 +169,28 @@ def verify_repository(root: Path) -> VerificationReport:
     if canon.is_file() and "## Protected-data rule" not in canon.read_text(encoding="utf-8"):
         failures.append("CLAUDE.md must carry the protected-data rule section")
     settings = root / ".claude" / "settings.json"
-    if settings.is_file() and "bypassPermissions" in settings.read_text(encoding="utf-8"):
+    if settings.is_file():
+        try:
+            settings_payload: object = json.loads(settings.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            failures.append(f".claude/settings.json is not valid JSON: {exc}")
+        else:
+            if "bypassPermissions" in json.dumps(settings_payload):
+                failures.append(
+                    "committed .claude/settings.json must not carry bypassPermissions; "
+                    "it belongs in gitignored .claude/settings.local.json"
+                )
+    tracked_local = subprocess.run(
+        ["git", "ls-files", "--cached", "--", ".claude/settings.local.json"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if tracked_local.returncode == 0 and tracked_local.stdout.strip():
         failures.append(
-            "committed .claude/settings.json must not carry bypassPermissions; "
-            "it belongs in gitignored .claude/settings.local.json"
+            ".claude/settings.local.json is tracked; machine-local trust settings must stay "
+            "gitignored"
         )
     current = root / "docs" / "CURRENT_STATE.md"
     if current.is_file():
