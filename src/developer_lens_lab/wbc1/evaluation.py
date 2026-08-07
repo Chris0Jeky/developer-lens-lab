@@ -260,7 +260,13 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
         key=lambda metrics: (
             -(metrics[1].detection_rate or 0.0),
             metrics[1].false_alerts_per_year,
-            metrics[1].median_detection_delay or float("inf"),
+            # A genuine median detection delay of 0 (instant detection) is the
+            # best possible tie-break, not a missing value.  `x or inf` would
+            # collapse a real 0.0 to the worst rank; only a true `None` (no
+            # detections at all) may be treated as absent.
+            metrics[1].median_detection_delay
+            if metrics[1].median_detection_delay is not None
+            else float("inf"),
         ),
     )
     return ThresholdSelection(
@@ -302,6 +308,17 @@ def decide_benchmark(
     plan: EvaluationPlan,
 ) -> tuple[Literal["reject", "benchmarked"], tuple[str, ...]]:
     gates: tuple[tuple[str, Callable[[], bool]], ...] = (
+        (
+            # A `benchmarked` verdict must rest on primary-domain evidence that
+            # was actually measured for BOTH methods.  When a partition planted
+            # no true changes, detection_rate is None (absent), and every gate
+            # that coerces it via `or 0.0` would otherwise let an unmeasured
+            # comparison be declared benchmarked.  Require presence explicitly.
+            "PRIMARY_DOMAIN_METRICS_PRESENT",
+            lambda: (
+                baseline.detection_rate is not None and candidate.detection_rate is not None
+            ),
+        ),
         (
             "BASELINE_SELECTION_VIABLE",
             lambda: plan.baseline_selection.viable,
