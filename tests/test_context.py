@@ -5,6 +5,7 @@ from developer_lens_lab.context.verify import (
     REQUIRED_SETTINGS_READ_DENY,
     verify_markdown_links,
     verify_settings_deny,
+    verify_skill_parity,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +53,52 @@ def test_settings_deny_reports_each_missing_protected_sink() -> None:
 def test_settings_deny_requires_a_deny_block() -> None:
     for payload in ({"permissions": {"defaultMode": "acceptEdits"}}, {}, "not-an-object"):
         assert len(verify_settings_deny(payload)) == len(REQUIRED_SETTINGS_READ_DENY)
+
+
+_START = "<!-- shared:evaluation-integrity start -->"
+_END = "<!-- shared:evaluation-integrity end -->"
+
+
+def _write_skill_pair(tmp_path: Path, claude_block: str, agents_block: str) -> Path:
+    for rel, block in (
+        (".claude/skills/developer-lens-lab-continuation/SKILL.md", claude_block),
+        (".agents/skills/developer-lens-lab-continuation/SKILL.md", agents_block),
+    ):
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(block, encoding="utf-8")
+    return tmp_path
+
+
+def test_skill_parity_passes_on_the_real_repo() -> None:
+    assert verify_skill_parity(ROOT) == []
+
+
+def test_skill_parity_accepts_matching_enclosed_blocks(tmp_path: Path) -> None:
+    body = f"# doc\n\n{_START}\n## Protect evaluation integrity\n\n- Shared bullet.\n{_END}\n\n## End\n"  # noqa: E501
+    _write_skill_pair(tmp_path, body, body)
+    assert verify_skill_parity(tmp_path) == []
+
+
+def test_skill_parity_reports_drift_between_copies(tmp_path: Path) -> None:
+    claude = f"{_START}\n## Protect evaluation integrity\n\n- Claude bullet.\n{_END}\n"
+    agents = f"{_START}\n## Protect evaluation integrity\n\n- Agents bullet.\n{_END}\n"
+    _write_skill_pair(tmp_path, claude, agents)
+    failures = verify_skill_parity(tmp_path)
+    assert failures == [
+        "shared evaluation-integrity section drifted between the two SKILL.md copies"
+    ]
+
+
+def test_skill_parity_reports_missing_marker(tmp_path: Path) -> None:
+    good = f"{_START}\n## Protect evaluation integrity\n\n- Shared bullet.\n{_END}\n"
+    without_end = f"{_START}\n## Protect evaluation integrity\n\n- Shared bullet.\n"
+    _write_skill_pair(tmp_path, good, without_end)
+    failures = verify_skill_parity(tmp_path)
+    assert any(
+        "marker" in failure and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
+        for failure in failures
+    )
 
 
 def test_link_verifier_does_not_read_generated_output(tmp_path: Path) -> None:

@@ -29,6 +29,7 @@ credentials, browser profiles, caches, working trees, or provider accounts. Netw
 real datasets, new classes/sinks, durable indexes, model calls, publication, cross-repo identity,
 and product promotion require the exact open owner gate to be closed first.
 
+<!-- shared:evaluation-integrity start -->
 ## Protect evaluation integrity
 
 - Keep generator/seed-family identifiers out of features and reports.
@@ -39,6 +40,7 @@ and product promotion require the exact open owner gate to be closed first.
   separately preregistered.
 - Interpret invented results as mechanics/failure-handling evidence, never empirical validity.
 - Preserve a complete deterministic fallback and allow a clean rejection decision.
+<!-- shared:evaluation-integrity end -->
 
 ## Prove and hand off
 

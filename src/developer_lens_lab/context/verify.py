@@ -166,6 +166,40 @@ REQUIRED_SETTINGS_READ_DENY = (
 )
 
 
+SHARED_SKILL_MARKER = "shared:evaluation-integrity"
+SKILL_PARITY_FILES = (
+    ".claude/skills/developer-lens-lab-continuation/SKILL.md",
+    ".agents/skills/developer-lens-lab-continuation/SKILL.md",
+)
+
+
+def verify_skill_parity(root: Path) -> list[str]:
+    start_marker = f"<!-- {SHARED_SKILL_MARKER} start -->"
+    end_marker = f"<!-- {SHARED_SKILL_MARKER} end -->"
+    failures: list[str] = []
+    blocks: list[str] = []
+    for rel in SKILL_PARITY_FILES:
+        path = root / rel
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            failures.append(f"{rel}: missing shared evaluation-integrity marker(s)")
+            continue
+        normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+        start = normalized.find(start_marker)
+        end = normalized.find(end_marker)
+        if start == -1 or end == -1 or end <= start:
+            failures.append(f"{rel}: missing shared evaluation-integrity marker(s)")
+            continue
+        block = normalized[start + len(start_marker) : end].strip()
+        blocks.append(block)
+    if len(blocks) == len(SKILL_PARITY_FILES) and len(set(blocks)) > 1:
+        failures.append(
+            "shared evaluation-integrity section drifted between the two SKILL.md copies"
+        )
+    return failures
+
+
 def verify_settings_deny(payload: object) -> list[str]:
     deny_rules: set[str] = set()
     if isinstance(payload, dict):
@@ -232,6 +266,7 @@ def verify_repository(root: Path) -> VerificationReport:
     if (root / "developer_lens_lab_bootstrap_agent_prompt.md").exists():
         failures.append("the commissioning prompt must not become a competing repo authority")
     failures.extend(_verify_tier(root))
+    failures.extend(verify_skill_parity(root))
     failures.extend(verify_markdown_links(root))
     if (root / "tools" / "cards.py").is_file():
         failures.extend(_verify_cards(root))
