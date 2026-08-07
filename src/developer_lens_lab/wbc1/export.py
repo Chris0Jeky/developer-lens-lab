@@ -584,6 +584,10 @@ def compose_method_trial_view(
                 "outcome": "pass",
                 "reason_code": "CANDIDATE_NOT_WORSE_DETECTION",
                 "reason": "Candidate and baseline detection rates are equal.",
+                "relevant_values": {
+                    "baseline": _value(baseline_detection),
+                    "candidate": _value(candidate_detection),
+                },
             },
             {
                 "order": 7,
@@ -723,7 +727,7 @@ def compose_method_trial_view(
             "commands": {
                 "benchmark": f"uv run dllab benchmark wb-c1 --smoke --run-id {run_id}",
                 "reproduce": f"uv run dllab run reproduce {run_id}",
-                "export": f"uv run dllab demo export {run_id} --output product-fixture",
+                "export": f"uv run dllab export method-trial {run_id}",
                 "report": f"uv run dllab report build {run_id}",
             },
             "verification": {

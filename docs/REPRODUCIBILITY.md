@@ -12,20 +12,20 @@ provider IDs, machine names, exact host timings, or stable real-scope hashes. Ha
 lab-local generated objects and prove bytes; they do not imply anonymity or authorize cross-repo
 linkage.
 
-Normal smoke flow (the demo export is the canonical MethodTrialView boundary):
+Normal smoke flow (`export method-trial` is the canonical MethodTrialView boundary):
 
 ```powershell
 uv sync --locked --all-groups
 uv run dllab context verify
 uv run dllab benchmark wb-c1 --smoke --run-id <run-id>
 uv run dllab run reproduce <run-id>
-uv run dllab demo export <run-id> --output <path>
+uv run dllab export method-trial <run-id>
 uv run dllab report build <run-id>
 uv run pytest
 ```
 
 A run ID is append-only and single-use. Supply `--run-id <new_opaque_id>` to the benchmark command,
-then pass that ID to `run reproduce`, `demo export`, and `report build`. The export command loads
+then pass that ID to `run reproduce`, `export method-trial`, and `report build`. The export command loads
 and integrity-checks the recorded run, recomputes the canonical projection, validates the pinned
 product schema, and writes canonical JSON plus one LF to the explicit output path. Its output is
 content-free (`path=... sha256=...`).
