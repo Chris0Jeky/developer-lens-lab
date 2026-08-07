@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import re
+from datetime import datetime
 from typing import Annotated, Literal, Self
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from .common import (
+    JSON_INTEGER_COERCION,
     ArtifactRef,
     AvailabilityState,
     CanonicalUtc,
@@ -34,6 +37,72 @@ RELATION_SCHEMA_IDS = {
     "collection_probe": "developer-lens.collection-probe.v1",
     "system_event": "developer-lens.system-event.v1",
 }
+CANONICAL_PERSON_SUBJECT_TERMS = (
+    "person",
+    "people",
+    "individual",
+    "contributor",
+    "developer",
+    "author",
+    "committer",
+    "reviewer",
+    "employee",
+    "engineer",
+    "teammate",
+    "team_member",
+    "username",
+    "user_login",
+    "headcount",
+    "seniority",
+)
+PROHIBITED_PERFORMANCE_TERMS = (
+    "productiv",
+    "performance",
+    "effort",
+    "attendance",
+    "hours_worked",
+    "availability",
+    "diligence",
+    "quality",
+    "worth",
+    "personality",
+    "sentiment",
+    "burnout",
+    "surveillance",
+    "bus_factor",
+    "individual_output",
+)
+PROHIBITED_FEATURE_TERMS = CANONICAL_PERSON_SUBJECT_TERMS + PROHIBITED_PERFORMANCE_TERMS
+
+
+def _casefold_pattern(term: str, *, prefix: bool = False) -> str:
+    parts = term.split("_")
+    core = r"[._-]+".join(
+        "".join(f"[{char.lower()}{char.upper()}]" if char.isalpha() else char for char in part)
+        for part in parts
+    )
+    suffix = "[A-Za-z0-9]*" if prefix else ""
+    return rf"(?:^|[._-]){core}{suffix}(?:$|[._-])"
+
+
+PROHIBITED_FEATURE_RE = re.compile(
+    "|".join(
+        _casefold_pattern(term, prefix=term == "productiv") for term in PROHIBITED_FEATURE_TERMS
+    ),
+    re.IGNORECASE,
+)
+
+
+FEATURE_ID_PATTERN = (
+    r"^(?!.*(?:"
+    + "|".join(
+        _casefold_pattern(term, prefix=term == "productiv") for term in PROHIBITED_FEATURE_TERMS
+    )
+    + r"))[A-Za-z][A-Za-z0-9_.-]{0,95}$"
+)
+
+InterpretationCode = Literal["NOT_PERSON_MEASURE", "NOT_PRODUCTIVITY", "NOT_EFFORT"]
+REQUIRED_NO_PERSON_INTERPRETATION = "NOT_PERSON_MEASURE"
 
 
 class ResearchPackProvenance(StrictModel):
@@ -72,7 +141,14 @@ class RelationDescriptor(StrictModel):
 
     state: AvailabilityState
     schema_id: Code | None
-    row_count: Annotated[int, Field(ge=0, le=100_000_000)] | None
+    row_count: (
+        Annotated[
+            int,
+            Field(ge=0, le=100_000_000),
+            JSON_INTEGER_COERCION,
+        ]
+        | None
+    )
     artifact: ArtifactRef | None
     reason_code: Code | None
 
@@ -104,15 +180,58 @@ class ResearchRelations(StrictModel):
 
 
 class FeatureDefinition(StrictModel):
-    feature_id: Code
+    feature_id: Code = Field(
+        json_schema_extra={
+            "pattern": FEATURE_ID_PATTERN,
+            "$comment": (
+                "Runtime validator rejects person, productivity, performance, effort, "
+                "and surveillance feature identifiers."
+            ),
+        }
+    )
     relation: RelationName
     value_kind: Literal["count", "duration_hours", "ratio", "category", "boolean"]
     unit_code: Code
     evidence_layer: Literal["observed", "deterministic"]
-    prohibited_interpretation_codes: Annotated[tuple[Code, ...], Field(min_length=1, max_length=12)]
+    prohibited_interpretation_codes: Annotated[
+        tuple[InterpretationCode, ...],
+        Field(
+            min_length=1,
+            max_length=12,
+            json_schema_extra={"contains": {"const": REQUIRED_NO_PERSON_INTERPRETATION}},
+        ),
+    ]
+
+    @field_validator("feature_id")
+    @classmethod
+    def feature_is_system_shaped(cls, value: str) -> str:
+        if PROHIBITED_FEATURE_RE.search(value):
+            raise ValueError("person-scoring and productivity feature identifiers are prohibited")
+        return value
+
+    @model_validator(mode="after")
+    def requires_no_person_interpretation(self) -> Self:
+        if REQUIRED_NO_PERSON_INTERPRETATION not in self.prohibited_interpretation_codes:
+            raise ValueError(f"{REQUIRED_NO_PERSON_INTERPRETATION} is required")
+        return self
 
 
 class ResearchPack(StrictModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "allOf": [
+                {
+                    "if": {"properties": {"classification": {"const": "C1"}}},
+                    "then": {
+                        "properties": {
+                            "generated_at": {"pattern": r"^\d{4}-\d{2}-\d{2}T00:00:00Z$"}
+                        }
+                    },
+                }
+            ]
+        }
+    )
+
     schema_version: Literal["DeveloperLensResearchPack.v1"]
     pack_id: OpaqueId
     generated_at: CanonicalUtc
@@ -124,6 +243,16 @@ class ResearchPack(StrictModel):
 
     @model_validator(mode="after")
     def unique_features(self) -> Self:
+        if self.classification == "C1":
+            generated_at = datetime.fromisoformat(self.generated_at.removesuffix("Z") + "+00:00")
+            if (
+                generated_at.weekday() != 0
+                or generated_at.hour != 0
+                or generated_at.minute != 0
+                or generated_at.second != 0
+                or generated_at.microsecond != 0
+            ):
+                raise ValueError("C1 generated_at must be the UTC Monday start of an ISO week")
         feature_ids = [feature.feature_id for feature in self.feature_registry]
         if len(feature_ids) != len(set(feature_ids)):
             raise ValueError("feature_registry contains duplicate feature_id values")

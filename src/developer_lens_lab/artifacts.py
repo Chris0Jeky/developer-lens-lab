@@ -46,6 +46,22 @@ class ArtifactStore:
             raise ArtifactError("scope_id must be an opaque lowercase identifier")
         return self.root / "scopes" / scope_id
 
+    def scope_root(self, scope_id: str) -> Path:
+        """Return the validated scope directory for runner metadata."""
+        return self._scope_root(scope_id)
+
+    def reserve_scope(self, scope_id: str) -> Path:
+        """Create one new scope and refuse reuse of an existing run identity."""
+        scope_root = self._scope_root(scope_id)
+        scopes_root = scope_root.parent
+        self._ensure_no_symlink_parents(scopes_root, self.root)
+        scopes_root.mkdir(parents=True, exist_ok=True)
+        try:
+            scope_root.mkdir()
+        except FileExistsError as exc:
+            raise ArtifactError(f"artifact scope already exists: {scope_id}") from exc
+        return scope_root
+
     def _object_path(self, scope_id: str, digest: str) -> Path:
         match = _DIGEST_RE.fullmatch(digest)
         if match is None:
@@ -76,11 +92,38 @@ class ArtifactStore:
         finally:
             temporary.unlink(missing_ok=True)
 
+    def write_scope_file(self, scope_id: str, name: str, payload: bytes) -> Path:
+        if Path(name).name != name or not name:
+            raise ArtifactError("scope file name must be a simple file name")
+        path = self._scope_root(scope_id) / name
+        self._ensure_no_symlink_parents(path.parent, self.root)
+        self._atomic_write(path, payload)
+        return path
+
+    def write_scope_file_once(self, scope_id: str, name: str, payload: bytes) -> Path:
+        """Publish an append-only scope record with exclusive creation."""
+        if Path(name).name != name or not name:
+            raise ArtifactError("scope file name must be a simple file name")
+        path = self._scope_root(scope_id) / name
+        self._ensure_no_symlink_parents(path.parent, self.root)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            handle = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError as exc:
+            raise ArtifactError(f"scope file already exists: {name}") from exc
+        with os.fdopen(handle, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        return path
+
     def put_bytes(
         self,
         scope_id: str,
         payload: bytes,
-        media_type: Literal["application/json", "application/x-parquet", "text/markdown"],
+        media_type: Literal[
+            "application/json", "application/x-parquet", "text/markdown", "text/html"
+        ],
     ) -> ArtifactRef:
         digest = "sha256:" + hashlib.sha256(payload).hexdigest()
         reference = ArtifactRef(sha256=digest, size_bytes=len(payload), media_type=media_type)
@@ -98,6 +141,11 @@ class ArtifactStore:
 
     def put_json(self, scope_id: str, value: Any) -> ArtifactRef:
         return self.put_bytes(scope_id, canonical_json_bytes(value), "application/json")
+
+    def put_text(
+        self, scope_id: str, value: str, media_type: Literal["text/markdown", "text/html"]
+    ) -> ArtifactRef:
+        return self.put_bytes(scope_id, value.encode("utf-8"), media_type)
 
     def get_bytes(self, scope_id: str, reference: ArtifactRef) -> bytes:
         path = self._object_path(scope_id, reference.sha256)

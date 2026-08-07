@@ -28,13 +28,18 @@ def unavailable_relation(reason: str = "NOT_IN_FIXTURE") -> dict[str, object]:
     }
 
 
-def research_pack(repository_week: dict[str, Any] | None = None) -> dict[str, Any]:
+def research_pack(
+    repository_week: dict[str, Any] | None = None,
+    *,
+    classification: str = "C0",
+    generated_at: str = "2026-08-06T12:00:00Z",
+) -> dict[str, Any]:
     relation = repository_week or unavailable_relation()
     return {
         "schema_version": "DeveloperLensResearchPack.v1",
         "pack_id": "pack_demo",
-        "generated_at": "2026-08-06T12:00:00Z",
-        "classification": "C0",
+        "generated_at": generated_at,
+        "classification": classification,
         "provenance": {
             "product_commit": COMMIT,
             "contract_sha256": SHA_C,
@@ -61,7 +66,11 @@ def research_pack(repository_week: dict[str, Any] | None = None) -> dict[str, An
                 "value_kind": "count",
                 "unit_code": "count",
                 "evidence_layer": "deterministic",
-                "prohibited_interpretation_codes": ["NOT_PRODUCTIVITY", "NOT_EFFORT"],
+                "prohibited_interpretation_codes": [
+                    "NOT_PRODUCTIVITY",
+                    "NOT_EFFORT",
+                    "NOT_PERSON_MEASURE",
+                ],
             }
         ],
     }

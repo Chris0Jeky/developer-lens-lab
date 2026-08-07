@@ -122,7 +122,7 @@ class RunManifest(StrictModel):
     environment_sha256: Sha256
     started_at: CanonicalUtc
     completed_at: CanonicalUtc
-    seeds: Annotated[tuple[int, ...], Field(min_length=1, max_length=128)]
+    seeds: Annotated[tuple[int, ...], Field(min_length=1, max_length=512)]
     deterministic: bool
 
     @model_validator(mode="after")
@@ -142,6 +142,13 @@ class ResultSet(StrictModel):
     model_id: OpaqueId
     metrics: Annotated[tuple[MetricValue, ...], Field(min_length=1, max_length=64)]
     artifact: ArtifactRef
+
+    @model_validator(mode="after")
+    def metrics_are_unique(self) -> Self:
+        keys = [(metric.domain_code, metric.metric_code) for metric in self.metrics]
+        if len(keys) != len(set(keys)):
+            raise ValueError("result metrics must have unique metric codes and domains")
+        return self
 
 
 class CalibrationReport(StrictModel):
@@ -224,6 +231,11 @@ class EvaluationBundle(StrictModel):
             raise ValueError("baseline result model_id does not match its model card")
         if self.candidate_results.model_id != self.candidate_model_card.model_id:
             raise ValueError("candidate result model_id does not match its model card")
+        primary = self.preregistration.primary_metric_code
+        baseline_metrics = {metric.metric_code for metric in self.baseline_results.metrics}
+        candidate_metrics = {metric.metric_code for metric in self.candidate_results.metrics}
+        if primary not in baseline_metrics or primary not in candidate_metrics:
+            raise ValueError("primary metric must be present in both method results")
         declared = {artifact.sha256 for artifact in self.artifact_manifest}
         required = {self.baseline_results.artifact.sha256, self.candidate_results.artifact.sha256}
         if not required <= declared:

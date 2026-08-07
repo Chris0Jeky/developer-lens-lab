@@ -1,0 +1,2554 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "C1"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "$comment": "Runtime and typed consumers additionally require this UTC midnight to be a Monday.",
+        "properties": {
+          "generated_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+          }
+        },
+        "required": [
+          "generated_at"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "C1"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "$comment": "Runtime and typed consumers additionally require every present operational availability boundary to be a UTC Monday ISO-week floor and the start to be within 36 UTC calendar months of generated_at.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "collection": {
+                "properties": {
+                  "window": {
+                    "properties": {
+                      "end": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+                      },
+                      "start": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+                      }
+                    }
+                  }
+                }
+              },
+              "event": {
+                "properties": {
+                  "window": {
+                    "properties": {
+                      "end": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+                      },
+                      "start": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+                      }
+                    }
+                  }
+                }
+              },
+              "feature": {
+                "properties": {
+                  "window": {
+                    "properties": {
+                      "end": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+                      },
+                      "start": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "event": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "temporal_availability"
+        ]
+      },
+      "then": {
+        "$comment": "Present availability requires a window and no reason_code.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "event": {
+                "properties": {
+                  "reason_code": {
+                    "const": null
+                  },
+                  "window": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "window",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "event": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "temporal_availability"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present availability requires a reason_code and no window.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "event": {
+                "properties": {
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "window": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "window",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "collection": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "temporal_availability"
+        ]
+      },
+      "then": {
+        "$comment": "Present availability requires a window and no reason_code.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "collection": {
+                "properties": {
+                  "reason_code": {
+                    "const": null
+                  },
+                  "window": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "window",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "collection": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "temporal_availability"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present availability requires a reason_code and no window.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "collection": {
+                "properties": {
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "window": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "window",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "feature": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "temporal_availability"
+        ]
+      },
+      "then": {
+        "$comment": "Present availability requires a window and no reason_code.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "feature": {
+                "properties": {
+                  "reason_code": {
+                    "const": null
+                  },
+                  "window": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "window",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "feature": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "temporal_availability"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present availability requires a reason_code and no window.",
+        "properties": {
+          "temporal_availability": {
+            "properties": {
+              "feature": {
+                "properties": {
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "window": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "window",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "repository_week": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "repository_week": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "repository_week": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "repository_week": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "pr_episode": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "pr_episode": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "pr_episode": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "pr_episode": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "ci_attempt": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "ci_attempt": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "ci_attempt": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "ci_attempt": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "release_episode": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "release_episode": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "release_episode": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "release_episode": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "collection_probe": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "collection_probe": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "collection_probe": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "collection_probe": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "system_event": {
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Present relations require schema_id, row_count, Parquet artifact, and no reason_code.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "system_event": {
+                "properties": {
+                  "artifact": {
+                    "not": {
+                      "const": null
+                    },
+                    "properties": {
+                      "media_type": {
+                        "const": "application/x-parquet"
+                      }
+                    }
+                  },
+                  "reason_code": {
+                    "const": null
+                  },
+                  "row_count": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "schema_id": {
+                    "not": {
+                      "const": null
+                    }
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "system_event": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "absent",
+                      "unsupported",
+                      "intentionally_omitted"
+                    ]
+                  }
+                },
+                "required": [
+                  "state"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Non-present relations require a reason_code and no schema, count, or artifact.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "system_event": {
+                "properties": {
+                  "artifact": {
+                    "const": null
+                  },
+                  "reason_code": {
+                    "not": {
+                      "const": null
+                    }
+                  },
+                  "row_count": {
+                    "const": null
+                  },
+                  "schema_id": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "schema_id",
+                  "row_count",
+                  "artifact",
+                  "reason_code"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "repository_week": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Any nonempty analytical relation requires a nonempty present coverage relation.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            },
+            "required": [
+              "coverage"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "pr_episode": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Any nonempty analytical relation requires a nonempty present coverage relation.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            },
+            "required": [
+              "coverage"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "ci_attempt": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Any nonempty analytical relation requires a nonempty present coverage relation.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            },
+            "required": [
+              "coverage"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "release_episode": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Any nonempty analytical relation requires a nonempty present coverage relation.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            },
+            "required": [
+              "coverage"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "collection_probe": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Any nonempty analytical relation requires a nonempty present coverage relation.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            },
+            "required": [
+              "coverage"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relations": {
+            "properties": {
+              "system_event": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ]
+      },
+      "then": {
+        "$comment": "Any nonempty analytical relation requires a nonempty present coverage relation.",
+        "properties": {
+          "relations": {
+            "properties": {
+              "coverage": {
+                "properties": {
+                  "row_count": {
+                    "exclusiveMinimum": 0
+                  },
+                  "state": {
+                    "const": "present"
+                  }
+                },
+                "required": [
+                  "state",
+                  "row_count"
+                ]
+              }
+            },
+            "required": [
+              "coverage"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "classification": {
+      "enum": [
+        "C0",
+        "C1"
+      ],
+      "type": "string"
+    },
+    "feature_registry": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_layer": {
+            "enum": [
+              "observed",
+              "deterministic"
+            ],
+            "type": "string"
+          },
+          "feature_id": {
+            "pattern": "^(?!.*(?:(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][aA][gG][eE][mM][eE][nN][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][aA][gG][eE][mM][eE][nN]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][oO][rR][tT][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][oO][rR][tT][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][cC][tT][iI][vV][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][cC][tT][iI][vV][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][lL][tT][hH](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][lL][tT]h(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[mM][aA][tT][uU][rR][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[mM][aA][tT][uU][rR][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][fF][iI][dD][eE][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][fF][iI][dD][eE][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][eE][lL][lL][bB][eE][iI][nN][gG](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][eE][lL][lL][bB][eE][iI][nN]g(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[lL][eE][aA][dD][eE][rR][bB][oO][aA][rR][dD](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[lL][eE][aA][dD][eE][rR][bB][oO][aA][rR]d(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][nN][kK][iI][nN][gG](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][nN][kK][iI][nN]g(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][cC][oO][rR][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][cC][oO][rR]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][tT][iI][nN][gG](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][tT][iI][nN]g(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[gG][rR][aA][dD][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[gG][rR][aA][dD]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][eE][cC][tT][iI][vV][eE][nN][eE][sS][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][eE][cC][tT][iI][vV][eE][nN][eE][sS]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][iI][cC][iI][eE][nN][cC][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][iI][cC][iI][eE][nN][cC]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][aA][cC][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][aA][cC]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO]n(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][oO][pP][lL][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][oO][pP][lL]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA]l(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI]n(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI]n(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][iI][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][iI][eE]s(?=[A-Z]))|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][oO][pP][lL][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][yY][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR](?![iI][zZ][aA][tT][iI][oO][nN]|[iI][tT][aA][tT][iI][vV][eE])[A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR][sS][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR](?![iI][nN][gG])[A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR][sS][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))(?:[eE][nN][gG][aA][gG][eE][mM][eE][nN][tT]|[iI][mM][pP][oO][rR][tT][aA][nN][cC][eE]|[aA][cC][tT][iI][vV][iI][tT][yY]|[hH][eE][aA][lL][tT][hH]|[mM][aA][tT][uU][rR][iI][tT][yY]|[cC][oO][nN][fF][iI][dD][eE][nN][cC][eE]|[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT][yY]|[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE]|[wW][eE][lL][lL][bB][eE][iI][nN][gG]|[lL][eE][aA][dD][eE][rR][bB][oO][aA][rR][dD]|[rR][aA][nN][kK][iI][nN][gG]|[sS][cC][oO][rR][eE]|[rR][aA][tT][iI][nN][gG]|[gG][rR][aA][dD][eE]|[eE][fF][fF][eE][cC][tT][iI][vV][eE][nN][eE][sS][sS]|[eE][fF][fF][iI][cC][iI][eE][nN][cC][yY]|[iI][mM][pP][aA][cC][tT]|[pP][eE][rR][sS][oO][nN]|[pP][eE][rR][sS][oO][nN][sS]|[pP][eE][oO][pP][lL][eE]|[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL]|[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][sS]|[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR]|[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR][sS]|[dD][eE][vV][eE][lL][oO][pP][eE][rR]|[dD][eE][vV][eE][lL][oO][pP][eE][rR][sS]|[aA][uU][tT][hH][oO][rR]|[aA][uU][tT][hH][oO][rR][sS]|[cC][oO][mM][mM][iI][tT][tT][eE][rR]|[cC][oO][mM][mM][iI][tT][tT][eE][rR][sS]|[rR][eE][vV][iI][eE][wW][eE][rR]|[rR][eE][vV][iI][eE][wW][eE][rR][sS]|[eE][mM][pP][lL][oO][yY][eE][eE]|[eE][mM][pP][lL][oO][yY][eE][eE][sS]|[eE][nN][gG][iI][nN][eE][eE][rR]|[eE][nN][gG][iI][nN][eE][eE][rR][sS]|[tT][eE][aA][mM][mM][aA][tT][eE]|[tT][eE][aA][mM][mM][aA][tT][eE][sS]|[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR]|[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR][sS]|[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR]|[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR][sS]|[uU][sS][eE][rR][nN][aA][mM][eE]|[uU][sS][eE][rR][nN][aA][mM][eE][sS]|[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN]|[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN][sS]|[uU][sS][eE][rR][lL][oO][gG][iI][nN]|[uU][sS][eE][rR][lL][oO][gG][iI][nN][sS]|[hH][eE][aA][dD][cC][oO][uU][nN][tT]|[hH][eE][aA][dD][cC][oO][uU][nN][tT][sS]|[sS][eE][nN][iI][oO][rR][iI][tT][yY]|[sS][eE][nN][iI][oO][rR][iI][tT][iI][eE][sS])(?:[iI][dD]|[iI][dD][sS]|[uU][rR][lL]|[uU][rR][lL][sS]|[oO][uU][tT][pP][uU][tT]|[oO][uU][tT][pP][uU][tT][sS]|[cC][oO][uU][nN][tT]|[cC][oO][uU][nN][tT][sS]|[mM][eE][tT][rR][iI][cC]|[mM][eE][tT][rR][iI][cC][sS]|[mM][eE][aA][sS][uU][rR][eE]|[mM][eE][aA][sS][uU][rR][eE][sS]|[sS][cC][oO][rR][eE]|[sS][cC][oO][rR][eE][sS]|[rR][aA][tT][iI][nN][gG]|[rR][aA][tT][iI][nN][gG][sS]|[rR][aA][nN][kK][iI][nN][gG]|[rR][aA][nN][kK][iI][nN][gG][sS]|[rR][aA][tT][eE]|[rR][aA][tT][eE][sS]|[hH][oO][uU][rR][sS]|[aA][cC][tT][iI][vV][iI][tT][yY]|[eE][nN][gG][aA][gG][eE][mM][eE][nN][tT]|[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE]|[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT][yY]|[eE][fF][fF][oO][rR][tT]|[iI][mM][pP][aA][cC][tT]|[eE][xX][pP][eE][rR][iI][eE][nN][cC][eE])(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][rR][oO][dD][uU][cC][tT][iI][vV][A-Za-z0-9]*(?:$|[._-])|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][oO][rR][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][oO][rR]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][tT][tT][eE][nN][dD][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][tT][tT][eE][nN][dD][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][oO][uU][rR][sS](?:[._-]+|(?=[A-Z]))[wW][oO][rR][kK][eE][dD](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][oO][uU][rR][sS](?:[._-]+|(?=[A-Z]))[wW][oO][rR][kK][eE]d(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][iI][lL][iI][gG][eE][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][iI][lL][iI][gG][eE][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[qQ][uU][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[qQ][uU][aA][lL][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][oO][rR][tT][hH](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][oO][rR][tT]h(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][tT][iI][mM][eE][nN][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][tT][iI][mM][eE][nN]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][rR][nN][oO][uU][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][rR][nN][oO][uU]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][sS](?:[._-]+|(?=[A-Z]))[fF][aA][cC][tT][oO][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][sS](?:[._-]+|(?=[A-Z]))[fF][aA][cC][tT][oO]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:[._-]+|(?=[A-Z]))[oO][uU][tT][pP][uU][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:[._-]+|(?=[A-Z]))[oO][uU][tT][pP][uU]t(?=[A-Z]))))[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "prohibited_interpretation_codes": {
+            "contains": {
+              "const": "NOT_PERSON_MEASURE"
+            },
+            "items": {
+              "enum": [
+                "NOT_PERSON_MEASURE",
+                "NOT_PRODUCTIVITY",
+                "NOT_EFFORT"
+              ],
+              "type": "string"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "type": "array"
+          },
+          "relation": {
+            "enum": [
+              "coverage",
+              "repository_week",
+              "pr_episode",
+              "ci_attempt",
+              "release_episode",
+              "collection_probe",
+              "system_event"
+            ],
+            "type": "string"
+          },
+          "unit_code": {
+            "pattern": "^(?!.*(?:(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][aA][gG][eE][mM][eE][nN][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][aA][gG][eE][mM][eE][nN]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][oO][rR][tT][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][oO][rR][tT][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][cC][tT][iI][vV][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][cC][tT][iI][vV][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][lL][tT][hH](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][lL][tT]h(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[mM][aA][tT][uU][rR][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[mM][aA][tT][uU][rR][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][fF][iI][dD][eE][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][fF][iI][dD][eE][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][eE][lL][lL][bB][eE][iI][nN][gG](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][eE][lL][lL][bB][eE][iI][nN]g(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[lL][eE][aA][dD][eE][rR][bB][oO][aA][rR][dD](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[lL][eE][aA][dD][eE][rR][bB][oO][aA][rR]d(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][nN][kK][iI][nN][gG](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][nN][kK][iI][nN]g(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][cC][oO][rR][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][cC][oO][rR]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][tT][iI][nN][gG](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][aA][tT][iI][nN]g(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[gG][rR][aA][dD][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[gG][rR][aA][dD]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][eE][cC][tT][iI][vV][eE][nN][eE][sS][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][eE][cC][tT][iI][vV][eE][nN][eE][sS]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][iI][cC][iI][eE][nN][cC][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][iI][cC][iI][eE][nN][cC]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][aA][cC][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][mM][pP][aA][cC]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO]n(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][oO][pP][lL][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][oO][pP][lL]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA]l(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI]n(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI]n(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT]s(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][iI][eE][sS](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][iI][eE]s(?=[A-Z]))|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][oO][pP][lL][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][eE][vV][eE][lL][oO][pP][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[cC][oO][mM][mM][iI][tT][tT][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[rR][eE][vV][iI][eE][wW][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][mM][pP][lL][oO][yY][eE][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][aA][tT][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][nN][aA][mM][eE][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[uU][sS][eE][rR][lL][oO][gG][iI][nN][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][eE][aA][dD][cC][oO][uU][nN][tT][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][iI][oO][rR][iI][tT][yY][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR](?![iI][zZ][aA][tT][iI][oO][nN]|[iI][tT][aA][tT][iI][vV][eE])[A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][uU][tT][hH][oO][rR][sS][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR](?![iI][nN][gG])[A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][nN][gG][iI][nN][eE][eE][rR][sS][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))(?:[eE][nN][gG][aA][gG][eE][mM][eE][nN][tT]|[iI][mM][pP][oO][rR][tT][aA][nN][cC][eE]|[aA][cC][tT][iI][vV][iI][tT][yY]|[hH][eE][aA][lL][tT][hH]|[mM][aA][tT][uU][rR][iI][tT][yY]|[cC][oO][nN][fF][iI][dD][eE][nN][cC][eE]|[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT][yY]|[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE]|[wW][eE][lL][lL][bB][eE][iI][nN][gG]|[lL][eE][aA][dD][eE][rR][bB][oO][aA][rR][dD]|[rR][aA][nN][kK][iI][nN][gG]|[sS][cC][oO][rR][eE]|[rR][aA][tT][iI][nN][gG]|[gG][rR][aA][dD][eE]|[eE][fF][fF][eE][cC][tT][iI][vV][eE][nN][eE][sS][sS]|[eE][fF][fF][iI][cC][iI][eE][nN][cC][yY]|[iI][mM][pP][aA][cC][tT]|[pP][eE][rR][sS][oO][nN]|[pP][eE][rR][sS][oO][nN][sS]|[pP][eE][oO][pP][lL][eE]|[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL]|[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][sS]|[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR]|[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR][sS]|[dD][eE][vV][eE][lL][oO][pP][eE][rR]|[dD][eE][vV][eE][lL][oO][pP][eE][rR][sS]|[aA][uU][tT][hH][oO][rR]|[aA][uU][tT][hH][oO][rR][sS]|[cC][oO][mM][mM][iI][tT][tT][eE][rR]|[cC][oO][mM][mM][iI][tT][tT][eE][rR][sS]|[rR][eE][vV][iI][eE][wW][eE][rR]|[rR][eE][vV][iI][eE][wW][eE][rR][sS]|[eE][mM][pP][lL][oO][yY][eE][eE]|[eE][mM][pP][lL][oO][yY][eE][eE][sS]|[eE][nN][gG][iI][nN][eE][eE][rR]|[eE][nN][gG][iI][nN][eE][eE][rR][sS]|[tT][eE][aA][mM][mM][aA][tT][eE]|[tT][eE][aA][mM][mM][aA][tT][eE][sS]|[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR]|[tT][eE][aA][mM](?:[._-]+|(?=[A-Z]))[mM][eE][mM][bB][eE][rR][sS]|[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR]|[tT][eE][aA][mM][mM][eE][mM][bB][eE][rR][sS]|[uU][sS][eE][rR][nN][aA][mM][eE]|[uU][sS][eE][rR][nN][aA][mM][eE][sS]|[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN]|[uU][sS][eE][rR](?:[._-]+|(?=[A-Z]))[lL][oO][gG][iI][nN][sS]|[uU][sS][eE][rR][lL][oO][gG][iI][nN]|[uU][sS][eE][rR][lL][oO][gG][iI][nN][sS]|[hH][eE][aA][dD][cC][oO][uU][nN][tT]|[hH][eE][aA][dD][cC][oO][uU][nN][tT][sS]|[sS][eE][nN][iI][oO][rR][iI][tT][yY]|[sS][eE][nN][iI][oO][rR][iI][tT][iI][eE][sS])(?:[iI][dD]|[iI][dD][sS]|[uU][rR][lL]|[uU][rR][lL][sS]|[oO][uU][tT][pP][uU][tT]|[oO][uU][tT][pP][uU][tT][sS]|[cC][oO][uU][nN][tT]|[cC][oO][uU][nN][tT][sS]|[mM][eE][tT][rR][iI][cC]|[mM][eE][tT][rR][iI][cC][sS]|[mM][eE][aA][sS][uU][rR][eE]|[mM][eE][aA][sS][uU][rR][eE][sS]|[sS][cC][oO][rR][eE]|[sS][cC][oO][rR][eE][sS]|[rR][aA][tT][iI][nN][gG]|[rR][aA][tT][iI][nN][gG][sS]|[rR][aA][nN][kK][iI][nN][gG]|[rR][aA][nN][kK][iI][nN][gG][sS]|[rR][aA][tT][eE]|[rR][aA][tT][eE][sS]|[hH][oO][uU][rR][sS]|[aA][cC][tT][iI][vV][iI][tT][yY]|[eE][nN][gG][aA][gG][eE][mM][eE][nN][tT]|[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE]|[pP][rR][oO][dD][uU][cC][tT][iI][vV][iI][tT][yY]|[eE][fF][fF][oO][rR][tT]|[iI][mM][pP][aA][cC][tT]|[eE][xX][pP][eE][rR][iI][eE][nN][cC][eE])(?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][rR][oO][dD][uU][cC][tT][iI][vV][A-Za-z0-9]*(?:$|[._-])|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][oO][rR][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[eE][fF][fF][oO][rR]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][tT][tT][eE][nN][dD][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][tT][tT][eE][nN][dD][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][oO][uU][rR][sS](?:[._-]+|(?=[A-Z]))[wW][oO][rR][kK][eE][dD](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[hH][oO][uU][rR][sS](?:[._-]+|(?=[A-Z]))[wW][oO][rR][kK][eE]d(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][iI][lL][iI][gG][eE][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[dD][iI][lL][iI][gG][eE][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[qQ][uU][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[qQ][uU][aA][lL][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][oO][rR][tT][hH](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[wW][oO][rR][tT]h(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT]y(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][tT][iI][mM][eE][nN][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][eE][nN][tT][iI][mM][eE][nN]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][rR][nN][oO][uU][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][rR][nN][oO][uU]t(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC]e(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][sS](?:[._-]+|(?=[A-Z]))[fF][aA][cC][tT][oO][rR](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[bB][uU][sS](?:[._-]+|(?=[A-Z]))[fF][aA][cC][tT][oO]r(?=[A-Z]))|(?:(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:[._-]+|(?=[A-Z]))[oO][uU][tT][pP][uU][tT](?:$|[._-])|(?:^|[._-]|[a-z0-9](?=[A-Z]))[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:[._-]+|(?=[A-Z]))[oO][uU][tT][pP][uU]t(?=[A-Z]))))[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "value_kind": {
+            "enum": [
+              "count",
+              "duration_hours",
+              "ratio",
+              "category",
+              "boolean"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "feature_id",
+          "relation",
+          "value_kind",
+          "unit_code",
+          "evidence_layer",
+          "prohibited_interpretation_codes"
+        ],
+        "type": "object"
+      },
+      "maxItems": 128,
+      "type": "array"
+    },
+    "generated_at": {
+      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+      "type": "string"
+    },
+    "pack_id": {
+      "pattern": "^[a-z][a-z0-9_]{2,63}$",
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "fixture_revision": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "producer_code": {
+          "const": "developer-lens.research-pack.v1",
+          "type": "string"
+        },
+        "product_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_commit",
+        "contract_sha256",
+        "producer_code",
+        "fixture_revision"
+      ],
+      "type": "object"
+    },
+    "relations": {
+      "additionalProperties": false,
+      "properties": {
+        "ci_attempt": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "collection_probe": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "coverage": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "pr_episode": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "release_episode": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "repository_week": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "system_event": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "coverage",
+        "repository_week",
+        "pr_episode",
+        "ci_attempt",
+        "release_episode",
+        "collection_probe",
+        "system_event"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "DeveloperLensResearchPack.v1",
+      "type": "string"
+    },
+    "temporal_availability": {
+      "additionalProperties": false,
+      "properties": {
+        "collection": {
+          "additionalProperties": false,
+          "properties": {
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            },
+            "window": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    },
+                    "start": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "window",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "event": {
+          "additionalProperties": false,
+          "properties": {
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            },
+            "window": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    },
+                    "start": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "window",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "feature": {
+          "additionalProperties": false,
+          "properties": {
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            },
+            "window": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    },
+                    "start": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "window",
+            "reason_code"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "event",
+        "collection",
+        "feature"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "pack_id",
+    "generated_at",
+    "classification",
+    "provenance",
+    "temporal_availability",
+    "relations",
+    "feature_registry"
+  ],
+  "type": "object"
+}

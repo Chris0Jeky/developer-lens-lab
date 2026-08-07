@@ -42,11 +42,25 @@ only when measurement, real-data scope, external users, or an irreversible bound
 - Add independent statistical review, mutation tests, stress corpora, online-FDR mechanics,
   calibration drift, resource enforcement, and sealed-holdout custody hardening before a candidate
   can move beyond invented `benchmarked` evidence.
+- Close the six bounded WB-C1 correctness/operability findings consolidated in lab issue
+  [#6](https://github.com/Chris0Jeky/developer-lens-lab/issues/6) before treating confound, workload,
+  lifecycle, bundle-validation, or zero-delay fallback evidence as hardened.
+- Align false-alert exposure to each method's effective warmup before making comparative rate claims,
+  and add genuine rolling-origin evaluation before using that term.
+- Expand the PELT diagnostic with no-change false-boundary and segmentation-quality measures before
+  describing it as more than a boundary/localisation summary.
+- Record explicit generator parameters and a normalized command identifier in versioned run
+  metadata before relying on manifests without source checkout reconstruction.
 - Add model artifact signing, sandboxing, adversarial deserialization tests, and removal/demotion
   drills before retaining or loading trained artifacts.
 - Add product-side promotion/audit/rollback controls only after an owner-approved candidate exists.
 - Add schema-evolution compatibility fixtures in both repositories and a signed release manifest
   before third-party producers or consumers exist.
+- Define and enforce one canonical versioned ResearchPack feature-ID token grammar in both
+  repositories. The current separator-token rule rejects dot/underscore/hyphen person terms but
+  still admits mixed-case or numeric-suffixed forms such as `DL.developerOutput.v1`; product issue
+  [#182](https://github.com/Chris0Jeky/developer-lens/issues/182) owns the paired producer/consumer
+  hardening and hostile fixtures.
 - Encode every runtime-only cross-record invariant in portable JSON Schema or publish a versioned
   standalone validator before claiming schema-only interoperability outside the two repositories.
 

@@ -21,6 +21,7 @@ from developer_lens_lab.validation import (
     validate_pack_artifacts,
     validate_research_pack,
 )
+from developer_lens_lab.wbc1.runner import RunnerError, build_report, reproduce_run, run_benchmark
 
 app = typer.Typer(help="Developer Lens Lab command line.", no_args_is_help=True)
 context_app = typer.Typer(help="Verify repository authority and generated context.")
@@ -28,11 +29,17 @@ tasks_app = typer.Typer(help="Check or render the generated task programme.")
 contracts_app = typer.Typer(help="Synchronize and verify versioned interchange contracts.")
 pack_app = typer.Typer(help="Validate or profile a ResearchPack.")
 bundle_app = typer.Typer(help="Validate an EvaluationBundle.")
+benchmark_app = typer.Typer(help="Run deterministic synthetic benchmarks.")
+run_app = typer.Typer(help="Reproduce recorded benchmark runs.")
+report_app = typer.Typer(help="Build deterministic benchmark reports.")
 app.add_typer(context_app, name="context")
 app.add_typer(tasks_app, name="tasks")
 app.add_typer(contracts_app, name="contracts")
 app.add_typer(pack_app, name="pack")
 app.add_typer(bundle_app, name="bundle")
+app.add_typer(benchmark_app, name="benchmark")
+app.add_typer(run_app, name="run")
+app.add_typer(report_app, name="report")
 
 
 def _repo_root() -> Path:
@@ -180,3 +187,54 @@ def bundle_validate(
         typer.echo(f"ERROR: {explain_validation_error(exc)}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"valid {bundle.schema_version} {bundle.bundle_id}")
+
+
+@benchmark_app.command("wb-c1")
+def benchmark_wb_c1(
+    smoke: Annotated[bool, typer.Option("--smoke/--full")] = True,
+    run_id: Annotated[str | None, typer.Option("--run-id")] = None,
+) -> None:
+    """Run the invented WB-C1 benchmark after a producer snapshot is synchronized."""
+    try:
+        result = run_benchmark(smoke=smoke, run_id=run_id)
+    except (RunnerError, ArtifactError, OSError, ValidationError) as exc:
+        typer.echo(f"ERROR: WB-C1 benchmark failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"completed {result.run_id}: {result.manifest_path}")
+
+
+@run_app.command("reproduce")
+def run_reproduce(
+    run_id_or_manifest: Annotated[str, typer.Argument()],
+) -> None:
+    """Recompute a run and compare its deterministic bundle bytes."""
+    try:
+        resolved = Path(run_id_or_manifest)
+        if not resolved.is_file():
+            resolved = _repo_root() / ".dllab" / "scopes" / run_id_or_manifest / "run.json"
+        if not resolved.is_file():
+            raise RunnerError(f"run manifest not found: {run_id_or_manifest}")
+        matched = reproduce_run(resolved)
+    except (RunnerError, ArtifactError, OSError, ValidationError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: reproduction failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    if not matched:
+        typer.echo("ERROR: reproduced bundle differs from recorded bytes", err=True)
+        raise typer.Exit(code=1)
+    typer.echo("reproduction matched deterministic bundle")
+
+
+@report_app.command("build")
+def report_build(
+    run_id: Annotated[str, typer.Argument()],
+    artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+) -> None:
+    """Build and verify standalone Markdown and HTML reports for a run."""
+    try:
+        markdown, html_ref = build_report(
+            run_id, artifact_root=artifact_root or (_repo_root() / ".dllab")
+        )
+    except (RunnerError, ArtifactError, OSError, ValidationError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: report build failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"report markdown={markdown.sha256} html={html_ref.sha256}")
