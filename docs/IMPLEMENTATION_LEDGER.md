@@ -209,3 +209,27 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The scientific result remains the conservative `reject` with no real/private input, full-run
   publication, lab-owned product UI, additional method, or model promotion. Issue #6 remains
   explicitly deferred.
+
+## 2026-08-07 - Integrated canonical MethodTrial producer
+
+- Merge commit `0ef193070a9b80b81cef5a1710a1d65e0b271c15` contains both final repair
+  lines: equivalent cross-field semantic acceptance plus atomic final-path export with honest
+  `verification.local: not_run`. It also records the owner's bounded q-4 integration approval
+  without authorizing model promotion, real data, or a general product claim.
+- A fresh detached checkout at that exact producer passed the locked runtime-only installation,
+  locked sync, Ruff format/lint, strict Pyright, context/task/contract checks, 53 tests with three
+  declared Windows symlink skips and 87% coverage, default smoke reproduction/report, strict
+  MkDocs, hygiene, and range whitespace.
+- Canonical `wbc1_demo` then passed benchmark, byte reproduction, export, and report. The LF export
+  is 167,936 bytes with SHA-256
+  `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`; the stored view object is
+  `sha256:30768b506607c05fe186fbd3db51ddae7ba47f2d0cf58a5ade509f4295736a88`.
+  EvaluationBundle, custody, ResearchPack, Markdown, and HTML digests are respectively
+  `sha256:e925c8ac44d914ce0003ef218d90187535eedfef3eb8d436a3c9a135e3d1a3a9`,
+  `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`,
+  `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`,
+  `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and
+  `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
+- The result is unchanged: seven gates fail/fail/pass/pass/fail/pass/pass, decision `reject`, and
+  rolling-median/MAD fallback retained. Product byte pinning, exact-head hosted gates, final review,
+  product-first merge, merged-contract recheck, and lab merge remain live gates at this record.

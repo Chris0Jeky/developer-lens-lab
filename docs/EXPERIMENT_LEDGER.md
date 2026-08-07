@@ -104,3 +104,30 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
   commit that contains both semantic acceptance and safe, honest export publication. Only those
   bytes may be pinned into product PR #187. Issue #6 and every real-data/promotion gate remain
   deferred.
+
+## 2026-08-07 - Integrated canonical principal demonstration (`wbc1_demo`)
+
+- **Status and flow:** canonical local evidence at integrated producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15`; benchmark, reproduction, export, and
+  standalone report all passed in a fresh detached checkout. Product contract commit is
+  `b48fea579936671397a0486ae7a0342197ee6e4b`, schema SHA-256
+  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+- **Dataset and cases:** invented C0 only; 54 series / 5,616 opportunities / 5,346 observed / 270
+  absent; `no_change`, `level`, and `parser_shift`, 104 points each. Aliases and seeds are absent;
+  PELT is offline descriptive evidence only.
+- **Result:** `reject`. Baseline/candidate false alerts per year `2.966666666666667`/`4.2`,
+  detection `0.75`/`0.75`, delay `2`/`1`, confound false-alert rate `0.5`/`0.5`, candidate Brier
+  `0.017341137335170863`, and nonviable thresholds `2.5`/`0.05`. Failed reasons are
+  `BASELINE_SELECTION_VIABLE`, `CANDIDATE_SELECTION_VIABLE`, and
+  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; deterministic baseline retained.
+- **Artifacts:** fixture
+  `sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`;
+  EvaluationBundle `sha256:e925c8ac44d914ce0003ef218d90187535eedfef3eb8d436a3c9a135e3d1a3a9`;
+  custody `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`;
+  ResearchPack `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`;
+  Markdown `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`;
+  HTML `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
+- **Limits:** artifact verification remains honestly `not_run`; exact local/hosted command results
+  are external evidence, not retroactive mutation of the append-only view. Issue #6 remains
+  deferred. No real/public corpus, person-level inference, lab-owned product UI, or promotion was
+  added.
