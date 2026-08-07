@@ -153,6 +153,34 @@ def _verify_cards(root: Path) -> list[str]:
     return [f"generated task cards drifted: {message}"]
 
 
+# Committed Claude settings must deny agent reads of the local generated-artifact sinks so the
+# protected-data rule (CLAUDE.md, docs/DATA_POLICY.md) is harness-enforced, not merely prose.
+# These mirror the developer-lens product deny rules for its confined store and generated output.
+# `.dllab` is the confined C0 artifact store; `artifacts/` and `reports/generated/` are gitignored
+# run output.
+REQUIRED_SETTINGS_READ_DENY = (
+    "Read(./.dllab/**)",
+    "Read(./artifacts/**)",
+    "Read(./reports/generated/**)",
+)
+
+
+def verify_settings_deny(payload: object) -> list[str]:
+    deny_rules: set[str] = set()
+    if isinstance(payload, dict):
+        permissions = cast("dict[str, object]", payload).get("permissions")
+        if isinstance(permissions, dict):
+            deny = cast("dict[str, object]", permissions).get("deny")
+            if isinstance(deny, list):
+                deny_rules = {rule for rule in cast("list[object]", deny) if isinstance(rule, str)}
+    return [
+        f'committed .claude/settings.json must deny "{rule}" so the protected-data rule is '
+        "harness-enforced (docs/DATA_POLICY.md)"
+        for rule in REQUIRED_SETTINGS_READ_DENY
+        if rule not in deny_rules
+    ]
+
+
 def verify_repository(root: Path) -> VerificationReport:
     root = root.resolve()
     failures = [
@@ -180,6 +208,7 @@ def verify_repository(root: Path) -> VerificationReport:
                     "committed .claude/settings.json must not carry bypassPermissions; "
                     "it belongs in gitignored .claude/settings.local.json"
                 )
+            failures.extend(verify_settings_deny(settings_payload))
     tracked_local = subprocess.run(
         ["git", "ls-files", "--cached", "--", ".claude/settings.local.json"],
         cwd=root,
