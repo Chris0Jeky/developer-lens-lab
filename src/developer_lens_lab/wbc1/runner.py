@@ -38,6 +38,8 @@ from .evaluation import BenchmarkEvaluation, EvaluationPlan, prepare_evaluation,
 from .generator import BenchmarkDataset, Partition, build_benchmark_dataset
 from .methods import DEFAULT_BASELINE_PARAMETERS, DEFAULT_BOCPD_PARAMETERS, parameters_sha256
 from .report import (
+    build_html,
+    build_markdown,
     build_method_trial_html,
     build_method_trial_markdown,
 )
@@ -53,7 +55,7 @@ class BenchmarkRun:
     scope: str
     bundle: EvaluationBundle
     bundle_artifact: ArtifactRef
-    method_trial_view_artifact: ArtifactRef
+    method_trial_view_artifact: ArtifactRef | None
     markdown_artifact: ArtifactRef
     html_artifact: ArtifactRef
     manifest_path: Path
@@ -625,24 +627,28 @@ def run_benchmark(
             "research_pack": research_provenance,
         },
     }
-    from .export import compose_method_trial_view
+    view_ref: ArtifactRef | None = None
+    if smoke:
+        from .export import compose_method_trial_view
 
-    view = compose_method_trial_view(
-        run_id,
-        root=root,
-        store=store,
-        bundle=bundle,
-        manifest=source_manifest,
-    )
-    view_ref = store.put_json(scope, view)
-    markdown_ref = store.put_text(scope, build_method_trial_markdown(view), "text/markdown")
-    html_ref = store.put_text(scope, build_method_trial_html(view), "text/html")
+        view = compose_method_trial_view(
+            run_id,
+            root=root,
+            store=store,
+            bundle=bundle,
+            manifest=source_manifest,
+        )
+        view_ref = store.put_json(scope, view)
+        markdown_ref = store.put_text(scope, build_method_trial_markdown(view), "text/markdown")
+        html_ref = store.put_text(scope, build_method_trial_html(view), "text/html")
+    else:
+        markdown_ref = store.put_text(scope, build_markdown(bundle), "text/markdown")
+        html_ref = store.put_text(scope, build_html(bundle), "text/html")
     manifest = {
         "schema_version": "DeveloperLensWbc1Run.v1",
         "run_id": run_id,
         "smoke": smoke,
         "bundle": bundle_ref.model_dump(mode="json"),
-        "method_trial_view": view_ref.model_dump(mode="json"),
         "markdown": markdown_ref.model_dump(mode="json"),
         "html": html_ref.model_dump(mode="json"),
         "custody": receipt_ref.model_dump(mode="json"),
@@ -666,11 +672,15 @@ def run_benchmark(
             canonical_json_bytes(bundle.model_dump(mode="json"))
         ),
     }
+    if view_ref is not None:
+        manifest["method_trial_view"] = view_ref.model_dump(mode="json")
     manifest_path = store.write_scope_file_once(
         scope, "run.json", canonical_json_bytes(manifest) + b"\n"
     )
+    method_trial_refs = (view_ref,) if view_ref is not None else ()
     store.write_scope_manifest(
-        scope, (*tuple(bundle.artifact_manifest), bundle_ref, view_ref, markdown_ref, html_ref)
+        scope,
+        (*tuple(bundle.artifact_manifest), bundle_ref, *method_trial_refs, markdown_ref, html_ref),
     )
     return BenchmarkRun(
         run_id, scope, bundle, bundle_ref, view_ref, markdown_ref, html_ref, manifest_path
@@ -703,6 +713,11 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     expected_digest = str(manifest["deterministic_bundle_sha256"])
     if _sha256(expected) != expected_digest:
         raise RunnerError("recorded bundle digest does not match stored bundle")
+    smoke = manifest.get("smoke")
+    if not isinstance(smoke, bool):
+        raise RunnerError("run manifest smoke flag must be Boolean")
+    if not smoke and "method_trial_view" in manifest:
+        raise RunnerError("full run manifest must not declare a smoke-only MethodTrialView")
     for name in (
         "custody",
         "baseline",
@@ -710,19 +725,16 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         "pelt",
         "markdown",
         "html",
-        "method_trial_view",
         "research_pack",
         "research_pack_coverage",
         "research_pack_repository_week",
+        *(("method_trial_view",) if smoke else ()),
     ):
         store.get_bytes(scope, ArtifactRef.model_validate(manifest[name]))
     if _git_commit(root) != manifest.get("lab_commit"):
         raise RunnerError("current lab commit differs from the recorded run")
     if _sha256((root / "uv.lock").read_bytes()) != manifest.get("environment_sha256"):
         raise RunnerError("current uv.lock differs from the recorded run")
-    smoke = manifest.get("smoke")
-    if not isinstance(smoke, bool):
-        raise RunnerError("run manifest smoke flag must be Boolean")
     producer_schema, provenance, vendor_pack = _load_vendor_snapshot(root)
     from .export import load_recorded_provenance
 
@@ -806,25 +818,33 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         pack_ref,
         (coverage_ref, repository_week_ref),
     )
-    from .export import compose_method_trial_view
+    if smoke:
+        from .export import compose_method_trial_view
 
-    view = compose_method_trial_view(
-        scope,
-        root=root,
-        store=store,
-        bundle=bundle,
-        manifest=manifest,
-    )
-    view_bytes = canonical_json_bytes(view)
-    _assert_reproduced_reference(
-        "MethodTrial view", view_bytes, "application/json", manifest["method_trial_view"]
-    )
-    markdown_bytes = build_method_trial_markdown(view).encode("utf-8")
-    html_bytes = build_method_trial_html(view).encode("utf-8")
-    _assert_reproduced_reference(
-        "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
-    )
-    _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
+        view = compose_method_trial_view(
+            scope,
+            root=root,
+            store=store,
+            bundle=bundle,
+            manifest=manifest,
+        )
+        view_bytes = canonical_json_bytes(view)
+        _assert_reproduced_reference(
+            "MethodTrial view", view_bytes, "application/json", manifest["method_trial_view"]
+        )
+        markdown_bytes = build_method_trial_markdown(view).encode("utf-8")
+        html_bytes = build_method_trial_html(view).encode("utf-8")
+        _assert_reproduced_reference(
+            "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
+        )
+        _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
+    else:
+        markdown_bytes = build_markdown(bundle).encode("utf-8")
+        html_bytes = build_html(bundle).encode("utf-8")
+        _assert_reproduced_reference(
+            "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
+        )
+        _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
     reproduced = canonical_json_bytes(bundle.model_dump(mode="json"))
     if _reference(reproduced, "application/json") != bundle_ref:
         raise RunnerError("reproduced EvaluationBundle bytes differ from the recorded artifact")
@@ -837,16 +857,29 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
     if not manifest_path.is_file():
         raise RunnerError(f"run manifest not found for {run_id}")
     manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
-    from .export import compose_method_trial_view
+    smoke = manifest.get("smoke")
+    if not isinstance(smoke, bool):
+        raise RunnerError("run manifest smoke flag must be Boolean")
+    if smoke:
+        from .export import compose_method_trial_view
 
-    view_ref = ArtifactRef.model_validate(manifest["method_trial_view"])
-    view_bytes = store.get_bytes(run_id, view_ref)
-    view = json.loads(view_bytes)
-    recomposed = compose_method_trial_view(run_id, root=_root(), store=store, manifest=manifest)
-    if canonical_json_bytes(recomposed) != view_bytes:
-        raise RunnerError("stored MethodTrialView differs from recomposed canonical projection")
-    markdown = store.put_text(run_id, build_method_trial_markdown(view), "text/markdown")
-    html_ref = store.put_text(run_id, build_method_trial_html(view), "text/html")
+        view_ref = ArtifactRef.model_validate(manifest["method_trial_view"])
+        view_bytes = store.get_bytes(run_id, view_ref)
+        view = json.loads(view_bytes)
+        recomposed = compose_method_trial_view(run_id, root=_root(), store=store, manifest=manifest)
+        if canonical_json_bytes(recomposed) != view_bytes:
+            raise RunnerError("stored MethodTrialView differs from recomposed canonical projection")
+        markdown_text = build_method_trial_markdown(view)
+        html_text = build_method_trial_html(view)
+    else:
+        if "method_trial_view" in manifest:
+            raise RunnerError("full run manifest must not declare a smoke-only MethodTrialView")
+        bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
+        bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
+        markdown_text = build_markdown(bundle)
+        html_text = build_html(bundle)
+    markdown = store.put_text(run_id, markdown_text, "text/markdown")
+    html_ref = store.put_text(run_id, html_text, "text/html")
     if (
         markdown.model_dump(mode="json") != manifest["markdown"]
         or html_ref.model_dump(mode="json") != manifest["html"]

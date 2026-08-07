@@ -78,6 +78,9 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
     manifest_text = result.manifest_path.read_text(encoding="utf-8")
     assert "C:\\" not in manifest_text
     assert str(ROOT) not in manifest_text
+    assert result.method_trial_view_artifact is not None
+    assert result.markdown_artifact is not None
+    assert result.html_artifact is not None
     report_text = store.get_bytes(result.scope, result.markdown_artifact).decode("utf-8")
     assert "http://" not in report_text and "https://" not in report_text
     assert "offline segmentation marker" in report_text
@@ -96,6 +99,34 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
     custody_object.unlink()
     with pytest.raises(ArtifactError, match="artifact object is missing"):
         reproduce_run(result.manifest_path, root=ROOT)
+
+
+def test_full_run_skips_smoke_only_method_trial_and_reproduces(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+
+    def reject_smoke_projection(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("full benchmark attempted to compose a smoke-only MethodTrial view")
+
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.export.compose_method_trial_view", reject_smoke_projection
+    )
+    result = run_benchmark(smoke=False, root=ROOT, artifact_root=tmp_path, run_id="wbc1_full_test")
+    manifest = _manifest(result.manifest_path)
+
+    assert manifest["smoke"] is False
+    assert "method_trial_view" not in manifest
+    assert "markdown" in manifest
+    assert "html" in manifest
+    assert result.method_trial_view_artifact is None
+    report = ArtifactStore(tmp_path).get_bytes(result.scope, result.markdown_artifact)
+    assert report.startswith(b"# WB-C1 benchmark report")
+    assert reproduce_run(result.manifest_path, root=ROOT)
+    assert build_report(result.run_id, artifact_root=tmp_path) == (
+        result.markdown_artifact,
+        result.html_artifact,
+    )
 
 
 def test_build_report_replaces_symlink_without_following_it(

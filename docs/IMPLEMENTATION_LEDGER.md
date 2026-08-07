@@ -234,3 +234,16 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   rolling-median/MAD fallback retained. Product PR #187 later merged at `7b22491`; correction commit
   `1e1214d` pins these integrated bytes on `codex/method-trial-final-evidence`. Its PR/hosted gate and
   merge, the merged-contract recheck, and lab PR #8 remain live gates at this record.
+
+## 2026-08-07 - Full-run presentation boundary repair
+
+- Review of lab PR #8 found that the new MethodTrial projection was being attempted for the
+  existing explicit `--full` benchmark mode even though the product-owned MethodTrial contract is
+  intentionally bounded to the 54-series smoke demonstration. The direct regression is repaired:
+  full runs retain their EvaluationBundle, ResearchPack, custody, generic Markdown/HTML report, and
+  byte-reproduction behavior, but neither compose nor record a smoke-only MethodTrialView artifact.
+- A focused full-run regression executes and reproduces the complete non-smoke benchmark, asserts
+  that no MethodTrialView artifact is emitted, and confirms the generic full-run report remains
+  byte-reproducible. The canonical `wbc1_demo` evidence and hashes above remain unchanged.
+- Product correction PR #190 must still merge before lab PR #8. Issue #6 remains deferred; this
+  repair adds no real data, public corpus, candidate method, model promotion, or lab-owned product UI.

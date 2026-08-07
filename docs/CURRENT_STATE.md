@@ -36,13 +36,15 @@ canonical_evidence:
   report_sha256: markdown=f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8;
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
 blockers: publish product correction branch `codex/method-trial-final-evidence`, obtain exact-head
-  hosted CI/review for it and lab PR #8, merge the correction first, verify its merged contract and
-  fixture bytes, and only then merge lab #8
+  hosted CI/review for it; prove the full-run presentation-boundary repair at the new lab PR #8
+  head; merge the correction first, verify its merged contract and fixture bytes, and only then
+  merge lab #8
 hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
   irreversible secret/private-data/out-of-root/person-shape boundary
 late_review_debt: lab #6 and product #189 are explicit non-blocking follow-ups; neither changes the
   conservative WB-C1 reject decision
-exact_resume_point: push product correction commit 1e1214d and the current lab branch HEAD, finish
-  exact-head hosted gates/review, merge the product correction, run the merged-contract and fixture
-  byte check, merge lab PR #8, and perform one late-comment sweep per PR
+exact_resume_point: finish focused and full local proof for the full-run presentation-boundary
+  repair, push the new lab branch HEAD, finish both exact-head hosted gates/review, merge product
+  correction #190, run the merged-contract and fixture byte check, merge lab PR #8, and perform one
+  late-comment sweep per PR
 ```
