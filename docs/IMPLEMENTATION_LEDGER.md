@@ -243,8 +243,20 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   MethodTrial view and reports on smoke runs only, restores the existing generic EvaluationBundle
   report/reproduction path for full runs, and records no MethodTrial artifact for a full run.
 - A focused regression executes and reproduces the complete non-smoke dataset while forbidding
-  MethodTrial composition. The full local gate also passed with 54 tests and two declared Windows
-  link skips, strict Pyright, Ruff, generated checks, strict MkDocs, hygiene, and whitespace. The
+  MethodTrial composition. The exact merged local gate also passed with 54 tests and three declared
+  Windows link skips, strict Pyright, Ruff, generated checks, strict MkDocs, hygiene, and whitespace. The
   integrated `wbc1_demo` producer and fixture remain unchanged at `0ef1930` and SHA-256 `afcc1ed9`.
-- Product correction PR #190 must still merge before lab PR #8. Issue #6 remains deferred; this
-  repair adds no real data, public corpus, candidate method, model promotion, or lab-owned product UI.
+
+## 2026-08-07 - Final product correction merge proof
+
+- Product correction PR #190 passed hosted run `31151644253` at exact head
+  `1e1214d9df6fa6b79c1e5743cb8f179f02331fd6` and merged with preserved history as
+  `8de65a22fe8a65ced893278a4e5a6835d778d65c` after its focused/full product checks, aging floor,
+  and fresh independent review found no CRITICAL/HIGH blocker.
+- From the lab, `contracts sync-method-trial --check-only` accepted that exact product merge without
+  rewriting the recorded producer provenance. A fresh detached `wbc1_demo` run at producer
+  `0ef1930` passed benchmark, byte reproduction, export, and report; its 167,936-byte LF export was
+  directly identical to the merged product fixture at SHA-256 `afcc1ed9`.
+- The product dependency is closed. Lab PR #8 remains the ordered final merge after its own final
+  docs-state hosted gate, thread sweep, and aging floor. No model promotion, real/private input,
+  public corpus, additional method, or product #174 work is authorized by this evidence.
