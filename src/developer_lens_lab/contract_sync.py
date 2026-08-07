@@ -198,8 +198,13 @@ def sync_method_trial_view_contract(
             raise ContractSyncError("vendored MethodTrialView snapshot is unavailable") from exc
         if vendored != payload:
             raise ContractSyncError("vendored MethodTrialView schema differs from producer bytes")
+        if not isinstance(provenance, dict):
+            raise ContractSyncError(
+                "vendored MethodTrialView provenance differs from requested commit"
+            )
+        provenance = cast(dict[str, Any], provenance)
         expected_digest = "sha256:" + hashlib.sha256(payload).hexdigest()
-        files = provenance.get("files", []) if isinstance(provenance, dict) else []
+        files = provenance.get("files", [])
         if provenance.get("product_commit") != commit or files != [
             {"name": "schema.json", "sha256": expected_digest, "size_bytes": len(payload)}
         ]:
