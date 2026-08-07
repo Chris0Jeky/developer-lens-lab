@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -49,6 +51,21 @@ def _root(root: Path | None) -> Path:
 
 def _sha256(payload: bytes) -> str:
     return "sha256:" + hashlib.sha256(payload).hexdigest()
+
+
+def _publish_export(path: Path, payload: bytes) -> None:
+    """Atomically replace the named export without following a final symlink."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary_name = tempfile.mkstemp(prefix=".dllab-export-", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(handle, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _metric(bundle: EvaluationBundle, role: str, code: str) -> float:
@@ -731,7 +748,7 @@ def compose_method_trial_view(
                 "report": f"uv run dllab report build {run_id}",
             },
             "verification": {
-                "local": "passed",
+                "local": "not_run",
                 "product_hosted": "not_run",
                 "lab_hosted": "not_run",
             },
@@ -752,7 +769,7 @@ def export_method_trial(
     root = _root(root)
     view = compose_method_trial_view(run_id, root=root, artifact_root=artifact_root)
     data = canonical_json_bytes(view) + b"\n"
-    output_path = (output or (root / "method-trial-view.json")).resolve()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(data)
+    requested_output = output or (root / "method-trial-view.json")
+    output_path = requested_output.parent.resolve() / requested_output.name
+    _publish_export(output_path, data)
     return MethodTrialExport(run_id, data, output_path, _sha256(data))

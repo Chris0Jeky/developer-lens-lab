@@ -44,6 +44,7 @@ def test_method_trial_export_is_deterministic_and_schema_valid(tmp_path: Path, m
     assert payload["scorecard"]["candidate"]["false_alerts_per_year"]["value"] == 4.2
     assert payload["scorecard"]["candidate"]["calibration_brier"]["value"] == 0.017341137335170863
     assert payload["decision"]["outcome"] == "reject"
+    assert payload["reproducibility"]["verification"]["local"] == "not_run"
     assert [gate["outcome"] for gate in payload["acceptance_gates"]] == [
         "fail",
         "fail",
@@ -82,6 +83,26 @@ def test_method_trial_export_is_deterministic_and_schema_valid(tmp_path: Path, m
     ] == ["parser_shift"]
     flattened = json.dumps(payload, sort_keys=True)
     assert all(value not in flattened for value in ("http://", "https://", "@", "C:\\"))
+
+
+def test_method_trial_export_replaces_final_symlink_without_following_it(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_symlink")
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(b"outside sentinel\n")
+    output = tmp_path / "view.json"
+    try:
+        output.symlink_to(outside)
+    except OSError:
+        pytest.skip("file symlinks are unavailable on this host")
+
+    exported = export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path, output=output)
+
+    assert outside.read_bytes() == b"outside sentinel\n"
+    assert not output.is_symlink()
+    assert output.read_bytes() == exported.payload
 
 
 def test_method_trial_vendor_snapshot_is_pinned() -> None:
