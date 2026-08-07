@@ -1,0 +1,998 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "C1"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "$comment": "Runtime and typed consumers additionally require this UTC midnight to be a Monday.",
+        "properties": {
+          "generated_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T00:00:00Z$"
+          }
+        },
+        "required": [
+          "generated_at"
+        ]
+      }
+    }
+  ],
+  "properties": {
+    "classification": {
+      "enum": [
+        "C0",
+        "C1"
+      ],
+      "type": "string"
+    },
+    "feature_registry": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_layer": {
+            "enum": [
+              "observed",
+              "deterministic"
+            ],
+            "type": "string"
+          },
+          "feature_id": {
+            "pattern": "^(?!.*(?:(?:^|[._-])[pP][eE][rR][sS][oO][nN](?:$|[._-])|(?:^|[._-])[pP][eE][oO][pP][lL][eE](?:$|[._-])|(?:^|[._-])[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL](?:$|[._-])|(?:^|[._-])[cC][oO][nN][tT][rR][iI][bB][uU][tT][oO][rR](?:$|[._-])|(?:^|[._-])[dD][eE][vV][eE][lL][oO][pP][eE][rR](?:$|[._-])|(?:^|[._-])[aA][uU][tT][hH][oO][rR](?:$|[._-])|(?:^|[._-])[cC][oO][mM][mM][iI][tT][tT][eE][rR](?:$|[._-])|(?:^|[._-])[rR][eE][vV][iI][eE][wW][eE][rR](?:$|[._-])|(?:^|[._-])[eE][mM][pP][lL][oO][yY][eE][eE](?:$|[._-])|(?:^|[._-])[eE][nN][gG][iI][nN][eE][eE][rR](?:$|[._-])|(?:^|[._-])[tT][eE][aA][mM][mM][aA][tT][eE](?:$|[._-])|(?:^|[._-])[tT][eE][aA][mM][._-]+[mM][eE][mM][bB][eE][rR](?:$|[._-])|(?:^|[._-])[uU][sS][eE][rR][nN][aA][mM][eE](?:$|[._-])|(?:^|[._-])[uU][sS][eE][rR][._-]+[lL][oO][gG][iI][nN](?:$|[._-])|(?:^|[._-])[hH][eE][aA][dD][cC][oO][uU][nN][tT](?:$|[._-])|(?:^|[._-])[sS][eE][nN][iI][oO][rR][iI][tT][yY](?:$|[._-])|(?:^|[._-])[pP][rR][oO][dD][uU][cC][tT][iI][vV][A-Za-z0-9]*(?:$|[._-])|(?:^|[._-])[pP][eE][rR][fF][oO][rR][mM][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-])[eE][fF][fF][oO][rR][tT](?:$|[._-])|(?:^|[._-])[aA][tT][tT][eE][nN][dD][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-])[hH][oO][uU][rR][sS][._-]+[wW][oO][rR][kK][eE][dD](?:$|[._-])|(?:^|[._-])[aA][vV][aA][iI][lL][aA][bB][iI][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-])[dD][iI][lL][iI][gG][eE][nN][cC][eE](?:$|[._-])|(?:^|[._-])[qQ][uU][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-])[wW][oO][rR][tT][hH](?:$|[._-])|(?:^|[._-])[pP][eE][rR][sS][oO][nN][aA][lL][iI][tT][yY](?:$|[._-])|(?:^|[._-])[sS][eE][nN][tT][iI][mM][eE][nN][tT](?:$|[._-])|(?:^|[._-])[bB][uU][rR][nN][oO][uU][tT](?:$|[._-])|(?:^|[._-])[sS][uU][rR][vV][eE][iI][lL][lL][aA][nN][cC][eE](?:$|[._-])|(?:^|[._-])[bB][uU][sS][._-]+[fF][aA][cC][tT][oO][rR](?:$|[._-])|(?:^|[._-])[iI][nN][dD][iI][vV][iI][dD][uU][aA][lL][._-]+[oO][uU][tT][pP][uU][tT](?:$|[._-])))[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "prohibited_interpretation_codes": {
+            "contains": {
+              "const": "NOT_PERSON_MEASURE"
+            },
+            "items": {
+              "enum": [
+                "NOT_PERSON_MEASURE",
+                "NOT_PRODUCTIVITY",
+                "NOT_EFFORT"
+              ],
+              "type": "string"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "type": "array"
+          },
+          "relation": {
+            "enum": [
+              "coverage",
+              "repository_week",
+              "pr_episode",
+              "ci_attempt",
+              "release_episode",
+              "collection_probe",
+              "system_event"
+            ],
+            "type": "string"
+          },
+          "unit_code": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "value_kind": {
+            "enum": [
+              "count",
+              "duration_hours",
+              "ratio",
+              "category",
+              "boolean"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "feature_id",
+          "relation",
+          "value_kind",
+          "unit_code",
+          "evidence_layer",
+          "prohibited_interpretation_codes"
+        ],
+        "type": "object"
+      },
+      "maxItems": 128,
+      "type": "array"
+    },
+    "generated_at": {
+      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+      "type": "string"
+    },
+    "pack_id": {
+      "pattern": "^[a-z][a-z0-9_]{2,63}$",
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "fixture_revision": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "producer_code": {
+          "const": "developer-lens.research-pack.v1",
+          "type": "string"
+        },
+        "product_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_commit",
+        "contract_sha256",
+        "producer_code",
+        "fixture_revision"
+      ],
+      "type": "object"
+    },
+    "relations": {
+      "additionalProperties": false,
+      "properties": {
+        "ci_attempt": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "collection_probe": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "coverage": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "pr_episode": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "release_episode": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "repository_week": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "system_event": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "media_type": {
+                      "enum": [
+                        "application/json",
+                        "application/x-parquet",
+                        "text/markdown"
+                      ],
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "maximum": 10000000000,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sha256",
+                    "size_bytes",
+                    "media_type"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "row_count": {
+              "anyOf": [
+                {
+                  "maximum": 100000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "schema_id": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "schema_id",
+            "row_count",
+            "artifact",
+            "reason_code"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "coverage",
+        "repository_week",
+        "pr_episode",
+        "ci_attempt",
+        "release_episode",
+        "collection_probe",
+        "system_event"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "DeveloperLensResearchPack.v1",
+      "type": "string"
+    },
+    "temporal_availability": {
+      "additionalProperties": false,
+      "properties": {
+        "collection": {
+          "additionalProperties": false,
+          "properties": {
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            },
+            "window": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    },
+                    "start": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "window",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "event": {
+          "additionalProperties": false,
+          "properties": {
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            },
+            "window": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    },
+                    "start": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "window",
+            "reason_code"
+          ],
+          "type": "object"
+        },
+        "feature": {
+          "additionalProperties": false,
+          "properties": {
+            "reason_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "present",
+                "absent",
+                "unsupported",
+                "intentionally_omitted"
+              ],
+              "type": "string"
+            },
+            "window": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    },
+                    "start": {
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,6}))?Z$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "window",
+            "reason_code"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "event",
+        "collection",
+        "feature"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "pack_id",
+    "generated_at",
+    "classification",
+    "provenance",
+    "temporal_availability",
+    "relations",
+    "feature_registry"
+  ],
+  "type": "object"
+}

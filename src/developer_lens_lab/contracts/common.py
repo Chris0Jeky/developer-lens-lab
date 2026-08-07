@@ -7,6 +7,7 @@ from typing import Annotated, Literal, Self
 from pydantic import (
     AfterValidator,
     BaseModel,
+    BeforeValidator,
     ConfigDict,
     Field,
     StringConstraints,
@@ -33,6 +34,16 @@ OpaqueId = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]{2,63}$")]
 Sha256 = Annotated[str, StringConstraints(pattern=r"^sha256:[0-9a-f]{64}$")]
 CommitSha = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{40}$")]
 AvailabilityState = Literal["present", "absent", "unsupported", "intentionally_omitted"]
+
+
+def _json_integer(value: object) -> object:
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
+JSON_INTEGER_COERCION = BeforeValidator(_json_integer)
+JsonInteger = Annotated[int, JSON_INTEGER_COERCION]
 
 
 class StrictModel(BaseModel):
@@ -97,8 +108,12 @@ class TemporalAvailability(StrictModel):
 
 class ArtifactRef(StrictModel):
     sha256: Sha256
-    size_bytes: Annotated[int, Field(ge=0, le=10_000_000_000)]
-    media_type: Literal["application/json", "application/x-parquet", "text/markdown"]
+    size_bytes: Annotated[
+        int,
+        Field(ge=0, le=10_000_000_000),
+        JSON_INTEGER_COERCION,
+    ]
+    media_type: Literal["application/json", "application/x-parquet", "text/markdown", "text/html"]
 
 
 class MetricValue(StrictModel):
@@ -125,6 +140,7 @@ class MetricValue(StrictModel):
     )
 
     metric_code: Code
+    domain_code: Code = "primary"
     state: AvailabilityState
     value: Annotated[float, Field(allow_inf_nan=False)] | None
     reason_code: Code | None

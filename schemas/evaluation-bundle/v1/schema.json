@@ -40,7 +40,8 @@
           "enum": [
             "application/json",
             "application/x-parquet",
-            "text/markdown"
+            "text/markdown",
+            "text/html"
           ],
           "title": "Media Type",
           "type": "string"
@@ -275,6 +276,12 @@
         }
       ],
       "properties": {
+        "domain_code": {
+          "default": "primary",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
+          "title": "Domain Code",
+          "type": "string"
+        },
         "metric_code": {
           "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,95}$",
           "title": "Metric Code",
@@ -542,7 +549,7 @@
           "items": {
             "type": "integer"
           },
-          "maxItems": 128,
+          "maxItems": 512,
           "minItems": 1,
           "title": "Seeds",
           "type": "array"

@@ -23,7 +23,7 @@
       ],
       "id": "LAB-CONTRACT-01",
       "outcome": "Pack validation",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "ResearchPack.v1 contracts"
     },
     {
@@ -32,7 +32,7 @@
       ],
       "id": "LAB-CONTRACT-02",
       "outcome": "Decision bundle validation",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "EvaluationBundle.v1 contracts"
     },
     {
@@ -41,7 +41,7 @@
       ],
       "id": "LAB-ART-01",
       "outcome": "Replayable objects",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Confined content-addressed artifact store"
     },
     {
@@ -51,7 +51,7 @@
       ],
       "id": "LAB-WBC1-01",
       "outcome": "Inspectible rejection decision",
-      "status": "ACTIVE",
+      "status": "IN_REVIEW",
       "title": "Invented weekly-series smoke benchmark"
     },
     {
@@ -60,7 +60,7 @@
       ],
       "id": "LAB-SYNC-01",
       "outcome": "Pinned provenance",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "Generated product-contract snapshot"
     },
     {
@@ -69,7 +69,7 @@
       ],
       "id": "LAB-RUN-01",
       "outcome": "One-command replay",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "Reproducible run manifest and replay"
     },
     {
@@ -78,7 +78,7 @@
       ],
       "id": "LAB-SPLIT-01",
       "outcome": "Leakage-safe splits",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "Repository, time, and seed-family split engine"
     },
     {
@@ -87,7 +87,7 @@
       ],
       "id": "LAB-HOLDOUT-01",
       "outcome": "Single-use holdout",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "Explicit final-holdout custody"
     },
     {
@@ -96,7 +96,7 @@
       ],
       "id": "LAB-WBC1-02",
       "outcome": "Deterministic fallback",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "Rolling median and MAD baseline"
     },
     {
@@ -105,7 +105,7 @@
       ],
       "id": "LAB-WBC1-03",
       "outcome": "Baseline comparison",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "Online change-point candidate"
     },
     {
@@ -114,7 +114,7 @@
       ],
       "id": "LAB-WBC1-04",
       "outcome": "Localisation evidence",
-      "status": "QUEUED",
+      "status": "DONE",
       "title": "PELT offline descriptive arm"
     },
     {
@@ -123,7 +123,7 @@
       ],
       "id": "LAB-WBC1-05",
       "outcome": "Reviewable result",
-      "status": "QUEUED",
+      "status": "IN_REVIEW",
       "title": "Evaluation bundle and decision report"
     },
     {
@@ -132,7 +132,7 @@
       ],
       "id": "LAB-BRIDGE-01",
       "outcome": "Both-end proof",
-      "status": "QUEUED",
+      "status": "IN_REVIEW",
       "title": "Product and lab compatibility fixture"
     },
     {
@@ -141,7 +141,7 @@
       ],
       "id": "LAB-DEMO-01",
       "outcome": "Fresh-clone proof",
-      "status": "QUEUED",
+      "status": "IN_REVIEW",
       "title": "End-to-end smoke demo and runbook"
     },
     {

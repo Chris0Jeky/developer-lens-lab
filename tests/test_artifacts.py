@@ -42,3 +42,17 @@ def test_json_store_rejects_non_finite_values_before_writing(tmp_path: Path) -> 
     with pytest.raises(ArtifactError, match="non-finite"):
         store.put_json("scope_demo", {"metric": float("nan")})
     assert not root.exists()
+
+
+def test_scope_reservation_and_append_only_records_refuse_reuse(tmp_path: Path) -> None:
+    store = ArtifactStore(tmp_path / ".dllab")
+    scope = store.reserve_scope("scope_demo")
+    custody = store.write_scope_file_once("scope_demo", "custody.json", b"{}\n")
+
+    assert scope.is_dir()
+    assert custody.read_bytes() == b"{}\n"
+    with pytest.raises(ArtifactError, match="scope already exists"):
+        store.reserve_scope("scope_demo")
+    with pytest.raises(ArtifactError, match="scope file already exists"):
+        store.write_scope_file_once("scope_demo", "custody.json", b"changed\n")
+    assert custody.read_bytes() == b"{}\n"
