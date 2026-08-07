@@ -27,10 +27,11 @@ class BocpdParameters:
     # `1 / expected_run_length` -- is denominated in OBSERVED SAMPLES, not
     # calendar weeks.  Missing/non-finite weeks are intentionally skipped (see
     # bocpd_scores) and do not advance the run-length/hazard posterior.  This is
-    # the canonical Adams--MacKay run-length-in-observations semantics and the
-    # preregistered choice (docs/RESEARCH_PROGRAMME.md); the method must not be
-    # used for calendar-time / real-time run-length claims without a separate
-    # re-preregistration and a fresh run.
+    # the canonical Adams--MacKay run-length-in-observations semantics -- a
+    # post-hoc characterization of the already-run behavior, NOT a preregistration
+    # (docs/EXPERIMENT_LEDGER.md).  The method must not be used for calendar-time /
+    # real-time run-length claims without a separate preregistration AND a newly
+    # reserved, untouched holdout with its own custody event.
     expected_run_length: float = 52.0
     warmup: int = 12
     recent_run_lengths: int = 3
