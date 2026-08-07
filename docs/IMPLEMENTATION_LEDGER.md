@@ -144,3 +144,29 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   lifecycle, workload counts, corrupt-manifest handling, present primary-domain metrics, and
   zero-delay fallback ordering. They do not overturn the already conservative `reject` and are not
   silently dropped or expanded into another fix loop.
+
+## 2026-08-07 - Exact merged producer reconciliation
+
+- Developer Lens ResearchPack PR #178 merged as
+  `be9c2451e983e776850c4cd4700cc8c234ea5e14` after exact-head hosted run `31140838615` passed.
+  The product schema SHA-256 is
+  `7734aad6635f840d16d8dda893f885911401fb32c36a51825d2d142eb6d3c2a2`; the invented fixture is
+  `f2bb3da8407633c44dafb7177dccd8fb085f3838f1fc0813d076264afd59e3b4`. The lab sync records that
+  merge commit and both byte checksums as provenance only.
+- Before the final sync, the isolated lab steward checkout passed the locked runtime-only CLI
+  install, Ruff format/lint, strict Pyright, context/task/schema checks, 38 tests plus one declared
+  Windows directory-symlink skip with 88% coverage, strict MkDocs, hygiene, and range whitespace.
+  Focused post-sync producer/runtime checks passed 9 tests plus the same declared skip.
+- Clean synchronized head `b4cdb364b753046588d3bd6c80e027c665b482fa` ran `wbc1_demo`, reproduced
+  every stored artifact byte-for-byte, and rebuilt both reports. The exact reviewed result did not
+  move: baseline false alerts/year `2.966666666666667` and detection `0.75`; candidate false
+  alerts/year `4.2`, detection `0.75`, and Brier `0.017341137335170863`; both selections remain
+  nonviable and the decision remains `reject`.
+- The new EvaluationBundle digest is
+  `sha256:71fd7c90daa794e58424a697984d89aba9f1166cc3af28e7ef2a1ebebb715a29`; custody is
+  `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`; Markdown is
+  `sha256:2c0a638711409122b984abd9d24dd1382f74d05f82508979621ec35e0c21848c`; HTML is
+  `sha256:53cf6c19906b3b478be2755b3fc3277364cf27fc7f5bef40c524c50970b78df1`.
+- Product #182 and lab #6 retain the bounded non-demo hardening backlog. No real data, corpus,
+  additional candidate, product claim, or promotion was added. Lab PR #3 still requires its final
+  push, exact-head hosted CI/review sweep, and merge.
