@@ -21,7 +21,8 @@ capabilities:
   network_collection: disabled
   external_model: disabled
   real_data: disabled
-  product_promotion: owner_gated
+  product_integration: bounded_c0_presentation_approved
+  product_promotion: prohibited
 canonical_evidence:
   run_id: wbc1_demo
   producer_commit: 0ef193070a9b80b81cef5a1710a1d65e0b271c15
@@ -35,16 +36,14 @@ canonical_evidence:
   fixture_sha256: sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9
   report_sha256: markdown=f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8;
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
-blockers: publish product correction branch `codex/method-trial-final-evidence`, obtain exact-head
-  hosted CI/review for it; prove the full-run presentation-boundary repair at the new lab PR #8
-  head; merge the correction first, verify its merged contract and fixture bytes, and only then
-  merge lab #8
+blockers: merge product correction PR #190 after its exact-head hosted/review/aging gates; verify
+  its merged contract and fixture bytes; then prove and resolve the lab full-benchmark preservation
+  repair and merge lab PR #8 after its exact-head hosted/review/aging gates
 hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
   irreversible secret/private-data/out-of-root/person-shape boundary
 late_review_debt: lab #6 and product #189 are explicit non-blocking follow-ups; neither changes the
   conservative WB-C1 reject decision
-exact_resume_point: finish focused and full local proof for the full-run presentation-boundary
-  repair, push the new lab branch HEAD, finish both exact-head hosted gates/review, merge product
-  correction #190, run the merged-contract and fixture byte check, merge lab PR #8, and perform one
-  late-comment sweep per PR
+exact_resume_point: finish product correction PR #190, run the merged-contract and fixture byte
+  check, finish the lab full-benchmark repair gate on PR #8, merge it, and perform one late-comment
+  sweep per PR before considering product #174
 ```

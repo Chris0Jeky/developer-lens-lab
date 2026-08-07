@@ -237,13 +237,14 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 
 ## 2026-08-07 - Full-run presentation boundary repair
 
-- Review of lab PR #8 found that the new MethodTrial projection was being attempted for the
-  existing explicit `--full` benchmark mode even though the product-owned MethodTrial contract is
-  intentionally bounded to the 54-series smoke demonstration. The direct regression is repaired:
-  full runs retain their EvaluationBundle, ResearchPack, custody, generic Markdown/HTML report, and
-  byte-reproduction behavior, but neither compose nor record a smoke-only MethodTrialView artifact.
-- A focused full-run regression executes and reproduces the complete non-smoke benchmark, asserts
-  that no MethodTrialView artifact is emitted, and confirms the generic full-run report remains
-  byte-reproducible. The canonical `wbc1_demo` evidence and hashes above remain unchanged.
+- Late exact-head review then found one direct regression: `run_benchmark` attempted the smoke-only
+  MethodTrial composition for opt-in full benchmarks, whose deliberately different counts fail the
+  C0 presentation contract after reserving a single-use scope. The bounded repair keeps the rich
+  MethodTrial view and reports on smoke runs only, restores the existing generic EvaluationBundle
+  report/reproduction path for full runs, and records no MethodTrial artifact for a full run.
+- A focused regression executes and reproduces the complete non-smoke dataset while forbidding
+  MethodTrial composition. The full local gate also passed with 54 tests and two declared Windows
+  link skips, strict Pyright, Ruff, generated checks, strict MkDocs, hygiene, and whitespace. The
+  integrated `wbc1_demo` producer and fixture remain unchanged at `0ef1930` and SHA-256 `afcc1ed9`.
 - Product correction PR #190 must still merge before lab PR #8. Issue #6 remains deferred; this
   repair adds no real data, public corpus, candidate method, model promotion, or lab-owned product UI.

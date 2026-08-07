@@ -677,10 +677,10 @@ def run_benchmark(
     manifest_path = store.write_scope_file_once(
         scope, "run.json", canonical_json_bytes(manifest) + b"\n"
     )
-    method_trial_refs = (view_ref,) if view_ref is not None else ()
+    presentation_refs = (view_ref,) if view_ref is not None else ()
     store.write_scope_manifest(
         scope,
-        (*tuple(bundle.artifact_manifest), bundle_ref, *method_trial_refs, markdown_ref, html_ref),
+        (*tuple(bundle.artifact_manifest), bundle_ref, *presentation_refs, markdown_ref, html_ref),
     )
     return BenchmarkRun(
         run_id, scope, bundle, bundle_ref, view_ref, markdown_ref, html_ref, manifest_path
@@ -703,6 +703,9 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
     if manifest.get("schema_version") != "DeveloperLensWbc1Run.v1":
         raise RunnerError("unsupported WB-C1 run manifest")
+    smoke = manifest.get("smoke")
+    if not isinstance(smoke, bool):
+        raise RunnerError("run manifest smoke flag must be Boolean")
     scope = str(manifest["run_id"])
     artifact_root = manifest_path.parents[2]
     store = ArtifactStore(artifact_root)
@@ -713,12 +716,9 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     expected_digest = str(manifest["deterministic_bundle_sha256"])
     if _sha256(expected) != expected_digest:
         raise RunnerError("recorded bundle digest does not match stored bundle")
-    smoke = manifest.get("smoke")
-    if not isinstance(smoke, bool):
-        raise RunnerError("run manifest smoke flag must be Boolean")
     if not smoke and "method_trial_view" in manifest:
         raise RunnerError("full run manifest must not declare a smoke-only MethodTrialView")
-    for name in (
+    reference_names = (
         "custody",
         "baseline",
         "candidate",
@@ -728,8 +728,10 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         "research_pack",
         "research_pack_coverage",
         "research_pack_repository_week",
-        *(("method_trial_view",) if smoke else ()),
-    ):
+    )
+    if smoke:
+        reference_names = (*reference_names, "method_trial_view")
+    for name in reference_names:
         store.get_bytes(scope, ArtifactRef.model_validate(manifest[name]))
     if _git_commit(root) != manifest.get("lab_commit"):
         raise RunnerError("current lab commit differs from the recorded run")
@@ -834,17 +836,13 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         )
         markdown_bytes = build_method_trial_markdown(view).encode("utf-8")
         html_bytes = build_method_trial_html(view).encode("utf-8")
-        _assert_reproduced_reference(
-            "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
-        )
-        _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
     else:
         markdown_bytes = build_markdown(bundle).encode("utf-8")
         html_bytes = build_html(bundle).encode("utf-8")
-        _assert_reproduced_reference(
-            "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
-        )
-        _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
+    _assert_reproduced_reference(
+        "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
+    )
+    _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
     reproduced = canonical_json_bytes(bundle.model_dump(mode="json"))
     if _reference(reproduced, "application/json") != bundle_ref:
         raise RunnerError("reproduced EvaluationBundle bytes differ from the recorded artifact")
