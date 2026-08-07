@@ -231,6 +231,28 @@ def test_reproduction_recomputes_result_artifacts(
         reproduce_run(result.manifest_path, root=ROOT)
 
 
+def test_reproduction_reports_controlled_error_for_broken_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Finding 4: a stored run manifest with a missing or malformed field must
+    # surface a controlled RunnerError, not an uncaught KeyError/ValidationError.
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_manifest")
+    original = result.manifest_path.read_text(encoding="utf-8")
+
+    missing = json.loads(original)
+    del missing["bundle"]
+    result.manifest_path.write_text(json.dumps(missing), encoding="utf-8")
+    with pytest.raises(RunnerError, match="missing required field 'bundle'"):
+        reproduce_run(result.manifest_path, root=ROOT)
+
+    invalid = json.loads(original)
+    invalid["custody"] = "not-an-artifact-reference"
+    result.manifest_path.write_text(json.dumps(invalid), encoding="utf-8")
+    with pytest.raises(RunnerError, match="not a valid artifact reference"):
+        reproduce_run(result.manifest_path, root=ROOT)
+
+
 def test_reproduction_fails_closed_when_recorded_provenance_drifts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

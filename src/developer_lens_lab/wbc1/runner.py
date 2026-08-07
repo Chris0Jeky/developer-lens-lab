@@ -13,6 +13,7 @@ from typing import Any, Literal, cast
 import pyarrow as pa
 import pyarrow.parquet as pq
 from jsonschema import Draft202012Validator
+from pydantic import ValidationError
 
 from developer_lens_lab.artifacts import ArtifactError, ArtifactStore, canonical_json_bytes
 from developer_lens_lab.contracts import ArtifactRef, EvaluationBundle, ResearchPack
@@ -689,10 +690,28 @@ def run_benchmark(
     )
 
 
+def _require_field(manifest: dict[str, Any], key: str) -> Any:
+    """Read a required run-manifest field or fail with a controlled RunnerError."""
+    if key not in manifest:
+        raise RunnerError(f"run manifest is missing required field {key!r}")
+    return manifest[key]
+
+
+def _require_ref(manifest: dict[str, Any], key: str) -> ArtifactRef:
+    """Read and validate a required ArtifactRef field, translating bad data to RunnerError."""
+    try:
+        return ArtifactRef.model_validate(_require_field(manifest, key))
+    except ValidationError as exc:
+        raise RunnerError(f"run manifest field {key!r} is not a valid artifact reference") from exc
+
+
 def _assert_reproduced_reference(
     name: str, payload: bytes, media_type: MediaType, recorded: object
 ) -> ArtifactRef:
-    expected = ArtifactRef.model_validate(recorded)
+    try:
+        expected = ArtifactRef.model_validate(recorded)
+    except ValidationError as exc:
+        raise RunnerError(f"recorded {name} is not a valid artifact reference") from exc
     actual = _reference(payload, media_type)
     if actual != expected:
         raise RunnerError(f"reproduced {name} bytes differ from the recorded artifact")
@@ -708,14 +727,14 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     smoke = manifest.get("smoke")
     if not isinstance(smoke, bool):
         raise RunnerError("run manifest smoke flag must be Boolean")
-    scope = str(manifest["run_id"])
+    scope = str(_require_field(manifest, "run_id"))
     artifact_root = manifest_path.parents[2]
     store = ArtifactStore(artifact_root)
     if manifest_path.resolve() != (store.scope_root(scope) / "run.json").resolve():
         raise RunnerError("run manifest is outside its declared artifact scope")
-    bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
+    bundle_ref = _require_ref(manifest, "bundle")
     expected = store.get_bytes(scope, bundle_ref)
-    expected_digest = str(manifest["deterministic_bundle_sha256"])
+    expected_digest = str(_require_field(manifest, "deterministic_bundle_sha256"))
     if _sha256(expected) != expected_digest:
         raise RunnerError("recorded bundle digest does not match stored bundle")
     if not smoke and "method_trial_view" in manifest:
@@ -734,7 +753,7 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     if smoke:
         reference_names = (*reference_names, "method_trial_view")
     for name in reference_names:
-        store.get_bytes(scope, ArtifactRef.model_validate(manifest[name]))
+        store.get_bytes(scope, _require_ref(manifest, name))
     if _git_commit(root) != manifest.get("lab_commit"):
         raise RunnerError("current lab commit differs from the recorded run")
     if _sha256((root / "uv.lock").read_bytes()) != manifest.get("environment_sha256"):
@@ -773,7 +792,7 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     if recorded_custody != custody_bytes + b"\n":
         raise RunnerError("append-only holdout custody record differs from the reproduced plan")
     custody_ref = _assert_reproduced_reference(
-        "custody", custody_bytes, "application/json", manifest["custody"]
+        "custody", custody_bytes, "application/json", _require_field(manifest, "custody")
     )
     custody = cast(dict[str, Any], json.loads(custody_bytes))
     holdout = dataset.replay_final_holdout(str(custody["dataset_sha256"]))
@@ -782,32 +801,32 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         "ResearchPack manifest",
         materialized.manifest_bytes,
         "application/json",
-        manifest["research_pack"],
+        _require_field(manifest, "research_pack"),
     )
     coverage_ref = _assert_reproduced_reference(
         "ResearchPack coverage",
         materialized.coverage_bytes,
         "application/x-parquet",
-        manifest["research_pack_coverage"],
+        _require_field(manifest, "research_pack_coverage"),
     )
     repository_week_ref = _assert_reproduced_reference(
         "ResearchPack repository_week",
         materialized.repository_week_bytes,
         "application/x-parquet",
-        manifest["research_pack_repository_week"],
+        _require_field(manifest, "research_pack_repository_week"),
     )
     evaluation = run_evaluation(dataset.train, dataset.test, holdout, plan)
     baseline_bytes = _result_parquet_bytes(evaluation.baseline_holdout)
     candidate_bytes = _result_parquet_bytes(evaluation.candidate_holdout)
     pelt_bytes = _pelt_bytes(evaluation)
     baseline_ref = _assert_reproduced_reference(
-        "baseline results", baseline_bytes, "application/x-parquet", manifest["baseline"]
+        "baseline results", baseline_bytes, "application/x-parquet", _require_field(manifest, "baseline")
     )
     candidate_ref = _assert_reproduced_reference(
-        "candidate results", candidate_bytes, "application/x-parquet", manifest["candidate"]
+        "candidate results", candidate_bytes, "application/x-parquet", _require_field(manifest, "candidate")
     )
     pelt_ref = _assert_reproduced_reference(
-        "PELT summary", pelt_bytes, "application/json", manifest["pelt"]
+        "PELT summary", pelt_bytes, "application/json", _require_field(manifest, "pelt")
     )
     bundle = _build_bundle(
         root,
@@ -834,7 +853,10 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         )
         view_bytes = canonical_json_bytes(view)
         _assert_reproduced_reference(
-            "MethodTrial view", view_bytes, "application/json", manifest["method_trial_view"]
+            "MethodTrial view",
+            view_bytes,
+            "application/json",
+            _require_field(manifest, "method_trial_view"),
         )
         markdown_bytes = build_method_trial_markdown(view).encode("utf-8")
         html_bytes = build_method_trial_html(view).encode("utf-8")
@@ -842,9 +864,11 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         markdown_bytes = build_markdown(bundle).encode("utf-8")
         html_bytes = build_html(bundle).encode("utf-8")
     _assert_reproduced_reference(
-        "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
+        "Markdown report", markdown_bytes, "text/markdown", _require_field(manifest, "markdown")
     )
-    _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
+    _assert_reproduced_reference(
+        "HTML report", html_bytes, "text/html", _require_field(manifest, "html")
+    )
     reproduced = canonical_json_bytes(bundle.model_dump(mode="json"))
     if _reference(reproduced, "application/json") != bundle_ref:
         raise RunnerError("reproduced EvaluationBundle bytes differ from the recorded artifact")
@@ -863,7 +887,7 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
     if smoke:
         from .export import compose_method_trial_view
 
-        view_ref = ArtifactRef.model_validate(manifest["method_trial_view"])
+        view_ref = _require_ref(manifest, "method_trial_view")
         view_bytes = store.get_bytes(run_id, view_ref)
         view = json.loads(view_bytes)
         recomposed = compose_method_trial_view(run_id, root=_root(), store=store, manifest=manifest)
@@ -874,15 +898,15 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
     else:
         if "method_trial_view" in manifest:
             raise RunnerError("full run manifest must not declare a smoke-only MethodTrialView")
-        bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
+        bundle_ref = _require_ref(manifest, "bundle")
         bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
         markdown_text = build_markdown(bundle)
         html_text = build_html(bundle)
     markdown = store.put_text(run_id, markdown_text, "text/markdown")
     html_ref = store.put_text(run_id, html_text, "text/html")
     if (
-        markdown.model_dump(mode="json") != manifest["markdown"]
-        or html_ref.model_dump(mode="json") != manifest["html"]
+        markdown.model_dump(mode="json") != _require_field(manifest, "markdown")
+        or html_ref.model_dump(mode="json") != _require_field(manifest, "html")
     ):
         raise RunnerError("report bytes differ from the recorded deterministic report")
     store.write_scope_file(run_id, "report.md", store.get_bytes(run_id, markdown))
