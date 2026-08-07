@@ -10,6 +10,13 @@ only when measurement, real-data scope, external users, or an irreversible bound
   the stable check name and delivery time.
 - Add dependency-update automation, dependency review, CodeQL, and secret scanning after the
   dependency surface settles.
+- Broaden the committed Claude `permissions.deny` coverage beyond the confined store and generated
+  output. The current rules (`.dllab`, `artifacts/`, `reports/generated/`) scope only the `Read`
+  tool for those three sinks, mirroring developer-lens PR #191; they do not cover `Grep`/`Glob`
+  enumeration of those paths, nor root-level `.env`/`*.pem`/`*.key` or scattered
+  `*.parquet`/`*.arrow`/`method-trial-view.json` outside those directories. Extend the deny set and
+  the `context verify` parity check when contributors join or a machine-local bypass posture makes
+  best-effort read-scoping insufficient.
 - Pin GitHub Actions by immutable commit and add build provenance/signing if release artifacts begin.
 - Add a multi-platform/Python-version CI matrix after the Windows/Linux single lanes expose actual
   portability risks.

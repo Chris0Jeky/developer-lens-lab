@@ -297,5 +297,27 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Verified: hosted `Prove the lab` green at `91b3505` and at the merge commit; local ruff,
   pyright, pytest (54 passed, 3 pre-existing symlink skips), strict MkDocs, hygiene.
 - Deferred (tracked): #12 skill-copy parity markers, combined context budget, settings-guard
-  scope; #13 deny-rule parity with the product repo. No research vertical, corpus, model, or
-  gate activation is authorized by this evidence.
+  scope. (#13 deny-rule parity landed 2026-08-07 — see the next entry.) No research vertical,
+  corpus, model, or gate activation is authorized by this evidence.
+
+## 2026-08-07 — Protected-data deny-rule parity
+
+- PR #15 (`claude/settings-deny-dllab-parity`) closes #13. Committed `.claude/settings.json` gained
+  `permissions.deny` `Read` rules for `.dllab/**`, `artifacts/**`, and `reports/generated/**`,
+  mirroring developer-lens PR #191 (confined store + gitignored generated output). `dllab context
+  verify` now asserts those rules via `verify_settings_deny()` (`REQUIRED_SETTINGS_READ_DENY`), so
+  removing a required rule fails the gate — the protected-data rule's read-scoping is harness-
+  enforced for those sinks, not prose-only.
+- Scope is deliberately the product's: only the `Read` tool on those three sinks. Broader coverage
+  (`Grep`/`Glob`, `.env`/keys, scattered `*.parquet`/`method-trial-view.json`) is tracked in
+  `docs/HARDENING_BACKLOG.md`, not claimed here. Runtime precedence of a committed `deny` over a
+  machine-local `settings.local.json` `bypassPermissions` default is NOT verified (outside a
+  repo-level static check).
+- Verified: local full gate green at the reviewed head — ruff format/check, pyright (0 errors on the
+  changed files; the repo-wide local count is pre-existing `typer.testing` import-resolution noise
+  that CI's fresh `uv sync` resolves), pytest 60 passed / 3 pre-existing symlink skips, `dllab
+  context verify`, hygiene, `tasks`/`contracts check`. Hosted `Prove the lab` green on the PR.
+- Review: two-lens fresh-context adversarial pass (security-efficacy + code-correctness, both SHIP,
+  no CRITICAL/HIGH) plus one Codex round (this ledger update). Findings triaged once; the coverage
+  residual is tracked, not fixed here. Dependabot alerts triaged separately on #5 (not reachable /
+  tooling-blocked). No research, corpus, model, or gate activation is authorized by this evidence.

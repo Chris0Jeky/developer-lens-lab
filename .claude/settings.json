@@ -1,6 +1,11 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "deny": [
+      "Read(./.dllab/**)",
+      "Read(./artifacts/**)",
+      "Read(./reports/generated/**)"
+    ]
   },
   "includeCoAuthoredBy": false
 }
