@@ -89,3 +89,28 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
   Report references are Markdown digest prefix `3d47b2` and HTML digest prefix `4409373`.
 - **Limits:** issue #6 remains deferred. Hosted CI, product fixture commit/product merge claims,
   lab PR/merge, and canonical final-run status are not verified here.
+
+## 2026-08-07 - Canonical MethodTrial presentation run (`wbc1_demo`)
+
+- **Status and flow:** isolated final synthetic store at lab producer commit
+  `5c79236beb0a0b25819f14510b79bb15813d7337`; benchmark, byte reproduction, report build, and
+  canonical MethodTrial export all passed. Product contract commit is
+  `b48fea579936671397a0486ae7a0342197ee6e4b`, schema SHA-256
+  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+- **Dataset and selection:** invented C0 only; 54 system series, 5,616 weekly opportunities,
+  5,346 observed and 270 absent. Fixed final-holdout rules selected `no_change`, `level`, and
+  `parser_shift`, each with 104 points; no aliases or seeds are exported.
+- **Result:** baseline/candidate false alerts per year `2.966666666666667`/`4.2`, detection
+  `0.75`/`0.75`, median delay `2`/`1`, confound rate `0.5`/`0.5`; candidate Brier
+  `0.017341137335170863`. Both thresholds remain nonviable. Failed gates are
+  `BASELINE_SELECTION_VIABLE`, `CANDIDATE_SELECTION_VIABLE`, and
+  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; decision `reject`, deterministic baseline retained.
+- **Artifacts:** fixture `sha256:26c3a9184adfce4ff5756e702b36d6db7af7c5f2dab9eb3eb3081ca598eafd95`;
+  EvaluationBundle `sha256:cbd9415bf9e26683656259bcef5a402b1745570c2a31e5c44dbfee74cfaea75f`;
+  custody `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`;
+  Markdown `sha256:8144410775717d8b280a41b95c18dd22a8de45c765186ecaeb1fd5c6745e30f0`;
+  HTML `sha256:fca7aac3e567f6de84b6dd60f476e77bf2a18f7a20cefde4563856e6ada99eec`.
+- **Verification and limits:** local full gate, exact-head independent review, hosted lab run
+  `31150109110`, and hosted product run `31150326515` passed. Product PR #187 must merge before lab
+  PR #8. This remains synthetic mechanics evidence; issues #6/#7 retain post-demo debt and no model
+  promotion is implied.

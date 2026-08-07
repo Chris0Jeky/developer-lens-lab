@@ -193,3 +193,31 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   Rich report generation, the explicit demo export path, and report materialization are local
   behavior checks. Issue #6 remains deferred; product UI code is outside this vertical.
 - NOT verified: hosted CI, bounded review/publication gates, and a canonical final run.
+
+## 2026-08-07 - Canonical MethodTrial producer and semantic acceptance
+
+- Product contract commit `b48fea579936671397a0486ae7a0342197ee6e4b` is pinned byte-for-byte at
+  schema SHA-256 `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+  The structural Draft 2020-12 boundary is explicit; lab producer commit
+  `5c79236beb0a0b25819f14510b79bb15813d7337` adds the equivalent cross-field semantic validator
+  before every MethodTrial export.
+- Eleven structural-valid mutations cover run-bound commands, gate derivation and copied values,
+  decision reasons, threshold viability, timeline sequence, marker exclusivity, and required case
+  markers. Each passes the standalone structural schema and fails semantic acceptance. Contract
+  sync also refuses a schema that omits the structural-only annotation.
+- A clean `wbc1_demo` benchmark, byte reproduction, report build, and export at that producer
+  commit yielded product fixture SHA-256
+  `26c3a9184adfce4ff5756e702b36d6db7af7c5f2dab9eb3eb3081ca598eafd95` (167,935 bytes),
+  EvaluationBundle `cbd9415bf9e26683656259bcef5a402b1745570c2a31e5c44dbfee74cfaea75f`,
+  custody `036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`,
+  ResearchPack `bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`,
+  Markdown `8144410775717d8b280a41b95c18dd22a8de45c765186ecaeb1fd5c6745e30f0`, and HTML
+  `fca7aac3e567f6de84b6dd60f476e77bf2a18f7a20cefde4563856e6ada99eec`.
+- The full local gate passed: doctor/context/tasks/contracts, Ruff format/lint, strict Pyright,
+  53 tests with two declared Windows link skips, strict MkDocs, hygiene, and range whitespace.
+  Fresh exact-head review found no CRITICAL/HIGH blocker. Hosted lab run `31150109110` passed at
+  `5c79236`; product run `31150326515` passed at fixture head `53f0cfd`.
+- The scientific result remains the conservative `reject`: baseline/candidate false alerts
+  `2.966666666666667`/`4.2`, detection `0.75`/`0.75`, delay `2`/`1`, confound rate `0.5`/`0.5`,
+  candidate Brier `0.017341137335170863`, and gate outcomes fail/fail/pass/pass/fail/pass/pass.
+  No real/private data, full-run publication, product promotion, or additional method was added.
