@@ -128,6 +128,22 @@ def test_context_budget_skips_when_budget_key_absent(tmp_path: Path) -> None:
     assert verify_context_budget(tmp_path) == []
 
 
+def test_context_budget_reports_a_present_but_invalid_budget(tmp_path: Path) -> None:
+    # A declared-but-unusable budget must fail loudly, not silently disable enforcement (the exact
+    # gap the check exists to close). Absent -> [] (tested above); present-but-invalid -> failure.
+    (tmp_path / ".agent-harness").mkdir()
+    tier = tmp_path / ".agent-harness" / "tier.json"
+    expected = [
+        "tier.json budgets.standing_context_tokens must be a positive integer to enforce "
+        "the standing-context budget"
+    ]
+    for bad_value in ('"2500"', "0", "-5", "12.5", "true", "null"):
+        tier.write_text(
+            f'{{"budgets": {{"standing_context_tokens": {bad_value}}}}}', encoding="utf-8"
+        )
+        assert verify_context_budget(tmp_path) == expected, bad_value
+
+
 def test_link_verifier_does_not_read_generated_output(tmp_path: Path) -> None:
     tracked_doc = tmp_path / "docs" / "guide.md"
     tracked_doc.parent.mkdir()

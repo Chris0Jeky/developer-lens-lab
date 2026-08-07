@@ -216,9 +216,18 @@ def verify_context_budget(root: Path) -> list[str]:
     budgets_raw = cast("dict[str, object]", payload_raw).get("budgets")
     if not isinstance(budgets_raw, dict):
         return []
-    budget = cast("dict[str, object]", budgets_raw).get("standing_context_tokens")
-    if not isinstance(budget, int) or isinstance(budget, bool) or budget <= 0:
+    budgets = cast("dict[str, object]", budgets_raw)
+    if "standing_context_tokens" not in budgets:
         return []
+    # A declared-but-unusable budget must fail loudly, not silently disable the check;
+    # a corrupted value would otherwise revert to the "nothing enforces it" gap. _verify_tier
+    # validates only top-level keys, so the value itself is validated here.
+    budget = budgets["standing_context_tokens"]
+    if isinstance(budget, bool) or not isinstance(budget, int) or budget <= 0:
+        return [
+            "tier.json budgets.standing_context_tokens must be a positive integer to enforce "
+            "the standing-context budget"
+        ]
     total_chars = 0
     for name in CONTEXT_BUDGET_FILES:
         candidate = root / name
