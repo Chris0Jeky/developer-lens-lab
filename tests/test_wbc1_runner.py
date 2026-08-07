@@ -98,6 +98,45 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
         reproduce_run(result.manifest_path, root=ROOT)
 
 
+def test_full_run_keeps_generic_report_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    compact_dataset = build_benchmark_dataset(smoke=True)
+
+    def build_compact_full_dataset(*, smoke: bool = True):
+        assert not smoke
+        return compact_dataset
+
+    def forbid_method_trial(*_args: object, **_kwargs: object) -> None:
+        pytest.fail("full benchmarks must not compose the smoke-only MethodTrial view")
+
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.runner.build_benchmark_dataset", build_compact_full_dataset
+    )
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.export.compose_method_trial_view", forbid_method_trial
+    )
+
+    result = run_benchmark(
+        smoke=False,
+        root=ROOT,
+        artifact_root=tmp_path,
+        run_id="wbc1_full_report",
+    )
+    manifest = _manifest(result.manifest_path)
+    report = ArtifactStore(tmp_path).get_bytes(result.scope, result.markdown_artifact)
+
+    assert result.method_trial_view_artifact is None
+    assert "method_trial_view" not in manifest
+    assert report.startswith(b"# WB-C1 benchmark report")
+    assert reproduce_run(result.manifest_path, root=ROOT)
+    assert build_report(result.run_id, artifact_root=tmp_path) == (
+        result.markdown_artifact,
+        result.html_artifact,
+    )
+
+
 def test_build_report_replaces_symlink_without_following_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

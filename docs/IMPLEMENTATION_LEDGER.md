@@ -235,3 +235,12 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The owner-approved integration is limited to this reviewed invented C0 presentation and honest
   `reject` story. Model promotion, real/private data, public-corpus work, and product #174 remain
   outside the bounded programme.
+- Late exact-head review found one direct regression: `run_benchmark` attempted the smoke-only
+  MethodTrial composition for opt-in full benchmarks, whose deliberately different counts fail the
+  C0 presentation contract after reserving a single-use scope. The bounded repair keeps the rich
+  MethodTrial view and reports on smoke runs only, restores the existing generic EvaluationBundle
+  report/reproduction path for full runs, and records no MethodTrial artifact for a full run. A
+  focused regression test forbids MethodTrial composition on that path; the full local gate then
+  passed with 54 tests and two declared Windows link skips, strict Pyright, Ruff, generated checks,
+  strict MkDocs, hygiene, and whitespace. The canonical `wbc1_demo` producer and fixture remain
+  unchanged at `5c79236` and SHA-256 `26c3a918`.
