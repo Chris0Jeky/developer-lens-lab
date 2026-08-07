@@ -22,3 +22,4 @@ artifacts/
 reports/generated/
 *.pem
 *.key
+method-trial-view.json
