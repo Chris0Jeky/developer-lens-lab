@@ -9,11 +9,7 @@ posture: public C0 invented-data-only; value-first with non-essential hardening 
 repository: Chris0Jeky/developer-lens-lab (public)
 branch: main
 head: refresh with git rev-parse origin/main
-active_horizon:
-  - LAB-WBC1-01
-  - LAB-WBC1-05
-  - LAB-BRIDGE-01
-  - LAB-DEMO-01
+active_horizon: []
 product_state: product ResearchPack PR #178, lab WB-C1 foundation PR #3, product MethodTrial PR
   #187, product correction PR #190, and lab MethodTrial PR #8 are merged; product main owns the
   contract, lazy route, and exact integrated fixture, while the lab owns generation/evaluation

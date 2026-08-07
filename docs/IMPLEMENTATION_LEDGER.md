@@ -269,3 +269,13 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   Initial post-merge sweeps found no late feedback; the only later product comment is the explicit
   timing correction above. No model promotion, real/private input, public corpus, additional
   method, or product #174 work is authorized by this evidence.
+
+## 2026-08-07 - Post-merge task-card closure
+
+- A late exact-head connector review posted after evidence-correction PR #9 merged and found a
+  direct cold-start contradiction: `CURRENT_STATE.md` said the vertical was complete while the
+  authoritative task source still marked `LAB-WBC1-01`, `LAB-WBC1-05`, `LAB-BRIDGE-01`, and
+  `LAB-DEMO-01` `IN_REVIEW`.
+- Those four delivered C0 cards are now `DONE`, their generated Markdown/JSON indexes are refreshed,
+  and the active horizon is empty. Owner-gated corpus cards and the parked data-quality card remain
+  unchanged; this closure authorizes no follow-on work.

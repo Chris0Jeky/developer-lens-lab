@@ -53,7 +53,7 @@ CARDS = (
     Card(
         "LAB-WBC1-01",
         "Invented weekly-series smoke benchmark",
-        "IN_REVIEW",
+        "DONE",
         ("LAB-CONTRACT-01", "LAB-ART-01"),
         "Inspectible rejection decision",
     ),
@@ -109,21 +109,21 @@ CARDS = (
     Card(
         "LAB-WBC1-05",
         "Evaluation bundle and decision report",
-        "IN_REVIEW",
+        "DONE",
         ("LAB-WBC1-03",),
         "Reviewable result",
     ),
     Card(
         "LAB-BRIDGE-01",
         "Product and lab compatibility fixture",
-        "IN_REVIEW",
+        "DONE",
         ("LAB-SYNC-01",),
         "Both-end proof",
     ),
     Card(
         "LAB-DEMO-01",
         "End-to-end smoke demo and runbook",
-        "IN_REVIEW",
+        "DONE",
         ("LAB-WBC1-05",),
         "Fresh-clone proof",
     ),
