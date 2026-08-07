@@ -297,8 +297,9 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Verified: hosted `Prove the lab` green at `91b3505` and at the merge commit; local ruff,
   pyright, pytest (54 passed, 3 pre-existing symlink skips), strict MkDocs, hygiene.
 - Deferred (tracked): #12 skill-copy parity markers, combined context budget, settings-guard
-  scope. (#13 deny-rule parity landed 2026-08-07 — see the next entry.) No research vertical,
-  corpus, model, or gate activation is authorized by this evidence.
+  scope. (#13 deny-rule parity landed 2026-08-07 — see the next entry; #12 landed 2026-08-07 via
+  PR #17 — see the final entry.) No research vertical, corpus, model, or gate activation is
+  authorized by this evidence.
 
 ## 2026-08-07 — Protected-data deny-rule parity
 
@@ -327,3 +328,33 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   Findings triaged once; the coverage residual is tracked, not fixed here. Dependabot alerts triaged
   separately on #5 (not reachable / tooling-blocked). No research, corpus, model, or gate activation
   is authorized by this evidence.
+
+## 2026-08-07 — Harness follow-ups: SKILL.md parity, context budget, settings-guard scope
+
+- PR #17 (`claude/harness-followups-12`) closes #12 — the three non-blocking findings from PR #11's
+  review. `dllab context verify` gained two pure checks in `src/developer_lens_lab/context/verify.py`,
+  both wired into `verify_repository`: `verify_skill_parity()` and `verify_context_budget()`.
+- `verify_skill_parity()` guards the byte-identical `## Protect evaluation integrity` section shared by
+  the `.claude` and `.agents` `SKILL.md` copies. Both copies now wrap that section in
+  `<!-- shared:evaluation-integrity start/end -->` markers (only marker lines added; enclosed wording
+  unchanged). The check requires exactly one ordered pair per file and fails if the two enclosed blocks
+  diverge, so editing one copy without the other now fails the gate.
+- `verify_context_budget()` enforces `tier.json` `budgets.standing_context_tokens` (2500) against a
+  deterministic ~4-chars/token estimate of `AGENTS.md`+`CLAUDE.md` combined (6329 chars ≈ 1583 tokens
+  ≤ 2500). An absent budget is skipped; a declared-but-invalid one (non-positive / wrong type) fails
+  loudly rather than silently disabling the check. The per-file 100-line cold-start cap is unchanged.
+- Settings-guard scope: documentation-only. One `docs/HARDENING_BACKLOG.md` bullet reconfirms, as
+  tracked non-expansion (law 8), that the committed-settings guard rejects only the `bypassPermissions`
+  substring and the three `Read` deny rules and does not inspect `hooks` blocks, `permissions.allow`
+  wildcards, or `.mcp.json`; `.claude/settings.local.json` content is unscanned while a `git ls-files`
+  tracked-status guard blocks committing it. No guard code was expanded.
+- Review: two-lens fresh-context adversarial pass (parity + budget/boundary, both no-blocking) plus
+  Codex. Fixed pre-merge — the malformed-budget fail-loud gap and the duplicate-marker false-pass,
+  plus doc-precision wording. Declined/tracked — the sibling "Default to invented fixtures…" shared
+  paragraph is also identical but unwrapped, filed as #18. Findings triaged once; no CRITICAL/HIGH.
+- Verified locally at the reviewed head via `.venv` (no uv on host): ruff format/check, pyright scoped
+  to the changed files (0 errors), pytest (69 passed / 3 pre-existing symlink skips; 17 context tests),
+  `dllab context verify`, hygiene, strict MkDocs, doctor. Repo-wide pyright NOT run locally
+  (pre-existing `typer.testing` import-resolution errors — an environment gap); hosted `Prove the lab`
+  covers the full gate at the reviewed/merged heads. No research, corpus, model, or gate activation is
+  authorized by this evidence.
