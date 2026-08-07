@@ -7,7 +7,8 @@ description: Resume and advance Developer Lens Lab from live repository evidence
 
 ## Resume from truth
 
-1. Read `AGENTS.md`, `.agent-harness/tier.json`, `HUMAN_TODO.md`, and `docs/CURRENT_STATE.md`.
+1. Read `CLAUDE.md` (shared canon), `AGENTS.md`, `.agent-harness/tier.json`, `HUMAN_TODO.md`,
+   and `docs/CURRENT_STATE.md`.
 2. Refresh Git status, upstream, worktrees, PR/check state, and unresolved review threads.
 3. Read only the objective-relevant product boundary, data policy, contracts, research programme,
    implementation ledger, experiment ledger, code, and tests.
@@ -37,7 +38,7 @@ and product promotion require the exact open owner gate to be closed first.
 
 ## Prove and hand off
 
-Run the focused check, then the full gate in `AGENTS.md` for a code/config milestone. Review the
+Run the focused check, then the full gate in `CLAUDE.md` for a code/config milestone. Review the
 exact diff against `docs/PRODUCT_BOUNDARY.md`, `docs/DATA_POLICY.md`, and `docs/CONTRACTS.md`.
 Non-trivial logic or methodology needs a fresh-context adversarial review. Update the implementation
 ledger for code milestones, experiment ledger for run/holdout decisions, failure archive for killed

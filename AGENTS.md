@@ -15,6 +15,12 @@ Use `tools/cards.py` as the task source and choose the first dependency-safe act
 writer per checkout; parallel writers need separate coordinator-owned worktrees and disjoint
 paths. Escalate judgment-heavy implementation or review to Terra/Sol.
 
+## Protected data (full rule in `CLAUDE.md`)
+
+Invented fixtures only. Never inspect real repositories, provider accounts, credentials, browser
+profiles, working trees, or generated product outputs; never track `.dllab`, run artifacts,
+repository allowlists, provider IDs, local paths, or environment values.
+
 ## Prove and close
 
 Run the focused check first, then the full gate in `CLAUDE.md` for a code/config milestone. Close

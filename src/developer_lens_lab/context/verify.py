@@ -159,6 +159,12 @@ def verify_repository(root: Path) -> VerificationReport:
         cold_start = root / cold_start_name
         if cold_start.is_file() and len(cold_start.read_text(encoding="utf-8").splitlines()) > 100:
             failures.append(f"{cold_start_name} exceeds the 100-line cold-start budget")
+    adapter = root / "AGENTS.md"
+    if adapter.is_file() and "CLAUDE.md" not in adapter.read_text(encoding="utf-8"):
+        failures.append("AGENTS.md must name CLAUDE.md as the shared canon")
+    canon = root / "CLAUDE.md"
+    if canon.is_file() and "## Protected-data rule" not in canon.read_text(encoding="utf-8"):
+        failures.append("CLAUDE.md must carry the protected-data rule section")
     settings = root / ".claude" / "settings.json"
     if settings.is_file() and "bypassPermissions" in settings.read_text(encoding="utf-8"):
         failures.append(
