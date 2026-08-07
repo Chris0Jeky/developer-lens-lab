@@ -258,9 +258,11 @@ def _store_research_pack(
             or reference.size_bytes != descriptor.artifact.size_bytes
         ):
             raise RunnerError(f"{relation_name} Parquet does not match ResearchPack artifact")
-        store.put_bytes(materialized.pack.pack_id, payload, "application/x-parquet")
         references.append(reference)
-    validate_pack_artifacts(materialized.pack, store)
+    # Validate against the run-owned scope where the artifacts were just stored,
+    # so a run leaves no validation copies in a shared, never-invalidated
+    # pack-id scope. `invalidate_scope(run_id)` now removes every run artifact.
+    validate_pack_artifacts(materialized.pack, store, scope)
     return references[0], references[1]
 
 

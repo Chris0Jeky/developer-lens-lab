@@ -101,6 +101,31 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
         reproduce_run(result.manifest_path, root=ROOT)
 
 
+def test_research_pack_validation_artifacts_stay_run_owned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Finding 2: a run must not stash ResearchPack validation copies in a shared
+    # pack-id scope that outlives the run. All validation artifacts stay in the
+    # run-owned scope so invalidating the run removes every one of them.
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_scope")
+    store = ArtifactStore(tmp_path)
+
+    secondary_scope = tmp_path / "scopes" / "wbc1_research_pack"
+    assert not secondary_scope.exists()
+
+    # The run scope actually holds the coverage/repository_week Parquet objects.
+    manifest = _manifest(result.manifest_path)
+    for relation in ("research_pack_coverage", "research_pack_repository_week"):
+        ref = ArtifactRef.model_validate(manifest[relation])
+        assert store.get_bytes(result.scope, ref)
+
+    assert store.invalidate_scope(result.scope)
+    scopes_root = tmp_path / "scopes"
+    surviving = [path.name for path in scopes_root.iterdir()] if scopes_root.exists() else []
+    assert surviving == []
+
+
 def test_full_run_skips_smoke_only_method_trial_and_reproduces(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
