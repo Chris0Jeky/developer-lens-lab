@@ -77,8 +77,9 @@ acceptance: before writing, the exporter also enforces the product-equivalent cr
 run-bound commands, threshold viability, scorecard-derived gates and decision reasons, timeline
 sequence, and case-role markers.
 
-`dllab export method-trial <run-id>` reads an already validated, local, invented WB-C1 run and emits
-the product view. The exporter preserves measured-versus-unavailable values, seven ordered gates,
+`dllab export method-trial <run-id>` reads an already validated, local, invented WB-C1 smoke run and
+emits the product view. Full runs retain their generic EvaluationBundle report path and do not record
+a MethodTrial projection. The exporter preserves measured-versus-unavailable values, seven ordered gates,
 the explicit reject/fallback decision, and exactly three deterministic final-holdout windows:
 no-change control, planted change, and instrumentation confound. PELT stays labelled offline
 descriptive. Stable system aliases, seeds, filesystem paths, people, providers, and repository

@@ -52,11 +52,12 @@ plus standalone Markdown and HTML reports. `run reproduce` verifies every stored
 regenerates and byte-compares every recorded artifact. Use `uv run dllab benchmark wb-c1 --full`
 only for the larger opt-in lane.
 
-`export method-trial` projects one already validated local WB-C1 run into the small product-owned
+`export method-trial` projects one already validated local WB-C1 smoke run into the small product-owned
 presentation schema. It deterministically selects the no-change, planted-change, and instrumentation-
 confound windows, validates the result against the pinned product schema, and writes the ignored
 `method-trial-view.json` by default. It does not send a request, expose system aliases, install a
-model, or add an EvaluationBundle parser to the product.
+model, or add an EvaluationBundle parser to the product. The opt-in `--full` lane retains the generic
+EvaluationBundle reports and replay path; it does not record a smoke-only MethodTrial projection.
 
 ## Boundaries
 

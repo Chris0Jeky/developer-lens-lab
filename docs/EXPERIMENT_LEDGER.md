@@ -90,30 +90,44 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
 - **Limits:** issue #6 remains deferred. Hosted CI, product fixture commit/product merge claims,
   lab PR/merge, and canonical final-run status are not verified here.
 
-## 2026-08-07 - Canonical MethodTrial presentation run (`wbc1_demo`)
+## 2026-08-07 - Superseded parallel final-run evidence
 
-- **Status and flow:** isolated final synthetic store at lab producer commit
-  `5c79236beb0a0b25819f14510b79bb15813d7337`; benchmark, byte reproduction, report build, and
-  canonical MethodTrial export all passed. Product contract commit is
+- **Status:** producer commits `5c79236beb0a0b25819f14510b79bb15813d7337` and
+  `b30b22909c9ea44d64bebe9dccf82b8735302d76` each produced a deterministic `wbc1_demo`, but each
+  predates one independently reviewed final repair. Neither fixture is the integrated publication
+  artifact; their exact hashes are preserved in their commits and intentionally not repeated here.
+- **Result:** both retained the same invented-C0 `reject`: 54 systems / 5,616 opportunities /
+  5,346 observed / 270 absent; false alerts `2.966666666666667`/`4.2`; detection `0.75`/`0.75`;
+  delay `2`/`1`; confound rate `0.5`/`0.5`; candidate Brier `0.017341137335170863`; thresholds
+  nonviable; deterministic baseline retained.
+- **Next evidence:** run benchmark, reproduction, export, and report once from the integrated merge
+  commit that contains both semantic acceptance and safe, honest export publication. Only those
+  bytes may be pinned into product PR #187. Issue #6 and every real-data/promotion gate remain
+  deferred.
+
+## 2026-08-07 - Integrated canonical principal demonstration (`wbc1_demo`)
+
+- **Status and flow:** canonical local evidence at integrated producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15`; benchmark, reproduction, export, and
+  standalone report all passed in a fresh detached checkout. Product contract commit is
   `b48fea579936671397a0486ae7a0342197ee6e4b`, schema SHA-256
   `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
-- **Dataset and selection:** invented C0 only; 54 system series, 5,616 weekly opportunities,
-  5,346 observed and 270 absent. Fixed final-holdout rules selected `no_change`, `level`, and
-  `parser_shift`, each with 104 points; no aliases or seeds are exported.
-- **Result:** baseline/candidate false alerts per year `2.966666666666667`/`4.2`, detection
-  `0.75`/`0.75`, median delay `2`/`1`, confound rate `0.5`/`0.5`; candidate Brier
-  `0.017341137335170863`. Both thresholds remain nonviable. Failed gates are
+- **Dataset and cases:** invented C0 only; 54 series / 5,616 opportunities / 5,346 observed / 270
+  absent; `no_change`, `level`, and `parser_shift`, 104 points each. Aliases and seeds are absent;
+  PELT is offline descriptive evidence only.
+- **Result:** `reject`. Baseline/candidate false alerts per year `2.966666666666667`/`4.2`,
+  detection `0.75`/`0.75`, delay `2`/`1`, confound false-alert rate `0.5`/`0.5`, candidate Brier
+  `0.017341137335170863`, and nonviable thresholds `2.5`/`0.05`. Failed reasons are
   `BASELINE_SELECTION_VIABLE`, `CANDIDATE_SELECTION_VIABLE`, and
-  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; decision `reject`, deterministic baseline retained.
-- **Artifacts:** fixture `sha256:26c3a9184adfce4ff5756e702b36d6db7af7c5f2dab9eb3eb3081ca598eafd95`;
-  EvaluationBundle `sha256:cbd9415bf9e26683656259bcef5a402b1745570c2a31e5c44dbfee74cfaea75f`;
+  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; deterministic baseline retained.
+- **Artifacts:** fixture
+  `sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`;
+  EvaluationBundle `sha256:e925c8ac44d914ce0003ef218d90187535eedfef3eb8d436a3c9a135e3d1a3a9`;
   custody `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`;
-  Markdown `sha256:8144410775717d8b280a41b95c18dd22a8de45c765186ecaeb1fd5c6745e30f0`;
-  HTML `sha256:fca7aac3e567f6de84b6dd60f476e77bf2a18f7a20cefde4563856e6ada99eec`.
-- **Verification and limits:** local full gate, exact-head independent review, hosted lab run
-  `31150109110`, and hosted product run `31150326515` passed. Product PR #187 then merged as
-  `7b22491b28acbe467e2facb85723a91fd37af52b`; check-only sync accepted that exact merge without
-  rewriting producer provenance. A fresh detached replay at producer `5c79236` repeated benchmark,
-  reproduction, report, and export, and its 167,935-byte fixture was byte-identical to the merged
-  product fixture. This remains synthetic mechanics evidence; issues #6/#7 retain post-demo debt
-  and no model promotion is implied.
+  ResearchPack `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`;
+  Markdown `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`;
+  HTML `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
+- **Limits:** artifact verification remains honestly `not_run`; exact local/hosted command results
+  are external evidence, not retroactive mutation of the append-only view. Issue #6 remains
+  deferred. No real/public corpus, person-level inference, lab-owned product UI, or promotion was
+  added.

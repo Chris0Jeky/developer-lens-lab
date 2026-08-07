@@ -194,53 +194,52 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   behavior checks. Issue #6 remains deferred; product UI code is outside this vertical.
 - NOT verified: hosted CI, bounded review/publication gates, and a canonical final run.
 
-## 2026-08-07 - Canonical MethodTrial producer and semantic acceptance
+## 2026-08-07 - Parallel final-repair precursors (superseded by integration)
 
-- Product contract commit `b48fea579936671397a0486ae7a0342197ee6e4b` is pinned byte-for-byte at
-  schema SHA-256 `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
-  The structural Draft 2020-12 boundary is explicit; lab producer commit
-  `5c79236beb0a0b25819f14510b79bb15813d7337` adds the equivalent cross-field semantic validator
-  before every MethodTrial export.
-- Eleven structural-valid mutations cover run-bound commands, gate derivation and copied values,
-  decision reasons, threshold viability, timeline sequence, marker exclusivity, and required case
-  markers. Each passes the standalone structural schema and fails semantic acceptance. Contract
-  sync also refuses a schema that omits the structural-only annotation.
-- A clean `wbc1_demo` benchmark, byte reproduction, report build, and export at that producer
-  commit yielded product fixture SHA-256
-  `26c3a9184adfce4ff5756e702b36d6db7af7c5f2dab9eb3eb3081ca598eafd95` (167,935 bytes),
-  EvaluationBundle `cbd9415bf9e26683656259bcef5a402b1745570c2a31e5c44dbfee74cfaea75f`,
-  custody `036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`,
-  ResearchPack `bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`,
-  Markdown `8144410775717d8b280a41b95c18dd22a8de45c765186ecaeb1fd5c6745e30f0`, and HTML
-  `fca7aac3e567f6de84b6dd60f476e77bf2a18f7a20cefde4563856e6ada99eec`.
-- The full local gate passed: doctor/context/tasks/contracts, Ruff format/lint, strict Pyright,
-  53 tests with two declared Windows link skips, strict MkDocs, hygiene, and range whitespace.
-  Fresh exact-head review found no CRITICAL/HIGH blocker. Hosted lab run `31150109110` passed at
-  `5c79236`; product run `31150326515` passed at fixture head `53f0cfd`.
-- The scientific result remains the conservative `reject`: baseline/candidate false alerts
-  `2.966666666666667`/`4.2`, detection `0.75`/`0.75`, delay `2`/`1`, confound rate `0.5`/`0.5`,
-  candidate Brier `0.017341137335170863`, and gate outcomes fail/fail/pass/pass/fail/pass/pass.
-  No real/private data, full-run publication, product promotion, or additional method was added.
+- Product contract commit `b48fea579936671397a0486ae7a0342197ee6e4b` remains pinned at schema
+  SHA-256 `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+- Lab commit `5c79236beb0a0b25819f14510b79bb15813d7337` added equivalent semantic
+  acceptance with eleven structural-valid mutation regressions. Parallel commit
+  `b30b22909c9ea44d64bebe9dccf82b8735302d76` made named export publication atomic over a final
+  symlink and changed premature `verification.local: passed` evidence to honest `not_run`.
+- Both precursor heads passed their scoped local proof and independent review, but each canonical
+  fixture predates the other repair. Their fixture and report hashes are therefore superseded and
+  must not be copied into the product. The integrated merge head requires one fresh canonical run,
+  byte pin, exact-head CI, and final review before either PR can merge.
+- The scientific result remains the conservative `reject` with no real/private input, full-run
+  publication, lab-owned product UI, additional method, or model promotion. Issue #6 remains
+  explicitly deferred.
 
-## 2026-08-07 - Post-merge MethodTrial handshake proof
+## 2026-08-07 - Integrated canonical MethodTrial producer
 
-- Product PR #187 merged with preserved history as
-  `7b22491b28acbe467e2facb85723a91fd37af52b`. The merged schema remains SHA-256
-  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`; the merged fixture remains
-  SHA-256 `26c3a9184adfce4ff5756e702b36d6db7af7c5f2dab9eb3eb3081ca598eafd95` and 167,935 bytes.
-- `contracts sync-method-trial --check-only` accepted the exact product merge and retained producer
-  provenance at lab commit `5c79236beb0a0b25819f14510b79bb15813d7337`. From a fresh detached
-  worktree at that producer, benchmark, reproduction, report build, and MethodTrial export passed;
-  the exported bytes were directly identical to the merged product fixture.
-- The owner-approved integration is limited to this reviewed invented C0 presentation and honest
-  `reject` story. Model promotion, real/private data, public-corpus work, and product #174 remain
-  outside the bounded programme.
-- Late exact-head review found one direct regression: `run_benchmark` attempted the smoke-only
+- Merge commit `0ef193070a9b80b81cef5a1710a1d65e0b271c15` contains both final repair
+  lines: equivalent cross-field semantic acceptance plus atomic final-path export with honest
+  `verification.local: not_run`. It also records the owner's bounded q-4 integration approval
+  without authorizing model promotion, real data, or a general product claim.
+- A fresh detached checkout at that exact producer passed the locked runtime-only installation,
+  locked sync, Ruff format/lint, strict Pyright, context/task/contract checks, 53 tests with three
+  declared Windows symlink skips and 87% coverage, default smoke reproduction/report, strict
+  MkDocs, hygiene, and range whitespace.
+- Canonical `wbc1_demo` then passed benchmark, byte reproduction, export, and report. The LF export
+  is 167,936 bytes with SHA-256
+  `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`; the stored view object is
+  `sha256:30768b506607c05fe186fbd3db51ddae7ba47f2d0cf58a5ade509f4295736a88`.
+  EvaluationBundle, custody, ResearchPack, Markdown, and HTML digests are respectively
+  `sha256:e925c8ac44d914ce0003ef218d90187535eedfef3eb8d436a3c9a135e3d1a3a9`,
+  `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`,
+  `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`,
+  `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and
+  `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
+- The result is unchanged: seven gates fail/fail/pass/pass/fail/pass/pass, decision `reject`, and
+  rolling-median/MAD fallback retained. Product PR #187 later merged at `7b22491`; correction commit
+  `1e1214d` pins these integrated bytes on `codex/method-trial-final-evidence`. Its PR/hosted gate and
+  merge, the merged-contract recheck, and lab PR #8 remain live gates at this record.
+- Late exact-head review then found one direct regression: `run_benchmark` attempted the smoke-only
   MethodTrial composition for opt-in full benchmarks, whose deliberately different counts fail the
   C0 presentation contract after reserving a single-use scope. The bounded repair keeps the rich
   MethodTrial view and reports on smoke runs only, restores the existing generic EvaluationBundle
   report/reproduction path for full runs, and records no MethodTrial artifact for a full run. A
-  focused regression test forbids MethodTrial composition on that path; the full local gate then
-  passed with 54 tests and two declared Windows link skips, strict Pyright, Ruff, generated checks,
-  strict MkDocs, hygiene, and whitespace. The canonical `wbc1_demo` producer and fixture remain
-  unchanged at `5c79236` and SHA-256 `26c3a918`.
+  focused regression test forbids MethodTrial composition on that path; the full local gate passed
+  with 54 tests and two declared Windows link skips, strict Pyright, Ruff, generated checks, strict
+  MkDocs, hygiene, and whitespace. The integrated `wbc1_demo` producer and fixture remain unchanged
+  at `0ef1930` and SHA-256 `afcc1ed9`.
