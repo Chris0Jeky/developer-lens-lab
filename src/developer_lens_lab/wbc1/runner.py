@@ -828,7 +828,6 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
         or html_ref.model_dump(mode="json") != manifest["html"]
     ):
         raise RunnerError("report bytes differ from the recorded deterministic report")
-    scope_root = store.scope_root(run_id)
-    (scope_root / "report.md").write_bytes(store.get_bytes(run_id, markdown))
-    (scope_root / "report.html").write_bytes(store.get_bytes(run_id, html_ref))
+    store.write_scope_file(run_id, "report.md", store.get_bytes(run_id, markdown))
+    store.write_scope_file(run_id, "report.html", store.get_bytes(run_id, html_ref))
     return markdown, html_ref

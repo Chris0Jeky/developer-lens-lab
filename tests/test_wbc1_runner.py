@@ -98,6 +98,28 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
         reproduce_run(result.manifest_path, root=ROOT)
 
 
+def test_build_report_replaces_symlink_without_following_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_link")
+    report_path = tmp_path / "scopes" / result.scope / "report.md"
+    outside = tmp_path / "outside.md"
+    outside.write_bytes(b"outside sentinel\n")
+    try:
+        report_path.symlink_to(outside)
+    except OSError:
+        pytest.skip("file symlinks are unavailable on this host")
+
+    build_report(result.run_id, artifact_root=tmp_path)
+
+    assert outside.read_bytes() == b"outside sentinel\n"
+    assert not report_path.is_symlink()
+    assert report_path.read_bytes() == ArtifactStore(tmp_path).get_bytes(
+        result.scope, result.markdown_artifact
+    )
+
+
 def test_run_identity_and_custody_record_are_append_only(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
