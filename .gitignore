@@ -1,0 +1,9 @@
+/.dllab/scopes
+/scripts/__pycache__
+/site/assets
+/site
+/src/developer_lens_lab/contracts/__pycache__
+/src/developer_lens_lab/wbc1/__pycache__
+/tests/__pycache__
+/src/developer_lens_lab/__pycache__
+/src/developer_lens_lab/context/__pycache__
