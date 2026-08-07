@@ -111,11 +111,11 @@ def test_bocpd_missing_observation_is_causal_and_prior_is_hashed() -> None:
 
 
 def test_bocpd_missing_block_is_observed_sample_equivalent() -> None:
-    # Characterization lock for the preregistered observed-sample semantics: a
-    # contiguous block of missing weeks is equivalent to deleting those samples
-    # (the run-length/hazard posterior does not advance across the gap), so the
-    # post-gap scores must equal those of the gap-deleted series at the
-    # compacted indices.  Must be GREEN on current code by construction.
+    # Characterization lock for the documented (post-hoc, not preregistered)
+    # observed-sample semantics: a contiguous block of missing weeks is
+    # equivalent to deleting those samples (the run-length/hazard posterior does
+    # not advance across the gap), so the post-gap scores must equal those of the
+    # gap-deleted series at the compacted indices.  Must be GREEN on current code.
     parameters = BocpdParameters(warmup=12)
     rng = np.random.default_rng(20260807)
     pre = rng.normal(20.0, 1.0, size=24)
