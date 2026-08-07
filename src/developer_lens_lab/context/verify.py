@@ -177,7 +177,7 @@ SKILL_PARITY_FILES = (
 )
 
 
-def _verify_one_shared_block(root: Path, marker: str) -> list[str]:
+def verify_one_shared_block(root: Path, marker: str) -> list[str]:
     label = marker.removeprefix("shared:")
     start_marker = f"<!-- {marker} start -->"
     end_marker = f"<!-- {marker} end -->"
@@ -212,7 +212,7 @@ def _verify_one_shared_block(root: Path, marker: str) -> list[str]:
 def verify_skill_parity(root: Path) -> list[str]:
     failures: list[str] = []
     for marker in SHARED_SKILL_MARKERS:
-        failures.extend(_verify_one_shared_block(root, marker))
+        failures.extend(verify_one_shared_block(root, marker))
     return failures
 
 
