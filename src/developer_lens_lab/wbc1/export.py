@@ -67,7 +67,7 @@ def _unavailable(reason: str = "not_measured") -> dict[str, str]:
     return {"status": "unavailable", "reason": reason}
 
 
-def _provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+def load_provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     method_path = root / "vendor" / "developer-lens" / "method-trial-view" / "v1"
     research_path = root / "vendor" / "developer-lens" / "research-pack" / "v1"
     method = cast(dict[str, Any], json.loads((method_path / "provenance.json").read_text()))
@@ -78,6 +78,29 @@ def _provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
             if entry.get("sha256") != _sha256(payload) or entry.get("size_bytes") != len(payload):
                 raise ValueError("vendored contract provenance does not match file bytes")
     return method, research
+
+
+def load_recorded_provenance(
+    root: Path, manifest: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Return the run's producer snapshots, refusing to trust a later vendor snapshot."""
+    recorded = manifest.get("provenance")
+    if not isinstance(recorded, dict):
+        raise ValueError("run manifest lacks recorded producer provenance")
+    method = recorded.get("method_trial_view")
+    research = recorded.get("research_pack")
+    if not isinstance(method, dict) or not isinstance(research, dict):
+        raise ValueError("run manifest has incomplete recorded producer provenance")
+    current_method, current_research = load_provenance(root)
+    if canonical_json_bytes(current_method) != canonical_json_bytes(method):
+        raise ValueError("vendored MethodTrialView provenance differs from recorded run")
+    if canonical_json_bytes(current_research) != canonical_json_bytes(research):
+        raise ValueError("vendored ResearchPack provenance differs from recorded run")
+    if method.get("product_commit") != manifest.get("product_contract_commit"):
+        raise ValueError("recorded MethodTrialView provenance does not match run manifest")
+    if research.get("product_commit") != manifest.get("product_commit"):
+        raise ValueError("recorded ResearchPack provenance does not match run manifest")
+    return cast(dict[str, Any], method), cast(dict[str, Any], research)
 
 
 def _read_series_values(
@@ -333,7 +356,7 @@ def compose_method_trial_view(
     dataset.replay_final_holdout(str(custody["dataset_sha256"]))
     if str(custody.get("run_id")) != run_id:
         raise ValueError("custody run_id does not match requested run")
-    method_provenance, research_provenance = _provenance(root)
+    method_provenance, research_provenance = load_recorded_provenance(root, manifest)
     schema_file = next(item for item in method_provenance["files"] if item["name"] == "schema.json")
     baseline_threshold = float(custody["baseline_threshold"])
     candidate_threshold = float(custody["candidate_threshold"])

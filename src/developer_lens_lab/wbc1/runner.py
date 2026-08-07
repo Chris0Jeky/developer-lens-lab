@@ -605,6 +605,9 @@ def run_benchmark(
         (coverage_ref, repository_week_ref),
     )
     bundle_ref = store.put_json(scope, bundle.model_dump(mode="json"))
+    from .export import load_provenance
+
+    method_provenance, research_provenance = load_provenance(root)
     source_manifest = {
         "bundle": bundle_ref.model_dump(mode="json"),
         "custody": receipt_ref.model_dump(mode="json"),
@@ -615,6 +618,12 @@ def run_benchmark(
         "research_pack_coverage": coverage_ref.model_dump(mode="json"),
         "research_pack_repository_week": repository_week_ref.model_dump(mode="json"),
         "smoke": smoke,
+        "product_commit": research_provenance["product_commit"],
+        "product_contract_commit": method_provenance["product_commit"],
+        "provenance": {
+            "method_trial_view": method_provenance,
+            "research_pack": research_provenance,
+        },
     }
     from .export import compose_method_trial_view
 
@@ -645,7 +654,12 @@ def run_benchmark(
         "research_pack_repository_week": repository_week_ref.model_dump(mode="json"),
         "dataset_sha256": dataset.dataset_sha256,
         "product_commit": provenance["product_commit"],
+        "product_contract_commit": method_provenance["product_commit"],
         "producer_schema_sha256": pack.provenance.contract_sha256,
+        "provenance": {
+            "method_trial_view": method_provenance,
+            "research_pack": research_provenance,
+        },
         "lab_commit": bundle.run_manifest.lab_commit,
         "environment_sha256": bundle.run_manifest.environment_sha256,
         "deterministic_bundle_sha256": _sha256(
@@ -710,8 +724,18 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     if not isinstance(smoke, bool):
         raise RunnerError("run manifest smoke flag must be Boolean")
     producer_schema, provenance, vendor_pack = _load_vendor_snapshot(root)
+    from .export import load_recorded_provenance
+
+    try:
+        method_provenance, research_provenance = load_recorded_provenance(root, manifest)
+    except ValueError as exc:
+        raise RunnerError(str(exc)) from exc
     if provenance.get("product_commit") != manifest.get("product_commit"):
         raise RunnerError("pinned product commit differs from the recorded run")
+    if research_provenance != provenance:
+        raise RunnerError("pinned ResearchPack provenance differs from the recorded run")
+    if method_provenance.get("product_commit") != manifest.get("product_contract_commit"):
+        raise RunnerError("pinned MethodTrialView provenance differs from the recorded run")
     schema_digest = next(
         entry["sha256"]
         for entry in cast(list[dict[str, str]], provenance["files"])

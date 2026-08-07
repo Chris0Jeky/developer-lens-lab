@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from developer_lens_lab.wbc1.export import export_method_trial
@@ -95,3 +96,26 @@ def test_method_trial_vendor_snapshot_is_pinned() -> None:
             "size_bytes": len(schema),
         }
     ]
+
+
+def test_method_trial_export_uses_recorded_provenance_and_fails_closed_on_drift(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_provenance")
+    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    view = json.loads(export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path).payload)
+    assert (
+        view["reproducibility"]["product_contract_commit"]
+        == manifest["provenance"]["method_trial_view"]["product_commit"]
+    )
+    path = ROOT / "vendor/developer-lens/method-trial-view/v1/provenance.json"
+    original = path.read_bytes()
+    altered = json.loads(original)
+    altered["product_commit"] = "f" * 40
+    path.write_text(json.dumps(altered, indent=2) + "\n", encoding="utf-8")
+    try:
+        with pytest.raises(ValueError, match="MethodTrialView provenance differs"):
+            export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path)
+    finally:
+        path.write_bytes(original)

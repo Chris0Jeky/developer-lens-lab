@@ -175,6 +175,23 @@ def test_reproduction_recomputes_result_artifacts(
         reproduce_run(result.manifest_path, root=ROOT)
 
 
+def test_reproduction_fails_closed_when_recorded_provenance_drifts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_provenance")
+    path = ROOT / "vendor/developer-lens/method-trial-view/v1/provenance.json"
+    original = path.read_bytes()
+    altered = json.loads(original)
+    altered["product_commit"] = "e" * 40
+    path.write_text(json.dumps(altered, indent=2) + "\n", encoding="utf-8")
+    try:
+        with pytest.raises(RunnerError, match="MethodTrialView provenance differs"):
+            reproduce_run(result.manifest_path, root=ROOT)
+    finally:
+        path.write_bytes(original)
+
+
 def test_benchmark_requires_a_synchronized_vendor_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
