@@ -17,8 +17,12 @@ not authorize a credential, private dataset, person-shaped analysis, or automati
 - [ ] **q-3 — Approve any generated dataset or trained-model artifact publication.** Public code,
   docs, tests, and invented small fixtures are approved through `origin`; generated datasets and
   run/model artifacts remain local and ignored until separately selected.
-- [ ] **q-4 — Approve product integration or model promotion.** A reviewed EvaluationBundle may be
-  proposed to Developer Lens, but no lab result installs itself or becomes a product claim.
+- [x] **q-4 — Bounded product integration approved; model promotion remains prohibited.** On
+  2026-08-07 the owner explicitly commissioned the synthetic `DeveloperLensMethodTrialView.v1`
+  handshake, offline product route, exact C0 fixture, and product-before-lab merge order delivered
+  by product PR #187 and lab PR #8. This approval is limited to the reviewed presentation artifact
+  and honest `reject` story; it does not install or promote a model, activate real data, or make a
+  general product claim.
 - [ ] **q-5 — Decide whether a durable cross-repository artifact identity key may exist.** Until
   then, product commits and snapshot checksums are provenance only and may not become join keys.
 - [ ] **q-6 — Reclassify the lab before storing C2/C3 or any real/private input.** T1 and
