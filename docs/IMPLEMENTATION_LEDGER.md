@@ -387,29 +387,37 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   pyright NOT run locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the
   full gate at the reviewed/merged heads. No research, corpus, model, or gate activation is authorized.
 
-## 2026-08-07 — BOCPD missing-week semantics preregistered (#4)
+## 2026-08-07 — BOCPD missing-week semantics clarified post-hoc (#4)
 
 - Branch `claude/bocpd-semantics-4` closes #4 by making the BOCPD missing-week run-length semantics
-  explicit. Coordinator methodology decision: **Option A — observed-sample semantics** (see the
-  `docs/EXPERIMENT_LEDGER.md` preregistration entry of the same date). No detector behavior change.
+  explicit. Coordinator methodology decision: **observed-sample semantics** (see the
+  `docs/EXPERIMENT_LEDGER.md` post-hoc clarification entry of the same date). This documents the
+  as-implemented behavior of the already-completed runs; it is NOT a preregistration. No detector
+  behavior change.
 - `src/developer_lens_lab/wbc1/methods.py`: comments only — on `BocpdParameters.expected_run_length`
   (denominated in observed samples; canonical Adams–MacKay run-length-in-observations) and at the
   `bocpd_scores` skip site (a censored week is a deliberate no-op on the posterior). No logic, default,
   signature, or field-name change; `parameters_sha256` custody surface untouched.
-- `docs/RESEARCH_PROGRAMME.md`: preregisters the observed-sample unit, scoped precisely to the
-  run-length/hazard posterior (score emission still begins after a fixed calendar-week `warmup`).
+- `docs/RESEARCH_PROGRAMME.md`: documents the observed-sample unit as a post-hoc characterization of
+  existing behavior, scoped precisely to the run-length/hazard posterior (score emission still begins
+  after a fixed calendar-week `warmup`).
 - `tests/test_wbc1_methods.py`: adds `test_bocpd_missing_block_is_observed_sample_equivalent`, a
   characterization lock — a contiguous missing block yields bit-identical post-gap scores to the
   gap-deleted series; it would fail if the detector were changed to advance across censored weeks.
 - Review: one fresh-context adversarial pass (no blocking; confirmed the test is a genuine bit-identical
   lock and methods.py is comments-only). Its LOW nit — scope the "equivalent to deleting samples" claim
-  to the posterior given the calendar-indexed warmup gate — was applied to the preregistration wording.
+  to the posterior given the calendar-indexed warmup gate — was applied to the clarification wording.
 - Verified locally against the worktree source via `.venv` (PYTHONPATH pinned; no uv on host): ruff
-  format/check, full pytest (70 passed / 3 pre-existing symlink skips; the +1 is the new lock),
-  downstream `test_wbc1_evaluation`/`test_wbc1_runner`/`test_method_trial_export` green UNCHANGED
-  (proving zero byte/behavior change). Repo-wide pyright NOT run locally (pre-existing `typer.testing`
-  import errors); hosted `Prove the lab` covers the full gate. No research, corpus, model, or gate
-  activation is authorized by this evidence.
+  format/check, full pytest **70 passed / 3 pre-existing symlink skips on the pre-integration branch
+  (base d3ddf49)** — at the integrated head this is 74 (the preceding entry's 73 plus the one new lock),
+  covered by hosted `Prove the lab`; the "70" figure was the pre-rebase count and did not reflect the
+  merged head. Downstream `test_wbc1_evaluation`/`test_wbc1_runner`/`test_method_trial_export` green
+  UNCHANGED (proving zero byte/behavior change). Repo-wide pyright NOT run locally (pre-existing
+  `typer.testing` import errors). No research, corpus, model, or gate activation is authorized by this
+  evidence.
+- **[Correction, 2026-08-07]** Reframed from "preregistered/preregistration" to a post-hoc clarification
+  and corrected the pre-integration test count, per the PR #21 Codex review (P1 + P2). Landed as a
+  follow-up on branch `claude/fix-4-prereg-framing`.
 
 ## 2026-08-07 — MethodTrial fallback labels made contract-faithful (#7)
 

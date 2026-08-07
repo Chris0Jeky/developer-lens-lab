@@ -132,26 +132,36 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
   deferred. No real/public corpus, person-level inference, lab-owned product UI, or promotion was
   added.
 
-## 2026-08-07 — Preregistration: BOCPD missing-week run-length unit (issue #4)
+## 2026-08-07 — Post-hoc clarification (NOT a preregistration): BOCPD missing-week run-length unit (issue #4)
 
-- **Decision:** the online BOCPD run length and its constant hazard `1 / expected_run_length` are
-  preregistered in **observed samples**, not calendar weeks. Missing/non-finite weeks are skipped and
-  do not advance the run-length/hazard posterior, so a contiguous missing block leaves that posterior
-  unchanged (equivalent, for the posterior, to deleting those samples).
-- **Rationale:** this is the canonical Adams–MacKay run-length-in-observations semantics, matching the
-  existing `bocpd_scores` behavior. It is the lower-blast-radius choice: it changes no detector logic,
-  so the conservative `wbc1_reviewed` / `wbc1_contract_final` decisions and every byte-pinned artifact
-  (EvaluationBundle / custody / ResearchPack / Markdown / HTML sha256 above, and the
-  `parameters_sha256` custody hash) are unchanged — this preregistration adds zero digest churn.
-- **Alternative considered and NOT taken:** calendar-week semantics (advance the posterior across
-  censored weeks with predictive ≡ 1, statistics frozen). Deferred: it would change candidate scores
-  → false-alert/Brier metrics → every recorded digest, requiring a fresh canonical run. It is not
-  needed while the lab makes no calendar-time / real-time run-length claim; adopting it later requires
-  a separate preregistration entry and a fresh run.
+- **Nature of this entry.** This is a POST-HOC clarification of the missing-week run-length semantics as
+  ALREADY IMPLEMENTED and run — it is **not** a preregistration. The `wbc1_demo` / `wbc1_reviewed` /
+  `wbc1_contract_final` runs above are complete, their results and artifact hashes are recorded, and their
+  producer commits predate this note; a run-length unit cannot be preregistered for a run that has already
+  executed. A genuine preregistration of a different unit would have to precede a fresh run/holdout (see the
+  alternative below).
+- **Semantics documented.** As implemented, the online BOCPD run length and its constant hazard
+  `1 / expected_run_length` are in **observed samples**, not calendar weeks. Missing/non-finite weeks are
+  skipped and do not advance the run-length/hazard posterior, so a contiguous missing block leaves that
+  posterior unchanged (equivalent, for the posterior, to deleting those samples).
+- **Why this is the documented behavior (not an outcome-chosen option).** This is the canonical
+  Adams–MacKay run-length-in-observations semantics and is exactly what `bocpd_scores` already does, so
+  writing it down changes no detector logic and therefore no result or digest. That byte-invariance is a
+  CONSEQUENCE of documenting existing behavior, not a reason it was chosen; the earlier framing that
+  justified an "option" by preservation of the known reject / zero digest churn was outcome-aware and is
+  withdrawn.
+- **Alternative (would require a real preregistration + a fresh run):** calendar-week semantics (advance the
+  posterior across censored weeks with predictive ≡ 1, statistics frozen). It would change candidate scores
+  → false-alert/Brier metrics → every recorded digest, so it is out of scope here; adopting it would need a
+  preregistration entry written BEFORE a fresh run/holdout, never a post-hoc note.
 - **Scope caveat:** score emission still begins after a fixed calendar-week `warmup`, so output-level
-  gap-equivalence holds only for gaps past that boundary; the preregistered claim is about the
+  gap-equivalence holds only for gaps past that boundary; the documented claim is about the
   run-length/hazard posterior, which the warmup gate does not affect.
 - **Evidence:** locked by the characterization test
   `test_bocpd_missing_block_is_observed_sample_equivalent` (green on current code; it would fail if the
   detector were changed to advance across censored weeks). No real/public corpus, credential, network
   collection, model call, or promotion is involved.
+- **[Correction, 2026-08-07]** This entry originally read "Preregistration: BOCPD missing-week run-length
+  unit" and justified an "option" by outcome preservation; corrected to a post-hoc clarification per the
+  PR #21 Codex review (a completed run cannot be preregistered, and outcome-aware justification weakens the
+  holdout-custody claim). The observed-sample semantics and the characterization lock are unchanged.
