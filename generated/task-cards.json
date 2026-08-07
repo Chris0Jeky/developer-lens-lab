@@ -51,7 +51,7 @@
       ],
       "id": "LAB-WBC1-01",
       "outcome": "Inspectible rejection decision",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Invented weekly-series smoke benchmark"
     },
     {
@@ -123,7 +123,7 @@
       ],
       "id": "LAB-WBC1-05",
       "outcome": "Reviewable result",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Evaluation bundle and decision report"
     },
     {
@@ -132,7 +132,7 @@
       ],
       "id": "LAB-BRIDGE-01",
       "outcome": "Both-end proof",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Product and lab compatibility fixture"
     },
     {
@@ -141,7 +141,7 @@
       ],
       "id": "LAB-DEMO-01",
       "outcome": "Fresh-clone proof",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "End-to-end smoke demo and runbook"
     },
     {

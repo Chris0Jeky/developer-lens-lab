@@ -9,7 +9,7 @@ Generated from `tools/cards.py`; do not edit by hand.
 | `LAB-CONTRACT-01` | ResearchPack.v1 contracts | DONE | LAB-OS-01 | Pack validation |
 | `LAB-CONTRACT-02` | EvaluationBundle.v1 contracts | DONE | LAB-OS-01 | Decision bundle validation |
 | `LAB-ART-01` | Confined content-addressed artifact store | DONE | LAB-TOOL-01 | Replayable objects |
-| `LAB-WBC1-01` | Invented weekly-series smoke benchmark | IN_REVIEW | LAB-CONTRACT-01, LAB-ART-01 | Inspectible rejection decision |
+| `LAB-WBC1-01` | Invented weekly-series smoke benchmark | DONE | LAB-CONTRACT-01, LAB-ART-01 | Inspectible rejection decision |
 | `LAB-SYNC-01` | Generated product-contract snapshot | DONE | LAB-CONTRACT-01 | Pinned provenance |
 | `LAB-RUN-01` | Reproducible run manifest and replay | DONE | LAB-ART-01 | One-command replay |
 | `LAB-SPLIT-01` | Repository, time, and seed-family split engine | DONE | LAB-CONTRACT-01 | Leakage-safe splits |
@@ -17,9 +17,9 @@ Generated from `tools/cards.py`; do not edit by hand.
 | `LAB-WBC1-02` | Rolling median and MAD baseline | DONE | LAB-WBC1-01 | Deterministic fallback |
 | `LAB-WBC1-03` | Online change-point candidate | DONE | LAB-WBC1-02 | Baseline comparison |
 | `LAB-WBC1-04` | PELT offline descriptive arm | DONE | LAB-WBC1-02 | Localisation evidence |
-| `LAB-WBC1-05` | Evaluation bundle and decision report | IN_REVIEW | LAB-WBC1-03 | Reviewable result |
-| `LAB-BRIDGE-01` | Product and lab compatibility fixture | IN_REVIEW | LAB-SYNC-01 | Both-end proof |
-| `LAB-DEMO-01` | End-to-end smoke demo and runbook | IN_REVIEW | LAB-WBC1-05 | Fresh-clone proof |
+| `LAB-WBC1-05` | Evaluation bundle and decision report | DONE | LAB-WBC1-03 | Reviewable result |
+| `LAB-BRIDGE-01` | Product and lab compatibility fixture | DONE | LAB-SYNC-01 | Both-end proof |
+| `LAB-DEMO-01` | End-to-end smoke demo and runbook | DONE | LAB-WBC1-05 | Fresh-clone proof |
 | `LAB-CORPUS-01` | Public-repository sampler manifest | OWNER_GATED | — | Quality pilot only |
 | `LAB-CORPUS-02` | Bounded public metadata collector | OWNER_GATED | LAB-CORPUS-01 | No raw landing |
 | `LAB-CORPUS-03` | Normalizer and coverage profiler | OWNER_GATED | LAB-CORPUS-02 | Explicit coverage |
