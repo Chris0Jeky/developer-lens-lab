@@ -1,73 +1,28 @@
-# Developer Lens Lab repository guide
+# Developer Lens Lab — Codex adapter
 
-Developer Lens Lab is the public, invented-data-first research companion to Developer Lens.
-It evaluates methods; it never scores people, promotes a model, or becomes product authority.
+`CLAUDE.md` is the shared repository canon: identity, cold start, source-of-truth map, authority,
+protected-data rule, run/prove gate, and handoff shape live there. Read it first and treat it as
+binding; this file adds only Codex-runtime deltas. `uv run dllab context verify` enforces both.
 
-## Cold start
+## Codex continuation
 
-1. Read `.agent-harness/tier.json`, `HUMAN_TODO.md`, and `docs/CURRENT_STATE.md` completely.
-2. Refresh `git status --short --branch`, remotes, recent commits, worktrees, the current PR, CI,
-   and unresolved review threads. Live Git and CI outrank every state file.
-3. Invoke `$developer-lens-lab-continuation` before implementation, contract, corpus, experiment,
-   artifact-store, or handoff work.
-4. Read `docs/PRODUCT_BOUNDARY.md` and `docs/DATA_POLICY.md` before any data or model change; read
-   `docs/CONTRACTS.md` before changing a pack, bundle, snapshot, or compatibility seam.
-5. Use invented fixtures unless a task names a newer explicit owner approval and exact data scope.
+Invoke `$developer-lens-lab-continuation` before implementation, contract, corpus, experiment,
+artifact-store, or handoff work.
 
-## Source of truth
+## Codex routing
 
-| Surface | Authority |
-|---|---|
-| `.agent-harness/tier.json` | Repository tier, overlays, and Git authority |
-| `HUMAN_TODO.md` | Explicit owner decisions and genuinely open gates |
-| `docs/PRODUCT_BOUNDARY.md` | Product/lab split and prohibited analytical shapes |
-| `docs/DATA_POLICY.md` | Classes, sinks, retention, deletion, and publication |
-| `docs/CONTRACTS.md` | ResearchPack/EvaluationBundle ownership and compatibility |
-| `docs/CURRENT_STATE.md` | Single compact resume point |
-| `docs/IMPLEMENTATION_LEDGER.md` | Code and repository milestone evidence |
-| `docs/EXPERIMENT_LEDGER.md` | Experiment decisions, runs, holdout use, and rejections |
-| `tools/cards.py` | Task-card source and active-horizon generator |
-| `docs/HARDENING_BACKLOG.md` | Explicitly deferred security and operational debt |
+Use `tools/cards.py` as the task source and choose the first dependency-safe active card. Use one
+writer per checkout; parallel writers need separate coordinator-owned worktrees and disjoint
+paths. Escalate judgment-heavy implementation or review to Terra/Sol.
 
-## Current authority
+## Protected data (full rule in `CLAUDE.md`)
 
-- T1 sandbox, public synthetic route, C0 invented tracked/runtime inputs only.
-- Push and merge are free after the declared checks, review, and aging gates.
-- Favor runnable product/research value over non-essential security ceremony. Track deferred
-  hardening rather than making it a prerequisite.
-- Network collection, credentials, real/private data, external model calls, product promotion,
-  generated dataset/artifact publication, and a durable cross-repository identity key still need
-  an explicit bounded task or owner decision.
-- Product contract work is additive, synthetic-only, and lands through Developer Lens's own gate.
+Invented fixtures only. Never inspect real repositories, provider accounts, credentials, browser
+profiles, working trees, or generated product outputs; never track `.dllab`, run artifacts,
+repository allowlists, provider IDs, local paths, or environment values.
 
-## Protected-data rule
+## Prove and close
 
-Never inspect or ingest real repositories, provider accounts, credentials, browser profiles,
-working trees, private data, or generated product outputs during ordinary work. Never track `.dllab`,
-Parquet/run artifacts, repository allowlists, provider IDs, local paths, or environment values.
-Missing, unsupported, omitted, censored, or unavailable evidence is explicit, never zero.
-
-## Run and prove
-
-```powershell
-uv sync --locked --all-groups
-uv run dllab doctor
-uv run dllab context verify
-uv run ruff format --check .
-uv run ruff check .
-uv run pyright
-uv run pytest
-uv run mkdocs build --strict
-uv run python scripts/verify_hygiene.py
-```
-
-Run `uv run dllab benchmark wb-c1 --smoke` once the WB-C1 slice exists. Full benchmarks and any
-networked command are opt-in and must not be normal PR checks until measured and authorized.
-
-## Collaboration and handoff
-
-Use one writer per checkout. Parallel writers require separate coordinator-owned worktrees and
-non-overlapping paths. Keep no server, notebook kernel, or background agent after handoff. Use one
-fresh-context adversarial review for non-trivial code or methodology and review the exact final
-head. Close with changed / verified / NOT verified / failures and workarounds / docs-state sync /
-residual risk / human actions / exact branch-HEAD-PR-check-worktree state / exact resume point.
+Run the focused check first, then the full gate in `CLAUDE.md` for a code/config milestone. Close
+under changed / verified / NOT verified / failures and workarounds / docs-state sync / residual
+risk / human actions / exact branch-HEAD-PR-check-worktree state / exact resume point.

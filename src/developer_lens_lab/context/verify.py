@@ -12,7 +12,13 @@ from developer_lens_lab.schemas import check_schemas
 
 REQUIRED_FILES = (
     "AGENTS.md",
+    "CLAUDE.md",
     ".agent-harness/tier.json",
+    ".claude/agents/dll-implementer.md",
+    ".claude/agents/dll-mechanic.md",
+    ".claude/agents/dll-reviewer.md",
+    ".claude/settings.json",
+    ".claude/skills/developer-lens-lab-continuation/SKILL.md",
     "HUMAN_TODO.md",
     "README.md",
     "docs/CURRENT_STATE.md",
@@ -152,9 +158,40 @@ def verify_repository(root: Path) -> VerificationReport:
     failures = [
         f"missing required file: {path}" for path in REQUIRED_FILES if not (root / path).is_file()
     ]
-    agents = root / "AGENTS.md"
-    if agents.is_file() and len(agents.read_text(encoding="utf-8").splitlines()) > 100:
-        failures.append("AGENTS.md exceeds the 100-line cold-start budget")
+    for cold_start_name in ("AGENTS.md", "CLAUDE.md"):
+        cold_start = root / cold_start_name
+        if cold_start.is_file() and len(cold_start.read_text(encoding="utf-8").splitlines()) > 100:
+            failures.append(f"{cold_start_name} exceeds the 100-line cold-start budget")
+    adapter = root / "AGENTS.md"
+    if adapter.is_file() and "CLAUDE.md" not in adapter.read_text(encoding="utf-8"):
+        failures.append("AGENTS.md must name CLAUDE.md as the shared canon")
+    canon = root / "CLAUDE.md"
+    if canon.is_file() and "## Protected-data rule" not in canon.read_text(encoding="utf-8"):
+        failures.append("CLAUDE.md must carry the protected-data rule section")
+    settings = root / ".claude" / "settings.json"
+    if settings.is_file():
+        try:
+            settings_payload: object = json.loads(settings.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            failures.append(f".claude/settings.json is not valid JSON: {exc}")
+        else:
+            if "bypassPermissions" in json.dumps(settings_payload):
+                failures.append(
+                    "committed .claude/settings.json must not carry bypassPermissions; "
+                    "it belongs in gitignored .claude/settings.local.json"
+                )
+    tracked_local = subprocess.run(
+        ["git", "ls-files", "--cached", "--", ".claude/settings.local.json"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if tracked_local.returncode == 0 and tracked_local.stdout.strip():
+        failures.append(
+            ".claude/settings.local.json is tracked; machine-local trust settings must stay "
+            "gitignored"
+        )
     current = root / "docs" / "CURRENT_STATE.md"
     if current.is_file():
         text = current.read_text(encoding="utf-8")
