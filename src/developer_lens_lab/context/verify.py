@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import subprocess
 import sys
@@ -166,6 +167,87 @@ REQUIRED_SETTINGS_READ_DENY = (
 )
 
 
+SHARED_SKILL_MARKER = "shared:evaluation-integrity"
+SKILL_PARITY_FILES = (
+    ".claude/skills/developer-lens-lab-continuation/SKILL.md",
+    ".agents/skills/developer-lens-lab-continuation/SKILL.md",
+)
+
+
+def verify_skill_parity(root: Path) -> list[str]:
+    start_marker = f"<!-- {SHARED_SKILL_MARKER} start -->"
+    end_marker = f"<!-- {SHARED_SKILL_MARKER} end -->"
+    failures: list[str] = []
+    blocks: list[str] = []
+    for rel in SKILL_PARITY_FILES:
+        path = root / rel
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            failures.append(f"{rel}: missing shared evaluation-integrity marker(s)")
+            continue
+        normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+        # Require exactly one ordered pair. A duplicate pair (e.g. a copy/paste while extending the
+        # section) would otherwise leave find() comparing only the first block, silently ignoring a
+        # divergent second one — a false pass in a check whose whole job is to catch divergence.
+        if normalized.count(start_marker) != 1 or normalized.count(end_marker) != 1:
+            failures.append(f"{rel}: expected exactly one shared evaluation-integrity marker pair")
+            continue
+        start = normalized.find(start_marker)
+        end = normalized.find(end_marker)
+        if end <= start:
+            failures.append(f"{rel}: shared evaluation-integrity markers are out of order")
+            continue
+        block = normalized[start + len(start_marker) : end].strip()
+        blocks.append(block)
+    if len(blocks) == len(SKILL_PARITY_FILES) and len(set(blocks)) > 1:
+        failures.append(
+            "shared evaluation-integrity section drifted between the two SKILL.md copies"
+        )
+    return failures
+
+
+CONTEXT_BUDGET_FILES = ("AGENTS.md", "CLAUDE.md")
+CHARS_PER_TOKEN = 4  # standard ~4-chars/token English heuristic; a deterministic estimate, not an exact count  # noqa: E501
+
+
+def verify_context_budget(root: Path) -> list[str]:
+    path = root / ".agent-harness" / "tier.json"
+    try:
+        payload_raw: object = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(payload_raw, dict):
+        return []
+    budgets_raw = cast("dict[str, object]", payload_raw).get("budgets")
+    if not isinstance(budgets_raw, dict):
+        return []
+    budgets = cast("dict[str, object]", budgets_raw)
+    if "standing_context_tokens" not in budgets:
+        return []
+    # A declared-but-unusable budget must fail loudly, not silently disable the check;
+    # a corrupted value would otherwise revert to the "nothing enforces it" gap. _verify_tier
+    # validates only top-level keys, so the value itself is validated here.
+    budget = budgets["standing_context_tokens"]
+    if isinstance(budget, bool) or not isinstance(budget, int) or budget <= 0:
+        return [
+            "tier.json budgets.standing_context_tokens must be a positive integer to enforce "
+            "the standing-context budget"
+        ]
+    total_chars = 0
+    for name in CONTEXT_BUDGET_FILES:
+        candidate = root / name
+        if candidate.is_file():
+            total_chars += len(candidate.read_text(encoding="utf-8"))
+    estimate = math.ceil(total_chars / CHARS_PER_TOKEN)
+    if estimate > budget:
+        return [
+            f"standing context (AGENTS.md+CLAUDE.md) ~{estimate} tokens exceeds the declared "
+            f"standing_context_tokens budget of {budget}"
+        ]
+    return []
+
+
 def verify_settings_deny(payload: object) -> list[str]:
     deny_rules: set[str] = set()
     if isinstance(payload, dict):
@@ -232,6 +314,8 @@ def verify_repository(root: Path) -> VerificationReport:
     if (root / "developer_lens_lab_bootstrap_agent_prompt.md").exists():
         failures.append("the commissioning prompt must not become a competing repo authority")
     failures.extend(_verify_tier(root))
+    failures.extend(verify_skill_parity(root))
+    failures.extend(verify_context_budget(root))
     failures.extend(verify_markdown_links(root))
     if (root / "tools" / "cards.py").is_file():
         failures.extend(_verify_cards(root))

@@ -17,6 +17,13 @@ only when measurement, real-data scope, external users, or an irreversible bound
   `*.parquet`/`*.arrow`/`method-trial-view.json` outside those directories. Extend the deny set and
   the `context verify` parity check when contributors join or a machine-local bypass posture makes
   best-effort read-scoping insufficient.
+- Reconfirmed non-expansion of the committed-settings guard scope: `context verify` currently only
+  rejects the `bypassPermissions` substring and enforces the three `Read` deny rules in
+  `.claude/settings.json`; it does not inspect committed `hooks` blocks, `permissions.allow`
+  wildcards, or `.mcp.json`, and the gitignored `.claude/settings.local.json` has its content scanned
+  by nothing (only a `git ls-files` tracked-status guard stops it from being committed). Revisit when
+  external contributors join or a machine-local bypass posture makes best-effort scoping insufficient
+  (law 8: do not over-build for contributors who have not joined).
 - Pin GitHub Actions by immutable commit and add build provenance/signing if release artifacts begin.
 - Add a multi-platform/Python-version CI matrix after the Windows/Linux single lanes expose actual
   portability risks.
