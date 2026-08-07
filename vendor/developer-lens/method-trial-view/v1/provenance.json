@@ -2,11 +2,11 @@
   "files": [
     {
       "name": "schema.json",
-      "sha256": "sha256:7632f4b23bb8afe1f038c8ff5d979165e855cc5e42e668929600c68f55488683",
-      "size_bytes": 123307
+      "sha256": "sha256:81871f21c7dd69e121047d9a48d7dcaefd4513d4beb33e6d4f049d7c6e99a77b",
+      "size_bytes": 158311
     }
   ],
   "identity_semantics": "provenance_only_not_a_join_key",
-  "product_commit": "554a6920de9be2f071049665024beb46c4069645",
+  "product_commit": "88cc32226c80209ea9f848c560d5a104367d96fd",
   "schema_version": "DeveloperLensContractSnapshot.v1"
 }

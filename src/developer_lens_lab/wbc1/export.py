@@ -121,10 +121,15 @@ def _case_points(
                 "state": "observed",
                 "value": values[(series.system_alias, series.week_starts[index])],
             }
-            baseline = {"alert": index in baseline_alerts, "score": _value(baseline_scores[index])}
+            baseline = {
+                "alert": index in baseline_alerts,
+                "score": _value(baseline_scores[index]),
+                "threshold": _value(baseline_threshold),
+            }
             candidate = {
                 "alert": index in candidate_alerts,
                 "probability": _value(candidate_scores[index]),
+                "threshold": _value(candidate_threshold),
             }
         else:
             reason = (
@@ -133,8 +138,16 @@ def _case_points(
                 else "instrumentation_gap"
             )
             observed_value = {"state": "missing", "reason": reason}
-            baseline = {"alert": False, "score": _unavailable(reason="insufficient_support")}
-            candidate = {"alert": False, "probability": _unavailable(reason="insufficient_support")}
+            baseline = {
+                "alert": False,
+                "score": _unavailable(reason="missing_observation"),
+                "threshold": _unavailable(reason="missing_observation"),
+            }
+            candidate = {
+                "alert": False,
+                "probability": _unavailable(reason="missing_observation"),
+                "threshold": _unavailable(reason="missing_observation"),
+            }
         marker = (
             planted_marker
             if series.change_index is not None and index >= series.change_index
@@ -143,7 +156,7 @@ def _case_points(
         points.append(
             {
                 "relative_week_index": index - start,
-                "relative_week_label": f"week-{index - start:02d}",
+                "relative_week_label": f"week-{index - start:03d}",
                 "observed": observed_value,
                 "planted_marker": marker,
                 "confound_marker": confound_marker if bool(series.confound[index]) else "none",
@@ -167,11 +180,12 @@ def _build_cases(
     series = dataset.final_holdout_metadata.series
     no_change = next(item for item in series if item.scenario_code == "no_change")
     planted = next(item for item in series if item.scenario_code == "level")
-    confound = next(item for item in series if item.scenario_code == "permission_shift")
+    confound = next(item for item in series if item.scenario_code == "parser_shift")
     return [
         {
             "order": 1,
-            "scenario_code": "no_change_control",
+            "role": "no_change_control",
+            "scenario_code": "no_change",
             "selection_rule": {
                 "code": "fixed_first_window",
                 "label": "First eligible no-change series and first twelve weeks",
@@ -180,12 +194,13 @@ def _build_cases(
             "title": "No-change control",
             "summary": "A fixed early window checks ordinary variation without a planted change.",
             "points": _case_points(
-                no_change, values, baseline_threshold, candidate_threshold, 0, 12, "none", "none"
+                no_change, values, baseline_threshold, candidate_threshold, 0, 104, "none", "none"
             ),
         },
         {
             "order": 2,
-            "scenario_code": "planted_change",
+            "role": "planted_change",
+            "scenario_code": "level",
             "selection_rule": {
                 "code": "fixed_change_window",
                 "label": "First eligible level-change series around the planted boundary",
@@ -198,18 +213,19 @@ def _build_cases(
                 values,
                 baseline_threshold,
                 candidate_threshold,
-                max(0, int(planted.change_index or 0) - 4),
-                16,
+                0,
+                104,
                 "level",
                 "none",
             ),
         },
         {
             "order": 3,
-            "scenario_code": "instrumentation_confound",
+            "role": "instrumentation_confound",
+            "scenario_code": "parser_shift",
             "selection_rule": {
                 "code": "fixed_confound_window",
-                "label": "First eligible permission-shift series around the confound",
+                "label": "First eligible parser-shift series around the confound",
                 "deterministic": True,
             },
             "title": "Instrumentation confound",
@@ -219,10 +235,10 @@ def _build_cases(
                 values,
                 baseline_threshold,
                 candidate_threshold,
-                max(0, int(dataset.config.change_index) - 4),
-                16,
+                0,
+                104,
                 "none",
-                "permission_loss",
+                "parser_shift",
             ),
         },
     ]
@@ -291,7 +307,17 @@ def export_method_trial(
                 for item in bundle.dataset_card.coverage_counts
                 if item.status == "absent"
             ),
-            "scenario_codes": ["no_change_control", "planted_change", "instrumentation_confound"],
+            "scenario_codes": [
+                "no_change",
+                "level",
+                "variance",
+                "slope",
+                "seasonal_amplitude",
+                "heavy_tailed_no_change",
+                "coverage_gap",
+                "permission_shift",
+                "parser_shift",
+            ],
             "limitations": [
                 "Synthetic mechanics evidence only; it does not establish real repository "
                 "validity.",
@@ -312,7 +338,7 @@ def export_method_trial(
             },
             "candidate": {
                 "role": "candidate",
-                "method_code": "bocpd",
+                "method_code": "bocpd_gaussian",
                 "display_name": "Gaussian BOCPD",
                 "description": "A fixed-prior Bayesian online change-point probability.",
                 "deterministic": True,
@@ -332,12 +358,16 @@ def export_method_trial(
                 "false_alerts_per_year": _value(baseline_false),
                 "detection_rate": _value(baseline_detection),
                 "detection_delay_weeks": _unavailable(),
+                "median_detection_delay_weeks": _unavailable(),
+                "coverage_confound_false_alert_rate": _unavailable(),
                 "calibration_brier": _unavailable(),
             },
             "candidate": {
                 "false_alerts_per_year": _value(candidate_false),
                 "detection_rate": _value(candidate_detection),
                 "detection_delay_weeks": _unavailable(),
+                "median_detection_delay_weeks": _unavailable(),
+                "coverage_confound_false_alert_rate": _unavailable(),
                 "calibration_brier": _value(candidate_brier),
             },
             "threshold_selection": {
@@ -362,26 +392,46 @@ def export_method_trial(
         "acceptance_gates": [
             {
                 "order": 1,
-                "code": "support",
-                "label": "Support is sufficient",
-                "outcome": "pass",
-                "reason_code": "support_sufficient",
-                "reason": "The invented panel has recorded observed and absent counts.",
+                "code": "baseline_selection",
+                "label": "Baseline selection is viable",
+                "outcome": "fail",
+                "reason_code": "BASELINE_SELECTION_VIABLE",
+                "reason": "Baseline train and validation selection is nonviable.",
             },
             {
                 "order": 2,
-                "code": "threshold_viability",
-                "label": "Threshold selections are viable",
+                "code": "candidate_selection",
+                "label": "Candidate selection is viable",
                 "outcome": "fail",
-                "reason_code": "both_selections_nonviable",
-                "reason": "Both train and validation selections are nonviable.",
+                "reason_code": "CANDIDATE_SELECTION_VIABLE",
+                "reason": "Candidate train and validation selection is nonviable.",
             },
             {
                 "order": 3,
-                "code": "false_alerts",
+                "code": "detection_floor",
+                "label": "Candidate meets detection floor",
+                "outcome": "pass",
+                "reason_code": "CANDIDATE_DETECTION_FLOOR",
+                "reason": "Candidate detection meets the preregistered floor.",
+                "relevant_values": {
+                    "baseline": _value(baseline_detection),
+                    "candidate": _value(candidate_detection),
+                },
+            },
+            {
+                "order": 4,
+                "code": "delay_budget",
+                "label": "Candidate meets delay budget",
+                "outcome": "not_applicable",
+                "reason_code": "CANDIDATE_DELAY_BUDGET",
+                "reason": "Measured delay is unavailable in this bundle.",
+            },
+            {
+                "order": 5,
+                "code": "false_alert_improvement",
                 "label": "Candidate false alerts improve",
                 "outcome": "fail",
-                "reason_code": "candidate_false_alerts_higher",
+                "reason_code": "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
                 "reason": "Candidate false alerts per year exceed the baseline.",
                 "relevant_values": {
                     "baseline": _value(baseline_false),
@@ -389,44 +439,30 @@ def export_method_trial(
                 },
             },
             {
-                "order": 4,
-                "code": "detection",
-                "label": "Detection does not worsen",
-                "outcome": "pass",
-                "reason_code": "same_detection_no_gain",
-                "reason": "Candidate and baseline detection rates are equal.",
-                "relevant_values": {
-                    "baseline": _value(baseline_detection),
-                    "candidate": _value(candidate_detection),
-                },
-            },
-            {
-                "order": 5,
-                "code": "calibration",
-                "label": "Candidate calibration is reported",
-                "outcome": "pass",
-                "reason_code": "candidate_brier_reported",
-                "reason": "Candidate Brier calibration is measured on observed points.",
-                "relevant_values": {
-                    "baseline": _unavailable(),
-                    "candidate": _value(candidate_brier),
-                },
-            },
-            {
                 "order": 6,
-                "code": "promotion",
-                "label": "Candidate is eligible for promotion",
-                "outcome": "fail",
-                "reason_code": "candidate_rejected",
-                "reason": "The conservative decision remains reject.",
+                "code": "not_worse_detection",
+                "label": "Candidate detection is not worse",
+                "outcome": "pass",
+                "reason_code": "CANDIDATE_NOT_WORSE_DETECTION",
+                "reason": "Candidate and baseline detection rates are equal.",
+            },
+            {
+                "order": 7,
+                "code": "confound_guard",
+                "label": "Candidate confound guard is measured",
+                "outcome": "not_applicable",
+                "reason_code": "CANDIDATE_CONFOUND_GUARD",
+                "reason": "Confound false-alert rate is unavailable in this bundle.",
             },
         ],
         "decision": {
             "outcome": "reject",
+            "candidate_promoted": False,
+            "fallback": {"method_code": "rolling_median_mad", "retained": True},
             "reason_codes": [
-                "both_thresholds_nonviable",
-                "candidate_more_false_alerts",
-                "no_detection_gain",
+                "BASELINE_SELECTION_VIABLE",
+                "CANDIDATE_SELECTION_VIABLE",
+                "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
             ],
             "summary": (
                 "The candidate is rejected because both selections are nonviable and false "
@@ -472,6 +508,10 @@ def export_method_trial(
                     "code": "model_promotion",
                     "display_text": "This rejected trial cannot promote a model.",
                 },
+                {
+                    "code": "online_pelt_performance",
+                    "display_text": "Offline PELT markers do not establish online performance.",
+                },
             ],
             "limitations": [
                 {
@@ -494,6 +534,41 @@ def export_method_trial(
                 },
             ],
         },
+        "representative_selection": {
+            "version": "v1",
+            "partition": "final_holdout",
+            "planted_preference": ["level", "slope", "variance", "seasonal_amplitude"],
+            "confound_preference": ["parser_shift", "coverage_gap", "permission_shift"],
+            "tie_break": "lexicographically_lowest_stable_opaque_alias",
+            "missing_role_policy": "fail_export",
+            "aliases_not_exposed": True,
+        },
+        "deferred_caveats": [
+            {
+                "code": "missingness_confound_observability",
+                "display_text": "Confound observability remains a deferred measurement refinement.",
+            },
+            {
+                "code": "validation_artifact_lifecycle",
+                "display_text": "Run-owned artifact lifecycle hardening remains deferred.",
+            },
+            {
+                "code": "threshold_selection_workload_counts",
+                "display_text": "Threshold-selection workload counts remain a deferred refinement.",
+            },
+            {
+                "code": "corrupt_manifest_failure",
+                "display_text": "Corrupt-manifest failure reporting remains a deferred refinement.",
+            },
+            {
+                "code": "primary_domain_metric_enforcement",
+                "display_text": "Primary-domain metric enforcement remains a deferred refinement.",
+            },
+            {
+                "code": "zero_delay_fallback_ordering",
+                "display_text": "Zero-delay fallback ordering remains a deferred refinement.",
+            },
+        ],
         "reproducibility": {
             "product_contract_commit": method_provenance["product_commit"],
             "product_research_pack_commit": research_provenance["product_commit"],
@@ -504,7 +579,7 @@ def export_method_trial(
                 "schema": schema_file["sha256"],
                 "evaluation_bundle": bundle_ref.sha256,
                 "custody": custody_ref.sha256,
-                "report": manifest["markdown"]["sha256"],
+                "research_pack": manifest["research_pack"]["sha256"],
             },
             "commands": {
                 "benchmark": f"uv run dllab benchmark wb-c1 --smoke --run-id {run_id}",
