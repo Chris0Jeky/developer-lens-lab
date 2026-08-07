@@ -279,3 +279,23 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Those four delivered C0 cards are now `DONE`, their generated Markdown/JSON indexes are refreshed,
   and the active horizon is empty. Owner-gated corpus cards and the parked data-quality card remain
   unchanged; this closure authorizes no follow-on work.
+
+## 2026-08-07 — Dual-runtime Claude harness
+
+- PR #11 merged with merge commit `c159d96f` after two bounded review rounds (one independent
+  fresh-context adversarial pass, two Codex rounds triaged). `CLAUDE.md` became the shared canon;
+  `AGENTS.md` slimmed to a thin Codex adapter with an inline protected-data summary; the Claude
+  runtime gained committed settings, the `developer-lens-lab-continuation` skill, and pinned
+  agents `dll-implementer`/`dll-reviewer` (Opus 4.8 high) and `dll-mechanic` (Sonnet 4.6 high).
+- `dllab context verify` now requires the Claude files and the three agent-pin files to exist
+  (existence only — it does not parse pin frontmatter), parses committed settings as JSON,
+  rejects committed or tracked `bypassPermissions`/`settings.local.json`, and asserts the canon
+  anchors (adapter names the canon; canon carries the protected-data rule).
+- Same PR untracked the `.coverage` run artifact that had been committed directly to `main`
+  (`71db5f1`); CI's `pytest --cov` rewrote it and broke the WB-C1 clean-worktree gate — `main`'s
+  red lane healed at the merge (hosted gate green at `91b3505` pre-merge and at `c159d96f`).
+- Verified: hosted `Prove the lab` green at `91b3505` and at the merge commit; local ruff,
+  pyright, pytest (54 passed, 3 pre-existing symlink skips), strict MkDocs, hygiene.
+- Deferred (tracked): #12 skill-copy parity markers, combined context budget, settings-guard
+  scope; #13 deny-rule parity with the product repo. No research vertical, corpus, model, or
+  gate activation is authorized by this evidence.
