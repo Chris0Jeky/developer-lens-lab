@@ -1,4 +1,5 @@
 {
+  "$comment": "Structural transport validation only. Semantic acceptance requires shared/methodTrialView.ts#MethodTrialViewSchema, or an equivalent implementation of its cross-field rules, before this artifact is accepted or displayed.",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
