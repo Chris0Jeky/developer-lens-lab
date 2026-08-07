@@ -820,10 +820,16 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     candidate_bytes = _result_parquet_bytes(evaluation.candidate_holdout)
     pelt_bytes = _pelt_bytes(evaluation)
     baseline_ref = _assert_reproduced_reference(
-        "baseline results", baseline_bytes, "application/x-parquet", _require_field(manifest, "baseline")
+        "baseline results",
+        baseline_bytes,
+        "application/x-parquet",
+        _require_field(manifest, "baseline"),
     )
     candidate_ref = _assert_reproduced_reference(
-        "candidate results", candidate_bytes, "application/x-parquet", _require_field(manifest, "candidate")
+        "candidate results",
+        candidate_bytes,
+        "application/x-parquet",
+        _require_field(manifest, "candidate"),
     )
     pelt_ref = _assert_reproduced_reference(
         "PELT summary", pelt_bytes, "application/json", _require_field(manifest, "pelt")
@@ -904,10 +910,9 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
         html_text = build_html(bundle)
     markdown = store.put_text(run_id, markdown_text, "text/markdown")
     html_ref = store.put_text(run_id, html_text, "text/html")
-    if (
-        markdown.model_dump(mode="json") != _require_field(manifest, "markdown")
-        or html_ref.model_dump(mode="json") != _require_field(manifest, "html")
-    ):
+    if markdown.model_dump(mode="json") != _require_field(
+        manifest, "markdown"
+    ) or html_ref.model_dump(mode="json") != _require_field(manifest, "html"):
         raise RunnerError("report bytes differ from the recorded deterministic report")
     store.write_scope_file(run_id, "report.md", store.get_bytes(run_id, markdown))
     store.write_scope_file(run_id, "report.html", store.get_bytes(run_id, html_ref))

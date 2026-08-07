@@ -315,9 +315,7 @@ def decide_benchmark(
             # that coerces it via `or 0.0` would otherwise let an unmeasured
             # comparison be declared benchmarked.  Require presence explicitly.
             "PRIMARY_DOMAIN_METRICS_PRESENT",
-            lambda: (
-                baseline.detection_rate is not None and candidate.detection_rate is not None
-            ),
+            lambda: baseline.detection_rate is not None and candidate.detection_rate is not None,
         ),
         (
             "BASELINE_SELECTION_VIABLE",
