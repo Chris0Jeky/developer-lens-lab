@@ -1,4 +1,4 @@
-# pyright: reportUnknownArgumentType=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownParameterType=false, reportMissingParameterType=false, reportUnknownLambdaType=false
+# pyright: reportUnknownArgumentType=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownParameterType=false, reportMissingParameterType=false, reportUnknownLambdaType=false, reportPrivateUsage=false
 
 from __future__ import annotations
 
@@ -6,7 +6,9 @@ import hashlib
 import json
 from copy import deepcopy
 from pathlib import Path
+from types import SimpleNamespace
 
+import numpy as np
 import pytest
 from jsonschema import Draft202012Validator
 
@@ -14,10 +16,43 @@ from developer_lens_lab.contracts.method_trial_view import (
     MethodTrialViewError,
     validate_method_trial_view,
 )
-from developer_lens_lab.wbc1.export import export_method_trial
+from developer_lens_lab.wbc1.export import _build_cases, _select_series, export_method_trial
+from developer_lens_lab.wbc1.generator import WeeklySeries
 from developer_lens_lab.wbc1.runner import run_benchmark
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _fabricated_series(scenario_code: str, system_alias: str, *, eligible: bool) -> WeeklySeries:
+    """Fabricate a final-holdout series with a controlled selection eligibility.
+
+    ``_select_series`` treats a series as eligible only when ``len(values) >= 52``
+    and ``observed.mean() >= 0.8``; an ineligible one keeps every observation absent
+    so the canonical-or-fail-export selection can be exercised without real data.
+    """
+    weeks = 104
+    week_starts = tuple(f"2020-{index:03d}" for index in range(weeks))
+    values = np.zeros(weeks, dtype=np.float64)
+    observed = np.ones(weeks, dtype=np.bool_) if eligible else np.zeros(weeks, dtype=np.bool_)
+    confound = np.zeros(weeks, dtype=np.bool_)
+    return WeeklySeries(
+        system_alias=system_alias,
+        seed_family="family_00",
+        scenario_code=scenario_code,
+        noise_family="gaussian",
+        week_starts=week_starts,
+        values=values,
+        observed=observed,
+        confound=confound,
+        change_index=None,
+        change_kind=None,
+        confound_kind=None,
+        coverage_id="coverage_00",
+    )
+
+
+def _dataset_with_series(series: tuple[WeeklySeries, ...]) -> SimpleNamespace:
+    return SimpleNamespace(final_holdout_metadata=SimpleNamespace(series=series))
 
 
 def _permit_test_tree(monkeypatch) -> None:
@@ -226,3 +261,38 @@ def test_method_trial_export_uses_recorded_provenance_and_fails_closed_on_drift(
             export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path)
     finally:
         path.write_bytes(original)
+
+
+def test_planted_slot_fails_export_when_no_eligible_level_series() -> None:
+    # The planted case scenario_code is pinned to const "level"; when no eligible level
+    # series exists the selection must fail-export rather than substitute an eligible
+    # non-canonical series (here slope) that the case could only mislabel as level.
+    series = (
+        _fabricated_series("no_change", "system_a", eligible=True),
+        _fabricated_series("level", "system_b", eligible=False),
+        _fabricated_series("slope", "system_c", eligible=True),
+        _fabricated_series("parser_shift", "system_d", eligible=True),
+    )
+    assert _select_series(series, ("no_change",)).scenario_code == "no_change"
+    assert _select_series(series, ("slope",)).scenario_code == "slope"
+    with pytest.raises(ValueError, match="missing eligible representative role"):
+        _select_series(series, ("level",))
+    with pytest.raises(ValueError, match="missing eligible representative role"):
+        _build_cases(_dataset_with_series(series), {}, 1.0, 1.0)
+
+
+def test_confound_slot_fails_export_when_no_eligible_parser_shift_series() -> None:
+    # The confound case scenario_code is pinned to const "parser_shift"; an eligible
+    # coverage_gap series must not be substituted when parser_shift is ineligible.
+    series = (
+        _fabricated_series("no_change", "system_a", eligible=True),
+        _fabricated_series("level", "system_b", eligible=True),
+        _fabricated_series("parser_shift", "system_c", eligible=False),
+        _fabricated_series("coverage_gap", "system_d", eligible=True),
+    )
+    assert _select_series(series, ("level",)).scenario_code == "level"
+    assert _select_series(series, ("coverage_gap",)).scenario_code == "coverage_gap"
+    with pytest.raises(ValueError, match="missing eligible representative role"):
+        _select_series(series, ("parser_shift",))
+    with pytest.raises(ValueError, match="missing eligible representative role"):
+        _build_cases(_dataset_with_series(series), {}, 1.0, 1.0)

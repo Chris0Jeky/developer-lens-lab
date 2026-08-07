@@ -410,3 +410,33 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   (proving zero byte/behavior change). Repo-wide pyright NOT run locally (pre-existing `typer.testing`
   import errors); hosted `Prove the lab` covers the full gate. No research, corpus, model, or gate
   activation is authorized by this evidence.
+
+## 2026-08-07 — MethodTrial fallback labels made contract-faithful (#7)
+
+- Branch `claude/fallback-labels-7` closes #7. Discovery + a fresh-context implementer STOP corrected
+  the issue's premise: the vendored MethodTrialView v1 schema pins each representative case's
+  `scenario_code` to a `const` (case[1]=level, case[2]=parser_shift), validated before any Python
+  check — so threading a fallback `scenario_code` (the issue's original ask) is contract-invalid.
+- Coordinator methodology decision: **canonical-or-fail-export.** `_build_cases`
+  (`wbc1/export.py`) narrows the planted/confound representative preferences from multi-item
+  (`("level","slope",...)` / `("parser_shift","coverage_gap",...)`) to the single contract-required
+  canonical scenario (`("level",)` / `("parser_shift",)`), so `_select_series` raises its existing
+  missing-role `ValueError` when the canonical scenario is ineligible instead of silently
+  substituting a non-canonical series the case could only mislabel. `_select_series`/`_case_points`
+  bodies untouched; `contracts/method_trial_view.py` and the vendored schema untouched.
+- Byte-stable: the dense canonical demo still has eligible `level`/`parser_shift`, so selection and
+  every composed byte are identical — the deterministic-export and vendor-snapshot (`sha256:634b0cc7…`,
+  `product_commit b48fea57…`) pins pass UNCHANGED. Added two fail-export tests (planted + confound
+  ineligible-canonical paths); the test file's existing broad `# pyright:` header gained
+  `reportPrivateUsage=false` for the two internal-helper imports (consistent with that file's posture).
+- Review: one fresh-context adversarial pass (no blocking). It confirmed the fix resolves the mislabel
+  (selection can only return a series whose scenario_code matches the const label) and flagged one
+  contract-forced, pre-existing imperfection: the view still DECLARES a multi-item
+  `planted_preference`/`confound_preference` (schema-pinned consts) the code no longer honors past
+  index 0. That is a product-contract tension (const scenario_code vs declared fallbacks), tracked as
+  a cross-repo follow-up, not fixable in the lab.
+- Verified locally against the worktree source via `.venv` (PYTHONPATH pinned; no uv on host): ruff
+  format/check, full pytest (71 passed / 3 pre-existing symlink skips; the +2 are the fail-export
+  tests) with the byte pins green UNCHANGED, `verify_repository(.)` OK. Repo-wide pyright NOT run
+  locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the full gate.
+  No research, corpus, model, or gate activation is authorized by this evidence.
