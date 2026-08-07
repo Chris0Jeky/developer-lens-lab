@@ -231,5 +231,6 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and
   `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
 - The result is unchanged: seven gates fail/fail/pass/pass/fail/pass/pass, decision `reject`, and
-  rolling-median/MAD fallback retained. Product byte pinning, exact-head hosted gates, final review,
-  product-first merge, merged-contract recheck, and lab merge remain live gates at this record.
+  rolling-median/MAD fallback retained. Product PR #187 later merged at `7b22491`; correction commit
+  `1e1214d` pins these integrated bytes on `codex/method-trial-final-evidence`. Its PR/hosted gate and
+  merge, the merged-contract recheck, and lab PR #8 remain live gates at this record.
