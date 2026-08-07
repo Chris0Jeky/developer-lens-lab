@@ -144,6 +144,38 @@ def test_method_trial_sync_check_only_verifies_bytes_without_rewriting(tmp_path:
         sync_method_trial_view_contract(destination, product, commit, check_only=True)
 
 
+def test_method_trial_sync_requires_structural_only_annotation(tmp_path: Path) -> None:
+    product = tmp_path / "product"
+    source = product / "research-contracts" / "method-trial-view" / "v1"
+    source.mkdir(parents=True)
+    schema = json.loads(
+        (
+            Path(__file__).resolve().parents[1]
+            / "vendor/developer-lens/method-trial-view/v1/schema.json"
+        ).read_text(encoding="utf-8")
+    )
+    schema.pop("$comment")
+    (source / "schema.json").write_text(
+        json.dumps(schema, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    _run_git(product, "init", "-b", "main")
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "schema without semantic boundary",
+    )
+    commit = _run_git(product, "rev-parse", "HEAD")
+
+    with pytest.raises(ContractSyncError, match="strict v1 object"):
+        sync_method_trial_view_contract(tmp_path / "lab", product, commit)
+
+
 def test_method_trial_check_only_accepts_same_bytes_at_newer_commit(tmp_path: Path) -> None:
     product = tmp_path / "product"
     source = product / "research-contracts" / "method-trial-view" / "v1"
