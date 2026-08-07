@@ -16,6 +16,7 @@ htmlcov/
 /tests/__pycache__
 /src/developer_lens_lab/__pycache__
 /src/developer_lens_lab/context/__pycache__
+.claude/settings.local.json
 .env
 .env.*
 .ipynb_checkpoints/
