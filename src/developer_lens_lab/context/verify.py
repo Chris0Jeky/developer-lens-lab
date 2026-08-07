@@ -12,7 +12,10 @@ from developer_lens_lab.schemas import check_schemas
 
 REQUIRED_FILES = (
     "AGENTS.md",
+    "CLAUDE.md",
     ".agent-harness/tier.json",
+    ".claude/settings.json",
+    ".claude/skills/developer-lens-lab-continuation/SKILL.md",
     "HUMAN_TODO.md",
     "README.md",
     "docs/CURRENT_STATE.md",
@@ -152,9 +155,16 @@ def verify_repository(root: Path) -> VerificationReport:
     failures = [
         f"missing required file: {path}" for path in REQUIRED_FILES if not (root / path).is_file()
     ]
-    agents = root / "AGENTS.md"
-    if agents.is_file() and len(agents.read_text(encoding="utf-8").splitlines()) > 100:
-        failures.append("AGENTS.md exceeds the 100-line cold-start budget")
+    for cold_start_name in ("AGENTS.md", "CLAUDE.md"):
+        cold_start = root / cold_start_name
+        if cold_start.is_file() and len(cold_start.read_text(encoding="utf-8").splitlines()) > 100:
+            failures.append(f"{cold_start_name} exceeds the 100-line cold-start budget")
+    settings = root / ".claude" / "settings.json"
+    if settings.is_file() and "bypassPermissions" in settings.read_text(encoding="utf-8"):
+        failures.append(
+            "committed .claude/settings.json must not carry bypassPermissions; "
+            "it belongs in gitignored .claude/settings.local.json"
+        )
     current = root / "docs" / "CURRENT_STATE.md"
     if current.is_file():
         text = current.read_text(encoding="utf-8")
