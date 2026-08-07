@@ -42,7 +42,7 @@ hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 u
   irreversible secret/private-data/out-of-root/person-shape boundary
 late_review_debt: lab #6 and product #189 are explicit non-blocking follow-ups; neither changes the
   conservative WB-C1 reject decision
-exact_resume_point: push product correction commit 1e1214d and lab closeout head d9dd24a, finish
+exact_resume_point: push product correction commit 1e1214d and the current lab branch HEAD, finish
   exact-head hosted gates/review, merge the product correction, run the merged-contract and fixture
   byte check, merge lab PR #8, and perform one late-comment sweep per PR
 ```
