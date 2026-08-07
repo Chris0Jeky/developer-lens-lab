@@ -64,3 +64,28 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
 - **Movement and limits:** the exact merged producer sync changed schema/fixture and artifact
   digests, but not the dataset recipe or canonical metrics/decision. This remains synthetic
   mechanics evidence only; issue #6 stays deferred and no product promotion is implied.
+
+## 2026-08-07 - Principal demo preflight (`wbc1_demo_preflight`)
+
+- **Status:** preflight only; keep `LAB-DEMO-01` `IN_REVIEW`. This is local evidence at lab head
+  `b865d6951e915ffedb4af512a0a673501d12e171`, not a canonical final run or hosted/publication gate.
+- **Flow:** benchmark, reproduce, canonical export, then report:
+  `uv run dllab benchmark wb-c1 --smoke --run-id wbc1_demo_preflight`,
+  `uv run dllab run reproduce wbc1_demo_preflight`,
+  `uv run dllab demo export wbc1_demo_preflight --output <path>`, and
+  `uv run dllab report build wbc1_demo_preflight`.
+- **Dataset and cases:** C0 invented data only; 54 system series / 5,616 weekly opportunities /
+  5,346 observed / 270 absent. Representative scenarios are `no_change`, `level`, and
+  `parser_shift`, with 104 points in each case. No real data, public corpus, person-shaped unit,
+  product UI code, additional candidate, or model promotion is part of this preflight.
+- **Result:** decision `reject`. Baseline false alerts/year `2.966666666666667`, detection `0.75`,
+  median delay `2`, confound rate `0.5`, measured threshold `2.5` marked nonviable. Candidate false
+  alerts/year `4.2`, detection `0.75`, median delay `1`, confound rate `0.5`, Brier
+  `0.017341137335170863`, measured threshold `0.05` marked nonviable. Failed gates are
+  `BASELINE_SELECTION_VIABLE`, `CANDIDATE_SELECTION_VIABLE`, and
+  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; the deterministic baseline remains the complete fallback.
+- **Preflight provenance:** compatibility fixture digest prefix `sha256:847e3c`, product contract
+  prefix `2fd1637`, schema digest prefix `86cf53a`, and ResearchPack merge reference `be9c245`.
+  Report references are Markdown digest prefix `3d47b2` and HTML digest prefix `4409373`.
+- **Limits:** issue #6 remains deferred. Hosted CI, product fixture commit/product merge claims,
+  lab PR/merge, and canonical final-run status are not verified here.

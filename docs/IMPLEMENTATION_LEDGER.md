@@ -170,3 +170,26 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Product #182 and lab #6 retain the bounded non-demo hardening backlog. No real data, corpus,
   additional candidate, product claim, or promotion was added. Lab PR #3 still requires its final
   push, exact-head hosted CI/review sweep, and merge.
+
+## 2026-08-07 - Principal demo preflight (preflight only)
+
+- Exact preflight code head: `b865d6951e915ffedb4af512a0a673501d12e171`. This entry records
+  local preflight evidence only; it is not a hosted result, product fixture commit, product merge,
+  lab PR/merge, or canonical final run.
+- The preflight used the `wbc1_demo_preflight` shape and retained the C0 invented-data boundary:
+  54 system series, 5,616 weekly opportunities, 5,346 observed and 270 absent; representative
+  scenarios `no_change`, `level`, and `parser_shift`, with 104 points per case.
+- The honest decision remains `reject`. Baseline metrics are false alerts/year
+  `2.966666666666667`, detection `0.75`, median delay `2`, confound rate `0.5`, and measured
+  threshold `2.5` marked nonviable. Candidate metrics are false alerts/year `4.2`, detection
+  `0.75`, median delay `1`, confound rate `0.5`, Brier
+  `0.017341137335170863`, and measured threshold `0.05` marked nonviable. The deterministic
+  baseline remains the complete fallback; no promotion is implied.
+- Preflight provenance records the product contract prefix `2fd1637`, schema digest prefix
+  `86cf53a`, ResearchPack merge reference `be9c245`, and compatibility fixture digest prefix
+  `sha256:847e3c`. These are provenance notes only; no product fixture commit or product merge is
+  claimed by this entry.
+- Preflight report references are Markdown digest prefix `3d47b2` and HTML digest prefix `4409373`.
+  Rich report generation, the explicit demo export path, and report materialization are local
+  behavior checks. Issue #6 remains deferred; product UI code is outside this vertical.
+- NOT verified: hosted CI, bounded review/publication gates, and a canonical final run.
