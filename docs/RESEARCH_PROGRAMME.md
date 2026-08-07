@@ -3,12 +3,14 @@
 The first vertical is WB-C1: an invented weekly system-series benchmark. It must include no-change
 negative controls; level, variance, slope, and seasonal-amplitude changes; Gaussian and heavy-tailed
 noise; missing blocks; and coverage/permission/parser-shift confounders with no system change. The
-online BOCPD run length and its hazard are preregistered in OBSERVED SAMPLES, not calendar weeks:
-missing weeks are skipped (not advanced), so `expected_run_length` counts observed samples and a
-contiguous missing block leaves the run-length/hazard posterior unchanged — equivalent, for that
-posterior, to deleting those samples (score emission still begins after a fixed calendar-week
-`warmup`, so output-level equivalence holds only for gaps past that boundary). Any calendar-time /
-real-time run-length claim would require a separate preregistration and a fresh run.
+online BOCPD run length and its hazard are, as implemented, denominated in OBSERVED SAMPLES, not
+calendar weeks (a documented characterization of existing behavior — not a preregistration for the
+already-completed runs): missing weeks are skipped (not advanced), so `expected_run_length` counts
+observed samples and a contiguous missing block leaves the run-length/hazard posterior unchanged —
+equivalent, for that posterior, to deleting those samples (score emission still begins after a fixed
+calendar-week `warmup`, so output-level equivalence holds only for gaps past that boundary). Any
+calendar-time / real-time run-length claim would be a different semantics requiring a genuine
+preregistration written before a fresh run.
 
 The deterministic rolling median/MAD alerter and online candidate receive symmetric nested
 threshold selection. Disjoint repository/seed-family panels and non-overlapping time windows prevent
