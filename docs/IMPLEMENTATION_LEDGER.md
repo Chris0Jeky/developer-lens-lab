@@ -194,32 +194,18 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   behavior checks. Issue #6 remains deferred; product UI code is outside this vertical.
 - NOT verified: hosted CI, bounded review/publication gates, and a canonical final run.
 
-## 2026-08-07 - Principal MethodTrial demonstration finalization
+## 2026-08-07 - Parallel final-repair precursors (superseded by integration)
 
-- Product-owned contract commit `b48fea579936671397a0486ae7a0342197ee6e4b` is vendored with
-  exact schema SHA-256 `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
-  The lab composes only the fixed smoke recipe and records the product and lab producer commits,
-  run identity, commands, custody, EvaluationBundle, ResearchPack, and schema digests.
-- Late review found that the named export could follow a final symlink and that the producer marked
-  local verification passed before reproduction occurred. Producer commit
-  `b30b22909c9ea44d64bebe9dccf82b8735302d76` now publishes through a same-directory atomic replace,
-  protects an outside sentinel in regression coverage, and honestly emits `local: not_run`.
-- A fresh detached checkout at that producer commit passed the locked runtime-only install, locked
-  dependency sync, Ruff format/lint, strict Pyright, context/task/contract checks, 51 tests with
-  three declared Windows symlink skips and 87% coverage, the default smoke reproduction/report,
-  strict MkDocs, hygiene, and range whitespace.
-- Canonical run `wbc1_demo` then completed benchmark, reproduction, export, and report. The exported
-  fixture is 167,936 bytes with SHA-256
-  `f87ca9447d320ad7328995cfb5ddef84219dadd5b03092c520b809bd8fb6cfeb`; its stored no-LF view is
-  `sha256:75145b4560372c97392b245f72ed1ced0836b3a840a24c6a5a5b1eaca5c9bfb6`.
-  EvaluationBundle, custody, ResearchPack, Markdown, and HTML digests are respectively
-  `sha256:7e70eabdec84f93f425b66dfef0636c53a84382eadc9b815a71e9319d2035790`,
-  `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`,
-  `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`,
-  `sha256:482b7c458ff0a33f0d945134241a9a8b500f5f74bb5bde31bb5b67f8f04b9c99`, and
-  `sha256:5bf496b7c6161f381db6b51cae89df06739a6f0aa4daec7eb146c6e7c19e962e`.
-- The scientific result is unchanged: the candidate is rejected; both selections are nonviable;
-  false alerts are `2.966666666666667` versus `4.2` at equal `0.75` detection; the deterministic
-  rolling-median/MAD baseline remains the fallback. No real data, corpus, product UI, model
-  promotion, or issue-#6 expansion entered the vertical. Hosted exact-head proof and both merges
-  remain live gates and are not inferred by this entry.
+- Product contract commit `b48fea579936671397a0486ae7a0342197ee6e4b` remains pinned at schema
+  SHA-256 `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+- Lab commit `5c79236beb0a0b25819f14510b79bb15813d7337` added equivalent semantic
+  acceptance with eleven structural-valid mutation regressions. Parallel commit
+  `b30b22909c9ea44d64bebe9dccf82b8735302d76` made named export publication atomic over a final
+  symlink and changed premature `verification.local: passed` evidence to honest `not_run`.
+- Both precursor heads passed their scoped local proof and independent review, but each canonical
+  fixture predates the other repair. Their fixture and report hashes are therefore superseded and
+  must not be copied into the product. The integrated merge head requires one fresh canonical run,
+  byte pin, exact-head CI, and final review before either PR can merge.
+- The scientific result remains the conservative `reject` with no real/private input, full-run
+  publication, lab-owned product UI, additional method, or model promotion. Issue #6 remains
+  explicitly deferred.

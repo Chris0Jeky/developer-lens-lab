@@ -210,6 +210,7 @@ def sync_method_trial_view_contract(
     schema = cast(dict[str, Any], schema)
     if (
         schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
+        or "Structural transport validation only" not in str(schema.get("$comment", ""))
         or schema.get("type") != "object"
         or schema.get("additionalProperties") is not False
         or schema.get("properties", {}).get("schema_version", {}).get("const")

@@ -4,11 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator
 
+from developer_lens_lab.contracts.method_trial_view import (
+    MethodTrialViewError,
+    validate_method_trial_view,
+)
 from developer_lens_lab.wbc1.export import export_method_trial
 from developer_lens_lab.wbc1.runner import run_benchmark
 
@@ -117,6 +122,87 @@ def test_method_trial_vendor_snapshot_is_pinned() -> None:
             "size_bytes": len(schema),
         }
     ]
+
+
+def test_method_trial_semantics_reject_structural_only_mutations(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_semantics")
+    payload = json.loads(
+        export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path).payload
+    )
+    schema = json.loads(
+        (ROOT / "vendor/developer-lens/method-trial-view/v1/schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    validator = Draft202012Validator(schema)
+
+    mismatched_command = deepcopy(payload)
+    mismatched_command["reproducibility"]["commands"]["export"] = (
+        "uv run dllab export method-trial wbc1_other"
+    )
+
+    mismatched_gate = deepcopy(payload)
+    mismatched_gate["acceptance_gates"][5]["outcome"] = "fail"
+
+    mismatched_relevant_value = deepcopy(payload)
+    mismatched_relevant_value["acceptance_gates"][4]["relevant_values"]["candidate"] = {
+        "status": "measured",
+        "value": 1,
+    }
+
+    mismatched_decision = deepcopy(payload)
+    mismatched_decision["decision"]["reason_codes"] = ["CANDIDATE_FALSE_ALERT_IMPROVEMENT"]
+
+    unavailable_viable_threshold = deepcopy(payload)
+    unavailable_viable_threshold["scorecard"]["threshold_selection"]["candidate"]["viable"] = True
+    unavailable_viable_threshold["scorecard"]["threshold_selection"]["candidate"][
+        "selected_value"
+    ] = {"status": "unavailable", "reason": "not_measured"}
+
+    mismatched_week = deepcopy(payload)
+    mismatched_week["representative_cases"][0]["points"][0]["relative_week_label"] = "week-001"
+
+    nonsequential_week = deepcopy(payload)
+    nonsequential_week["representative_cases"][0]["points"][1]["relative_week_index"] = 2
+
+    marked_control = deepcopy(payload)
+    marked_control["representative_cases"][0]["points"][0]["planted_marker"] = "level"
+
+    simultaneous_markers = deepcopy(payload)
+    planted_point = next(
+        point
+        for point in simultaneous_markers["representative_cases"][1]["points"]
+        if point["planted_marker"] != "none"
+    )
+    planted_point["confound_marker"] = "parser_shift"
+
+    missing_planted_marker = deepcopy(payload)
+    for point in missing_planted_marker["representative_cases"][1]["points"]:
+        point["planted_marker"] = "none"
+
+    missing_confound_marker = deepcopy(payload)
+    for point in missing_confound_marker["representative_cases"][2]["points"]:
+        point["confound_marker"] = "none"
+
+    for mutated in (
+        mismatched_command,
+        mismatched_gate,
+        mismatched_relevant_value,
+        mismatched_decision,
+        unavailable_viable_threshold,
+        mismatched_week,
+        nonsequential_week,
+        marked_control,
+        simultaneous_markers,
+        missing_planted_marker,
+        missing_confound_marker,
+    ):
+        validator.validate(mutated)
+        with pytest.raises(MethodTrialViewError, match="semantic validation failed"):
+            validate_method_trial_view(mutated, root=ROOT)
 
 
 def test_method_trial_export_uses_recorded_provenance_and_fails_closed_on_drift(
