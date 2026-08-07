@@ -386,3 +386,27 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   symlink skips; 21 context tests), `verify_repository(.)` OK, strict MkDocs, hygiene, doctor. Repo-wide
   pyright NOT run locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the
   full gate at the reviewed/merged heads. No research, corpus, model, or gate activation is authorized.
+
+## 2026-08-07 — BOCPD missing-week semantics preregistered (#4)
+
+- Branch `claude/bocpd-semantics-4` closes #4 by making the BOCPD missing-week run-length semantics
+  explicit. Coordinator methodology decision: **Option A — observed-sample semantics** (see the
+  `docs/EXPERIMENT_LEDGER.md` preregistration entry of the same date). No detector behavior change.
+- `src/developer_lens_lab/wbc1/methods.py`: comments only — on `BocpdParameters.expected_run_length`
+  (denominated in observed samples; canonical Adams–MacKay run-length-in-observations) and at the
+  `bocpd_scores` skip site (a censored week is a deliberate no-op on the posterior). No logic, default,
+  signature, or field-name change; `parameters_sha256` custody surface untouched.
+- `docs/RESEARCH_PROGRAMME.md`: preregisters the observed-sample unit, scoped precisely to the
+  run-length/hazard posterior (score emission still begins after a fixed calendar-week `warmup`).
+- `tests/test_wbc1_methods.py`: adds `test_bocpd_missing_block_is_observed_sample_equivalent`, a
+  characterization lock — a contiguous missing block yields bit-identical post-gap scores to the
+  gap-deleted series; it would fail if the detector were changed to advance across censored weeks.
+- Review: one fresh-context adversarial pass (no blocking; confirmed the test is a genuine bit-identical
+  lock and methods.py is comments-only). Its LOW nit — scope the "equivalent to deleting samples" claim
+  to the posterior given the calendar-indexed warmup gate — was applied to the preregistration wording.
+- Verified locally against the worktree source via `.venv` (PYTHONPATH pinned; no uv on host): ruff
+  format/check, full pytest (70 passed / 3 pre-existing symlink skips; the +1 is the new lock),
+  downstream `test_wbc1_evaluation`/`test_wbc1_runner`/`test_method_trial_export` green UNCHANGED
+  (proving zero byte/behavior change). Repo-wide pyright NOT run locally (pre-existing `typer.testing`
+  import errors); hosted `Prove the lab` covers the full gate. No research, corpus, model, or gate
+  activation is authorized by this evidence.
