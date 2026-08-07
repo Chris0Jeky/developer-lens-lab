@@ -3,6 +3,7 @@ from pathlib import Path
 from developer_lens_lab.context import verify_repository
 from developer_lens_lab.context.verify import (
     REQUIRED_SETTINGS_READ_DENY,
+    verify_context_budget,
     verify_markdown_links,
     verify_settings_deny,
     verify_skill_parity,
@@ -99,6 +100,32 @@ def test_skill_parity_reports_missing_marker(tmp_path: Path) -> None:
         "marker" in failure and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
         for failure in failures
     )
+
+
+def test_context_budget_passes_on_the_real_repo() -> None:
+    assert verify_context_budget(ROOT) == []
+
+
+def test_context_budget_reports_oversized_canon(tmp_path: Path) -> None:
+    (tmp_path / ".agent-harness").mkdir()
+    (tmp_path / ".agent-harness" / "tier.json").write_text(
+        '{"budgets": {"standing_context_tokens": 5}}', encoding="utf-8"
+    )
+    (tmp_path / "AGENTS.md").write_text("A" * 400, encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text("C" * 400, encoding="utf-8")
+    failures = verify_context_budget(tmp_path)
+    assert len(failures) == 1
+    assert "exceeds" in failures[0]
+
+
+def test_context_budget_skips_when_budget_key_absent(tmp_path: Path) -> None:
+    (tmp_path / ".agent-harness").mkdir()
+    (tmp_path / ".agent-harness" / "tier.json").write_text(
+        '{"budgets": {"session_baseline_tokens": null}}', encoding="utf-8"
+    )
+    (tmp_path / "AGENTS.md").write_text("A" * 400, encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text("C" * 400, encoding="utf-8")
+    assert verify_context_budget(tmp_path) == []
 
 
 def test_link_verifier_does_not_read_generated_output(tmp_path: Path) -> None:

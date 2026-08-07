@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import subprocess
 import sys
@@ -200,6 +201,38 @@ def verify_skill_parity(root: Path) -> list[str]:
     return failures
 
 
+CONTEXT_BUDGET_FILES = ("AGENTS.md", "CLAUDE.md")
+CHARS_PER_TOKEN = 4  # standard ~4-chars/token English heuristic; a deterministic estimate, not an exact count  # noqa: E501
+
+
+def verify_context_budget(root: Path) -> list[str]:
+    path = root / ".agent-harness" / "tier.json"
+    try:
+        payload_raw: object = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(payload_raw, dict):
+        return []
+    budgets_raw = cast("dict[str, object]", payload_raw).get("budgets")
+    if not isinstance(budgets_raw, dict):
+        return []
+    budget = cast("dict[str, object]", budgets_raw).get("standing_context_tokens")
+    if not isinstance(budget, int) or isinstance(budget, bool) or budget <= 0:
+        return []
+    total_chars = 0
+    for name in CONTEXT_BUDGET_FILES:
+        candidate = root / name
+        if candidate.is_file():
+            total_chars += len(candidate.read_text(encoding="utf-8"))
+    estimate = math.ceil(total_chars / CHARS_PER_TOKEN)
+    if estimate > budget:
+        return [
+            f"standing context (AGENTS.md+CLAUDE.md) ~{estimate} tokens exceeds the declared "
+            f"standing_context_tokens budget of {budget}"
+        ]
+    return []
+
+
 def verify_settings_deny(payload: object) -> list[str]:
     deny_rules: set[str] = set()
     if isinstance(payload, dict):
@@ -267,6 +300,7 @@ def verify_repository(root: Path) -> VerificationReport:
         failures.append("the commissioning prompt must not become a competing repo authority")
     failures.extend(_verify_tier(root))
     failures.extend(verify_skill_parity(root))
+    failures.extend(verify_context_budget(root))
     failures.extend(verify_markdown_links(root))
     if (root / "tools" / "cards.py").is_file():
         failures.extend(_verify_cards(root))
