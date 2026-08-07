@@ -153,11 +153,12 @@ def _verify_cards(root: Path) -> list[str]:
     return [f"generated task cards drifted: {message}"]
 
 
-# Committed Claude settings must deny agent reads of the local generated-artifact sinks so the
-# protected-data rule (CLAUDE.md, docs/DATA_POLICY.md) is harness-enforced, not merely prose.
-# These mirror the developer-lens product deny rules for its confined store and generated output.
-# `.dllab` is the confined C0 artifact store; `artifacts/` and `reports/generated/` are gitignored
-# run output.
+# Committed Claude settings must deny `Read` on the local generated-artifact sinks so that part of
+# the protected-data rule (CLAUDE.md, docs/DATA_POLICY.md) is harness-enforced rather than prose.
+# This mirrors the developer-lens product deny rules and shares their scope: only the `Read` tool
+# on the confined store and generated output. `.dllab` is the confined C0 artifact store;
+# `artifacts/` and `reports/generated/` are gitignored run output. Broader coverage (Grep/Glob,
+# `.env`/keys, scattered artifacts) is tracked in docs/HARDENING_BACKLOG.md, not claimed here.
 REQUIRED_SETTINGS_READ_DENY = (
     "Read(./.dllab/**)",
     "Read(./artifacts/**)",

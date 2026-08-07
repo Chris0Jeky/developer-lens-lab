@@ -28,6 +28,19 @@ def test_settings_deny_accepts_all_required_protected_sinks() -> None:
     assert verify_settings_deny(payload) == []
 
 
+def test_settings_deny_accepts_a_superset_of_required_rules() -> None:
+    # Extra deny rules must not fail the gate: the check is a subset test, not set-equality. This
+    # guards against a regression that tightens it and would then reject a settings.json carrying
+    # legitimate additional deny rules.
+    deny = [*REQUIRED_SETTINGS_READ_DENY, "Read(./.env)", "Bash(rm -rf /)"]
+    assert verify_settings_deny({"permissions": {"deny": deny}}) == []
+
+
+def test_settings_deny_ignores_non_string_deny_entries() -> None:
+    deny = [*REQUIRED_SETTINGS_READ_DENY, {"nested": "object"}, 42, None]
+    assert verify_settings_deny({"permissions": {"deny": deny}}) == []
+
+
 def test_settings_deny_reports_each_missing_protected_sink() -> None:
     partial = {"permissions": {"deny": ["Read(./.dllab/**)"]}}
     failures = verify_settings_deny(partial)
