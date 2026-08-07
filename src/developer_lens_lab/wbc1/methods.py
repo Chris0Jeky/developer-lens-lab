@@ -23,6 +23,14 @@ class BaselineParameters:
 
 @dataclass(frozen=True)
 class BocpdParameters:
+    # `expected_run_length` -- and therefore the constant hazard
+    # `1 / expected_run_length` -- is denominated in OBSERVED SAMPLES, not
+    # calendar weeks.  Missing/non-finite weeks are intentionally skipped (see
+    # bocpd_scores) and do not advance the run-length/hazard posterior.  This is
+    # the canonical Adams--MacKay run-length-in-observations semantics and the
+    # preregistered choice (docs/RESEARCH_PROGRAMME.md); the method must not be
+    # used for calendar-time / real-time run-length claims without a separate
+    # re-preregistration and a fresh run.
     expected_run_length: float = 52.0
     warmup: int = 12
     recent_run_lengths: int = 3
@@ -110,6 +118,9 @@ def bocpd_scores(
 
     for index, raw_value in enumerate(values):
         if not np.isfinite(raw_value):
+            # Observed-sample semantics: a censored week is equivalent to
+            # deleting that sample, so the run-length/hazard posterior does not
+            # advance here.  This skip is intentional, not an oversight.
             continue
         value = float(raw_value)
         degrees = 2.0 * alphas

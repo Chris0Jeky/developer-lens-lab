@@ -108,3 +108,37 @@ def test_bocpd_missing_observation_is_causal_and_prior_is_hashed() -> None:
     assert parameters_sha256(parameters) != parameters_sha256(
         BocpdParameters(warmup=0, recent_run_lengths=1, prior_mean=1.0)
     )
+
+
+def test_bocpd_missing_block_is_observed_sample_equivalent() -> None:
+    # Characterization lock for the preregistered observed-sample semantics: a
+    # contiguous block of missing weeks is equivalent to deleting those samples
+    # (the run-length/hazard posterior does not advance across the gap), so the
+    # post-gap scores must equal those of the gap-deleted series at the
+    # compacted indices.  Must be GREEN on current code by construction.
+    parameters = BocpdParameters(warmup=12)
+    rng = np.random.default_rng(20260807)
+    pre = rng.normal(20.0, 1.0, size=24)
+    # Level shift after the gap keeps the post-gap change probabilities
+    # non-trivial relative to the quiet pre-gap history.
+    post = rng.normal(28.0, 1.0, size=18)
+    deleted_series = np.concatenate((pre, post)).astype(np.float64)
+
+    gap = 4
+    gap_start = len(pre)
+    series = np.concatenate((pre, np.full(gap, np.nan), post)).astype(np.float64)
+
+    full = bocpd_scores(series, parameters).change_probability
+    deleted = bocpd_scores(deleted_series, parameters).change_probability
+
+    # Each censored week scores exactly 0.0.
+    for index in range(gap_start, gap_start + gap):
+        assert full[index] == 0.0
+    # Post-gap scores equal the gap-deleted series at the compacted indices.
+    np.testing.assert_allclose(full[gap_start + gap :], deleted[gap_start:])
+    assert np.isfinite(full).all()
+    assert np.isfinite(deleted).all()
+    # Non-trivial: the post-gap window carries real changepoint mass.
+    assert float(full[gap_start + gap :].max()) > float(
+        np.median(full[parameters.warmup : gap_start])
+    )
