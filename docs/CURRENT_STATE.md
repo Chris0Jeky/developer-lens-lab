@@ -8,7 +8,7 @@ phase: M2_WBC1_DEMO_PREFLIGHT_IN_REVIEW
 posture: public C0 invented-data-only; value-first with non-essential hardening deferred
 repository: Chris0Jeky/developer-lens-lab (public)
 branch: codex/method-trial-demo
-head: b865d6951e915ffedb4af512a0a673501d12e171
+head: refresh with git rev-parse HEAD
 active_horizon:
   - LAB-WBC1-01
   - LAB-WBC1-05
