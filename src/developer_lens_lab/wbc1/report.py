@@ -96,7 +96,7 @@ def _view_text(value: Any, default: str = "") -> str:
 
 
 def _metric_value(metric: Any) -> float | None:
-    if not isinstance(metric, Mapping) or metric.get("status") != "value":
+    if not isinstance(metric, Mapping) or metric.get("status") != "measured":
         return None
     value = metric.get("value")
     if isinstance(value, bool) or not isinstance(value, (int, float)):
@@ -147,7 +147,7 @@ def _safe_html(value: Any, default: str = "") -> str:
 
 def _metric_cell(metric: Any) -> str:
     value = _fmt_metric(metric)
-    if isinstance(metric, Mapping) and metric.get("status") != "value":
+    if isinstance(metric, Mapping) and metric.get("status") != "measured":
         return f'<span class="muted">{_safe_html(value)}</span>'
     return _safe_html(value)
 
@@ -188,7 +188,10 @@ def _svg_timeline(case: Mapping[str, Any], index: int) -> str:
 
     title = _safe_html(f"{_view_text(case.get('title'), 'Case')} timeline")
     desc = _safe_html(
-        f"{_view_text(case.get('summary'), '')} {_view_text(len(points), '0')} points; missing observations are gaps."
+        f"{_view_text(case.get('summary'), '')} {_view_text(len(points), '0')} points; "
+        "missing observations are gaps. Legend: observed signal is a blue line, "
+        "baseline alerts are triangles, BOCPD alerts are squares, and vertical or "
+        "diamond markers identify planted changes, offline PELT boundaries, and confounds."
     )
     fragments = [
         f'<svg class="timeline" role="img" aria-labelledby="timeline-title-{index} timeline-desc-{index}" viewBox="0 0 {width} {height}">',
@@ -228,15 +231,37 @@ def _svg_timeline(case: Mapping[str, Any], index: int) -> str:
             )
         baseline = point.get("baseline")
         if isinstance(baseline, Mapping) and baseline.get("alert") is True:
-            value = _metric_value(baseline.get("score"))
-            marker_y = y(value) if value is not None else top + 10
+            observed_value = (
+                observed_data.get("value")
+                if isinstance(observed_data, Mapping) and observed_data.get("state") == "observed"
+                else None
+            )
+            signal_y = (
+                y(float(observed_value))
+                if isinstance(observed_value, (int, float))
+                and not isinstance(observed_value, bool)
+                and math.isfinite(float(observed_value))
+                else top + 12
+            )
+            marker_y = min(max(signal_y - 7, top + 6), top + plot_h - 6)
             fragments.append(
                 f'<path class="baseline-alert" d="M {px - 5:.2f} {marker_y + 5:.2f} L {px:.2f} {marker_y - 5:.2f} L {px + 5:.2f} {marker_y + 5:.2f} Z"/>'
             )
         candidate = point.get("candidate")
         if isinstance(candidate, Mapping) and candidate.get("alert") is True:
-            value = _metric_value(candidate.get("probability"))
-            marker_y = y(value) if value is not None else top + 24
+            observed_value = (
+                observed_data.get("value")
+                if isinstance(observed_data, Mapping) and observed_data.get("state") == "observed"
+                else None
+            )
+            signal_y = (
+                y(float(observed_value))
+                if isinstance(observed_value, (int, float))
+                and not isinstance(observed_value, bool)
+                and math.isfinite(float(observed_value))
+                else top + 26
+            )
+            marker_y = min(max(signal_y + 7, top + 5), top + plot_h - 5)
             fragments.append(
                 f'<rect class="candidate-alert" x="{px - 4:.2f}" y="{marker_y - 4:.2f}" width="8" height="8"/>'
             )
@@ -255,7 +280,7 @@ def _svg_timeline(case: Mapping[str, Any], index: int) -> str:
             )
     fragments.extend(
         [
-            '<g class="legend" aria-label="Timeline legend">',
+            '<g class="legend" role="group" aria-label="Timeline legend">',
             '<line class="signal" x1="510" y1="190" x2="540" y2="190"/><text x="546" y="194">observed signal</text>',
             '<path class="baseline-alert" d="M 510 208 l 5 -10 l 5 10 Z"/><text x="522" y="212">baseline alert (triangle)</text>',
             '<rect class="candidate-alert" x="650" y="200" width="9" height="9"/><text x="665" y="208">BOCPD alert (square)</text>',
@@ -309,7 +334,6 @@ def build_method_trial_markdown(view: Mapping[str, Any]) -> str:
     for key, label in (
         ("false_alerts_per_year", "False alerts / year"),
         ("detection_rate", "Detection rate"),
-        ("detection_delay_weeks", "Detection delay (weeks)"),
         ("median_detection_delay_weeks", "Median delay (weeks)"),
         ("coverage_confound_false_alert_rate", "Confound false-alert rate"),
         ("calibration_brier", "Calibration Brier"),
@@ -421,7 +445,6 @@ def build_method_trial_html(view: Mapping[str, Any]) -> str:
     metric_labels = (
         ("false_alerts_per_year", "False alerts / year"),
         ("detection_rate", "Detection rate"),
-        ("detection_delay_weeks", "Detection delay (weeks)"),
         ("median_detection_delay_weeks", "Median delay (weeks)"),
         ("coverage_confound_false_alert_rate", "Confound false-alert rate"),
         ("calibration_brier", "Calibration Brier"),

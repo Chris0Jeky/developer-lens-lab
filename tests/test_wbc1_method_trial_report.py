@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from developer_lens_lab.wbc1.report import (
@@ -11,7 +12,7 @@ from developer_lens_lab.wbc1.report import (
 def _metric(value: float | None, reason: str = "not_measured") -> dict[str, Any]:
     if value is None:
         return {"status": "unavailable", "reason": reason}
-    return {"status": "value", "value": value}
+    return {"status": "measured", "value": value}
 
 
 def _view() -> dict[str, Any]:
@@ -184,7 +185,7 @@ def _view() -> dict[str, Any]:
             "commands": {
                 "benchmark": "uv run dllab benchmark wb-c1 --smoke",
                 "reproduce": "uv run dllab run reproduce run-synthetic-01",
-                "export": "uv run dllab export method-trial run-synthetic-01",
+                "export": "uv run dllab demo export run-synthetic-01 --output product-fixture",
                 "report": "uv run dllab report build run-synthetic-01",
             },
             "verification": {
@@ -209,6 +210,8 @@ def test_method_trial_reports_are_deterministic_and_complete() -> None:
     assert html.count('role="img"') == 3
     assert html.count('<title id="timeline-title-') == 3
     assert html.count('<desc id="timeline-desc-') == 3
+    assert html.count('role="group" aria-label="Timeline legend"') == 3
+    assert html.count("Legend: observed signal is a blue line") == 3
     assert all(f"Deferred issue-6 caveat {n}." in html for n in range(1, 7))
     assert "offline descriptive" in html
     assert "<pre" not in html
@@ -218,3 +221,20 @@ def test_method_trial_reports_are_deterministic_and_complete() -> None:
     assert "<safe>" not in html
     for marker in ("baseline-alert", "candidate-alert", "planted", "confound", "pelt", "missing"):
         assert marker in html
+
+    baseline_marker_y = [
+        float(value)
+        for path in re.findall(r'<path class="baseline-alert" d="([^"]+)"', html)
+        if " L " in path
+        for value in re.findall(r"(?:M|L) [0-9.]+ ([0-9.]+)", path)
+    ]
+    candidate_marker_y = [
+        float(value)
+        for value in re.findall(
+            r'<rect class="candidate-alert" x="[0-9.]+" y="([0-9.]+)" width="8" height="8"',
+            html,
+        )
+    ]
+    assert baseline_marker_y and candidate_marker_y
+    assert all(24 <= value <= 188 for value in baseline_marker_y)
+    assert all(24 <= value <= 188 for value in candidate_marker_y)
