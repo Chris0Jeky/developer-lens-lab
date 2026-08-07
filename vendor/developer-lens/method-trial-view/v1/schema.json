@@ -3497,7 +3497,7 @@
           "type": "string"
         },
         "version": {
-          "const": "v1",
+          "const": "wbc1-final-holdout-v1",
           "type": "string"
         }
       },
@@ -3751,53 +3751,6 @@
                 }
               ]
             },
-            "detection_delay_weeks": {
-              "oneOf": [
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "status": {
-                      "const": "measured",
-                      "type": "string"
-                    },
-                    "value": {
-                      "maximum": 1000000,
-                      "minimum": -1000000,
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "value"
-                  ],
-                  "type": "object"
-                },
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "reason": {
-                      "enum": [
-                        "insufficient_support",
-                        "not_applicable",
-                        "not_measured",
-                        "warmup",
-                        "missing_observation"
-                      ],
-                      "type": "string"
-                    },
-                    "status": {
-                      "const": "unavailable",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "reason"
-                  ],
-                  "type": "object"
-                }
-              ]
-            },
             "detection_rate": {
               "oneOf": [
                 {
@@ -4011,53 +3964,6 @@
                     "value": {
                       "maximum": 1,
                       "minimum": 0,
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "value"
-                  ],
-                  "type": "object"
-                },
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "reason": {
-                      "enum": [
-                        "insufficient_support",
-                        "not_applicable",
-                        "not_measured",
-                        "warmup",
-                        "missing_observation"
-                      ],
-                      "type": "string"
-                    },
-                    "status": {
-                      "const": "unavailable",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "reason"
-                  ],
-                  "type": "object"
-                }
-              ]
-            },
-            "detection_delay_weeks": {
-              "oneOf": [
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "status": {
-                      "const": "measured",
-                      "type": "string"
-                    },
-                    "value": {
-                      "maximum": 1000000,
-                      "minimum": -1000000,
                       "type": "number"
                     }
                   },

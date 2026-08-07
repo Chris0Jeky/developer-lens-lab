@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from developer_lens_lab.contract_sync import ContractSyncError, sync_product_contract
+from developer_lens_lab.contract_sync import (
+    ContractSyncError,
+    sync_method_trial_view_contract,
+    sync_product_contract,
+)
 from developer_lens_lab.contracts import ResearchPack
 
 from .factories import research_pack
@@ -101,3 +105,39 @@ def test_sync_rejects_schema_name_drop_and_symlink_destination(tmp_path: Path) -
     with pytest.raises(ContractSyncError, match="symlink or junction"):
         sync_product_contract(destination, product, valid_commit)
     assert list(outside.iterdir()) == []
+
+
+def test_method_trial_sync_check_only_verifies_bytes_without_rewriting(tmp_path: Path) -> None:
+    product = tmp_path / "product"
+    source = product / "research-contracts" / "method-trial-view" / "v1"
+    source.mkdir(parents=True)
+    schema = (
+        Path(__file__).resolve().parents[1]
+        / "vendor/developer-lens/method-trial-view/v1/schema.json"
+    ).read_bytes()
+    (source / "schema.json").write_bytes(schema)
+    _run_git(product, "init", "-b", "main")
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "schema",
+    )
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    sync_method_trial_view_contract(destination, product, commit)
+    before = (
+        destination / "vendor/developer-lens/method-trial-view/v1/provenance.json"
+    ).read_bytes()
+    sync_method_trial_view_contract(destination, product, commit, check_only=True)
+    assert (
+        destination / "vendor/developer-lens/method-trial-view/v1/provenance.json"
+    ).read_bytes() == before
+    (destination / "vendor/developer-lens/method-trial-view/v1/schema.json").write_bytes(b"{}")
+    with pytest.raises(ContractSyncError, match="schema differs"):
+        sync_method_trial_view_contract(destination, product, commit, check_only=True)

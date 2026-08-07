@@ -43,6 +43,16 @@ def test_method_trial_export_is_deterministic_and_schema_valid(tmp_path: Path, m
     assert payload["scorecard"]["candidate"]["false_alerts_per_year"]["value"] == 4.2
     assert payload["scorecard"]["candidate"]["calibration_brier"]["value"] == 0.017341137335170863
     assert payload["decision"]["outcome"] == "reject"
+    assert [gate["outcome"] for gate in payload["acceptance_gates"]] == [
+        "fail",
+        "fail",
+        "pass",
+        "pass",
+        "fail",
+        "pass",
+        "pass",
+    ]
+    assert payload["representative_selection"]["version"] == "wbc1-final-holdout-v1"
     assert [case["role"] for case in payload["representative_cases"]] == [
         "no_change_control",
         "planted_change",
@@ -59,6 +69,16 @@ def test_method_trial_export_is_deterministic_and_schema_valid(tmp_path: Path, m
         for case in payload["representative_cases"]
         for point in case["points"]
     )
+    assert [
+        point["planted_marker"]
+        for point in payload["representative_cases"][1]["points"]
+        if point["planted_marker"] != "none"
+    ] == ["level"]
+    assert [
+        point["confound_marker"]
+        for point in payload["representative_cases"][2]["points"]
+        if point["confound_marker"] != "none"
+    ] == ["parser_shift"]
     flattened = json.dumps(payload, sort_keys=True)
     assert all(value not in flattened for value in ("http://", "https://", "@", "C:\\"))
 
@@ -67,11 +87,11 @@ def test_method_trial_vendor_snapshot_is_pinned() -> None:
     root = ROOT / "vendor/developer-lens/method-trial-view/v1"
     provenance = json.loads((root / "provenance.json").read_text(encoding="utf-8"))
     schema = (root / "schema.json").read_bytes()
-    assert provenance["product_commit"] == "88cc32226c80209ea9f848c560d5a104367d96fd"
+    assert provenance["product_commit"] == "2fd1637156eae378a5bc0da8401873618ccb8b42"
     assert provenance["files"] == [
         {
             "name": "schema.json",
-            "sha256": "sha256:81871f21c7dd69e121047d9a48d7dcaefd4513d4beb33e6d4f049d7c6e99a77b",
+            "sha256": "sha256:86cf53a48660967c07329f02be01c05d773c16ac96c28ddcd8110aed3b827fdc",
             "size_bytes": len(schema),
         }
     ]

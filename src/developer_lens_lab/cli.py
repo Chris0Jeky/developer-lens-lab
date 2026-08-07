@@ -38,6 +38,7 @@ benchmark_app = typer.Typer(help="Run deterministic synthetic benchmarks.")
 run_app = typer.Typer(help="Reproduce recorded benchmark runs.")
 report_app = typer.Typer(help="Build deterministic benchmark reports.")
 export_app = typer.Typer(help="Export product-owned presentation views.")
+demo_app = typer.Typer(help="Materialize deterministic demo presentation artifacts.")
 app.add_typer(context_app, name="context")
 app.add_typer(tasks_app, name="tasks")
 app.add_typer(contracts_app, name="contracts")
@@ -47,6 +48,7 @@ app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(run_app, name="run")
 app.add_typer(report_app, name="report")
 app.add_typer(export_app, name="export")
+app.add_typer(demo_app, name="demo")
 
 
 def _repo_root() -> Path:
@@ -161,14 +163,18 @@ def contracts_sync_method_trial(
         typer.Option("--from", exists=True, file_okay=False, dir_okay=True, resolve_path=True),
     ],
     ref: Annotated[str, typer.Option("--ref")],
+    check_only: Annotated[bool, typer.Option("--check-only")] = False,
 ) -> None:
     """Pin the product-owned MethodTrialView schema snapshot."""
     try:
-        provenance = sync_method_trial_view_contract(_repo_root(), source, ref)
+        provenance = sync_method_trial_view_contract(
+            _repo_root(), source, ref, check_only=check_only
+        )
     except (ContractSyncError, OSError, json.JSONDecodeError) as exc:
         typer.echo(f"ERROR: MethodTrialView sync failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
-    typer.echo(f"synchronized {provenance.relative_to(_repo_root())}")
+    action = "verified" if check_only else "synchronized"
+    typer.echo(f"{action} {provenance.relative_to(_repo_root())}")
 
 
 @pack_app.command("validate")
@@ -276,3 +282,17 @@ def export_method_trial_command(
         typer.echo(f"ERROR: MethodTrialView export failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"exported {result.output_path} sha256={result.sha256}")
+
+
+@demo_app.command("export")
+def demo_export_command(
+    run_id: Annotated[str, typer.Argument()],
+    output: Annotated[Path, typer.Option("--output")],
+) -> None:
+    """Export the canonical MethodTrialView for a recorded synthetic run."""
+    try:
+        result = export_method_trial(run_id, output=output, root=_repo_root())
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: demo export failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"exported path={result.output_path} sha256={result.sha256}")

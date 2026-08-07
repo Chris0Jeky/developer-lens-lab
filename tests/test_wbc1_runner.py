@@ -68,23 +68,25 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
     assert result.bundle.dataset_card.observation_count == len(all_series) * 104
     assert result.bundle.preregistration.primary_metric_code == "false_alerts_per_year"
     assert result.bundle.calibration.status == "measured"
-    assert {ref.media_type for ref in result.bundle.artifact_manifest} >= {
+    assert {ref.media_type for ref in result.bundle.artifact_manifest} == {
         "application/json",
         "application/x-parquet",
-        "text/markdown",
-        "text/html",
     }
+    assert "method_trial_view" in manifest
+    assert "text/markdown" not in {ref.media_type for ref in result.bundle.artifact_manifest}
     assert reproduce_run(result.manifest_path, root=ROOT)
     manifest_text = result.manifest_path.read_text(encoding="utf-8")
     assert "C:\\" not in manifest_text
     assert str(ROOT) not in manifest_text
     report_text = store.get_bytes(result.scope, result.markdown_artifact).decode("utf-8")
     assert "http://" not in report_text and "https://" not in report_text
-    assert "offline descriptive arm" in report_text
+    assert "offline segmentation marker" in report_text
     assert build_report(result.run_id, artifact_root=tmp_path) == (
         result.markdown_artifact,
         result.html_artifact,
     )
+    assert (tmp_path / "scopes" / result.scope / "report.md").read_bytes() == report_text.encode()
+    assert (tmp_path / "scopes" / result.scope / "report.html").is_file()
 
     custody_ref = ArtifactRef.model_validate(manifest["custody"])
     custody_digest = custody_ref.sha256.removeprefix("sha256:")

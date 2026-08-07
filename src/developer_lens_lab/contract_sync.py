@@ -156,7 +156,9 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
     return provenance_path
 
 
-def sync_method_trial_view_contract(destination_root: Path, checkout: Path, commit: str) -> Path:
+def sync_method_trial_view_contract(
+    destination_root: Path, checkout: Path, commit: str, *, check_only: bool = False
+) -> Path:
     """Pin the product-owned MethodTrialView JSON Schema without copying a checkout path."""
     if not COMMIT_RE.fullmatch(commit):
         raise ContractSyncError("--ref must be a full lowercase 40-hex commit")
@@ -186,6 +188,25 @@ def sync_method_trial_view_contract(destination_root: Path, checkout: Path, comm
         raise ContractSyncError("contract destination root must not be a symlink or junction")
     destination_root = destination_root.resolve()
     destination = destination_root / METHOD_TRIAL_VENDOR_ROOT
+    if check_only:
+        schema_path = destination / "schema.json"
+        provenance_path = destination / "provenance.json"
+        try:
+            vendored = schema_path.read_bytes()
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ContractSyncError("vendored MethodTrialView snapshot is unavailable") from exc
+        if vendored != payload:
+            raise ContractSyncError("vendored MethodTrialView schema differs from producer bytes")
+        expected_digest = "sha256:" + hashlib.sha256(payload).hexdigest()
+        files = provenance.get("files", []) if isinstance(provenance, dict) else []
+        if provenance.get("product_commit") != commit or files != [
+            {"name": "schema.json", "sha256": expected_digest, "size_bytes": len(payload)}
+        ]:
+            raise ContractSyncError(
+                "vendored MethodTrialView provenance differs from requested commit"
+            )
+        return provenance_path
     _atomic_write(destination / "schema.json", payload, destination_root)
     provenance = {
         "schema_version": "DeveloperLensContractSnapshot.v1",

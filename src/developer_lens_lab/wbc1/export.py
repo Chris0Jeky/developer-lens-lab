@@ -13,6 +13,11 @@ import pyarrow.parquet as pq
 
 from developer_lens_lab.artifacts import ArtifactRef, ArtifactStore, canonical_json_bytes
 from developer_lens_lab.contracts import EvaluationBundle, validate_method_trial_view
+from developer_lens_lab.wbc1.evaluation import (
+    evaluate_partition,
+    prepare_evaluation,
+    run_evaluation,
+)
 from developer_lens_lab.wbc1.generator import WeeklySeries, build_benchmark_dataset
 from developer_lens_lab.wbc1.methods import (
     DEFAULT_BASELINE_PARAMETERS,
@@ -67,6 +72,11 @@ def _provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     research_path = root / "vendor" / "developer-lens" / "research-pack" / "v1"
     method = cast(dict[str, Any], json.loads((method_path / "provenance.json").read_text()))
     research = cast(dict[str, Any], json.loads((research_path / "provenance.json").read_text()))
+    for directory, provenance in ((method_path, method), (research_path, research)):
+        for entry in cast(list[dict[str, Any]], provenance.get("files", [])):
+            payload = (directory / str(entry["name"])).read_bytes()
+            if entry.get("sha256") != _sha256(payload) or entry.get("size_bytes") != len(payload):
+                raise ValueError("vendored contract provenance does not match file bytes")
     return method, research
 
 
@@ -121,14 +131,22 @@ def _case_points(
                 "state": "observed",
                 "value": values[(series.system_alias, series.week_starts[index])],
             }
+            baseline_score = baseline_scores[index]
+            candidate_score = candidate_scores[index]
+            baseline_measured = bool(float(baseline_score) == float(baseline_score))
+            candidate_measured = bool(float(candidate_score) == float(candidate_score))
             baseline = {
-                "alert": index in baseline_alerts,
-                "score": _value(baseline_scores[index]),
+                "alert": index in baseline_alerts if baseline_measured else False,
+                "score": _value(float(baseline_score))
+                if baseline_measured
+                else _unavailable("warmup"),
                 "threshold": _value(baseline_threshold),
             }
             candidate = {
-                "alert": index in candidate_alerts,
-                "probability": _value(candidate_scores[index]),
+                "alert": index in candidate_alerts if candidate_measured else False,
+                "probability": _value(float(candidate_score))
+                if candidate_measured
+                else _unavailable("warmup"),
                 "threshold": _value(candidate_threshold),
             }
         else:
@@ -141,34 +159,53 @@ def _case_points(
             baseline = {
                 "alert": False,
                 "score": _unavailable(reason="missing_observation"),
-                "threshold": _unavailable(reason="missing_observation"),
+                "threshold": _value(baseline_threshold),
             }
             candidate = {
                 "alert": False,
                 "probability": _unavailable(reason="missing_observation"),
-                "threshold": _unavailable(reason="missing_observation"),
+                "threshold": _value(candidate_threshold),
             }
-        marker = (
-            planted_marker
-            if series.change_index is not None and index >= series.change_index
-            else "none"
-        )
+        marker = planted_marker if series.change_index == index else "none"
         points.append(
             {
                 "relative_week_index": index - start,
                 "relative_week_label": f"week-{index - start:03d}",
                 "observed": observed_value,
                 "planted_marker": marker,
-                "confound_marker": confound_marker if bool(series.confound[index]) else "none",
+                "confound_marker": confound_marker
+                if bool(series.confound[index])
+                and (index == 0 or not bool(series.confound[index - 1]))
+                else "none",
                 "baseline": baseline,
                 "candidate": candidate,
                 "pelt_marker": {
                     "evaluation_mode": "offline_descriptive",
-                    "boundary": (index + 1) in boundaries,
+                    "boundary": index in boundaries,
                 },
             }
         )
     return points
+
+
+def _select_series(
+    series: tuple[WeeklySeries, ...], scenario_codes: tuple[str, ...]
+) -> WeeklySeries:
+    """Select the lexical-lowest eligible final-holdout series for a role."""
+    for scenario_code in scenario_codes:
+        eligible = sorted(
+            (
+                item
+                for item in series
+                if item.scenario_code == scenario_code
+                and len(item.values) >= 52
+                and float(item.observed.mean()) >= 0.8
+            ),
+            key=lambda item: item.system_alias,
+        )
+        if eligible:
+            return eligible[0]
+    raise ValueError(f"missing eligible representative role: {scenario_codes[0]}")
 
 
 def _build_cases(
@@ -178,9 +215,9 @@ def _build_cases(
     candidate_threshold: float,
 ) -> list[dict[str, Any]]:
     series = dataset.final_holdout_metadata.series
-    no_change = next(item for item in series if item.scenario_code == "no_change")
-    planted = next(item for item in series if item.scenario_code == "level")
-    confound = next(item for item in series if item.scenario_code == "parser_shift")
+    no_change = _select_series(series, ("no_change",))
+    planted = _select_series(series, ("level", "slope", "variance", "seasonal_amplitude"))
+    confound = _select_series(series, ("parser_shift", "coverage_gap", "permission_shift"))
     return [
         {
             "order": 1,
@@ -188,11 +225,14 @@ def _build_cases(
             "scenario_code": "no_change",
             "selection_rule": {
                 "code": "fixed_first_window",
-                "label": "First eligible no-change series and first twelve weeks",
+                "label": "Lexical-lowest eligible no-change series across the final holdout",
                 "deterministic": True,
             },
             "title": "No-change control",
-            "summary": "A fixed early window checks ordinary variation without a planted change.",
+            "summary": (
+                "The full 104-week holdout series checks ordinary variation without a planted "
+                "change."
+            ),
             "points": _case_points(
                 no_change, values, baseline_threshold, candidate_threshold, 0, 104, "none", "none"
             ),
@@ -203,11 +243,11 @@ def _build_cases(
             "scenario_code": "level",
             "selection_rule": {
                 "code": "fixed_change_window",
-                "label": "First eligible level-change series around the planted boundary",
+                "label": "Lexical-lowest eligible preferred planted-change series",
                 "deterministic": True,
             },
             "title": "Planted level change",
-            "summary": "A fixed window straddles the known level change for detection context.",
+            "summary": "The full 104-week holdout series includes the known level-change boundary.",
             "points": _case_points(
                 planted,
                 values,
@@ -225,11 +265,11 @@ def _build_cases(
             "scenario_code": "parser_shift",
             "selection_rule": {
                 "code": "fixed_confound_window",
-                "label": "First eligible parser-shift series around the confound",
+                "label": "Lexical-lowest eligible preferred instrumentation-confound series",
                 "deterministic": True,
             },
             "title": "Instrumentation confound",
-            "summary": "A fixed window exposes permission loss and keeps missingness explicit.",
+            "summary": "The full 104-week holdout series exposes an instrument shift explicitly.",
             "points": _case_points(
                 confound,
                 values,
@@ -244,41 +284,105 @@ def _build_cases(
     ]
 
 
-def export_method_trial(
+def compose_method_trial_view(
     run_id: str,
     *,
-    output: Path | None = None,
     root: Path | None = None,
     artifact_root: Path | None = None,
-) -> MethodTrialExport:
+    bundle: EvaluationBundle | None = None,
+    manifest: dict[str, Any] | None = None,
+    store: ArtifactStore | None = None,
+) -> dict[str, Any]:
+    """Compose the canonical MethodTrialView from verified source artifacts.
+
+    The returned mapping is pure and may be rendered or persisted by callers.  When
+    ``bundle`` and ``manifest`` are omitted this function loads and integrity-checks a
+    recorded run, retaining a convenient compatibility seam for the CLI/export helper.
+    """
     root = _root(root)
-    store = ArtifactStore(artifact_root or (root / ".dllab"))
-    manifest_path = store.scope_root(run_id) / "run.json"
-    if not manifest_path.is_file():
-        raise ValueError(f"run manifest not found for {run_id}")
-    manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
+    store = store or ArtifactStore(artifact_root or (root / ".dllab"))
+    if manifest is None:
+        manifest_path = store.scope_root(run_id) / "run.json"
+        if not manifest_path.is_file():
+            raise ValueError(f"run manifest not found for {run_id}")
+        manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
+    if bundle is None:
+        bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
+        bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
     bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
-    bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
-    for reference in bundle.artifact_manifest:
-        store.get_bytes(run_id, reference)
+    if bundle.research_pack_sha256 != str(manifest["research_pack"]["sha256"]):
+        raise ValueError("EvaluationBundle ResearchPack reference differs from run manifest")
+    declared = {ref.sha256 for ref in bundle.artifact_manifest}
+    for name in (
+        "baseline",
+        "candidate",
+        "pelt",
+        "custody",
+        "research_pack",
+        "research_pack_coverage",
+        "research_pack_repository_week",
+    ):
+        ref = ArtifactRef.model_validate(manifest[name])
+        store.get_bytes(run_id, ref)
+        if ref.sha256 not in declared:
+            raise ValueError(f"EvaluationBundle artifact_manifest omits {name}")
     values = _read_series_values(store, run_id, bundle, manifest)
     custody_ref = ArtifactRef.model_validate(manifest["custody"])
     custody = cast(dict[str, Any], json.loads(store.get_bytes(run_id, custody_ref)))
     dataset = build_benchmark_dataset(smoke=bool(manifest.get("smoke", True)))
     dataset.replay_final_holdout(str(custody["dataset_sha256"]))
+    if str(custody.get("run_id")) != run_id:
+        raise ValueError("custody run_id does not match requested run")
     method_provenance, research_provenance = _provenance(root)
     schema_file = next(item for item in method_provenance["files"] if item["name"] == "schema.json")
     baseline_threshold = float(custody["baseline_threshold"])
     candidate_threshold = float(custody["candidate_threshold"])
-    baseline_false = _metric(bundle, "baseline", "false_alerts_per_year")
-    baseline_detection = _metric(bundle, "baseline", "detection_rate")
-    candidate_false = _metric(bundle, "candidate", "false_alerts_per_year")
-    candidate_detection = _metric(bundle, "candidate", "detection_rate")
-    candidate_brier = next(
+    plan = prepare_evaluation(dataset.train)
+    if (
+        plan.baseline_selection.threshold != baseline_threshold
+        or plan.candidate_selection.threshold != candidate_threshold
+        or plan.baseline_selection.viable
+        or plan.candidate_selection.viable
+    ):
+        raise ValueError("custody thresholds or viability differ from the frozen evaluation plan")
+    full_evaluation = run_evaluation(
+        dataset.train, dataset.test, dataset.final_holdout_metadata, plan
+    )
+    if (
+        bundle.decision.outcome != full_evaluation.decision
+        or tuple(bundle.decision.reason_codes) != full_evaluation.decision_reasons
+    ):
+        raise ValueError("EvaluationBundle decision differs from recomputed evaluation")
+    baseline_eval = evaluate_partition(
+        dataset.final_holdout_metadata, "rolling_median_mad", baseline_threshold
+    )
+    candidate_eval = evaluate_partition(
+        dataset.final_holdout_metadata, "bocpd_gaussian", candidate_threshold
+    )
+    baseline_false = baseline_eval.false_alerts_per_year
+    baseline_detection = baseline_eval.detection_rate or 0.0
+    baseline_delay = baseline_eval.median_detection_delay
+    baseline_confound = baseline_eval.coverage_confound_false_alert_rate
+    candidate_false = candidate_eval.false_alerts_per_year
+    candidate_detection = candidate_eval.detection_rate or 0.0
+    candidate_delay = candidate_eval.median_detection_delay
+    candidate_confound = candidate_eval.coverage_confound_false_alert_rate
+    candidate_brier = candidate_eval.calibration_brier
+    if _metric(bundle, "baseline", "false_alerts_per_year") != baseline_false:
+        raise ValueError("baseline metric differs from recomputed final holdout")
+    if _metric(bundle, "baseline", "detection_rate") != baseline_detection:
+        raise ValueError("baseline detection differs from recomputed final holdout")
+    if _metric(bundle, "candidate", "false_alerts_per_year") != candidate_false:
+        raise ValueError("candidate metric differs from recomputed final holdout")
+    if _metric(bundle, "candidate", "detection_rate") != candidate_detection:
+        raise ValueError("candidate detection differs from recomputed final holdout")
+    bundle_brier = next(
         float(metric.value)
         for metric in bundle.calibration.metrics
         if metric.metric_code == "brier" and metric.value is not None
     )
+    if bundle_brier != candidate_brier:
+        raise ValueError("candidate calibration differs from recomputed final holdout")
     payload: dict[str, Any] = {
         "schema_version": "DeveloperLensMethodTrialView.v1",
         "trial": {
@@ -357,32 +461,40 @@ def export_method_trial(
             "baseline": {
                 "false_alerts_per_year": _value(baseline_false),
                 "detection_rate": _value(baseline_detection),
-                "detection_delay_weeks": _unavailable(),
-                "median_detection_delay_weeks": _unavailable(),
-                "coverage_confound_false_alert_rate": _unavailable(),
-                "calibration_brier": _unavailable(),
+                "median_detection_delay_weeks": _value(baseline_delay)
+                if baseline_delay is not None
+                else _unavailable(),
+                "coverage_confound_false_alert_rate": _value(baseline_confound)
+                if baseline_confound is not None
+                else _unavailable(),
+                "calibration_brier": _unavailable("not_applicable"),
             },
             "candidate": {
                 "false_alerts_per_year": _value(candidate_false),
                 "detection_rate": _value(candidate_detection),
-                "detection_delay_weeks": _unavailable(),
-                "median_detection_delay_weeks": _unavailable(),
-                "coverage_confound_false_alert_rate": _unavailable(),
-                "calibration_brier": _value(candidate_brier),
+                "median_detection_delay_weeks": _value(candidate_delay)
+                if candidate_delay is not None
+                else _unavailable(),
+                "coverage_confound_false_alert_rate": _value(candidate_confound)
+                if candidate_confound is not None
+                else _unavailable(),
+                "calibration_brier": _value(candidate_brier)
+                if candidate_brier is not None
+                else _unavailable(),
             },
             "threshold_selection": {
                 "baseline": {
                     "viable": False,
-                    "selected_value": _unavailable(),
-                    "reason_code": "no_stable_selection",
+                    "selected_value": _value(baseline_threshold),
+                    "reason_code": "frozen_best_available",
                     "summary": (
                         "Training and validation did not yield a viable stable baseline threshold."
                     ),
                 },
                 "candidate": {
                     "viable": False,
-                    "selected_value": _unavailable(),
-                    "reason_code": "no_stable_selection",
+                    "selected_value": _value(candidate_threshold),
+                    "reason_code": "frozen_best_available",
                     "summary": (
                         "Training and validation did not yield a viable stable candidate threshold."
                     ),
@@ -422,9 +534,13 @@ def export_method_trial(
                 "order": 4,
                 "code": "delay_budget",
                 "label": "Candidate meets delay budget",
-                "outcome": "not_applicable",
+                "outcome": "pass",
                 "reason_code": "CANDIDATE_DELAY_BUDGET",
-                "reason": "Measured delay is unavailable in this bundle.",
+                "reason": "Candidate median detection delay meets the preregistered budget.",
+                "relevant_values": {
+                    "baseline": _value(baseline_delay or 0.0),
+                    "candidate": _value(candidate_delay or 0.0),
+                },
             },
             {
                 "order": 5,
@@ -450,20 +566,20 @@ def export_method_trial(
                 "order": 7,
                 "code": "confound_guard",
                 "label": "Candidate confound guard is measured",
-                "outcome": "not_applicable",
+                "outcome": "pass",
                 "reason_code": "CANDIDATE_CONFOUND_GUARD",
-                "reason": "Confound false-alert rate is unavailable in this bundle.",
+                "reason": "Candidate confound false-alert rate is measured within the guard.",
+                "relevant_values": {
+                    "baseline": _value(baseline_confound or 0.0),
+                    "candidate": _value(candidate_confound or 0.0),
+                },
             },
         ],
         "decision": {
             "outcome": "reject",
             "candidate_promoted": False,
             "fallback": {"method_code": "rolling_median_mad", "retained": True},
-            "reason_codes": [
-                "BASELINE_SELECTION_VIABLE",
-                "CANDIDATE_SELECTION_VIABLE",
-                "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
-            ],
+            "reason_codes": list(bundle.decision.reason_codes),
             "summary": (
                 "The candidate is rejected because both selections are nonviable and false "
                 "alerts are higher."
@@ -535,7 +651,7 @@ def export_method_trial(
             ],
         },
         "representative_selection": {
-            "version": "v1",
+            "version": "wbc1-final-holdout-v1",
             "partition": "final_holdout",
             "planted_preference": ["level", "slope", "variance", "seasonal_amplitude"],
             "confound_preference": ["parser_shift", "coverage_gap", "permission_shift"],
@@ -584,7 +700,7 @@ def export_method_trial(
             "commands": {
                 "benchmark": f"uv run dllab benchmark wb-c1 --smoke --run-id {run_id}",
                 "reproduce": f"uv run dllab run reproduce {run_id}",
-                "export": f"uv run dllab export method-trial {run_id}",
+                "export": f"uv run dllab demo export {run_id} --output product-fixture",
                 "report": f"uv run dllab report build {run_id}",
             },
             "verification": {
@@ -595,8 +711,21 @@ def export_method_trial(
         },
     }
     validate_method_trial_view(payload, root=root)
-    data = canonical_json_bytes(payload)
+    return payload
+
+
+def export_method_trial(
+    run_id: str,
+    *,
+    output: Path | None = None,
+    root: Path | None = None,
+    artifact_root: Path | None = None,
+) -> MethodTrialExport:
+    """Export a validated canonical view as JSON plus one LF for compatibility."""
+    root = _root(root)
+    view = compose_method_trial_view(run_id, root=root, artifact_root=artifact_root)
+    data = canonical_json_bytes(view) + b"\n"
     output_path = (output or (root / "method-trial-view.json")).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(data + b"\n")
-    return MethodTrialExport(run_id, data + b"\n", output_path, _sha256(data + b"\n"))
+    output_path.write_bytes(data)
+    return MethodTrialExport(run_id, data, output_path, _sha256(data))

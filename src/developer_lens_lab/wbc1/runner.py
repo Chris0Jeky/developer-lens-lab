@@ -37,7 +37,10 @@ from developer_lens_lab.validation import validate_pack_artifacts, validate_rese
 from .evaluation import BenchmarkEvaluation, EvaluationPlan, prepare_evaluation, run_evaluation
 from .generator import BenchmarkDataset, Partition, build_benchmark_dataset
 from .methods import DEFAULT_BASELINE_PARAMETERS, DEFAULT_BOCPD_PARAMETERS, parameters_sha256
-from .report import build_html, build_markdown
+from .report import (
+    build_method_trial_html,
+    build_method_trial_markdown,
+)
 
 
 class RunnerError(RuntimeError):
@@ -50,6 +53,7 @@ class BenchmarkRun:
     scope: str
     bundle: EvaluationBundle
     bundle_artifact: ArtifactRef
+    method_trial_view_artifact: ArtifactRef
     markdown_artifact: ArtifactRef
     html_artifact: ArtifactRef
     manifest_path: Path
@@ -386,17 +390,14 @@ def _build_bundle(
     bundle_refs: tuple[ArtifactRef, ...],
     custody_ref: ArtifactRef,
     pelt_ref: ArtifactRef,
-    report_refs: tuple[ArtifactRef, ...],
     pack_ref: ArtifactRef,
     pack_parquet_refs: tuple[ArtifactRef, ArtifactRef],
 ) -> EvaluationBundle:
     required_refs = _unique_refs(
-        (*bundle_refs, custody_ref, pelt_ref, pack_ref, *pack_parquet_refs, *report_refs)
+        (*bundle_refs, custody_ref, pelt_ref, pack_ref, *pack_parquet_refs)
     )
     if len(bundle_refs) != 2:
         raise RunnerError("EvaluationBundle requires baseline and candidate result artifacts")
-    if report_refs and len(report_refs) != 2:
-        raise RunnerError("EvaluationBundle requires Markdown and HTML report artifacts")
     if (
         bundle_refs[0].media_type != "application/x-parquet"
         or bundle_refs[1].media_type != "application/x-parquet"
@@ -417,8 +418,6 @@ def _build_bundle(
     }
     if pack_relation_digests != {ref.sha256 for ref in pack_parquet_refs}:
         raise RunnerError("EvaluationBundle ResearchPack relation artifacts do not match the pack")
-    if report_refs and {ref.media_type for ref in report_refs} != {"text/markdown", "text/html"}:
-        raise RunnerError("EvaluationBundle requires Markdown and HTML report artifacts")
     baseline = evaluation.baseline_holdout
     candidate = evaluation.candidate_holdout
     prereg = Preregistration(
@@ -592,22 +591,6 @@ def run_benchmark(
     baseline_ref, candidate_ref, pelt_ref = _evaluation_artifacts(scope, store, evaluation)
     pack_ref = store.put_bytes(scope, materialized.manifest_bytes, "application/json")
     provisional_refs = (baseline_ref, candidate_ref)
-    provisional_bundle = _build_bundle(
-        root,
-        run_id,
-        dataset,
-        evaluation,
-        pack,
-        _sha256(materialized.manifest_bytes),
-        provisional_refs,
-        receipt_ref,
-        pelt_ref,
-        (),
-        pack_ref,
-        (coverage_ref, repository_week_ref),
-    )
-    markdown_ref = store.put_text(scope, build_markdown(provisional_bundle), "text/markdown")
-    html_ref = store.put_text(scope, build_html(provisional_bundle), "text/html")
     bundle = _build_bundle(
         root,
         run_id,
@@ -618,16 +601,39 @@ def run_benchmark(
         provisional_refs,
         receipt_ref,
         pelt_ref,
-        (markdown_ref, html_ref),
         pack_ref,
         (coverage_ref, repository_week_ref),
     )
     bundle_ref = store.put_json(scope, bundle.model_dump(mode="json"))
+    source_manifest = {
+        "bundle": bundle_ref.model_dump(mode="json"),
+        "custody": receipt_ref.model_dump(mode="json"),
+        "baseline": baseline_ref.model_dump(mode="json"),
+        "candidate": candidate_ref.model_dump(mode="json"),
+        "pelt": pelt_ref.model_dump(mode="json"),
+        "research_pack": pack_ref.model_dump(mode="json"),
+        "research_pack_coverage": coverage_ref.model_dump(mode="json"),
+        "research_pack_repository_week": repository_week_ref.model_dump(mode="json"),
+        "smoke": smoke,
+    }
+    from .export import compose_method_trial_view
+
+    view = compose_method_trial_view(
+        run_id,
+        root=root,
+        store=store,
+        bundle=bundle,
+        manifest=source_manifest,
+    )
+    view_ref = store.put_json(scope, view)
+    markdown_ref = store.put_text(scope, build_method_trial_markdown(view), "text/markdown")
+    html_ref = store.put_text(scope, build_method_trial_html(view), "text/html")
     manifest = {
         "schema_version": "DeveloperLensWbc1Run.v1",
         "run_id": run_id,
         "smoke": smoke,
         "bundle": bundle_ref.model_dump(mode="json"),
+        "method_trial_view": view_ref.model_dump(mode="json"),
         "markdown": markdown_ref.model_dump(mode="json"),
         "html": html_ref.model_dump(mode="json"),
         "custody": receipt_ref.model_dump(mode="json"),
@@ -649,8 +655,12 @@ def run_benchmark(
     manifest_path = store.write_scope_file_once(
         scope, "run.json", canonical_json_bytes(manifest) + b"\n"
     )
-    store.write_scope_manifest(scope, (*tuple(bundle.artifact_manifest), bundle_ref))
-    return BenchmarkRun(run_id, scope, bundle, bundle_ref, markdown_ref, html_ref, manifest_path)
+    store.write_scope_manifest(
+        scope, (*tuple(bundle.artifact_manifest), bundle_ref, view_ref, markdown_ref, html_ref)
+    )
+    return BenchmarkRun(
+        run_id, scope, bundle, bundle_ref, view_ref, markdown_ref, html_ref, manifest_path
+    )
 
 
 def _assert_reproduced_reference(
@@ -686,6 +696,7 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         "pelt",
         "markdown",
         "html",
+        "method_trial_view",
         "research_pack",
         "research_pack_coverage",
         "research_pack_repository_week",
@@ -758,28 +769,6 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     pelt_ref = _assert_reproduced_reference(
         "PELT summary", pelt_bytes, "application/json", manifest["pelt"]
     )
-    provisional_bundle = _build_bundle(
-        root,
-        scope,
-        dataset,
-        evaluation,
-        materialized.pack,
-        _sha256(materialized.manifest_bytes),
-        (baseline_ref, candidate_ref),
-        custody_ref,
-        pelt_ref,
-        (),
-        pack_ref,
-        (coverage_ref, repository_week_ref),
-    )
-    markdown_bytes = build_markdown(provisional_bundle).encode("utf-8")
-    html_bytes = build_html(provisional_bundle).encode("utf-8")
-    markdown_ref = _assert_reproduced_reference(
-        "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
-    )
-    html_ref = _assert_reproduced_reference(
-        "HTML report", html_bytes, "text/html", manifest["html"]
-    )
     bundle = _build_bundle(
         root,
         scope,
@@ -790,10 +779,28 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
         (baseline_ref, candidate_ref),
         custody_ref,
         pelt_ref,
-        (markdown_ref, html_ref),
         pack_ref,
         (coverage_ref, repository_week_ref),
     )
+    from .export import compose_method_trial_view
+
+    view = compose_method_trial_view(
+        scope,
+        root=root,
+        store=store,
+        bundle=bundle,
+        manifest=manifest,
+    )
+    view_bytes = canonical_json_bytes(view)
+    _assert_reproduced_reference(
+        "MethodTrial view", view_bytes, "application/json", manifest["method_trial_view"]
+    )
+    markdown_bytes = build_method_trial_markdown(view).encode("utf-8")
+    html_bytes = build_method_trial_html(view).encode("utf-8")
+    _assert_reproduced_reference(
+        "Markdown report", markdown_bytes, "text/markdown", manifest["markdown"]
+    )
+    _assert_reproduced_reference("HTML report", html_bytes, "text/html", manifest["html"])
     reproduced = canonical_json_bytes(bundle.model_dump(mode="json"))
     if _reference(reproduced, "application/json") != bundle_ref:
         raise RunnerError("reproduced EvaluationBundle bytes differ from the recorded artifact")
@@ -806,13 +813,22 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
     if not manifest_path.is_file():
         raise RunnerError(f"run manifest not found for {run_id}")
     manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
-    bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
-    bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
-    markdown = store.put_text(run_id, build_markdown(bundle), "text/markdown")
-    html_ref = store.put_text(run_id, build_html(bundle), "text/html")
+    from .export import compose_method_trial_view
+
+    view_ref = ArtifactRef.model_validate(manifest["method_trial_view"])
+    view_bytes = store.get_bytes(run_id, view_ref)
+    view = json.loads(view_bytes)
+    recomposed = compose_method_trial_view(run_id, root=_root(), store=store, manifest=manifest)
+    if canonical_json_bytes(recomposed) != view_bytes:
+        raise RunnerError("stored MethodTrialView differs from recomposed canonical projection")
+    markdown = store.put_text(run_id, build_method_trial_markdown(view), "text/markdown")
+    html_ref = store.put_text(run_id, build_method_trial_html(view), "text/html")
     if (
         markdown.model_dump(mode="json") != manifest["markdown"]
         or html_ref.model_dump(mode="json") != manifest["html"]
     ):
         raise RunnerError("report bytes differ from the recorded deterministic report")
+    scope_root = store.scope_root(run_id)
+    (scope_root / "report.md").write_bytes(store.get_bytes(run_id, markdown))
+    (scope_root / "report.html").write_bytes(store.get_bytes(run_id, html_ref))
     return markdown, html_ref
