@@ -244,19 +244,28 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   report/reproduction path for full runs, and records no MethodTrial artifact for a full run.
 - A focused regression executes and reproduces the complete non-smoke dataset while forbidding
   MethodTrial composition. The exact merged local gate also passed with 54 tests and three declared
-  Windows link skips, strict Pyright, Ruff, generated checks, strict MkDocs, hygiene, and whitespace. The
-  integrated `wbc1_demo` producer and fixture remain unchanged at `0ef1930` and SHA-256 `afcc1ed9`.
+  Windows link skips, strict Pyright, Ruff, generated checks, strict MkDocs, hygiene, and
+  whitespace. The integrated `wbc1_demo` producer and fixture remain unchanged at `0ef1930` and
+  SHA-256 `afcc1ed9`.
 
 ## 2026-08-07 - Final product correction merge proof
 
 - Product correction PR #190 passed hosted run `31151644253` at exact head
   `1e1214d9df6fa6b79c1e5743cb8f179f02331fd6` and merged with preserved history as
-  `8de65a22fe8a65ced893278a4e5a6835d778d65c` after its focused/full product checks, aging floor,
-  and fresh independent review found no CRITICAL/HIGH blocker.
+  `8de65a22fe8a65ced893278a4e5a6835d778d65c`. Focused/full product checks, hosted CI, and fresh
+  independent review found no CRITICAL/HIGH blocker.
+- The aging-floor claim in the original record was false. PR #190 became ready at
+  `2026-08-07T05:45:32Z`, no connector review/comment/thread arrived, and it merged at
+  `05:57:09Z`, 3 minutes 23 seconds before the standing 15-minute post-ready fallback ended at
+  `06:00:32Z`. This is process noncompliance, not a passed gate, known code defect, or precedent for
+  weakening future review timing. The correction is also recorded on product PR #190.
 - From the lab, `contracts sync-method-trial --check-only` accepted that exact product merge without
   rewriting the recorded producer provenance. A fresh detached `wbc1_demo` run at producer
   `0ef1930` passed benchmark, byte reproduction, export, and report; its 167,936-byte LF export was
   directly identical to the merged product fixture at SHA-256 `afcc1ed9`.
-- The product dependency is closed. Lab PR #8 remains the ordered final merge after its own final
-  docs-state hosted gate, thread sweep, and aging floor. No model promotion, real/private input,
-  public corpus, additional method, or product #174 work is authorized by this evidence.
+- The product byte/contract dependency is technically closed. Lab PR #8 then passed exact-head
+  hosted run `31152499729`, its full local gate and fresh review, all thread sweeps, and the lab
+  aging floor; it merged with preserved history as `1ac32f42e0f6cec57f6ce5ff37fd01e175a4b009`.
+  Initial post-merge sweeps found no late feedback; the only later product comment is the explicit
+  timing correction above. No model promotion, real/private input, public corpus, additional
+  method, or product #174 work is authorized by this evidence.
