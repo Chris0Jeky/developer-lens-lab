@@ -3,6 +3,7 @@ from pathlib import Path
 from developer_lens_lab.context import verify_repository
 from developer_lens_lab.context.verify import (
     REQUIRED_SETTINGS_READ_DENY,
+    _verify_one_shared_block,  # pyright: ignore[reportPrivateUsage]
     verify_context_budget,
     verify_markdown_links,
     verify_settings_deny,
@@ -78,14 +79,14 @@ def test_skill_parity_passes_on_the_real_repo() -> None:
 def test_skill_parity_accepts_matching_enclosed_blocks(tmp_path: Path) -> None:
     body = f"# doc\n\n{_START}\n## Protect evaluation integrity\n\n- Shared bullet.\n{_END}\n\n## End\n"  # noqa: E501
     _write_skill_pair(tmp_path, body, body)
-    assert verify_skill_parity(tmp_path) == []
+    assert _verify_one_shared_block(tmp_path, "shared:evaluation-integrity") == []
 
 
 def test_skill_parity_reports_drift_between_copies(tmp_path: Path) -> None:
     claude = f"{_START}\n## Protect evaluation integrity\n\n- Claude bullet.\n{_END}\n"
     agents = f"{_START}\n## Protect evaluation integrity\n\n- Agents bullet.\n{_END}\n"
     _write_skill_pair(tmp_path, claude, agents)
-    failures = verify_skill_parity(tmp_path)
+    failures = _verify_one_shared_block(tmp_path, "shared:evaluation-integrity")
     assert failures == [
         "shared evaluation-integrity section drifted between the two SKILL.md copies"
     ]
@@ -95,7 +96,7 @@ def test_skill_parity_reports_missing_marker(tmp_path: Path) -> None:
     good = f"{_START}\n## Protect evaluation integrity\n\n- Shared bullet.\n{_END}\n"
     without_end = f"{_START}\n## Protect evaluation integrity\n\n- Shared bullet.\n"
     _write_skill_pair(tmp_path, good, without_end)
-    failures = verify_skill_parity(tmp_path)
+    failures = _verify_one_shared_block(tmp_path, "shared:evaluation-integrity")
     assert any(
         "marker" in failure and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
         for failure in failures
@@ -108,12 +109,28 @@ def test_skill_parity_rejects_duplicate_markers(tmp_path: Path) -> None:
     good = f"{_START}\n- Shared bullet.\n{_END}\n"
     duplicated = f"{_START}\n- Shared bullet.\n{_END}\n\n{_START}\n- Divergent bullet.\n{_END}\n"
     _write_skill_pair(tmp_path, good, duplicated)
-    failures = verify_skill_parity(tmp_path)
+    failures = _verify_one_shared_block(tmp_path, "shared:evaluation-integrity")
     assert any(
         "exactly one" in failure
         and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
         for failure in failures
     )
+
+
+def test_protected_data_defaults_block_matches_on_the_real_repo() -> None:
+    assert _verify_one_shared_block(ROOT, "shared:protected-data-defaults") == []
+
+
+def test_protected_data_defaults_reports_drift_between_copies(tmp_path: Path) -> None:
+    dp_start = "<!-- shared:protected-data-defaults start -->"
+    dp_end = "<!-- shared:protected-data-defaults end -->"
+    claude = f"{dp_start}\nDefault to invented fixtures. Claude wording.\n{dp_end}\n"
+    agents = f"{dp_start}\nDefault to invented fixtures. Agents wording.\n{dp_end}\n"
+    _write_skill_pair(tmp_path, claude, agents)
+    failures = _verify_one_shared_block(tmp_path, "shared:protected-data-defaults")
+    assert failures == [
+        "shared protected-data-defaults section drifted between the two SKILL.md copies"
+    ]
 
 
 def test_context_budget_passes_on_the_real_repo() -> None:

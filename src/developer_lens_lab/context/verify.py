@@ -167,16 +167,20 @@ REQUIRED_SETTINGS_READ_DENY = (
 )
 
 
-SHARED_SKILL_MARKER = "shared:evaluation-integrity"
+# Every named block that must stay byte-identical between the two SKILL.md copies. Each entry is
+# guarded independently so a new shared block only needs its marker pair added here plus the two
+# marker lines wrapped around the paragraph in both files.
+SHARED_SKILL_MARKERS = ("shared:evaluation-integrity", "shared:protected-data-defaults")
 SKILL_PARITY_FILES = (
     ".claude/skills/developer-lens-lab-continuation/SKILL.md",
     ".agents/skills/developer-lens-lab-continuation/SKILL.md",
 )
 
 
-def verify_skill_parity(root: Path) -> list[str]:
-    start_marker = f"<!-- {SHARED_SKILL_MARKER} start -->"
-    end_marker = f"<!-- {SHARED_SKILL_MARKER} end -->"
+def _verify_one_shared_block(root: Path, marker: str) -> list[str]:
+    label = marker.removeprefix("shared:")
+    start_marker = f"<!-- {marker} start -->"
+    end_marker = f"<!-- {marker} end -->"
     failures: list[str] = []
     blocks: list[str] = []
     for rel in SKILL_PARITY_FILES:
@@ -184,26 +188,31 @@ def verify_skill_parity(root: Path) -> list[str]:
         try:
             text = path.read_text(encoding="utf-8")
         except OSError:
-            failures.append(f"{rel}: missing shared evaluation-integrity marker(s)")
+            failures.append(f"{rel}: missing shared {label} marker(s)")
             continue
         normalized = text.replace("\r\n", "\n").replace("\r", "\n")
         # Require exactly one ordered pair. A duplicate pair (e.g. a copy/paste while extending the
         # section) would otherwise leave find() comparing only the first block, silently ignoring a
         # divergent second one — a false pass in a check whose whole job is to catch divergence.
         if normalized.count(start_marker) != 1 or normalized.count(end_marker) != 1:
-            failures.append(f"{rel}: expected exactly one shared evaluation-integrity marker pair")
+            failures.append(f"{rel}: expected exactly one shared {label} marker pair")
             continue
         start = normalized.find(start_marker)
         end = normalized.find(end_marker)
         if end <= start:
-            failures.append(f"{rel}: shared evaluation-integrity markers are out of order")
+            failures.append(f"{rel}: shared {label} markers are out of order")
             continue
         block = normalized[start + len(start_marker) : end].strip()
         blocks.append(block)
     if len(blocks) == len(SKILL_PARITY_FILES) and len(set(blocks)) > 1:
-        failures.append(
-            "shared evaluation-integrity section drifted between the two SKILL.md copies"
-        )
+        failures.append(f"shared {label} section drifted between the two SKILL.md copies")
+    return failures
+
+
+def verify_skill_parity(root: Path) -> list[str]:
+    failures: list[str] = []
+    for marker in SHARED_SKILL_MARKERS:
+        failures.extend(_verify_one_shared_block(root, marker))
     return failures
 
 

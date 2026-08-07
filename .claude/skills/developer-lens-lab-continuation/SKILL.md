@@ -24,10 +24,12 @@ Delegate bounded implementation to `dll-implementer`, fresh-context adversarial 
 one writer per checkout; parallel writers need separate coordinator-owned worktrees and disjoint
 paths. Subagents can move HEAD — pin git state in every delegation prompt and re-verify after.
 
+<!-- shared:protected-data-defaults start -->
 Default to invented fixtures. Do not inspect or collect real repositories, generated product data,
 credentials, browser profiles, caches, working trees, or provider accounts. Network collection,
 real datasets, new classes/sinks, durable indexes, model calls, publication, cross-repo identity,
 and product promotion require the exact open owner gate to be closed first.
+<!-- shared:protected-data-defaults end -->
 
 <!-- shared:evaluation-integrity start -->
 ## Protect evaluation integrity
