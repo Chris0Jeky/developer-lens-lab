@@ -358,3 +358,31 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   (pre-existing `typer.testing` import-resolution errors — an environment gap); hosted `Prove the lab`
   covers the full gate at the reviewed/merged heads. No research, corpus, model, or gate activation is
   authorized by this evidence.
+
+## 2026-08-07 — Context-verify hardening follow-ups (#18, #19)
+
+- Batch PR (`claude/ctx-hardening-18-19`) closes the two non-blocking follow-ups spun off from the #12
+  review: #19 (Codex round-2) and #18 (fresh-context reviewer). Harness/tooling only; T1/C0 posture
+  unchanged; no owner gate crossed.
+- #19 — `verify_context_budget` now distinguishes an absent `budgets` key (legitimately unenforced →
+  `[]`) from a present-but-malformed `budgets` container (string/list/null/number/bool → the failure
+  `"tier.json budgets must be an object to declare a standing-context budget"`). This closes the
+  container-level twin of the value-level gap fixed in `de061c7`; `_verify_tier` validates only
+  top-level keys, so this is the sole reporter and cannot double-report.
+- #18 — the SKILL.md parity check now guards *every* named shared block, not just the
+  evaluation-integrity one. The byte-identical "Default to invented fixtures… closed first." paragraph
+  is wrapped in `<!-- shared:protected-data-defaults start/end -->` markers in both copies;
+  `SHARED_SKILL_MARKER` becomes `SHARED_SKILL_MARKERS`, the per-marker logic is factored into the
+  public `verify_one_shared_block(root, marker)` (message strings label-parameterized so the
+  evaluation-integrity wording is byte-preserved), and `verify_skill_parity` loops over both. Adding a
+  future shared block needs only its marker name here plus the two wrapping lines.
+- Review: one fresh-context adversarial pass (no blocking defects). Its lone LOW recommendation — make
+  the test-imported helper public rather than carry a `# pyright: ignore[reportPrivateUsage]` — was
+  applied inline (pure rename, no logic change, so no new review pass owed). Residual #18/#19 follow-up
+  #19-container consistency is fully resolved by this slice; no new tracked debt.
+- Verified locally against the worktree source via `.venv` (no uv on host; PYTHONPATH pinned to the
+  worktree `src` because the editable install otherwise resolves to the main checkout): ruff
+  format/check, pyright scoped to the changed files (0 errors), full pytest (73 passed / 3 pre-existing
+  symlink skips; 21 context tests), `verify_repository(.)` OK, strict MkDocs, hygiene, doctor. Repo-wide
+  pyright NOT run locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the
+  full gate at the reviewed/merged heads. No research, corpus, model, or gate activation is authorized.
