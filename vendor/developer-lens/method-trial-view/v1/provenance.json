@@ -7,6 +7,6 @@
     }
   ],
   "identity_semantics": "provenance_only_not_a_join_key",
-  "product_commit": "2fd1637156eae378a5bc0da8401873618ccb8b42",
+  "product_commit": "3ac919f6129374acae564883ef9196c1d4aaf54c",
   "schema_version": "DeveloperLensContractSnapshot.v1"
 }

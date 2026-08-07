@@ -87,7 +87,7 @@ def test_method_trial_vendor_snapshot_is_pinned() -> None:
     root = ROOT / "vendor/developer-lens/method-trial-view/v1"
     provenance = json.loads((root / "provenance.json").read_text(encoding="utf-8"))
     schema = (root / "schema.json").read_bytes()
-    assert provenance["product_commit"] == "2fd1637156eae378a5bc0da8401873618ccb8b42"
+    assert provenance["product_commit"] == "3ac919f6129374acae564883ef9196c1d4aaf54c"
     assert provenance["files"] == [
         {
             "name": "schema.json",
