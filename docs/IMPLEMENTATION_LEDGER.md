@@ -287,12 +287,13 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `AGENTS.md` slimmed to a thin Codex adapter with an inline protected-data summary; the Claude
   runtime gained committed settings, the `developer-lens-lab-continuation` skill, and pinned
   agents `dll-implementer`/`dll-reviewer` (Opus 4.8 high) and `dll-mechanic` (Sonnet 4.6 high).
-- `dllab context verify` now requires the Claude files and agent pins, parses committed settings
-  as JSON, rejects committed or tracked `bypassPermissions`/`settings.local.json`, and asserts
-  the canon anchors (adapter names the canon; canon carries the protected-data rule).
+- `dllab context verify` now requires the Claude files and the three agent-pin files to exist
+  (existence only — it does not parse pin frontmatter), parses committed settings as JSON,
+  rejects committed or tracked `bypassPermissions`/`settings.local.json`, and asserts the canon
+  anchors (adapter names the canon; canon carries the protected-data rule).
 - Same PR untracked the `.coverage` run artifact that had been committed directly to `main`
   (`71db5f1`); CI's `pytest --cov` rewrote it and broke the WB-C1 clean-worktree gate — `main`'s
-  red lane healed at the merge (run `31178880304` green pre-merge; `main` green at `c159d96f`).
+  red lane healed at the merge (hosted gate green at `91b3505` pre-merge and at `c159d96f`).
 - Verified: hosted `Prove the lab` green at `91b3505` and at the merge commit; local ruff,
   pyright, pytest (54 passed, 3 pre-existing symlink skips), strict MkDocs, hygiene.
 - Deferred (tracked): #12 skill-copy parity markers, combined context budget, settings-guard
