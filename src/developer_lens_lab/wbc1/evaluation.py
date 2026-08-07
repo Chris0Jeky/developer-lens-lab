@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from statistics import median
 from typing import Literal
@@ -21,6 +21,17 @@ from .methods import (
 FloatArray = NDArray[np.float64]
 MethodCode = Literal["rolling_median_mad", "bocpd_gaussian"]
 DETECTION_DELAY_BUDGET = 8
+
+
+def _pairwise_sum(values: Sequence[float]) -> float:
+    """Sum floats in one fixed tree so aggregate bytes do not depend on SIMD width."""
+    size = len(values)
+    if size == 0:
+        return 0.0
+    if size == 1:
+        return float(values[0])
+    midpoint = size // 2
+    return _pairwise_sum(values[:midpoint]) + _pairwise_sum(values[midpoint:])
 
 
 @dataclass(frozen=True)
@@ -160,7 +171,11 @@ def evaluate_partition(
     years = non_event_observed_weeks / 52.0
     detection_rate = detected_changes / true_changes if true_changes else None
     confound_rate = confound_series_alerted / confound_series if confound_series else None
-    brier = float(np.mean(calibration_squared_errors)) if calibration_squared_errors else None
+    brier = (
+        _pairwise_sum(calibration_squared_errors) / len(calibration_squared_errors)
+        if calibration_squared_errors
+        else None
+    )
     return AggregateMetrics(
         method_code=method,
         threshold=threshold,

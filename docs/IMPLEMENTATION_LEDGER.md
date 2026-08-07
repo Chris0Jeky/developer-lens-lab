@@ -170,3 +170,93 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Product #182 and lab #6 retain the bounded non-demo hardening backlog. No real data, corpus,
   additional candidate, product claim, or promotion was added. Lab PR #3 still requires its final
   push, exact-head hosted CI/review sweep, and merge.
+
+## 2026-08-07 - Principal demo preflight (preflight only)
+
+- Exact preflight code head: `b865d6951e915ffedb4af512a0a673501d12e171`. This entry records
+  local preflight evidence only; it is not a hosted result, product fixture commit, product merge,
+  lab PR/merge, or canonical final run.
+- The preflight used the `wbc1_demo_preflight` shape and retained the C0 invented-data boundary:
+  54 system series, 5,616 weekly opportunities, 5,346 observed and 270 absent; representative
+  scenarios `no_change`, `level`, and `parser_shift`, with 104 points per case.
+- The honest decision remains `reject`. Baseline metrics are false alerts/year
+  `2.966666666666667`, detection `0.75`, median delay `2`, confound rate `0.5`, and measured
+  threshold `2.5` marked nonviable. Candidate metrics are false alerts/year `4.2`, detection
+  `0.75`, median delay `1`, confound rate `0.5`, Brier
+  `0.017341137335170863`, and measured threshold `0.05` marked nonviable. The deterministic
+  baseline remains the complete fallback; no promotion is implied.
+- Preflight provenance records the product contract prefix `2fd1637`, schema digest prefix
+  `86cf53a`, ResearchPack merge reference `be9c245`, and compatibility fixture digest prefix
+  `sha256:847e3c`. These are provenance notes only; no product fixture commit or product merge is
+  claimed by this entry.
+- Preflight report references are Markdown digest prefix `3d47b2` and HTML digest prefix `4409373`.
+  Rich report generation, the explicit demo export path, and report materialization are local
+  behavior checks. Issue #6 remains deferred; product UI code is outside this vertical.
+- NOT verified: hosted CI, bounded review/publication gates, and a canonical final run.
+
+## 2026-08-07 - Parallel final-repair precursors (superseded by integration)
+
+- Product contract commit `b48fea579936671397a0486ae7a0342197ee6e4b` remains pinned at schema
+  SHA-256 `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+- Lab commit `5c79236beb0a0b25819f14510b79bb15813d7337` added equivalent semantic
+  acceptance with eleven structural-valid mutation regressions. Parallel commit
+  `b30b22909c9ea44d64bebe9dccf82b8735302d76` made named export publication atomic over a final
+  symlink and changed premature `verification.local: passed` evidence to honest `not_run`.
+- Both precursor heads passed their scoped local proof and independent review, but each canonical
+  fixture predates the other repair. Their fixture and report hashes are therefore superseded and
+  must not be copied into the product. The integrated merge head requires one fresh canonical run,
+  byte pin, exact-head CI, and final review before either PR can merge.
+- The scientific result remains the conservative `reject` with no real/private input, full-run
+  publication, lab-owned product UI, additional method, or model promotion. Issue #6 remains
+  explicitly deferred.
+
+## 2026-08-07 - Integrated canonical MethodTrial producer
+
+- Merge commit `0ef193070a9b80b81cef5a1710a1d65e0b271c15` contains both final repair
+  lines: equivalent cross-field semantic acceptance plus atomic final-path export with honest
+  `verification.local: not_run`. It also records the owner's bounded q-4 integration approval
+  without authorizing model promotion, real data, or a general product claim.
+- A fresh detached checkout at that exact producer passed the locked runtime-only installation,
+  locked sync, Ruff format/lint, strict Pyright, context/task/contract checks, 53 tests with three
+  declared Windows symlink skips and 87% coverage, default smoke reproduction/report, strict
+  MkDocs, hygiene, and range whitespace.
+- Canonical `wbc1_demo` then passed benchmark, byte reproduction, export, and report. The LF export
+  is 167,936 bytes with SHA-256
+  `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`; the stored view object is
+  `sha256:30768b506607c05fe186fbd3db51ddae7ba47f2d0cf58a5ade509f4295736a88`.
+  EvaluationBundle, custody, ResearchPack, Markdown, and HTML digests are respectively
+  `sha256:e925c8ac44d914ce0003ef218d90187535eedfef3eb8d436a3c9a135e3d1a3a9`,
+  `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`,
+  `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`,
+  `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and
+  `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
+- The result is unchanged: seven gates fail/fail/pass/pass/fail/pass/pass, decision `reject`, and
+  rolling-median/MAD fallback retained. Product PR #187 later merged at `7b22491`; correction commit
+  `1e1214d` pins these integrated bytes on `codex/method-trial-final-evidence`. Its PR/hosted gate and
+  merge, the merged-contract recheck, and lab PR #8 remain live gates at this record.
+
+## 2026-08-07 - Full-run presentation boundary repair
+
+- Late exact-head review then found one direct regression: `run_benchmark` attempted the smoke-only
+  MethodTrial composition for opt-in full benchmarks, whose deliberately different counts fail the
+  C0 presentation contract after reserving a single-use scope. The bounded repair keeps the rich
+  MethodTrial view and reports on smoke runs only, restores the existing generic EvaluationBundle
+  report/reproduction path for full runs, and records no MethodTrial artifact for a full run.
+- A focused regression executes and reproduces the complete non-smoke dataset while forbidding
+  MethodTrial composition. The exact merged local gate also passed with 54 tests and three declared
+  Windows link skips, strict Pyright, Ruff, generated checks, strict MkDocs, hygiene, and whitespace. The
+  integrated `wbc1_demo` producer and fixture remain unchanged at `0ef1930` and SHA-256 `afcc1ed9`.
+
+## 2026-08-07 - Final product correction merge proof
+
+- Product correction PR #190 passed hosted run `31151644253` at exact head
+  `1e1214d9df6fa6b79c1e5743cb8f179f02331fd6` and merged with preserved history as
+  `8de65a22fe8a65ced893278a4e5a6835d778d65c` after its focused/full product checks, aging floor,
+  and fresh independent review found no CRITICAL/HIGH blocker.
+- From the lab, `contracts sync-method-trial --check-only` accepted that exact product merge without
+  rewriting the recorded producer provenance. A fresh detached `wbc1_demo` run at producer
+  `0ef1930` passed benchmark, byte reproduction, export, and report; its 167,936-byte LF export was
+  directly identical to the merged product fixture at SHA-256 `afcc1ed9`.
+- The product dependency is closed. Lab PR #8 remains the ordered final merge after its own final
+  docs-state hosted gate, thread sweep, and aging floor. No model promotion, real/private input,
+  public corpus, additional method, or product #174 work is authorized by this evidence.

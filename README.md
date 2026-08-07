@@ -23,6 +23,7 @@ uv run pytest
 uv run dllab benchmark wb-c1 --smoke
 uv run dllab run reproduce wbc1_smoke
 uv run dllab report build wbc1_smoke
+uv run dllab export method-trial wbc1_smoke
 ```
 
 The M1 contract vertical is runnable without a collector or dataset:
@@ -32,10 +33,15 @@ uv run dllab pack validate path\to\invented-pack.json
 uv run dllab pack profile path\to\invented-pack.json
 uv run dllab bundle validate path\to\evaluation-bundle.json
 uv run dllab contracts sync --from path\to\developer-lens --ref <40-hex-commit>
+uv run dllab contracts sync-method-trial --from path\to\developer-lens --ref <40-hex-commit>
 ```
 
-`contracts sync` reads only the fixed schema and invented-fixture paths from the pinned Git object.
-It records commit and byte checksums as provenance, never as a cross-repository join key.
+`contracts sync` reads only the fixed ResearchPack schema and invented-fixture paths from the pinned
+Git object. `contracts sync-method-trial` reads only the product-owned
+`DeveloperLensMethodTrialView.v1` structural schema and requires its structural-only annotation.
+The exporter then applies the lab's equivalent implementation of the product-owned cross-field
+semantics before it writes a view; a JSON Schema pass alone is not artifact acceptance. Both sync
+paths record commit and byte checksums as provenance, never as cross-repository join keys.
 
 The WB-C1 command writes an ignored, content-addressed run beneath
 `.dllab/scopes/wbc1_smoke/`. Each run ID is single-use: the runner reserves its scope and writes an
@@ -45,6 +51,13 @@ the online arms, records PELT only as offline descriptive evidence, and emits an
 plus standalone Markdown and HTML reports. `run reproduce` verifies every stored object, then
 regenerates and byte-compares every recorded artifact. Use `uv run dllab benchmark wb-c1 --full`
 only for the larger opt-in lane.
+
+`export method-trial` projects one already validated local WB-C1 smoke run into the small product-owned
+presentation schema. It deterministically selects the no-change, planted-change, and instrumentation-
+confound windows, validates the result against the pinned product schema, and writes the ignored
+`method-trial-view.json` by default. It does not send a request, expose system aliases, install a
+model, or add an EvaluationBundle parser to the product. The opt-in `--full` lane retains the generic
+EvaluationBundle reports and replay path; it does not record a smoke-only MethodTrial projection.
 
 ## Boundaries
 

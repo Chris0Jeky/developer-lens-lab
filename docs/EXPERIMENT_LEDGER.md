@@ -64,3 +64,70 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
 - **Movement and limits:** the exact merged producer sync changed schema/fixture and artifact
   digests, but not the dataset recipe or canonical metrics/decision. This remains synthetic
   mechanics evidence only; issue #6 stays deferred and no product promotion is implied.
+
+## 2026-08-07 - Principal demo preflight (`wbc1_demo_preflight`)
+
+- **Status:** preflight only; keep `LAB-DEMO-01` `IN_REVIEW`. This is local evidence at lab head
+  `b865d6951e915ffedb4af512a0a673501d12e171`, not a canonical final run or hosted/publication gate.
+- **Flow:** benchmark, reproduce, canonical export, then report:
+  `uv run dllab benchmark wb-c1 --smoke --run-id wbc1_demo_preflight`,
+  `uv run dllab run reproduce wbc1_demo_preflight`,
+  `uv run dllab demo export wbc1_demo_preflight --output <path>`, and
+  `uv run dllab report build wbc1_demo_preflight`.
+- **Dataset and cases:** C0 invented data only; 54 system series / 5,616 weekly opportunities /
+  5,346 observed / 270 absent. Representative scenarios are `no_change`, `level`, and
+  `parser_shift`, with 104 points in each case. No real data, public corpus, person-shaped unit,
+  product UI code, additional candidate, or model promotion is part of this preflight.
+- **Result:** decision `reject`. Baseline false alerts/year `2.966666666666667`, detection `0.75`,
+  median delay `2`, confound rate `0.5`, measured threshold `2.5` marked nonviable. Candidate false
+  alerts/year `4.2`, detection `0.75`, median delay `1`, confound rate `0.5`, Brier
+  `0.017341137335170863`, measured threshold `0.05` marked nonviable. Failed gates are
+  `BASELINE_SELECTION_VIABLE`, `CANDIDATE_SELECTION_VIABLE`, and
+  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; the deterministic baseline remains the complete fallback.
+- **Preflight provenance:** compatibility fixture digest prefix `sha256:847e3c`, product contract
+  prefix `2fd1637`, schema digest prefix `86cf53a`, and ResearchPack merge reference `be9c245`.
+  Report references are Markdown digest prefix `3d47b2` and HTML digest prefix `4409373`.
+- **Limits:** issue #6 remains deferred. Hosted CI, product fixture commit/product merge claims,
+  lab PR/merge, and canonical final-run status are not verified here.
+
+## 2026-08-07 - Superseded parallel final-run evidence
+
+- **Status:** producer commits `5c79236beb0a0b25819f14510b79bb15813d7337` and
+  `b30b22909c9ea44d64bebe9dccf82b8735302d76` each produced a deterministic `wbc1_demo`, but each
+  predates one independently reviewed final repair. Neither fixture is the integrated publication
+  artifact; their exact hashes are preserved in their commits and intentionally not repeated here.
+- **Result:** both retained the same invented-C0 `reject`: 54 systems / 5,616 opportunities /
+  5,346 observed / 270 absent; false alerts `2.966666666666667`/`4.2`; detection `0.75`/`0.75`;
+  delay `2`/`1`; confound rate `0.5`/`0.5`; candidate Brier `0.017341137335170863`; thresholds
+  nonviable; deterministic baseline retained.
+- **Next evidence:** run benchmark, reproduction, export, and report once from the integrated merge
+  commit that contains both semantic acceptance and safe, honest export publication. Only those
+  bytes may be pinned into product PR #187. Issue #6 and every real-data/promotion gate remain
+  deferred.
+
+## 2026-08-07 - Integrated canonical principal demonstration (`wbc1_demo`)
+
+- **Status and flow:** canonical local evidence at integrated producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15`; benchmark, reproduction, export, and
+  standalone report all passed in a fresh detached checkout. Product contract commit is
+  `b48fea579936671397a0486ae7a0342197ee6e4b`, schema SHA-256
+  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`.
+- **Dataset and cases:** invented C0 only; 54 series / 5,616 opportunities / 5,346 observed / 270
+  absent; `no_change`, `level`, and `parser_shift`, 104 points each. Aliases and seeds are absent;
+  PELT is offline descriptive evidence only.
+- **Result:** `reject`. Baseline/candidate false alerts per year `2.966666666666667`/`4.2`,
+  detection `0.75`/`0.75`, delay `2`/`1`, confound false-alert rate `0.5`/`0.5`, candidate Brier
+  `0.017341137335170863`, and nonviable thresholds `2.5`/`0.05`. Failed reasons are
+  `BASELINE_SELECTION_VIABLE`, `CANDIDATE_SELECTION_VIABLE`, and
+  `CANDIDATE_FALSE_ALERT_IMPROVEMENT`; deterministic baseline retained.
+- **Artifacts:** fixture
+  `sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`;
+  EvaluationBundle `sha256:e925c8ac44d914ce0003ef218d90187535eedfef3eb8d436a3c9a135e3d1a3a9`;
+  custody `sha256:036f62f5f9ade272eba907513e7ab0bbef4a888bb1d86f8ae6e401aebd5c8238`;
+  ResearchPack `sha256:bd96e45eed454b0ed42f37fa0c518f3b2883816aab876bd6e2e5718c9e24fb90`;
+  Markdown `sha256:f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`;
+  HTML `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`.
+- **Limits:** artifact verification remains honestly `not_run`; exact local/hosted command results
+  are external evidence, not retroactive mutation of the append-only view. Issue #6 remains
+  deferred. No real/public corpus, person-level inference, lab-owned product UI, or promotion was
+  added.

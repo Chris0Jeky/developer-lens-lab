@@ -65,3 +65,28 @@ Windows reparse points, quotas, and artifact signing remain explicitly deferred 
 
 The current Developer Lens AnalysisPack 1.0 and proposed Pack 2.0 disagreement is outside this seam.
 The lab must not pretend that either is the ResearchPack contract.
+
+## Method Trial presentation projection
+
+Developer Lens also owns `DeveloperLensMethodTrialView.v1`, the narrow C0 presentation contract for
+the rejected WB-C1 candidate story. The lab vendors only its generated structural schema beneath
+`vendor/developer-lens/method-trial-view/v1/`; `dllab contracts sync-method-trial --from <checkout>
+--ref <40-hex-commit>` reads that one fixed schema path from the exact Git object and records its
+commit and checksum as provenance only. Draft 2020-12 is transport-shape validation, not semantic
+acceptance: before writing, the exporter also enforces the product-equivalent cross-field rules for
+run-bound commands, threshold viability, scorecard-derived gates and decision reasons, timeline
+sequence, and case-role markers.
+
+`dllab export method-trial <run-id>` reads an already validated, local, invented WB-C1 smoke run and
+emits the product view. Full runs retain their generic EvaluationBundle report path and do not record
+a MethodTrial projection. The exporter preserves measured-versus-unavailable values, seven ordered gates,
+the explicit reject/fallback decision, and exactly three deterministic final-holdout windows:
+no-change control, planted change, and instrumentation confound. PELT stays labelled offline
+descriptive. Stable system aliases, seeds, filesystem paths, people, providers, and repository
+identifiers never enter the projection.
+
+This projection is not an EvaluationBundle replacement or a product-side EvaluationBundle parser.
+The lab owns deterministic export from reviewed run artifacts; the product owns the canonical
+schema, commits the exact reviewed C0 fixture bytes, validates them again, and decides what may be
+shown. Neither repository treats commit/checksum provenance as a durable cross-repository identity
+key or model-promotion authority.

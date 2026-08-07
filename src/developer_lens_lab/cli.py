@@ -11,7 +11,11 @@ from pydantic import ValidationError
 
 from developer_lens_lab.artifacts import ArtifactError, ArtifactStore
 from developer_lens_lab.context import verify_repository
-from developer_lens_lab.contract_sync import ContractSyncError, sync_product_contract
+from developer_lens_lab.contract_sync import (
+    ContractSyncError,
+    sync_method_trial_view_contract,
+    sync_product_contract,
+)
 from developer_lens_lab.schemas import check_schemas, render_schemas
 from developer_lens_lab.validation import (
     ManifestError,
@@ -21,6 +25,7 @@ from developer_lens_lab.validation import (
     validate_pack_artifacts,
     validate_research_pack,
 )
+from developer_lens_lab.wbc1.export import export_method_trial
 from developer_lens_lab.wbc1.runner import RunnerError, build_report, reproduce_run, run_benchmark
 
 app = typer.Typer(help="Developer Lens Lab command line.", no_args_is_help=True)
@@ -32,6 +37,8 @@ bundle_app = typer.Typer(help="Validate an EvaluationBundle.")
 benchmark_app = typer.Typer(help="Run deterministic synthetic benchmarks.")
 run_app = typer.Typer(help="Reproduce recorded benchmark runs.")
 report_app = typer.Typer(help="Build deterministic benchmark reports.")
+export_app = typer.Typer(help="Export product-owned presentation views.")
+demo_app = typer.Typer(help="Materialize deterministic demo presentation artifacts.")
 app.add_typer(context_app, name="context")
 app.add_typer(tasks_app, name="tasks")
 app.add_typer(contracts_app, name="contracts")
@@ -40,6 +47,8 @@ app.add_typer(bundle_app, name="bundle")
 app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(run_app, name="run")
 app.add_typer(report_app, name="report")
+app.add_typer(export_app, name="export")
+app.add_typer(demo_app, name="demo")
 
 
 def _repo_root() -> Path:
@@ -147,6 +156,27 @@ def contracts_sync(
     typer.echo(f"synchronized {provenance.relative_to(_repo_root())}")
 
 
+@contracts_app.command("sync-method-trial")
+def contracts_sync_method_trial(
+    source: Annotated[
+        Path,
+        typer.Option("--from", exists=True, file_okay=False, dir_okay=True, resolve_path=True),
+    ],
+    ref: Annotated[str, typer.Option("--ref")],
+    check_only: Annotated[bool, typer.Option("--check-only")] = False,
+) -> None:
+    """Pin the product-owned MethodTrialView schema snapshot."""
+    try:
+        provenance = sync_method_trial_view_contract(
+            _repo_root(), source, ref, check_only=check_only
+        )
+    except (ContractSyncError, OSError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: MethodTrialView sync failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    action = "verified" if check_only else "synchronized"
+    typer.echo(f"{action} {provenance.relative_to(_repo_root())}")
+
+
 @pack_app.command("validate")
 def pack_validate(
     manifest: Annotated[Path, typer.Argument(exists=True, file_okay=True, dir_okay=False)],
@@ -238,3 +268,31 @@ def report_build(
         typer.echo(f"ERROR: report build failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"report markdown={markdown.sha256} html={html_ref.sha256}")
+
+
+@export_app.command("method-trial")
+def export_method_trial_command(
+    run_id: Annotated[str, typer.Argument()],
+    output: Annotated[Path | None, typer.Option("--output")] = None,
+) -> None:
+    """Export a deterministic MethodTrialView for a validated synthetic run."""
+    try:
+        result = export_method_trial(run_id, output=output, root=_repo_root())
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: MethodTrialView export failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"exported {result.output_path} sha256={result.sha256}")
+
+
+@demo_app.command("export")
+def demo_export_command(
+    run_id: Annotated[str, typer.Argument()],
+    output: Annotated[Path, typer.Option("--output")],
+) -> None:
+    """Export the canonical MethodTrialView for a recorded synthetic run."""
+    try:
+        result = export_method_trial(run_id, output=output, root=_repo_root())
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        typer.echo(f"ERROR: demo export failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"exported path={result.output_path} sha256={result.sha256}")

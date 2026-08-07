@@ -68,23 +68,28 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
     assert result.bundle.dataset_card.observation_count == len(all_series) * 104
     assert result.bundle.preregistration.primary_metric_code == "false_alerts_per_year"
     assert result.bundle.calibration.status == "measured"
-    assert {ref.media_type for ref in result.bundle.artifact_manifest} >= {
+    assert {ref.media_type for ref in result.bundle.artifact_manifest} == {
         "application/json",
         "application/x-parquet",
-        "text/markdown",
-        "text/html",
     }
+    assert "method_trial_view" in manifest
+    assert "text/markdown" not in {ref.media_type for ref in result.bundle.artifact_manifest}
     assert reproduce_run(result.manifest_path, root=ROOT)
     manifest_text = result.manifest_path.read_text(encoding="utf-8")
     assert "C:\\" not in manifest_text
     assert str(ROOT) not in manifest_text
+    assert result.method_trial_view_artifact is not None
+    assert result.markdown_artifact is not None
+    assert result.html_artifact is not None
     report_text = store.get_bytes(result.scope, result.markdown_artifact).decode("utf-8")
     assert "http://" not in report_text and "https://" not in report_text
-    assert "offline descriptive arm" in report_text
+    assert "offline segmentation marker" in report_text
     assert build_report(result.run_id, artifact_root=tmp_path) == (
         result.markdown_artifact,
         result.html_artifact,
     )
+    assert (tmp_path / "scopes" / result.scope / "report.md").read_bytes() == report_text.encode()
+    assert (tmp_path / "scopes" / result.scope / "report.html").is_file()
 
     custody_ref = ArtifactRef.model_validate(manifest["custody"])
     custody_digest = custody_ref.sha256.removeprefix("sha256:")
@@ -94,6 +99,56 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
     custody_object.unlink()
     with pytest.raises(ArtifactError, match="artifact object is missing"):
         reproduce_run(result.manifest_path, root=ROOT)
+
+
+def test_full_run_skips_smoke_only_method_trial_and_reproduces(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+
+    def reject_smoke_projection(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("full benchmark attempted to compose a smoke-only MethodTrial view")
+
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.export.compose_method_trial_view", reject_smoke_projection
+    )
+    result = run_benchmark(smoke=False, root=ROOT, artifact_root=tmp_path, run_id="wbc1_full_test")
+    manifest = _manifest(result.manifest_path)
+
+    assert manifest["smoke"] is False
+    assert "method_trial_view" not in manifest
+    assert "markdown" in manifest
+    assert "html" in manifest
+    assert result.method_trial_view_artifact is None
+    report = ArtifactStore(tmp_path).get_bytes(result.scope, result.markdown_artifact)
+    assert report.startswith(b"# WB-C1 benchmark report")
+    assert reproduce_run(result.manifest_path, root=ROOT)
+    assert build_report(result.run_id, artifact_root=tmp_path) == (
+        result.markdown_artifact,
+        result.html_artifact,
+    )
+
+
+def test_build_report_replaces_symlink_without_following_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_link")
+    report_path = tmp_path / "scopes" / result.scope / "report.md"
+    outside = tmp_path / "outside.md"
+    outside.write_bytes(b"outside sentinel\n")
+    try:
+        report_path.symlink_to(outside)
+    except OSError:
+        pytest.skip("file symlinks are unavailable on this host")
+
+    build_report(result.run_id, artifact_root=tmp_path)
+
+    assert outside.read_bytes() == b"outside sentinel\n"
+    assert not report_path.is_symlink()
+    assert report_path.read_bytes() == ArtifactStore(tmp_path).get_bytes(
+        result.scope, result.markdown_artifact
+    )
 
 
 def test_run_identity_and_custody_record_are_append_only(
@@ -149,6 +204,23 @@ def test_reproduction_recomputes_result_artifacts(
 
     with pytest.raises(RunnerError, match="candidate results"):
         reproduce_run(result.manifest_path, root=ROOT)
+
+
+def test_reproduction_fails_closed_when_recorded_provenance_drifts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_provenance")
+    path = ROOT / "vendor/developer-lens/method-trial-view/v1/provenance.json"
+    original = path.read_bytes()
+    altered = json.loads(original)
+    altered["product_commit"] = "e" * 40
+    path.write_text(json.dumps(altered, indent=2) + "\n", encoding="utf-8")
+    try:
+        with pytest.raises(RunnerError, match="MethodTrialView provenance differs"):
+            reproduce_run(result.manifest_path, root=ROOT)
+    finally:
+        path.write_bytes(original)
 
 
 def test_benchmark_requires_a_synchronized_vendor_snapshot(

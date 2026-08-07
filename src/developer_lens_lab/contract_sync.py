@@ -7,7 +7,7 @@ import re
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from developer_lens_lab.contracts import ResearchPack
 
@@ -16,6 +16,8 @@ PRODUCT_FILES = {
     "invented.fixture.json": "research-contracts/research-pack/v1/invented.fixture.json",
 }
 VENDOR_ROOT = Path("vendor/developer-lens/research-pack/v1")
+METHOD_TRIAL_VENDOR_ROOT = Path("vendor/developer-lens/method-trial-view/v1")
+METHOD_TRIAL_SCHEMA_PATH = "research-contracts/method-trial-view/v1/schema.json"
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 REQUIRED_SCHEMA_PROPERTIES = {
     "schema_version",
@@ -49,7 +51,7 @@ def _is_link_like(path: Path) -> bool:
     return path.is_symlink() or path.is_junction()
 
 
-def _ensure_confined_parent(path: Path, root: Path) -> None:
+def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> None:
     current = path.parent
     while current != root:
         if current.exists() and _is_link_like(current):
@@ -57,9 +59,41 @@ def _ensure_confined_parent(path: Path, root: Path) -> None:
         current = current.parent
     if root.exists() and _is_link_like(root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.parent.resolve().is_relative_to(root.resolve()):
+    if path.exists() and _is_link_like(path):
+        raise ContractSyncError("contract destination must not be a symlink or junction")
+    if create:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.exists() and not path.parent.resolve().is_relative_to(root.resolve()):
         raise ContractSyncError("contract destination escaped the repository root")
+
+
+def _validate_method_trial_provenance(provenance: object, payload: bytes) -> dict[str, Any]:
+    if not isinstance(provenance, dict):
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    provenance = cast(dict[str, Any], provenance)
+    expected_keys = {
+        "schema_version",
+        "product_commit",
+        "files",
+        "identity_semantics",
+    }
+    if set(provenance) != expected_keys:
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    if provenance["schema_version"] != "DeveloperLensContractSnapshot.v1":
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    if provenance["identity_semantics"] != "provenance_only_not_a_join_key":
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    product_commit = provenance["product_commit"]
+    if not isinstance(product_commit, str) or not COMMIT_RE.fullmatch(product_commit):
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    expected_file = {
+        "name": "schema.json",
+        "sha256": "sha256:" + hashlib.sha256(payload).hexdigest(),
+        "size_bytes": len(payload),
+    }
+    if provenance["files"] != [expected_file]:
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    return provenance
 
 
 def _atomic_write(path: Path, payload: bytes, root: Path) -> None:
@@ -143,6 +177,75 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
         "schema_version": "DeveloperLensContractSnapshot.v1",
         "product_commit": commit,
         "files": file_records,
+        "identity_semantics": "provenance_only_not_a_join_key",
+    }
+    provenance_path = destination / "provenance.json"
+    _atomic_write(
+        provenance_path,
+        (json.dumps(provenance, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+        destination_root,
+    )
+    return provenance_path
+
+
+def sync_method_trial_view_contract(
+    destination_root: Path, checkout: Path, commit: str, *, check_only: bool = False
+) -> Path:
+    """Pin the product-owned MethodTrialView JSON Schema without copying a checkout path."""
+    if not COMMIT_RE.fullmatch(commit):
+        raise ContractSyncError("--ref must be a full lowercase 40-hex commit")
+    checkout = checkout.resolve()
+    if not checkout.is_dir():
+        raise ContractSyncError("--from must name an existing checkout")
+    resolved = _git(checkout, "rev-parse", "--verify", f"{commit}^{{commit}}")
+    if resolved.decode("ascii").strip() != commit:
+        raise ContractSyncError("--ref did not resolve to the exact requested commit")
+    payload = _git(checkout, "show", f"{commit}:{METHOD_TRIAL_SCHEMA_PATH}")
+    try:
+        schema = json.loads(payload)
+    except json.JSONDecodeError as exc:
+        raise ContractSyncError("MethodTrialView schema is not valid JSON") from exc
+    if not isinstance(schema, dict):
+        raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
+    schema = cast(dict[str, Any], schema)
+    if (
+        schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
+        or "Structural transport validation only" not in str(schema.get("$comment", ""))
+        or schema.get("type") != "object"
+        or schema.get("additionalProperties") is not False
+        or schema.get("properties", {}).get("schema_version", {}).get("const")
+        != "DeveloperLensMethodTrialView.v1"
+    ):
+        raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
+    if destination_root.exists() and _is_link_like(destination_root):
+        raise ContractSyncError("contract destination root must not be a symlink or junction")
+    destination_root = destination_root.resolve()
+    destination = destination_root / METHOD_TRIAL_VENDOR_ROOT
+    if check_only:
+        schema_path = destination / "schema.json"
+        provenance_path = destination / "provenance.json"
+        try:
+            _ensure_confined_parent(schema_path, destination_root, create=False)
+            _ensure_confined_parent(provenance_path, destination_root, create=False)
+            vendored = schema_path.read_bytes()
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ContractSyncError("vendored MethodTrialView snapshot is unavailable") from exc
+        if vendored != payload:
+            raise ContractSyncError("vendored MethodTrialView schema differs from producer bytes")
+        _validate_method_trial_provenance(provenance, payload)
+        return provenance_path
+    _atomic_write(destination / "schema.json", payload, destination_root)
+    provenance = {
+        "schema_version": "DeveloperLensContractSnapshot.v1",
+        "product_commit": commit,
+        "files": [
+            {
+                "name": "schema.json",
+                "sha256": "sha256:" + hashlib.sha256(payload).hexdigest(),
+                "size_bytes": len(payload),
+            }
+        ],
         "identity_semantics": "provenance_only_not_a_join_key",
     }
     provenance_path = destination / "provenance.json"
