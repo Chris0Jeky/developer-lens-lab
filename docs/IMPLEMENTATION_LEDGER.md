@@ -313,11 +313,17 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `docs/HARDENING_BACKLOG.md`, not claimed here. Runtime precedence of a committed `deny` over a
   machine-local `settings.local.json` `bypassPermissions` default is NOT verified (outside a
   repo-level static check).
-- Verified: local full gate green at the reviewed head — ruff format/check, pyright (0 errors on the
-  changed files; the repo-wide local count is pre-existing `typer.testing` import-resolution noise
-  that CI's fresh `uv sync` resolves), pytest 60 passed / 3 pre-existing symlink skips, `dllab
-  context verify`, hygiene, `tasks`/`contracts check`. Hosted `Prove the lab` green on the PR.
+- Verified locally at the reviewed head: ruff format/check, pytest 60 passed / 3 pre-existing
+  symlink skips, `dllab context verify`, hygiene, `tasks`/`contracts check`, and `pyright` scoped to
+  the changed files (0 errors). NOT verified locally: repo-wide `uv run pyright` (the local venv
+  reports pre-existing `typer.testing` import-resolution errors — an environment gap, not this
+  change) and `uv run mkdocs build --strict` (this seam does not touch it). The full canonical gate,
+  including repo-wide pyright and strict MkDocs, was proven green by hosted `Prove the lab` at the
+  reviewed and merged heads — so this milestone is fully gated, but the full gate was hosted, not
+  local.
 - Review: two-lens fresh-context adversarial pass (security-efficacy + code-correctness, both SHIP,
-  no CRITICAL/HIGH) plus one Codex round (this ledger update). Findings triaged once; the coverage
-  residual is tracked, not fixed here. Dependabot alerts triaged separately on #5 (not reachable /
-  tooling-blocked). No research, corpus, model, or gate activation is authorized by this evidence.
+  no CRITICAL/HIGH) plus two Codex comments — the stale deferred-entry note fixed pre-merge in
+  `33af8d2`, and this verification-wording correction landed post-merge as a doc-only follow-up.
+  Findings triaged once; the coverage residual is tracked, not fixed here. Dependabot alerts triaged
+  separately on #5 (not reachable / tooling-blocked). No research, corpus, model, or gate activation
+  is authorized by this evidence.
