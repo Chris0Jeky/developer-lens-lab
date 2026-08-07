@@ -102,6 +102,20 @@ def test_skill_parity_reports_missing_marker(tmp_path: Path) -> None:
     )
 
 
+def test_skill_parity_rejects_duplicate_markers(tmp_path: Path) -> None:
+    # A second marker pair (e.g. copy/paste while extending the section) must fail rather than let
+    # find() compare only the first block and silently ignore a divergent second one.
+    good = f"{_START}\n- Shared bullet.\n{_END}\n"
+    duplicated = f"{_START}\n- Shared bullet.\n{_END}\n\n{_START}\n- Divergent bullet.\n{_END}\n"
+    _write_skill_pair(tmp_path, good, duplicated)
+    failures = verify_skill_parity(tmp_path)
+    assert any(
+        "exactly one" in failure
+        and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
+        for failure in failures
+    )
+
+
 def test_context_budget_passes_on_the_real_repo() -> None:
     assert verify_context_budget(ROOT) == []
 

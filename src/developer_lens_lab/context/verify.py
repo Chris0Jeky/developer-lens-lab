@@ -187,10 +187,16 @@ def verify_skill_parity(root: Path) -> list[str]:
             failures.append(f"{rel}: missing shared evaluation-integrity marker(s)")
             continue
         normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+        # Require exactly one ordered pair. A duplicate pair (e.g. a copy/paste while extending the
+        # section) would otherwise leave find() comparing only the first block, silently ignoring a
+        # divergent second one — a false pass in a check whose whole job is to catch divergence.
+        if normalized.count(start_marker) != 1 or normalized.count(end_marker) != 1:
+            failures.append(f"{rel}: expected exactly one shared evaluation-integrity marker pair")
+            continue
         start = normalized.find(start_marker)
         end = normalized.find(end_marker)
-        if start == -1 or end == -1 or end <= start:
-            failures.append(f"{rel}: missing shared evaluation-integrity marker(s)")
+        if end <= start:
+            failures.append(f"{rel}: shared evaluation-integrity markers are out of order")
             continue
         block = normalized[start + len(start_marker) : end].strip()
         blocks.append(block)
