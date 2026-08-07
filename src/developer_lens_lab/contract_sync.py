@@ -51,7 +51,7 @@ def _is_link_like(path: Path) -> bool:
     return path.is_symlink() or path.is_junction()
 
 
-def _ensure_confined_parent(path: Path, root: Path) -> None:
+def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> None:
     current = path.parent
     while current != root:
         if current.exists() and _is_link_like(current):
@@ -59,9 +59,41 @@ def _ensure_confined_parent(path: Path, root: Path) -> None:
         current = current.parent
     if root.exists() and _is_link_like(root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.parent.resolve().is_relative_to(root.resolve()):
+    if path.exists() and _is_link_like(path):
+        raise ContractSyncError("contract destination must not be a symlink or junction")
+    if create:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.exists() and not path.parent.resolve().is_relative_to(root.resolve()):
         raise ContractSyncError("contract destination escaped the repository root")
+
+
+def _validate_method_trial_provenance(provenance: object, payload: bytes) -> dict[str, Any]:
+    if not isinstance(provenance, dict):
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    provenance = cast(dict[str, Any], provenance)
+    expected_keys = {
+        "schema_version",
+        "product_commit",
+        "files",
+        "identity_semantics",
+    }
+    if set(provenance) != expected_keys:
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    if provenance["schema_version"] != "DeveloperLensContractSnapshot.v1":
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    if provenance["identity_semantics"] != "provenance_only_not_a_join_key":
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    product_commit = provenance["product_commit"]
+    if not isinstance(product_commit, str) or not COMMIT_RE.fullmatch(product_commit):
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    expected_file = {
+        "name": "schema.json",
+        "sha256": "sha256:" + hashlib.sha256(payload).hexdigest(),
+        "size_bytes": len(payload),
+    }
+    if provenance["files"] != [expected_file]:
+        raise ContractSyncError("vendored MethodTrialView provenance is not valid")
+    return provenance
 
 
 def _atomic_write(path: Path, payload: bytes, root: Path) -> None:
@@ -192,25 +224,15 @@ def sync_method_trial_view_contract(
         schema_path = destination / "schema.json"
         provenance_path = destination / "provenance.json"
         try:
+            _ensure_confined_parent(schema_path, destination_root, create=False)
+            _ensure_confined_parent(provenance_path, destination_root, create=False)
             vendored = schema_path.read_bytes()
             provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise ContractSyncError("vendored MethodTrialView snapshot is unavailable") from exc
         if vendored != payload:
             raise ContractSyncError("vendored MethodTrialView schema differs from producer bytes")
-        if not isinstance(provenance, dict):
-            raise ContractSyncError(
-                "vendored MethodTrialView provenance differs from requested commit"
-            )
-        provenance = cast(dict[str, Any], provenance)
-        expected_digest = "sha256:" + hashlib.sha256(payload).hexdigest()
-        files = provenance.get("files", [])
-        if provenance.get("product_commit") != commit or files != [
-            {"name": "schema.json", "sha256": expected_digest, "size_bytes": len(payload)}
-        ]:
-            raise ContractSyncError(
-                "vendored MethodTrialView provenance differs from requested commit"
-            )
+        _validate_method_trial_provenance(provenance, payload)
         return provenance_path
     _atomic_write(destination / "schema.json", payload, destination_root)
     provenance = {

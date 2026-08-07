@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import developer_lens_lab.contract_sync as contract_sync
 from developer_lens_lab.contract_sync import (
     ContractSyncError,
     sync_method_trial_view_contract,
@@ -140,4 +141,130 @@ def test_method_trial_sync_check_only_verifies_bytes_without_rewriting(tmp_path:
     ).read_bytes() == before
     (destination / "vendor/developer-lens/method-trial-view/v1/schema.json").write_bytes(b"{}")
     with pytest.raises(ContractSyncError, match="schema differs"):
+        sync_method_trial_view_contract(destination, product, commit, check_only=True)
+
+
+def test_method_trial_check_only_accepts_same_bytes_at_newer_commit(tmp_path: Path) -> None:
+    product = tmp_path / "product"
+    source = product / "research-contracts" / "method-trial-view" / "v1"
+    source.mkdir(parents=True)
+    schema = (
+        Path(__file__).resolve().parents[1]
+        / "vendor/developer-lens/method-trial-view/v1/schema.json"
+    ).read_bytes()
+    (source / "schema.json").write_bytes(schema)
+    _run_git(product, "init", "-b", "main")
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "schema",
+    )
+    schema_commit = _run_git(product, "rev-parse", "HEAD")
+    (product / "README.md").write_text("same schema bytes\n", encoding="utf-8")
+    _run_git(product, "add", "README.md")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "unrelated follow-up",
+    )
+    newer_commit = _run_git(product, "rev-parse", "HEAD")
+
+    destination = tmp_path / "lab"
+    provenance_path = sync_method_trial_view_contract(destination, product, schema_commit)
+    sync_method_trial_view_contract(destination, product, newer_commit, check_only=True)
+    assert (
+        json.loads(provenance_path.read_text(encoding="utf-8"))["product_commit"] == schema_commit
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("schema_version", "DeveloperLensContractSnapshot.v0"),
+        ("identity_semantics", "join_key"),
+        ("product_commit", "not-a-commit"),
+        ("files", []),
+    ],
+)
+def test_method_trial_check_only_rejects_tampered_provenance(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    product = tmp_path / "product"
+    source = product / "research-contracts" / "method-trial-view" / "v1"
+    source.mkdir(parents=True)
+    schema = (
+        Path(__file__).resolve().parents[1]
+        / "vendor/developer-lens/method-trial-view/v1/schema.json"
+    ).read_bytes()
+    (source / "schema.json").write_bytes(schema)
+    _run_git(product, "init", "-b", "main")
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "schema",
+    )
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    provenance_path = sync_method_trial_view_contract(destination, product, commit)
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance[field] = value
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
+    with pytest.raises(ContractSyncError, match="provenance is not valid"):
+        sync_method_trial_view_contract(destination, product, commit, check_only=True)
+
+
+def test_method_trial_check_only_rejects_link_like_vendor_parent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    product = tmp_path / "product"
+    source = product / "research-contracts" / "method-trial-view" / "v1"
+    source.mkdir(parents=True)
+    schema = (
+        Path(__file__).resolve().parents[1]
+        / "vendor/developer-lens/method-trial-view/v1/schema.json"
+    ).read_bytes()
+    (source / "schema.json").write_bytes(schema)
+    _run_git(product, "init", "-b", "main")
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "schema",
+    )
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    sync_method_trial_view_contract(destination, product, commit)
+    vendor_parent = destination / "vendor"
+
+    def forced_link_like(path: Path) -> bool:
+        return path == vendor_parent
+
+    monkeypatch.setattr(
+        contract_sync,
+        "_is_link_like",
+        forced_link_like,
+    )
+    with pytest.raises(ContractSyncError, match="symlink or junction"):
         sync_method_trial_view_contract(destination, product, commit, check_only=True)
