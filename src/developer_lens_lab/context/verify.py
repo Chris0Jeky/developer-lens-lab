@@ -15,6 +15,15 @@ REQUIRED_FILES = (
     "AGENTS.md",
     "CLAUDE.md",
     ".agent-harness/tier.json",
+    ".agent-harness/governor.json",
+    "docs/OWNER_CONSTITUTION.md",
+    "docs/agent-system/README.md",
+    "docs/agent-system/WORK_CLASSES.md",
+    "docs/agent-system/EXPERIMENT_PROTOCOL.md",
+    "docs/agent-system/DATASET_PROTOCOL.md",
+    "docs/agent-system/MAINTENANCE_PROTOCOL.md",
+    "docs/agent-system/IDEA_PROTOCOL.md",
+    "docs/agent-system/PROMPT_LIBRARY.md",
     ".claude/agents/dll-implementer.md",
     ".claude/agents/dll-mechanic.md",
     ".claude/agents/dll-reviewer.md",
@@ -137,6 +146,162 @@ def _verify_tier(root: Path) -> list[str]:
         "repository": "Chris0Jeky/developer-lens-lab",
     }:
         failures.append("public synthetic publication must use the declared owner/repository route")
+    return failures
+
+
+# The governor policy (.agent-harness/governor.json, schema dllab-governor.v1) is the durable
+# machine-readable half of the constitution. These checks keep it structurally honest and, above
+# all, keep the two invariants a silent self-relaxation would target — the locked-invariant list
+# and the model-pin coherence — harness-enforced rather than prose-only.
+GOVERNOR_SCHEMA = "dllab-governor.v1"
+GOVERNOR_REQUIRED_KEYS = (
+    "purpose",
+    "authorities",
+    "focus",
+    "model_routing",
+    "risk_classes",
+    "experiment_lifecycle",
+    "data_lanes",
+    "activation_preconditions",
+    "review_gates",
+    "queues",
+    "cross_repo",
+    "self_evolution",
+    "generated_indexes",
+    "runtime_state",
+)
+# Hardcoded so a governor edit that drops one of these locked invariants fails loudly here rather
+# than relaxing itself silently. Order matches docs/OWNER_CONSTITUTION.md.
+GOVERNOR_LOCKED_INVARIANTS = (
+    "secret prohibition",
+    "data authority",
+    "private-output locality",
+    "missingness honesty",
+    "deterministic fallback",
+    "holdout integrity",
+    "model-output labelling",
+    "owner-only decisions",
+    "stable-product promotion boundary",
+    "review/merge gates",
+)
+GOVERNOR_REQUIRED_FOCUS = (
+    "research",
+    "story_product",
+    "distribution",
+    "community",
+    "realdata_standalone",
+)
+GOVERNOR_PIN_ROLES = ("implementer", "reviewer", "mechanic")
+
+
+def _agent_frontmatter_model(path: Path) -> str | None:
+    """Return the value of the first ``model:`` line inside a leading ``---`` frontmatter block.
+
+    Minimal parse (no YAML dependency): the file must open with a ``---`` fence, and the model
+    line is read from inside the first fenced block. Returns None if the file is unreadable, has
+    no leading frontmatter block, or declares no ``model:`` line.
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    if not normalized.startswith("---\n"):
+        return None
+    end = normalized.find("\n---", len("---\n"))
+    if end == -1:
+        return None
+    block = normalized[len("---\n") : end + 1]
+    for line in block.split("\n"):
+        if line.startswith("model:"):
+            return line[len("model:") :].strip()
+    return None
+
+
+def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
+    failures: list[str] = []
+    for role in GOVERNOR_PIN_ROLES:
+        role_raw = routing.get(role)
+        if not isinstance(role_raw, dict):
+            continue
+        role_cfg = cast(dict[str, object], role_raw)
+        agent_rel = role_cfg.get("agent")
+        model = role_cfg.get("model")
+        if not isinstance(agent_rel, str) or not isinstance(model, str):
+            continue
+        agent_model = _agent_frontmatter_model(root / agent_rel)
+        if agent_model is None:
+            failures.append(
+                f"governor.json model_routing.{role} agent {agent_rel!r} has no readable "
+                "frontmatter model: line to check the pin against"
+            )
+        elif agent_model != model:
+            failures.append(
+                f"governor.json model_routing.{role} declares model {model!r} but {agent_rel} "
+                f"frontmatter declares {agent_model!r}"
+            )
+    return failures
+
+
+def verify_governor(root: Path) -> list[str]:
+    path = root / ".agent-harness" / "governor.json"
+    try:
+        payload_raw: object = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"invalid governor.json: {exc}"]
+    if not isinstance(payload_raw, dict):
+        return ["invalid governor.json: top level must be a string-keyed object"]
+    payload_mapping = cast(dict[object, object], payload_raw)
+    if not all(isinstance(key, str) for key in payload_mapping):
+        return ["invalid governor.json: top level must be a string-keyed object"]
+    payload = cast(dict[str, object], payload_mapping)
+    failures: list[str] = []
+    if payload.get("schema") != GOVERNOR_SCHEMA:
+        failures.append(f'governor.json schema must be "{GOVERNOR_SCHEMA}"')
+    for key in GOVERNOR_REQUIRED_KEYS:
+        if key not in payload:
+            failures.append(f"governor.json is missing required key: {key}")
+    authorities_raw = payload.get("authorities")
+    if not isinstance(authorities_raw, dict):
+        failures.append("governor.json authorities must be an object of repo-relative files")
+    else:
+        authorities = cast(dict[str, object], authorities_raw)
+        for name, target in authorities.items():
+            if not isinstance(target, str) or not (root / target).is_file():
+                failures.append(
+                    f"governor.json authority {name!r} must point at an existing repo file"
+                )
+    routing_raw = payload.get("model_routing")
+    routing = cast(dict[str, object], routing_raw) if isinstance(routing_raw, dict) else {}
+    prohibited_raw = routing.get("prohibited_models")
+    prohibited = (
+        [item for item in cast(list[object], prohibited_raw) if isinstance(item, str)]
+        if isinstance(prohibited_raw, list)
+        else []
+    )
+    if "haiku" not in prohibited:
+        failures.append('governor.json model_routing.prohibited_models must include "haiku"')
+    evolution_raw = payload.get("self_evolution")
+    evolution = cast(dict[str, object], evolution_raw) if isinstance(evolution_raw, dict) else {}
+    locked_raw = evolution.get("may_never_self_relax")
+    if not isinstance(locked_raw, list):
+        failures.append(
+            "governor.json self_evolution.may_never_self_relax must be a list of locked invariants"
+        )
+    else:
+        locked = {item for item in cast(list[object], locked_raw) if isinstance(item, str)}
+        missing = [invariant for invariant in GOVERNOR_LOCKED_INVARIANTS if invariant not in locked]
+        if missing:
+            failures.append(
+                "governor.json self_evolution.may_never_self_relax must retain every locked "
+                f"invariant; missing: {missing}"
+            )
+    focus_raw = payload.get("focus")
+    focus = cast(dict[str, object], focus_raw) if isinstance(focus_raw, dict) else {}
+    missing_focus = [axis for axis in GOVERNOR_REQUIRED_FOCUS if axis not in focus]
+    if missing_focus:
+        failures.append(f"governor.json focus is missing required axes: {missing_focus}")
+    failures.extend(_verify_governor_pins(routing, root))
     return failures
 
 
@@ -331,6 +496,7 @@ def verify_repository(root: Path) -> VerificationReport:
     if (root / "developer_lens_lab_bootstrap_agent_prompt.md").exists():
         failures.append("the commissioning prompt must not become a competing repo authority")
     failures.extend(_verify_tier(root))
+    failures.extend(verify_governor(root))
     failures.extend(verify_skill_parity(root))
     failures.extend(verify_context_budget(root))
     failures.extend(verify_markdown_links(root))

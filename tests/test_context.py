@@ -1,9 +1,12 @@
+import json
 from pathlib import Path
+from typing import Any
 
 from developer_lens_lab.context import verify_repository
 from developer_lens_lab.context.verify import (
     REQUIRED_SETTINGS_READ_DENY,
     verify_context_budget,
+    verify_governor,
     verify_markdown_links,
     verify_one_shared_block,
     verify_settings_deny,
@@ -11,6 +14,7 @@ from developer_lens_lab.context.verify import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+GOVERNOR = ROOT / ".agent-harness" / "governor.json"
 
 
 def test_repository_context_is_valid() -> None:
@@ -208,3 +212,83 @@ def test_link_verifier_does_not_read_generated_output(tmp_path: Path) -> None:
     report_doc.write_text("[local report](missing.md)\n", encoding="utf-8")
 
     assert verify_markdown_links(tmp_path) == []
+
+
+def _load_governor() -> dict[str, Any]:
+    return json.loads(GOVERNOR.read_text(encoding="utf-8"))
+
+
+def _write_governor(tmp_path: Path, payload: object) -> Path:
+    dest = tmp_path / ".agent-harness" / "governor.json"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(payload), encoding="utf-8")
+    return tmp_path
+
+
+def test_governor_passes_on_the_real_repo() -> None:
+    assert verify_governor(ROOT) == []
+
+
+def test_governor_dropped_locked_invariant_fails(tmp_path: Path) -> None:
+    # A governor edit that silently drops a locked invariant is exactly what this check exists to
+    # catch: it must fail loudly here, not relax the constitution unnoticed.
+    payload = _load_governor()
+    payload["self_evolution"]["may_never_self_relax"].remove("holdout integrity")
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "may_never_self_relax must retain" in failure and "holdout integrity" in failure
+        for failure in failures
+    )
+
+
+def test_governor_schema_mismatch_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["schema"] = "dllab-governor.v2"
+    _write_governor(tmp_path, payload)
+    assert any("schema must be" in failure for failure in verify_governor(tmp_path))
+
+
+def test_governor_authority_pointing_at_missing_file_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["authorities"]["ghost"] = "docs/does-not-exist.md"
+    _write_governor(tmp_path, payload)
+    assert any("authority 'ghost'" in failure for failure in verify_governor(tmp_path))
+
+
+def test_governor_missing_required_key_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    del payload["activation_preconditions"]
+    _write_governor(tmp_path, payload)
+    assert any(
+        "missing required key: activation_preconditions" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def _pin_governor(agent_rel: str, declared_model: str) -> dict[str, Any]:
+    payload = _load_governor()
+    payload["model_routing"]["implementer"] = {"agent": agent_rel, "model": declared_model}
+    return payload
+
+
+def _write_agent(tmp_path: Path, agent_rel: str, model: str) -> None:
+    agent_path = tmp_path / agent_rel
+    agent_path.parent.mkdir(parents=True, exist_ok=True)
+    agent_path.write_text(f"---\nname: x\nmodel: {model}\n---\nbody\n", encoding="utf-8")
+
+
+def test_governor_pin_mismatch_fails(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-implementer.md"
+    _write_agent(tmp_path, agent_rel, "claude-sonnet-4-6")
+    _write_governor(tmp_path, _pin_governor(agent_rel, "claude-opus-5"))
+    failures = verify_governor(tmp_path)
+    assert any("frontmatter declares 'claude-sonnet-4-6'" in failure for failure in failures)
+
+
+def test_governor_pin_match_reports_no_pin_failure(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-implementer.md"
+    _write_agent(tmp_path, agent_rel, "claude-opus-5")
+    _write_governor(tmp_path, _pin_governor(agent_rel, "claude-opus-5"))
+    failures = verify_governor(tmp_path)
+    assert not any("model_routing.implementer" in failure for failure in failures)
