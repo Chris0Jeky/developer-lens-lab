@@ -448,3 +448,50 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   tests) with the byte pins green UNCHANGED, `verify_repository(.)` OK. Repo-wide pyright NOT run
   locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the full gate.
   No research, corpus, model, or gate activation is authorized by this evidence.
+
+## 2026-08-08 — Research governor control plane and owner constitution v2 (LAB-GOV-01)
+
+- Branch `claude/governor-bootstrap-v2` seeds the durable research governor commissioned by the
+  owner mandate v2 and governor bootstrap v1. Live-truth reconciliation first: the prepared
+  baseline (PR #14, #12/#13 open) was stale — #12/#13/#7/#4 were already closed by PRs #15–#26;
+  the genuinely missing pieces were the governor surfaces and the constitution unpacking.
+- New authority surfaces: `docs/OWNER_CONSTITUTION.md` (unpacked binding owner decisions: locked
+  invariants, layered people/team research, federated product–lab boundary, real-data and
+  raw-content authorization with the secrets prohibition absolute, focus allocation, condensed
+  decision register); `.agent-harness/governor.json` (machine-readable `dllab-governor.v1`
+  policy: routing, risk classes, lanes, activation preconditions, review gates, self-evolution
+  locks — JSON not YAML because the host cannot re-lock dependencies); seven
+  `docs/agent-system/` protocols (governor loop, work classes, experiment/dataset/maintenance/
+  idea protocols, prompt library incl. Research Governor Lite).
+- Reconciled: `PRODUCT_BOUNDARY.md` and `DATA_POLICY.md` rewritten to the layered charter
+  (C0–C4/P/X target classes; only C0 operative until the activation preconditions are
+  mechanically true — tier stays truthfully T1/`sensitive_data=false` while the repo holds C0
+  only); `HUMAN_TODO.md` q-1/q-2/q-3/q-5/q-6 closed with their binding constitution answers and
+  new open owner items q-7–q-12 added; CLAUDE.md/AGENTS.md pointers updated inside the
+  100-line/2500-token budgets (~1748 tokens combined after edits).
+- Model pins: `dll-implementer`/`dll-reviewer` repinned `claude-opus-4-8` → `claude-opus-5`
+  (runtime-validated by actually spawning the repinned implementer for this card's code);
+  `dll-mechanic` stays `claude-sonnet-4-6` per the estate routing ladder.
+- Code: `tools/cards.py` → `lab-task-programme.v2` (six-card cap removed per A4=OPEN; BACKLOG
+  status; wave dependency-closure kept; scheduled cards LAB-GOV-01, LAB-WBC1-06 (=PR #24 lane),
+  LAB-ACT-01, LAB-REL-01, LAB-SURV-01 (#174), LAB-CONTRACT-03 (#23); corpus cards OWNER_GATED →
+  BACKLOG gated on LAB-ACT-01). `context/verify.py` gains `verify_governor`: required governor
+  files, schema/key checks, authority-file existence, haiku prohibition, the ten hardcoded
+  never-self-relax invariants, focus axes, and agent-pin coherence against `.claude/agents/`
+  frontmatter. New tests in `tests/test_context.py` and `tests/test_tasks.py`.
+- Review rounds (ceiling 2, both spent): round 1 (fresh-context adversarial, 0 CRITICAL/HIGH)
+  hardened enforcement — routed-model prohibition over `model`/`models` keys, loud pin-role
+  failures, gate-value floors (≥7 activation items, aging ≥15, fix rounds ≤2), plus the q-9
+  owner-scope precondition, skill-block gate pointer, and CLAUDE.md external-model clause;
+  LOWs tracked as #27. Round 2 (Codex, 3 P1 / 5 P2) pinned values by identity — authority
+  paths bounded inside the repo, lane statuses hardcoded (O/C stay
+  `authorised_awaiting_preconditions` until LAB-ACT-01), precondition token identity, the
+  binding 7/5/3/2/0 focus weights, non-numeric review gates (four fresh-review triggers +
+  sweep=True) — and fixed the q-9 circularity and lane-P real-data wording.
+- Verified locally at the final head via `.venv` (no uv on host): ruff format/check, focused +
+  full pytest (101 passed / 3 pre-existing symlink skips), focused pyright on the changed code
+  files (0 errors; repo-wide pyright has pre-existing venv import-resolution noise — hosted
+  `Prove the lab` remains the arbiter), `tools/cards.py --check`, `dllab context verify`,
+  `mkdocs build --strict`, `verify_hygiene.py`, `dllab doctor`. This entry authorizes no
+  research, collection, model call, or lane activation — activation preconditions still gate
+  every non-C0 lane.

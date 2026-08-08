@@ -31,3 +31,6 @@ reports/generated/
 *.pem
 *.key
 method-trial-view.json
+
+# transient governor runtime state (regenerable, non-authoritative)
+.agent-harness/runtime/
