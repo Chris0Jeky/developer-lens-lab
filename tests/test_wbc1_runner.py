@@ -101,6 +101,31 @@ def test_smoke_run_materializes_complete_pack_and_reproduces(
         reproduce_run(result.manifest_path, root=ROOT)
 
 
+def test_research_pack_validation_artifacts_stay_run_owned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Finding 2: a run must not stash ResearchPack validation copies in a shared
+    # pack-id scope that outlives the run. All validation artifacts stay in the
+    # run-owned scope so invalidating the run removes every one of them.
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_scope")
+    store = ArtifactStore(tmp_path)
+
+    secondary_scope = tmp_path / "scopes" / "wbc1_research_pack"
+    assert not secondary_scope.exists()
+
+    # The run scope actually holds the coverage/repository_week Parquet objects.
+    manifest = _manifest(result.manifest_path)
+    for relation in ("research_pack_coverage", "research_pack_repository_week"):
+        ref = ArtifactRef.model_validate(manifest[relation])
+        assert store.get_bytes(result.scope, ref)
+
+    assert store.invalidate_scope(result.scope)
+    scopes_root = tmp_path / "scopes"
+    surviving = [path.name for path in scopes_root.iterdir()] if scopes_root.exists() else []
+    assert surviving == []
+
+
 def test_full_run_skips_smoke_only_method_trial_and_reproduces(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -203,6 +228,28 @@ def test_reproduction_recomputes_result_artifacts(
     result.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     with pytest.raises(RunnerError, match="candidate results"):
+        reproduce_run(result.manifest_path, root=ROOT)
+
+
+def test_reproduction_reports_controlled_error_for_broken_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Finding 4: a stored run manifest with a missing or malformed field must
+    # surface a controlled RunnerError, not an uncaught KeyError/ValidationError.
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_manifest")
+    original = result.manifest_path.read_text(encoding="utf-8")
+
+    missing = json.loads(original)
+    del missing["bundle"]
+    result.manifest_path.write_text(json.dumps(missing), encoding="utf-8")
+    with pytest.raises(RunnerError, match="missing required field 'bundle'"):
+        reproduce_run(result.manifest_path, root=ROOT)
+
+    invalid = json.loads(original)
+    invalid["custody"] = "not-an-artifact-reference"
+    result.manifest_path.write_text(json.dumps(invalid), encoding="utf-8")
+    with pytest.raises(RunnerError, match="not a valid artifact reference"):
         reproduce_run(result.manifest_path, root=ROOT)
 
 

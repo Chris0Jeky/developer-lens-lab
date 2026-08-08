@@ -166,11 +166,19 @@ def profile_research_pack(pack: ResearchPack) -> dict[str, object]:
     }
 
 
-def validate_pack_artifacts(pack: ResearchPack, store: ArtifactStore) -> None:
+def validate_pack_artifacts(
+    pack: ResearchPack, store: ArtifactStore, scope: str | None = None
+) -> None:
+    # Validate the relation artifacts from the given store scope. The scope
+    # defaults to the pack's own identity (used by the standalone `dllab pack
+    # validate` command, where the pack owns its scope); a run passes its own
+    # run-owned scope so the validation artifacts stay bound to the run and are
+    # invalidated with it, rather than accumulating in a shared pack-id scope.
+    read_scope = scope if scope is not None else pack.pack_id
     for relation_name, descriptor in _relation_items(pack):
         if descriptor.state != "present" or descriptor.artifact is None:
             continue
-        payload = store.get_bytes(pack.pack_id, descriptor.artifact)
+        payload = store.get_bytes(read_scope, descriptor.artifact)
         if descriptor.artifact.media_type != "application/x-parquet":
             raise ManifestError(f"present relation {relation_name} must use Parquet")
         try:
