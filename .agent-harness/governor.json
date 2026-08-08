@@ -102,7 +102,8 @@
       "read-deny rules cover the declared raw/private roots for both agent runtimes",
       "secret scanning rejects credential material at every sink the lane can write",
       "dependency vulnerability triage is current (lab issue #5)",
-      "the lane's task names exact scope, budgets, retention, and deletion behaviour"
+      "the lane's task names exact scope, budgets, retention, and deletion behaviour",
+      "the owner has signed off the exact repository scope and supplied any credentials (HUMAN_TODO q-9)"
     ]
   },
   "review_gates": {

@@ -218,16 +218,46 @@ def _agent_frontmatter_model(path: Path) -> str | None:
     return None
 
 
+def _routed_models(routing: dict[str, object]) -> list[tuple[str, str]]:
+    """Every ``(role, model_id)`` a routing entry actually routes work to.
+
+    Covers both the singular ``model`` key and the plural ``models`` list (``governor_lite``), so
+    a prohibited model cannot be reintroduced through whichever key the check ignored.
+    """
+    routed: list[tuple[str, str]] = []
+    for role, entry_raw in routing.items():
+        if not isinstance(entry_raw, dict):
+            continue
+        entry = cast(dict[str, object], entry_raw)
+        model = entry.get("model")
+        if isinstance(model, str):
+            routed.append((role, model))
+        models_raw = entry.get("models")
+        if isinstance(models_raw, list):
+            routed.extend(
+                (role, item) for item in cast(list[object], models_raw) if isinstance(item, str)
+            )
+    return routed
+
+
 def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
     failures: list[str] = []
     for role in GOVERNOR_PIN_ROLES:
         role_raw = routing.get(role)
         if not isinstance(role_raw, dict):
+            failures.append(
+                f"governor.json model_routing.{role} must declare agent and model for pin coherence"
+            )
             continue
         role_cfg = cast(dict[str, object], role_raw)
         agent_rel = role_cfg.get("agent")
         model = role_cfg.get("model")
+        # A missing/blank agent or model must fail loudly: silently skipping it would let a pinned
+        # role drop its pin and keep the coherence check green — the exact gap this check closes.
         if not isinstance(agent_rel, str) or not isinstance(model, str):
+            failures.append(
+                f"governor.json model_routing.{role} must declare agent and model for pin coherence"
+            )
             continue
         agent_model = _agent_frontmatter_model(root / agent_rel)
         if agent_model is None:
@@ -240,6 +270,57 @@ def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
                 f"governor.json model_routing.{role} declares model {model!r} but {agent_rel} "
                 f"frontmatter declares {agent_model!r}"
             )
+    return failures
+
+
+# Presence-only key checks let a gate be emptied while verification stays green (an
+# activation_preconditions with zero items, or a zeroed aging window, still "exists"). These floors
+# pin the values themselves so weakening a gate is a verification failure, not a quiet edit.
+GOVERNOR_MIN_ACTIVATION_ITEMS = 7
+GOVERNOR_MIN_AGING_MINUTES = 15
+GOVERNOR_MAX_FIX_ROUNDS = 2
+
+
+def _verify_governor_gate_values(payload: dict[str, object]) -> list[str]:
+    failures: list[str] = []
+    preconditions_raw = payload.get("activation_preconditions")
+    if not isinstance(preconditions_raw, dict):
+        failures.append("governor.json activation_preconditions must be an object with items")
+    else:
+        preconditions = cast(dict[str, object], preconditions_raw)
+        items_raw = preconditions.get("items")
+        items = (
+            [item for item in cast(list[object], items_raw) if isinstance(item, str)]
+            if isinstance(items_raw, list)
+            else None
+        )
+        if items is None or len(items) < GOVERNOR_MIN_ACTIVATION_ITEMS:
+            failures.append(
+                "governor.json activation_preconditions.items must be a list of at least "
+                f"{GOVERNOR_MIN_ACTIVATION_ITEMS} precondition strings"
+            )
+    gates_raw = payload.get("review_gates")
+    if not isinstance(gates_raw, dict):
+        failures.append("governor.json review_gates must be an object")
+        return failures
+    gates = cast(dict[str, object], gates_raw)
+    aging = gates.get("aging_minutes_after_push")
+    # bool is an int subclass; True would otherwise pass as a 1-minute aging window.
+    if isinstance(aging, bool) or not isinstance(aging, int) or aging < GOVERNOR_MIN_AGING_MINUTES:
+        failures.append(
+            "governor.json review_gates.aging_minutes_after_push must be an integer of at least "
+            f"{GOVERNOR_MIN_AGING_MINUTES}"
+        )
+    ceiling = gates.get("fix_round_ceiling")
+    if (
+        isinstance(ceiling, bool)
+        or not isinstance(ceiling, int)
+        or not 1 <= ceiling <= GOVERNOR_MAX_FIX_ROUNDS
+    ):
+        failures.append(
+            "governor.json review_gates.fix_round_ceiling must be an integer between 1 and "
+            f"{GOVERNOR_MAX_FIX_ROUNDS}"
+        )
     return failures
 
 
@@ -281,6 +362,16 @@ def verify_governor(root: Path) -> list[str]:
     )
     if "haiku" not in prohibited:
         failures.append('governor.json model_routing.prohibited_models must include "haiku"')
+    # Listing a prohibition is not enforcing it: a routed model id that carries a prohibited token
+    # (e.g. "claude-haiku-4-5" against "haiku") must fail, or the list is prose. Case-insensitive
+    # substring, because model ids embed the family name rather than equalling it.
+    for role, routed_model in _routed_models(routing):
+        for token in prohibited:
+            if token.lower() in routed_model.lower():
+                failures.append(
+                    f"governor.json model_routing.{role} routes to {routed_model!r}, which "
+                    f"contains the prohibited model token {token!r}"
+                )
     evolution_raw = payload.get("self_evolution")
     evolution = cast(dict[str, object], evolution_raw) if isinstance(evolution_raw, dict) else {}
     locked_raw = evolution.get("may_never_self_relax")
@@ -301,6 +392,7 @@ def verify_governor(root: Path) -> list[str]:
     missing_focus = [axis for axis in GOVERNOR_REQUIRED_FOCUS if axis not in focus]
     if missing_focus:
         failures.append(f"governor.json focus is missing required axes: {missing_focus}")
+    failures.extend(_verify_governor_gate_values(payload))
     failures.extend(_verify_governor_pins(routing, root))
     return failures
 

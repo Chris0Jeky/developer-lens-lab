@@ -51,6 +51,8 @@ telemetry, and public release.
 5. Dependency vulnerability triage is current (lab issue #5).
 6. The activating task names exact scope, fields, budgets, retention, and deletion behaviour —
    approval for one scope never silently transfers to another.
+7. The owner has signed off the exact repository scope and supplied any credentials the task
+   needs (`HUMAN_TODO.md` q-9) — agents present the scope; the owner approves it.
 
 Until then, runtime and tracked inputs stay C0 invented, and the protected-data rule in
 `CLAUDE.md` binds as written.

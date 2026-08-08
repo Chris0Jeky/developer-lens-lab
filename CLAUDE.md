@@ -44,7 +44,8 @@ This file is the shared canon for every agent runtime; `AGENTS.md` is the thin C
 - Owner constitution v2 authorizes real own/curated data, layered people/team research, raw
   content (secrets prohibited absolutely), and an experimental channel — but every non-C0 lane
   stays closed until the activation preconditions in `.agent-harness/governor.json` are
-  mechanically true. No durable cross-repo identity key; promotion stays product-governed.
+  mechanically true. External model calls and credentials still need their own explicit gate.
+  No durable cross-repo identity key; promotion stays product-governed.
 - Product contract work is additive, synthetic-only, and lands through Developer Lens's own gate.
 
 ## Protected-data rule

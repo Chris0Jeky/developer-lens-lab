@@ -292,3 +292,81 @@ def test_governor_pin_match_reports_no_pin_failure(tmp_path: Path) -> None:
     _write_governor(tmp_path, _pin_governor(agent_rel, "claude-opus-5"))
     failures = verify_governor(tmp_path)
     assert not any("model_routing.implementer" in failure for failure in failures)
+
+
+def test_governor_routing_to_a_prohibited_model_fails(tmp_path: Path) -> None:
+    # Listing "haiku" under prohibited_models is not enforcement. A routed model id that embeds a
+    # prohibited token must fail even when the pin itself is coherent with the agent file.
+    agent_rel = ".claude/agents/dll-mechanic.md"
+    _write_agent(tmp_path, agent_rel, "claude-haiku-4-5")
+    payload = _load_governor()
+    payload["model_routing"]["mechanic"] = {"agent": agent_rel, "model": "claude-haiku-4-5"}
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "prohibited model token 'haiku'" in failure and "model_routing.mechanic" in failure
+        for failure in failures
+    )
+
+
+def test_governor_prohibited_token_match_is_case_insensitive(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-mechanic.md"
+    _write_agent(tmp_path, agent_rel, "Claude-HAIKU-4-5")
+    payload = _load_governor()
+    payload["model_routing"]["mechanic"] = {"agent": agent_rel, "model": "Claude-HAIKU-4-5"}
+    _write_governor(tmp_path, payload)
+    assert any("prohibited model token" in failure for failure in verify_governor(tmp_path))
+
+
+def test_governor_pin_role_missing_agent_key_fails(tmp_path: Path) -> None:
+    # Dropping the agent key previously skipped the pin check silently, leaving a pinned role
+    # unverified while the gate stayed green.
+    payload = _load_governor()
+    del payload["model_routing"]["implementer"]["agent"]
+    _write_governor(tmp_path, payload)
+    assert any(
+        "model_routing.implementer must declare agent and model" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_pin_role_entirely_absent_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    del payload["model_routing"]["reviewer"]
+    _write_governor(tmp_path, payload)
+    assert any(
+        "model_routing.reviewer must declare agent and model" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_emptied_activation_preconditions_fails(tmp_path: Path) -> None:
+    # A presence-only key check passes an emptied gate; the floor makes weakening it a failure.
+    payload = _load_governor()
+    payload["activation_preconditions"]["items"] = []
+    _write_governor(tmp_path, payload)
+    assert any(
+        "activation_preconditions.items must be a list of at least" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_weakened_review_gate_values_fail(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["review_gates"]["aging_minutes_after_push"] = 0
+    payload["review_gates"]["fix_round_ceiling"] = 99
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any("aging_minutes_after_push must be an integer of at least" in f for f in failures)
+    assert any("fix_round_ceiling must be an integer between" in f for f in failures)
+
+
+def test_governor_boolean_gate_values_fail(tmp_path: Path) -> None:
+    # bool is an int subclass: True must not pass as a 1-minute window or a 1-round ceiling.
+    payload = _load_governor()
+    payload["review_gates"]["aging_minutes_after_push"] = True
+    payload["review_gates"]["fix_round_ceiling"] = True
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any("aging_minutes_after_push" in f for f in failures)
+    assert any("fix_round_ceiling" in f for f in failures)

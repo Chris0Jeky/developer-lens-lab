@@ -26,7 +26,8 @@ authority.
 authoritative task source; the ledgers and failure archive stay history; `HUMAN_TODO.md` holds
 only genuinely open owner actions. Transient runtime state may live under
 `.agent-harness/runtime/` (gitignored, regenerable, never private data). `uv run dllab context
-verify` enforces that these surfaces exist and cannot silently drift.
+verify` enforces that these surfaces exist, parse, and keep their declared gates and pins;
+prose-only surfaces (ledgers, `HUMAN_TODO.md`) still rely on review.
 
 ## The governor loop
 
