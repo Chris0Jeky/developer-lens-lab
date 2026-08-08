@@ -3,22 +3,31 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-07
-phase: M2_WBC1_PRINCIPAL_DEMO_COMPLETE
-posture: public C0 invented-data-only; value-first with non-essential hardening deferred
+updated: 2026-08-08
+phase: M3_GOVERNOR_CONTROL_PLANE
+posture: public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real
+  own/curated data, layered people/team research, and raw content are authorized in principle,
+  but runtime and tracked inputs remain C0 invented until the activation preconditions in
+  .agent-harness/governor.json are mechanically true; tier stays truthfully T1/sensitive_data=false
 repository: Chris0Jeky/developer-lens-lab (public)
 branch: main
 head: refresh with git rev-parse origin/main
-active_horizon: []
-product_state: product ResearchPack PR #178, lab WB-C1 foundation PR #3, product MethodTrial PR
-  #187, product correction PR #190, and lab MethodTrial PR #8 are merged; product main owns the
-  contract, lazy route, and exact integrated fixture, while the lab owns generation/evaluation
+active_wave:
+  - lane: LAB-WBC1-06 WB-C1 correctness debt (issue #6)
+    state: IN_REVIEW — open PR #24 (green, mergeable); Codex comments need one triage pass
+    writer: its own branch claude/lab-wbc1-correctness-6; not owned by the governor lane
+  - lane: LAB-GOV-01 research governor control plane
+    state: this change; DONE at merge
+backlog_next: LAB-REL-01 v0.1.0 release wave (AGPL/community/packaging + dependency triage #5,
+  tooling-blocked on this host — uv unavailable, so re-locking needs CI or another machine);
+  LAB-ACT-01 real-data activation preconditions; LAB-SURV-01 product #174 survival study;
+  LAB-CONTRACT-03 MethodTrialView preference reconcile (#23, product-owned)
 capabilities:
-  network_collection: disabled
-  external_model: disabled
-  real_data: disabled
+  network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
+  external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)
+  real_data: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   product_integration: bounded_c0_presentation_approved
-  product_promotion: prohibited
+  product_promotion: prohibited (stable channel stays product-governed)
 canonical_evidence:
   run_id: wbc1_demo
   producer_commit: 0ef193070a9b80b81cef5a1710a1d65e0b271c15
@@ -34,13 +43,12 @@ canonical_evidence:
   fixture_sha256: sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9
   report_sha256: markdown=f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8;
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
-blockers: none for the bounded C0 MethodTrial vertical; the product PR #190 aging-floor miss is
-  recorded as process noncompliance and does not change the verified reject result
-hardening: docs/HARDENING_BACKLOG.md; debt is visible but does not block M0-M2 unless it crosses an
-  irreversible secret/private-data/out-of-root/person-shape boundary
-late_review_debt: lab #6, lab #7, and product #189 are explicit non-blocking follow-ups; none changes
-  the conservative WB-C1 reject decision
-exact_resume_point: stop; no work remains in this vertical. A later authorized slice should start
-  from fresh detached product/lab origin/main worktrees and select an explicit tracked residual or
-  human action instead of extending the demo implicitly
+blockers: dependency re-lock (issue #5) is tooling-blocked on the current host; none for the
+  governor control plane itself
+late_review_debt: lab #6 in flight via PR #24; product #189 remains a product-side follow-up;
+  issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change)
+exact_resume_point: after the governor PR merges, sweep it for late comments, then shepherd PR
+  #24 (triage its Codex comments once by the severity bar, merge under the gate), then start
+  LAB-REL-01 by preparing the AGPL/community/packaging slice with dependency triage routed
+  through CI or a host with uv
 ```
