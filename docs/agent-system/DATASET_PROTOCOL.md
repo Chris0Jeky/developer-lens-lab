@@ -26,9 +26,12 @@ analysis; raw collected corpus is not published by default.
 
 ## Lane P — Publishable C0 (active, with release review)
 
-Synthetic, redacted, aggregated, or deliberately constructed public artefacts — selected
+Invented, synthetic, or synthetic-derived deliberately constructed public artefacts — selected
 JSON/HTML release assets included. The exact transformation is disclosed; no vague anonymity
 claims; no secrets or private identity; release-asset eligibility is reviewed each time.
+Real-data-derived outputs (however redacted or aggregated) are never lane-P material: they are
+C1 at best and route through the per-study owner review (`HUMAN_TODO.md` q-8) once lane O or C
+opens.
 
 ## Data classes (target charter)
 

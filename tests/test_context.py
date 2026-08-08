@@ -361,6 +361,73 @@ def test_governor_weakened_review_gate_values_fail(tmp_path: Path) -> None:
     assert any("fix_round_ceiling must be an integer between" in f for f in failures)
 
 
+def test_governor_authority_outside_the_repo_fails(tmp_path: Path) -> None:
+    # An absolute path or a `..` escape points the authority list at a machine-local file no
+    # reviewer sees; both must fail on containment, before any existence check.
+    for escape in ("C:/Windows/System32/drivers/etc/hosts", "/etc/hosts", "../../secrets.md"):
+        payload = _load_governor()
+        payload["authorities"]["canon"] = escape
+        _write_governor(tmp_path, payload)
+        failures = verify_governor(tmp_path)
+        assert any(
+            "must stay inside the repository" in failure and "'canon'" in failure
+            for failure in failures
+        ), escape
+
+
+def test_governor_opened_private_lane_fails(tmp_path: Path) -> None:
+    # Flipping a non-synthetic lane open by an unreviewed edit is exactly what the lane pin blocks.
+    payload = _load_governor()
+    payload["data_lanes"]["O_own_private"]["status"] = "active"
+    _write_governor(tmp_path, payload)
+    assert any(
+        "data_lanes.O_own_private.status must remain" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_placeholder_preconditions_fail(tmp_path: Path) -> None:
+    # Seven filler strings satisfy the length floor while deleting every real precondition, so the
+    # identity check must reject them.
+    payload = _load_governor()
+    payload["activation_preconditions"]["items"] = ["ok"] * 7
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any("must still cover every precondition subject" in failure for failure in failures)
+
+
+def test_governor_reallocated_focus_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["focus"]["research"] = 0
+    payload["focus"]["realdata_standalone"] = 100
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "focus.research must be the constitution's allocated weight 7" in f for f in failures
+    )
+    assert any("focus.realdata_standalone must be" in f for f in failures)
+
+
+def test_governor_emptied_review_triggers_fail(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["review_gates"]["fresh_context_review_required_for"] = []
+    _write_governor(tmp_path, payload)
+    assert any(
+        "fresh_context_review_required_for must retain every required trigger" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_disabled_late_comment_sweep_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["review_gates"]["post_merge_late_comment_sweep"] = False
+    _write_governor(tmp_path, payload)
+    assert any(
+        "post_merge_late_comment_sweep must be true" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
 def test_governor_boolean_gate_values_fail(tmp_path: Path) -> None:
     # bool is an int subclass: True must not pass as a 1-minute window or a 1-round ceiling.
     payload = _load_governor()

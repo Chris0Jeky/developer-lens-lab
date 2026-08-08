@@ -41,8 +41,9 @@ actions stay unchecked.
   exact aggregation/aliasing/suppression/redaction applied to owner or curated real data must
   be reviewed before public release. Nothing to review yet.
 - [ ] **q-9 — Supply real-data scopes (and any credentials) when the first own-data or
-  curated-public task activates.** The activation preconditions must already be green; agents
-  will present the exact repository scope and budgets for sign-off.
+  curated-public task activates.** This is itself the final activation precondition (item 7 in
+  `.agent-harness/governor.json`): once the technical preconditions 1–6 are green, agents
+  present the exact repository scope and budgets, and the lane opens only after this sign-off.
 - [ ] **q-10 — Select a remote telemetry destination if remote telemetry is ever enabled.**
   Local diagnostics ship first; remote stays disabled until the owner picks a provider and
   approves its privacy notice.

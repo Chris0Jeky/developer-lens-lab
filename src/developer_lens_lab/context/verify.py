@@ -184,14 +184,42 @@ GOVERNOR_LOCKED_INVARIANTS = (
     "stable-product promotion boundary",
     "review/merge gates",
 )
+# The constitution's binding attention allocation. Pinned by value, not merely by presence: a
+# reallocation is a reviewed constitution edit, so the verifier is expected to move with it.
 GOVERNOR_REQUIRED_FOCUS = (
-    "research",
-    "story_product",
-    "distribution",
-    "community",
-    "realdata_standalone",
+    ("research", 7),
+    ("story_product", 5),
+    ("distribution", 3),
+    ("community", 2),
+    ("realdata_standalone", 0),
 )
 GOVERNOR_PIN_ROLES = ("implementer", "reviewer", "mechanic")
+# Lane statuses are hardcoded until LAB-ACT-01 replaces them with executable activation state.
+# Until then this is the only thing stopping a non-synthetic lane from being flipped open by an
+# unreviewed edit, so the pin is deliberately exact rather than a presence check.
+GOVERNOR_LANE_STATUSES = (
+    ("S_synthetic", "active"),
+    ("O_own_private", "authorised_awaiting_preconditions"),
+    ("C_curated_public", "authorised_awaiting_preconditions"),
+    ("P_publishable_c0", "active_with_release_review"),
+)
+# Identity, not just count: seven copies of "ok" satisfy a length floor while deleting every real
+# precondition. Each token must appear in at least one item (case-insensitive substring).
+GOVERNOR_ACTIVATION_TOKENS = (
+    "tier.json",
+    "sink",
+    "deny rules",
+    "secret scanning",
+    "dependency",
+    "retention",
+    "owner",
+)
+GOVERNOR_REQUIRED_REVIEW_TRIGGERS = (
+    "non-trivial code",
+    "methodology",
+    "contracts",
+    "governor changes",
+)
 
 
 def _agent_frontmatter_model(path: Path) -> str | None:
@@ -273,6 +301,49 @@ def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
     return failures
 
 
+def _verify_authority_path(name: str, target: object, root: Path) -> list[str]:
+    """An authority must name an in-repo file.
+
+    An absolute path or a ``..`` escape would point the governor's own authority list outside the
+    repository — at a machine-local file no reviewer sees — so containment is checked before
+    existence, and both produce a failure.
+    """
+    if not isinstance(target, str) or not target:
+        return [f"governor.json authority {name!r} must be a repo-relative file path string"]
+    resolved_root = root.resolve()
+    resolved = (resolved_root / target).resolve()
+    if not resolved.is_relative_to(resolved_root):
+        return [
+            f"governor.json authority {name!r} must stay inside the repository; "
+            f"{target!r} resolves outside it"
+        ]
+    if not resolved.is_file():
+        return [f"governor.json authority {name!r} must point at an existing repo file"]
+    return []
+
+
+def _verify_governor_lanes(payload: dict[str, object]) -> list[str]:
+    lanes_raw = payload.get("data_lanes")
+    if not isinstance(lanes_raw, dict):
+        return ["governor.json data_lanes must be an object of declared lanes"]
+    lanes = cast(dict[str, object], lanes_raw)
+    failures: list[str] = []
+    for lane, expected_status in GOVERNOR_LANE_STATUSES:
+        lane_raw = lanes.get(lane)
+        if not isinstance(lane_raw, dict):
+            failures.append(f"governor.json data_lanes.{lane} must be an object declaring a status")
+            continue
+        status = cast(dict[str, object], lane_raw).get("status")
+        if not isinstance(status, str):
+            failures.append(f"governor.json data_lanes.{lane}.status must be a string")
+        elif status != expected_status:
+            failures.append(
+                f"governor.json data_lanes.{lane}.status must remain {expected_status!r}, "
+                f"not {status!r}"
+            )
+    return failures
+
+
 # Presence-only key checks let a gate be emptied while verification stays green (an
 # activation_preconditions with zero items, or a zeroed aging window, still "exists"). These floors
 # pin the values themselves so weakening a gate is a verification failure, not a quiet edit.
@@ -299,6 +370,16 @@ def _verify_governor_gate_values(payload: dict[str, object]) -> list[str]:
                 "governor.json activation_preconditions.items must be a list of at least "
                 f"{GOVERNOR_MIN_ACTIVATION_ITEMS} precondition strings"
             )
+        else:
+            haystack = " | ".join(items).lower()
+            missing_tokens = [
+                token for token in GOVERNOR_ACTIVATION_TOKENS if token.lower() not in haystack
+            ]
+            if missing_tokens:
+                failures.append(
+                    "governor.json activation_preconditions.items must still cover every "
+                    f"precondition subject; missing: {missing_tokens}"
+                )
     gates_raw = payload.get("review_gates")
     if not isinstance(gates_raw, dict):
         failures.append("governor.json review_gates must be an object")
@@ -321,6 +402,29 @@ def _verify_governor_gate_values(payload: dict[str, object]) -> list[str]:
             "governor.json review_gates.fix_round_ceiling must be an integer between 1 and "
             f"{GOVERNOR_MAX_FIX_ROUNDS}"
         )
+    triggers_raw = gates.get("fresh_context_review_required_for")
+    triggers = (
+        {item for item in cast(list[object], triggers_raw) if isinstance(item, str)}
+        if isinstance(triggers_raw, list)
+        else None
+    )
+    if triggers is None:
+        failures.append(
+            "governor.json review_gates.fresh_context_review_required_for must be a list of "
+            "review triggers"
+        )
+    else:
+        missing_triggers = [
+            trigger for trigger in GOVERNOR_REQUIRED_REVIEW_TRIGGERS if trigger not in triggers
+        ]
+        if missing_triggers:
+            failures.append(
+                "governor.json review_gates.fresh_context_review_required_for must retain every "
+                f"required trigger; missing: {missing_triggers}"
+            )
+    # Exactly True: a falsy or truthy-but-non-boolean value would quietly drop the sweep.
+    if gates.get("post_merge_late_comment_sweep") is not True:
+        failures.append("governor.json review_gates.post_merge_late_comment_sweep must be true")
     return failures
 
 
@@ -348,10 +452,7 @@ def verify_governor(root: Path) -> list[str]:
     else:
         authorities = cast(dict[str, object], authorities_raw)
         for name, target in authorities.items():
-            if not isinstance(target, str) or not (root / target).is_file():
-                failures.append(
-                    f"governor.json authority {name!r} must point at an existing repo file"
-                )
+            failures.extend(_verify_authority_path(name, target, root))
     routing_raw = payload.get("model_routing")
     routing = cast(dict[str, object], routing_raw) if isinstance(routing_raw, dict) else {}
     prohibited_raw = routing.get("prohibited_models")
@@ -389,9 +490,18 @@ def verify_governor(root: Path) -> list[str]:
             )
     focus_raw = payload.get("focus")
     focus = cast(dict[str, object], focus_raw) if isinstance(focus_raw, dict) else {}
-    missing_focus = [axis for axis in GOVERNOR_REQUIRED_FOCUS if axis not in focus]
-    if missing_focus:
-        failures.append(f"governor.json focus is missing required axes: {missing_focus}")
+    for axis, expected_weight in GOVERNOR_REQUIRED_FOCUS:
+        if axis not in focus:
+            failures.append(f"governor.json focus is missing required axis: {axis}")
+            continue
+        weight = focus[axis]
+        # bool is an int subclass; True must not satisfy a weight of 1.
+        if isinstance(weight, bool) or not isinstance(weight, int) or weight != expected_weight:
+            failures.append(
+                f"governor.json focus.{axis} must be the constitution's allocated weight "
+                f"{expected_weight}, not {weight!r}"
+            )
+    failures.extend(_verify_governor_lanes(payload))
     failures.extend(_verify_governor_gate_values(payload))
     failures.extend(_verify_governor_pins(routing, root))
     return failures
