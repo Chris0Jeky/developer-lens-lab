@@ -8,8 +8,9 @@ actions stay unchecked.
 
 - [x] **q-1 — Choose a license.** Resolved by constitution v2 (O1/B6): AGPL-3.0-only, copyright
   Cristian Tcaci, keeping a future commercial option open without public dual-licensing
-  promises. Adding the licence text, notices, and community files is scheduled agent work in the
-  v0.1.0 release wave, gated on q-7.
+  promises. Adding the licence text, notices, and community files is scheduled agent work in
+  LAB-REL-01; q-7 gates only the CLA/external-contribution strategy, not the binding AGPL
+  licence choice or its preparation.
 - [x] **q-2 — Approve networked public-metadata corpus work.** Resolved by constitution v2
   (D3/D10): own and curated public data are authorised; the curated lane starts as a tiny
   allowlisted REST pilot. Execution stays gated on the activation preconditions in

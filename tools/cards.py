@@ -116,7 +116,7 @@ CARDS = (
     Card(
         "LAB-WBC1-06",
         "WB-C1 late-review correctness debt (issue #6)",
-        "IN_REVIEW",
+        "DONE",
         ("LAB-WBC1-05",),
         "Reproducer-backed fixes",
     ),
@@ -181,7 +181,7 @@ CARDS = (
         "LAB-REL-01",
         "v0.1.0 release wave: AGPL and notices, community files, package metadata, "
         "dependency triage (issue #5), C0 release assets",
-        "BACKLOG",
+        "ACTIVE",
         ("LAB-GOV-01",),
         "Tagged v0.1.0",
     ),
