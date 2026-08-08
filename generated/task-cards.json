@@ -132,7 +132,7 @@
       ],
       "id": "LAB-WBC1-06",
       "outcome": "Reproducer-backed fixes",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "WB-C1 late-review correctness debt (issue #6)"
     },
     {
@@ -215,7 +215,7 @@
       ],
       "id": "LAB-REL-01",
       "outcome": "Tagged v0.1.0",
-      "status": "BACKLOG",
+      "status": "ACTIVE",
       "title": "v0.1.0 release wave: AGPL and notices, community files, package metadata, dependency triage (issue #5), C0 release assets"
     },
     {
