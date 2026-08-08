@@ -255,9 +255,16 @@ def _build_cases(
     candidate_threshold: float,
 ) -> list[dict[str, Any]]:
     series = dataset.final_holdout_metadata.series
+    # The MethodTrialView v1 contract pins each representative case's scenario_code to a
+    # const (case[1]=level, case[2]=parser_shift), so the representative selection must
+    # resolve to the canonical scenario or fail-export. A non-canonical fallback (e.g. a
+    # slope series when level is ineligible) would emit a case whose const scenario_code
+    # contradicts the underlying series -- the faithfulness bug this fixes. Narrowing each
+    # role to its single canonical code makes _select_series raise its missing-role
+    # ValueError instead of silently substituting an unrepresentable scenario.
     no_change = _select_series(series, ("no_change",))
-    planted = _select_series(series, ("level", "slope", "variance", "seasonal_amplitude"))
-    confound = _select_series(series, ("parser_shift", "coverage_gap", "permission_shift"))
+    planted = _select_series(series, ("level",))
+    confound = _select_series(series, ("parser_shift",))
     return [
         {
             "order": 1,

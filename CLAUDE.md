@@ -1,7 +1,8 @@
 # Developer Lens Lab repository canon
 
 Developer Lens Lab is the public, invented-data-first research companion to Developer Lens.
-It evaluates methods; it never scores people, promotes a model, or becomes product authority.
+It evaluates methods; person/team analysis stays inside the layered research modes of
+`docs/PRODUCT_BOUNDARY.md`; it never promotes a model or becomes stable-product authority.
 This file is the shared canon for every agent runtime; `AGENTS.md` is the thin Codex adapter.
 `uv run dllab context verify` enforces required files, links, and budgets.
 
@@ -12,14 +13,17 @@ This file is the shared canon for every agent runtime; `AGENTS.md` is the thin C
    and unresolved review threads. Live Git and CI outrank every state file.
 3. Invoke the `developer-lens-lab-continuation` skill before implementation, contract, corpus,
    experiment, artifact-store, or handoff work (Codex form: `$developer-lens-lab-continuation`).
-4. Read `docs/PRODUCT_BOUNDARY.md` and `docs/DATA_POLICY.md` before any data or model change; read
-   `docs/CONTRACTS.md` before changing a pack, bundle, snapshot, or compatibility seam.
+4. Read `docs/PRODUCT_BOUNDARY.md` and `docs/DATA_POLICY.md` before any data or model change;
+   `docs/CONTRACTS.md` before touching a contract seam; `docs/agent-system/README.md` before
+   selecting or sequencing multi-lane work.
 5. Use invented fixtures unless a task names a newer explicit owner approval and exact data scope.
 
 ## Source of truth
 
 | Surface | Authority |
 |---|---|
+| `docs/OWNER_CONSTITUTION.md` | Binding owner strategy and policy (constitution v2) |
+| `.agent-harness/governor.json` + `docs/agent-system/` | Governor policy: risk classes, routing, lanes, protocols |
 | `.agent-harness/tier.json` | Repository tier, overlays, and Git authority |
 | `HUMAN_TODO.md` | Explicit owner decisions and genuinely open gates |
 | `docs/PRODUCT_BOUNDARY.md` | Product/lab split and prohibited analytical shapes |
@@ -37,9 +41,11 @@ This file is the shared canon for every agent runtime; `AGENTS.md` is the thin C
 - Push and merge are free after the declared checks, review, and aging gates.
 - Favor runnable product/research value over non-essential security ceremony. Track deferred
   hardening rather than making it a prerequisite.
-- Network collection, credentials, real/private data, external model calls, product promotion,
-  generated dataset/artifact publication, and a durable cross-repository identity key still need
-  an explicit bounded task or owner decision.
+- Owner constitution v2 authorizes real own/curated data, layered people/team research, raw
+  content (secrets prohibited absolutely), and an experimental channel — but every non-C0 lane
+  stays closed until the activation preconditions in `.agent-harness/governor.json` are
+  mechanically true. External model calls and credentials still need their own explicit gate.
+  No durable cross-repo identity key; promotion stays product-governed.
 - Product contract work is additive, synthetic-only, and lands through Developer Lens's own gate.
 
 ## Protected-data rule
@@ -72,7 +78,7 @@ any networked command are opt-in and must not become normal PR checks until meas
 - The coordinating session owns orchestration, decisions, and architecture: card selection,
   methodology judgment, contract design, and final merge judgment stay with it.
 - Delegate bounded implementation to `dll-implementer`, fresh-context adversarial review to
-  `dll-reviewer` (both Opus 4.8 high, pinned in `.claude/agents/`), and mechanical sweeps to
+  `dll-reviewer` (both Opus 5 high, pinned in `.claude/agents/`), and mechanical sweeps to
   `dll-mechanic` (Sonnet 4.6 high). Never route repo work to Haiku.
 - One writer per checkout; parallel writers require separate coordinator-owned worktrees and
   non-overlapping paths. Subagents can move HEAD — pin git state in prompts, re-verify after each.

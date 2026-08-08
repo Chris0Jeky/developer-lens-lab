@@ -1,8 +1,8 @@
 ---
 name: dll-reviewer
-description: Toolset-restricted fresh-context adversarial reviewer for Developer Lens Lab diffs and PRs (Opus 4.8, high effort). It cannot run commands or edit files, so its only possible output is findings. Use for the review half of the gate on non-trivial code or methodology work.
+description: Toolset-restricted fresh-context adversarial reviewer for Developer Lens Lab diffs and PRs (Opus 5, high effort). It cannot run commands or edit files, so its only possible output is findings. Use for the review half of the gate on non-trivial code or methodology work.
 tools: Read, Grep, Glob
-model: claude-opus-4-8
+model: claude-opus-5
 effort: high
 ---
 

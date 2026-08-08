@@ -28,7 +28,9 @@ paths. Subagents can move HEAD — pin git state in every delegation prompt and 
 Default to invented fixtures. Do not inspect or collect real repositories, generated product data,
 credentials, browser profiles, caches, working trees, or provider accounts. Network collection,
 real datasets, new classes/sinks, durable indexes, model calls, publication, cross-repo identity,
-and product promotion require the exact open owner gate to be closed first.
+and product promotion require the activation preconditions in `.agent-harness/governor.json` to be
+mechanically true plus any remaining owner gate in `HUMAN_TODO.md` — constitution v2 authorizes
+lanes in principle but activates none of them.
 <!-- shared:protected-data-defaults end -->
 
 <!-- shared:evaluation-integrity start -->

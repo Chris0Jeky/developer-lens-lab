@@ -386,3 +386,112 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   symlink skips; 21 context tests), `verify_repository(.)` OK, strict MkDocs, hygiene, doctor. Repo-wide
   pyright NOT run locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the
   full gate at the reviewed/merged heads. No research, corpus, model, or gate activation is authorized.
+
+## 2026-08-07 — BOCPD missing-week semantics clarified post-hoc (#4)
+
+- Branch `claude/bocpd-semantics-4` closes #4 by making the BOCPD missing-week run-length semantics
+  explicit. Coordinator methodology decision: **observed-sample semantics** (see the
+  `docs/EXPERIMENT_LEDGER.md` post-hoc clarification entry of the same date). This documents the
+  as-implemented behavior of the already-completed runs; it is NOT a preregistration. No detector
+  behavior change.
+- `src/developer_lens_lab/wbc1/methods.py`: comments only — on `BocpdParameters.expected_run_length`
+  (denominated in observed samples; canonical Adams–MacKay run-length-in-observations) and at the
+  `bocpd_scores` skip site (a censored week is a deliberate no-op on the posterior). No logic, default,
+  signature, or field-name change; `parameters_sha256` custody surface untouched.
+- `docs/RESEARCH_PROGRAMME.md`: documents the observed-sample unit as a post-hoc characterization of
+  existing behavior, scoped precisely to the run-length/hazard posterior (score emission still begins
+  after a fixed calendar-week `warmup`).
+- `tests/test_wbc1_methods.py`: adds `test_bocpd_missing_block_is_observed_sample_equivalent`, a
+  characterization lock — a contiguous missing block yields bit-identical post-gap scores to the
+  gap-deleted series; it would fail if the detector were changed to advance across censored weeks.
+- Review: one fresh-context adversarial pass (no blocking; confirmed the test is a genuine bit-identical
+  lock and methods.py is comments-only). Its LOW nit — scope the "equivalent to deleting samples" claim
+  to the posterior given the calendar-indexed warmup gate — was applied to the clarification wording.
+- Verified locally against the worktree source via `.venv` (PYTHONPATH pinned; no uv on host): ruff
+  format/check, full pytest **70 passed / 3 pre-existing symlink skips on the pre-integration branch
+  (base d3ddf49)** — at the integrated head this is 74 (the preceding entry's 73 plus the one new lock),
+  covered by hosted `Prove the lab`; the "70" figure was the pre-rebase count and did not reflect the
+  merged head. Downstream `test_wbc1_evaluation`/`test_wbc1_runner`/`test_method_trial_export` green
+  UNCHANGED (proving zero byte/behavior change). Repo-wide pyright NOT run locally (pre-existing
+  `typer.testing` import errors). No research, corpus, model, or gate activation is authorized by this
+  evidence.
+- **[Correction, 2026-08-07]** Reframed from "preregistered/preregistration" to a post-hoc clarification
+  and corrected the pre-integration test count, per the PR #21 Codex review (P1 + P2). Landed as a
+  follow-up on branch `claude/fix-4-prereg-framing`.
+
+## 2026-08-07 — MethodTrial fallback labels made contract-faithful (#7)
+
+- Branch `claude/fallback-labels-7` closes #7. Discovery + a fresh-context implementer STOP corrected
+  the issue's premise: the vendored MethodTrialView v1 schema pins each representative case's
+  `scenario_code` to a `const` (case[1]=level, case[2]=parser_shift), validated before any Python
+  check — so threading a fallback `scenario_code` (the issue's original ask) is contract-invalid.
+- Coordinator methodology decision: **canonical-or-fail-export.** `_build_cases`
+  (`wbc1/export.py`) narrows the planted/confound representative preferences from multi-item
+  (`("level","slope",...)` / `("parser_shift","coverage_gap",...)`) to the single contract-required
+  canonical scenario (`("level",)` / `("parser_shift",)`), so `_select_series` raises its existing
+  missing-role `ValueError` when the canonical scenario is ineligible instead of silently
+  substituting a non-canonical series the case could only mislabel. `_select_series`/`_case_points`
+  bodies untouched; `contracts/method_trial_view.py` and the vendored schema untouched.
+- Byte-stable: the dense canonical demo still has eligible `level`/`parser_shift`, so selection and
+  every composed byte are identical — the deterministic-export and vendor-snapshot (`sha256:634b0cc7…`,
+  `product_commit b48fea57…`) pins pass UNCHANGED. Added two fail-export tests (planted + confound
+  ineligible-canonical paths); the test file's existing broad `# pyright:` header gained
+  `reportPrivateUsage=false` for the two internal-helper imports (consistent with that file's posture).
+- Review: one fresh-context adversarial pass (no blocking). It confirmed the fix resolves the mislabel
+  (selection can only return a series whose scenario_code matches the const label) and flagged one
+  contract-forced, pre-existing imperfection: the view still DECLARES a multi-item
+  `planted_preference`/`confound_preference` (schema-pinned consts) the code no longer honors past
+  index 0. That is a product-contract tension (const scenario_code vs declared fallbacks), tracked as
+  a cross-repo follow-up, not fixable in the lab.
+- Verified locally against the worktree source via `.venv` (PYTHONPATH pinned; no uv on host): ruff
+  format/check, full pytest (71 passed / 3 pre-existing symlink skips; the +2 are the fail-export
+  tests) with the byte pins green UNCHANGED, `verify_repository(.)` OK. Repo-wide pyright NOT run
+  locally (pre-existing `typer.testing` import errors); hosted `Prove the lab` covers the full gate.
+  No research, corpus, model, or gate activation is authorized by this evidence.
+
+## 2026-08-08 — Research governor control plane and owner constitution v2 (LAB-GOV-01)
+
+- Branch `claude/governor-bootstrap-v2` seeds the durable research governor commissioned by the
+  owner mandate v2 and governor bootstrap v1. Live-truth reconciliation first: the prepared
+  baseline (PR #14, #12/#13 open) was stale — #12/#13/#7/#4 were already closed by PRs #15–#26;
+  the genuinely missing pieces were the governor surfaces and the constitution unpacking.
+- New authority surfaces: `docs/OWNER_CONSTITUTION.md` (unpacked binding owner decisions: locked
+  invariants, layered people/team research, federated product–lab boundary, real-data and
+  raw-content authorization with the secrets prohibition absolute, focus allocation, condensed
+  decision register); `.agent-harness/governor.json` (machine-readable `dllab-governor.v1`
+  policy: routing, risk classes, lanes, activation preconditions, review gates, self-evolution
+  locks — JSON not YAML because the host cannot re-lock dependencies); seven
+  `docs/agent-system/` protocols (governor loop, work classes, experiment/dataset/maintenance/
+  idea protocols, prompt library incl. Research Governor Lite).
+- Reconciled: `PRODUCT_BOUNDARY.md` and `DATA_POLICY.md` rewritten to the layered charter
+  (C0–C4/P/X target classes; only C0 operative until the activation preconditions are
+  mechanically true — tier stays truthfully T1/`sensitive_data=false` while the repo holds C0
+  only); `HUMAN_TODO.md` q-1/q-2/q-3/q-5/q-6 closed with their binding constitution answers and
+  new open owner items q-7–q-12 added; CLAUDE.md/AGENTS.md pointers updated inside the
+  100-line/2500-token budgets (~1748 tokens combined after edits).
+- Model pins: `dll-implementer`/`dll-reviewer` repinned `claude-opus-4-8` → `claude-opus-5`
+  (runtime-validated by actually spawning the repinned implementer for this card's code);
+  `dll-mechanic` stays `claude-sonnet-4-6` per the estate routing ladder.
+- Code: `tools/cards.py` → `lab-task-programme.v2` (six-card cap removed per A4=OPEN; BACKLOG
+  status; wave dependency-closure kept; scheduled cards LAB-GOV-01, LAB-WBC1-06 (=PR #24 lane),
+  LAB-ACT-01, LAB-REL-01, LAB-SURV-01 (#174), LAB-CONTRACT-03 (#23); corpus cards OWNER_GATED →
+  BACKLOG gated on LAB-ACT-01). `context/verify.py` gains `verify_governor`: required governor
+  files, schema/key checks, authority-file existence, haiku prohibition, the ten hardcoded
+  never-self-relax invariants, focus axes, and agent-pin coherence against `.claude/agents/`
+  frontmatter. New tests in `tests/test_context.py` and `tests/test_tasks.py`.
+- Review rounds (ceiling 2, both spent): round 1 (fresh-context adversarial, 0 CRITICAL/HIGH)
+  hardened enforcement — routed-model prohibition over `model`/`models` keys, loud pin-role
+  failures, gate-value floors (≥7 activation items, aging ≥15, fix rounds ≤2), plus the q-9
+  owner-scope precondition, skill-block gate pointer, and CLAUDE.md external-model clause;
+  LOWs tracked as #27. Round 2 (Codex, 3 P1 / 5 P2) pinned values by identity — authority
+  paths bounded inside the repo, lane statuses hardcoded (O/C stay
+  `authorised_awaiting_preconditions` until LAB-ACT-01), precondition token identity, the
+  binding 7/5/3/2/0 focus weights, non-numeric review gates (four fresh-review triggers +
+  sweep=True) — and fixed the q-9 circularity and lane-P real-data wording.
+- Verified locally at the final head via `.venv` (no uv on host): ruff format/check, focused +
+  full pytest (101 passed / 3 pre-existing symlink skips), focused pyright on the changed code
+  files (0 errors; repo-wide pyright has pre-existing venv import-resolution noise — hosted
+  `Prove the lab` remains the arbiter), `tools/cards.py --check`, `dllab context verify`,
+  `mkdocs build --strict`, `verify_hygiene.py`, `dllab doctor`. This entry authorizes no
+  research, collection, model call, or lane activation — activation preconditions still gate
+  every non-C0 lane.

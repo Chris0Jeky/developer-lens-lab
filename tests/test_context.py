@@ -1,9 +1,12 @@
+import json
 from pathlib import Path
+from typing import Any
 
 from developer_lens_lab.context import verify_repository
 from developer_lens_lab.context.verify import (
     REQUIRED_SETTINGS_READ_DENY,
     verify_context_budget,
+    verify_governor,
     verify_markdown_links,
     verify_one_shared_block,
     verify_settings_deny,
@@ -11,6 +14,7 @@ from developer_lens_lab.context.verify import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+GOVERNOR = ROOT / ".agent-harness" / "governor.json"
 
 
 def test_repository_context_is_valid() -> None:
@@ -208,3 +212,234 @@ def test_link_verifier_does_not_read_generated_output(tmp_path: Path) -> None:
     report_doc.write_text("[local report](missing.md)\n", encoding="utf-8")
 
     assert verify_markdown_links(tmp_path) == []
+
+
+def _load_governor() -> dict[str, Any]:
+    return json.loads(GOVERNOR.read_text(encoding="utf-8"))
+
+
+def _write_governor(tmp_path: Path, payload: object) -> Path:
+    dest = tmp_path / ".agent-harness" / "governor.json"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(payload), encoding="utf-8")
+    return tmp_path
+
+
+def test_governor_passes_on_the_real_repo() -> None:
+    assert verify_governor(ROOT) == []
+
+
+def test_governor_dropped_locked_invariant_fails(tmp_path: Path) -> None:
+    # A governor edit that silently drops a locked invariant is exactly what this check exists to
+    # catch: it must fail loudly here, not relax the constitution unnoticed.
+    payload = _load_governor()
+    payload["self_evolution"]["may_never_self_relax"].remove("holdout integrity")
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "may_never_self_relax must retain" in failure and "holdout integrity" in failure
+        for failure in failures
+    )
+
+
+def test_governor_schema_mismatch_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["schema"] = "dllab-governor.v2"
+    _write_governor(tmp_path, payload)
+    assert any("schema must be" in failure for failure in verify_governor(tmp_path))
+
+
+def test_governor_authority_pointing_at_missing_file_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["authorities"]["ghost"] = "docs/does-not-exist.md"
+    _write_governor(tmp_path, payload)
+    assert any("authority 'ghost'" in failure for failure in verify_governor(tmp_path))
+
+
+def test_governor_missing_required_key_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    del payload["activation_preconditions"]
+    _write_governor(tmp_path, payload)
+    assert any(
+        "missing required key: activation_preconditions" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def _pin_governor(agent_rel: str, declared_model: str) -> dict[str, Any]:
+    payload = _load_governor()
+    payload["model_routing"]["implementer"] = {"agent": agent_rel, "model": declared_model}
+    return payload
+
+
+def _write_agent(tmp_path: Path, agent_rel: str, model: str) -> None:
+    agent_path = tmp_path / agent_rel
+    agent_path.parent.mkdir(parents=True, exist_ok=True)
+    agent_path.write_text(f"---\nname: x\nmodel: {model}\n---\nbody\n", encoding="utf-8")
+
+
+def test_governor_pin_mismatch_fails(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-implementer.md"
+    _write_agent(tmp_path, agent_rel, "claude-sonnet-4-6")
+    _write_governor(tmp_path, _pin_governor(agent_rel, "claude-opus-5"))
+    failures = verify_governor(tmp_path)
+    assert any("frontmatter declares 'claude-sonnet-4-6'" in failure for failure in failures)
+
+
+def test_governor_pin_match_reports_no_pin_failure(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-implementer.md"
+    _write_agent(tmp_path, agent_rel, "claude-opus-5")
+    _write_governor(tmp_path, _pin_governor(agent_rel, "claude-opus-5"))
+    failures = verify_governor(tmp_path)
+    assert not any("model_routing.implementer" in failure for failure in failures)
+
+
+def test_governor_routing_to_a_prohibited_model_fails(tmp_path: Path) -> None:
+    # Listing "haiku" under prohibited_models is not enforcement. A routed model id that embeds a
+    # prohibited token must fail even when the pin itself is coherent with the agent file.
+    agent_rel = ".claude/agents/dll-mechanic.md"
+    _write_agent(tmp_path, agent_rel, "claude-haiku-4-5")
+    payload = _load_governor()
+    payload["model_routing"]["mechanic"] = {"agent": agent_rel, "model": "claude-haiku-4-5"}
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "prohibited model token 'haiku'" in failure and "model_routing.mechanic" in failure
+        for failure in failures
+    )
+
+
+def test_governor_prohibited_token_match_is_case_insensitive(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-mechanic.md"
+    _write_agent(tmp_path, agent_rel, "Claude-HAIKU-4-5")
+    payload = _load_governor()
+    payload["model_routing"]["mechanic"] = {"agent": agent_rel, "model": "Claude-HAIKU-4-5"}
+    _write_governor(tmp_path, payload)
+    assert any("prohibited model token" in failure for failure in verify_governor(tmp_path))
+
+
+def test_governor_pin_role_missing_agent_key_fails(tmp_path: Path) -> None:
+    # Dropping the agent key previously skipped the pin check silently, leaving a pinned role
+    # unverified while the gate stayed green.
+    payload = _load_governor()
+    del payload["model_routing"]["implementer"]["agent"]
+    _write_governor(tmp_path, payload)
+    assert any(
+        "model_routing.implementer must declare agent and model" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_pin_role_entirely_absent_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    del payload["model_routing"]["reviewer"]
+    _write_governor(tmp_path, payload)
+    assert any(
+        "model_routing.reviewer must declare agent and model" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_emptied_activation_preconditions_fails(tmp_path: Path) -> None:
+    # A presence-only key check passes an emptied gate; the floor makes weakening it a failure.
+    payload = _load_governor()
+    payload["activation_preconditions"]["items"] = []
+    _write_governor(tmp_path, payload)
+    assert any(
+        "activation_preconditions.items must be a list of at least" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_weakened_review_gate_values_fail(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["review_gates"]["aging_minutes_after_push"] = 0
+    payload["review_gates"]["fix_round_ceiling"] = 99
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any("aging_minutes_after_push must be an integer of at least" in f for f in failures)
+    assert any("fix_round_ceiling must be an integer between" in f for f in failures)
+
+
+def test_governor_authority_outside_the_repo_fails(tmp_path: Path) -> None:
+    # An absolute path or a `..` escape points the authority list at a machine-local file no
+    # reviewer sees; both must fail on containment, before any existence check. Escapes are
+    # constructed from tmp_path so each is genuinely absolute (or genuinely traversing) on
+    # whichever platform runs the suite — a hardcoded drive-letter path is relative on POSIX.
+    for escape in (
+        str(tmp_path.parent / "outside-escape.md"),
+        "../outside-escape.md",
+        "../../secrets.md",
+    ):
+        payload = _load_governor()
+        payload["authorities"]["canon"] = escape
+        _write_governor(tmp_path, payload)
+        failures = verify_governor(tmp_path)
+        assert any(
+            "must stay inside the repository" in failure and "'canon'" in failure
+            for failure in failures
+        ), escape
+
+
+def test_governor_opened_private_lane_fails(tmp_path: Path) -> None:
+    # Flipping a non-synthetic lane open by an unreviewed edit is exactly what the lane pin blocks.
+    payload = _load_governor()
+    payload["data_lanes"]["O_own_private"]["status"] = "active"
+    _write_governor(tmp_path, payload)
+    assert any(
+        "data_lanes.O_own_private.status must remain" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_placeholder_preconditions_fail(tmp_path: Path) -> None:
+    # Seven filler strings satisfy the length floor while deleting every real precondition, so the
+    # identity check must reject them.
+    payload = _load_governor()
+    payload["activation_preconditions"]["items"] = ["ok"] * 7
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any("must still cover every precondition subject" in failure for failure in failures)
+
+
+def test_governor_reallocated_focus_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["focus"]["research"] = 0
+    payload["focus"]["realdata_standalone"] = 100
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "focus.research must be the constitution's allocated weight 7" in f for f in failures
+    )
+    assert any("focus.realdata_standalone must be" in f for f in failures)
+
+
+def test_governor_emptied_review_triggers_fail(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["review_gates"]["fresh_context_review_required_for"] = []
+    _write_governor(tmp_path, payload)
+    assert any(
+        "fresh_context_review_required_for must retain every required trigger" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_disabled_late_comment_sweep_fails(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["review_gates"]["post_merge_late_comment_sweep"] = False
+    _write_governor(tmp_path, payload)
+    assert any(
+        "post_merge_late_comment_sweep must be true" in failure
+        for failure in verify_governor(tmp_path)
+    )
+
+
+def test_governor_boolean_gate_values_fail(tmp_path: Path) -> None:
+    # bool is an int subclass: True must not pass as a 1-minute window or a 1-round ceiling.
+    payload = _load_governor()
+    payload["review_gates"]["aging_minutes_after_push"] = True
+    payload["review_gates"]["fix_round_ceiling"] = True
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any("aging_minutes_after_push" in f for f in failures)
+    assert any("fix_round_ceiling" in f for f in failures)

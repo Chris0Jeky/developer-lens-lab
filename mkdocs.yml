@@ -4,6 +4,7 @@ theme:
   name: material
 nav:
   - Home: index.md
+  - Owner constitution: OWNER_CONSTITUTION.md
   - Product boundary: PRODUCT_BOUNDARY.md
   - Data policy: DATA_POLICY.md
   - Contracts: CONTRACTS.md
@@ -19,6 +20,14 @@ nav:
   - Implementation ledger: IMPLEMENTATION_LEDGER.md
   - Experiment ledger: EXPERIMENT_LEDGER.md
   - Failure archive: FAILURE_ARCHIVE.md
+  - Agent system:
+      - Research governor: agent-system/README.md
+      - Work classes: agent-system/WORK_CLASSES.md
+      - Experiment protocol: agent-system/EXPERIMENT_PROTOCOL.md
+      - Dataset protocol: agent-system/DATASET_PROTOCOL.md
+      - Maintenance protocol: agent-system/MAINTENANCE_PROTOCOL.md
+      - Idea protocol: agent-system/IDEA_PROTOCOL.md
+      - Prompt library: agent-system/PROMPT_LIBRARY.md
   - Decisions:
       - Product/lab boundary: DECISIONS/0001-product-lab-boundary.md
 strict: true

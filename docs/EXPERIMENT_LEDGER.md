@@ -131,3 +131,51 @@ policy, holdout custody event, exact command, lock hash, result, decision, and r
   are external evidence, not retroactive mutation of the append-only view. Issue #6 remains
   deferred. No real/public corpus, person-level inference, lab-owned product UI, or promotion was
   added.
+
+## 2026-08-07 — Preregistration: BOCPD missing-week run-length unit (issue #4)
+
+- **Decision:** the online BOCPD run length and its constant hazard `1 / expected_run_length` are
+  preregistered in **observed samples**, not calendar weeks. Missing/non-finite weeks are skipped and
+  do not advance the run-length/hazard posterior, so a contiguous missing block leaves that posterior
+  unchanged (equivalent, for the posterior, to deleting those samples).
+- **Rationale:** this is the canonical Adams–MacKay run-length-in-observations semantics, matching the
+  existing `bocpd_scores` behavior. It is the lower-blast-radius choice: it changes no detector logic,
+  so the conservative `wbc1_reviewed` / `wbc1_contract_final` decisions and every byte-pinned artifact
+  (EvaluationBundle / custody / ResearchPack / Markdown / HTML sha256 above, and the
+  `parameters_sha256` custody hash) are unchanged — this preregistration adds zero digest churn.
+- **Alternative considered and NOT taken:** calendar-week semantics (advance the posterior across
+  censored weeks with predictive ≡ 1, statistics frozen). Deferred: it would change candidate scores
+  → false-alert/Brier metrics → every recorded digest, requiring a fresh canonical run. It is not
+  needed while the lab makes no calendar-time / real-time run-length claim; adopting it later requires
+  a separate preregistration entry and a fresh run.
+- **Scope caveat:** score emission still begins after a fixed calendar-week `warmup`, so output-level
+  gap-equivalence holds only for gaps past that boundary; the preregistered claim is about the
+  run-length/hazard posterior, which the warmup gate does not affect.
+- **Evidence:** locked by the characterization test
+  `test_bocpd_missing_block_is_observed_sample_equivalent` (green on current code; it would fail if the
+  detector were changed to advance across censored weeks). No real/public corpus, credential, network
+  collection, model call, or promotion is involved.
+
+## 2026-08-07 — Correction to the preceding #4 entry (post-hoc clarification, not a preregistration)
+
+- **Why the preceding entry is corrected.** It mislabels a POST-HOC characterization as a
+  "preregistration" and justifies an "option" by outcome preservation (the known reject / zero digest
+  churn). The preceding entry is retained verbatim above because this ledger is append-only (line 3);
+  this entry supersedes its framing. Raised by the PR #21 and PR #25 Codex reviews.
+- **Correct framing.** The observed-sample run-length semantics were ALREADY IMPLEMENTED (canonical
+  Adams–MacKay run-length-in-observations) and had already run, so writing them down is a post-hoc
+  clarification, not a preregistration — a completed run cannot be preregistered. The byte-invariance is
+  a consequence of documenting existing behavior, not a reason it was chosen; the outcome-aware
+  justification is withdrawn.
+- **Run-reference correction.** This experiment ledger records `wbc1_reviewed` and `wbc1_demo` (above);
+  it contains NO `wbc1_contract_final` entry — that run's decision and hashes live in
+  `docs/IMPLEMENTATION_LEDGER.md`. So the "byte-pinned artifact … sha256 above" / recorded-run language
+  is accurate only for `wbc1_reviewed`/`wbc1_demo` in this ledger; `wbc1_contract_final` must be cited
+  from the implementation ledger, not this one.
+- **Holdout-custody requirement for the alternative.** Adopting calendar-week semantics later is NOT
+  satisfied by "a fresh run" (as the preceding entry says): this programme's final holdout has already
+  been opened and its results recorded, so reusing it for a revised candidate would be outcome-aware even
+  under a new preregistration. It requires a NEWLY RESERVED, UNTOUCHED final holdout with its own custody
+  event, preregistered before that holdout is opened.
+- No detector behavior change and no byte change; the observed-sample semantics and the characterization
+  lock (`test_bocpd_missing_block_is_observed_sample_equivalent`) are unchanged.

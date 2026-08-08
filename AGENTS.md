@@ -13,7 +13,9 @@ artifact-store, or handoff work.
 
 Use `tools/cards.py` as the task source and choose the first dependency-safe active card. Use one
 writer per checkout; parallel writers need separate coordinator-owned worktrees and disjoint
-paths. Escalate judgment-heavy implementation or review to Terra/Sol.
+paths. Escalate judgment-heavy implementation or review to Terra/Sol. Risk classes, routing, and
+protocols live in `.agent-harness/governor.json` and `docs/agent-system/`; non-flagship
+orchestrators use the Research Governor Lite prompt in `docs/agent-system/PROMPT_LIBRARY.md`.
 
 ## Protected data (full rule in `CLAUDE.md`)
 
