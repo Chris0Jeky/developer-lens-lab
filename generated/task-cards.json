@@ -1,5 +1,5 @@
 {
-  "active_limit": 6,
+  "active_limit": null,
   "cards": [
     {
       "depends_on": [],
@@ -128,6 +128,15 @@
     },
     {
       "depends_on": [
+        "LAB-WBC1-05"
+      ],
+      "id": "LAB-WBC1-06",
+      "outcome": "Reproducer-backed fixes",
+      "status": "IN_REVIEW",
+      "title": "WB-C1 late-review correctness debt (issue #6)"
+    },
+    {
+      "depends_on": [
         "LAB-SYNC-01"
       ],
       "id": "LAB-BRIDGE-01",
@@ -145,28 +154,32 @@
       "title": "End-to-end smoke demo and runbook"
     },
     {
-      "depends_on": [],
+      "depends_on": [
+        "LAB-ACT-01"
+      ],
       "id": "LAB-CORPUS-01",
       "outcome": "Quality pilot only",
-      "status": "OWNER_GATED",
+      "status": "BACKLOG",
       "title": "Public-repository sampler manifest"
     },
     {
       "depends_on": [
-        "LAB-CORPUS-01"
+        "LAB-CORPUS-01",
+        "LAB-ACT-01"
       ],
       "id": "LAB-CORPUS-02",
       "outcome": "No raw landing",
-      "status": "OWNER_GATED",
+      "status": "BACKLOG",
       "title": "Bounded public metadata collector"
     },
     {
       "depends_on": [
-        "LAB-CORPUS-02"
+        "LAB-CORPUS-02",
+        "LAB-ACT-01"
       ],
       "id": "LAB-CORPUS-03",
       "outcome": "Explicit coverage",
-      "status": "OWNER_GATED",
+      "status": "BACKLOG",
       "title": "Normalizer and coverage profiler"
     },
     {
@@ -177,7 +190,53 @@
       "outcome": "Expansion decision",
       "status": "PARKED",
       "title": "Data-quality and candidate-support report"
+    },
+    {
+      "depends_on": [
+        "LAB-OS-01"
+      ],
+      "id": "LAB-GOV-01",
+      "outcome": "Governor seeded",
+      "status": "DONE",
+      "title": "Research governor control plane"
+    },
+    {
+      "depends_on": [
+        "LAB-GOV-01"
+      ],
+      "id": "LAB-ACT-01",
+      "outcome": "Non-C0 lanes unlocked",
+      "status": "BACKLOG",
+      "title": "Real-data activation preconditions (tier flip, executable sinks and deny rules, secret scanning)"
+    },
+    {
+      "depends_on": [
+        "LAB-GOV-01"
+      ],
+      "id": "LAB-REL-01",
+      "outcome": "Tagged v0.1.0",
+      "status": "BACKLOG",
+      "title": "v0.1.0 release wave: AGPL and notices, community files, package metadata, dependency triage (issue #5), C0 release assets"
+    },
+    {
+      "depends_on": [
+        "LAB-BRIDGE-01",
+        "LAB-WBC1-06"
+      ],
+      "id": "LAB-SURV-01",
+      "outcome": "Product-owned view + rich report",
+      "status": "BACKLOG",
+      "title": "Integration-tail survival study (product issue #174): KM + AFT over the product input contract"
+    },
+    {
+      "depends_on": [
+        "LAB-BRIDGE-01"
+      ],
+      "id": "LAB-CONTRACT-03",
+      "outcome": "Contract-faithful preference declaration",
+      "status": "BACKLOG",
+      "title": "MethodTrialView representative-preference reconcile (issue #23; product-owned schema change)"
     }
   ],
-  "schema_version": "lab-task-programme.v1"
+  "schema_version": "lab-task-programme.v2"
 }

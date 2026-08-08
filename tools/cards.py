@@ -114,6 +114,13 @@ CARDS = (
         "Reviewable result",
     ),
     Card(
+        "LAB-WBC1-06",
+        "WB-C1 late-review correctness debt (issue #6)",
+        "IN_REVIEW",
+        ("LAB-WBC1-05",),
+        "Reproducer-backed fixes",
+    ),
+    Card(
         "LAB-BRIDGE-01",
         "Product and lab compatibility fixture",
         "DONE",
@@ -130,21 +137,22 @@ CARDS = (
     Card(
         "LAB-CORPUS-01",
         "Public-repository sampler manifest",
-        "OWNER_GATED",
-        outcome="Quality pilot only",
+        "BACKLOG",
+        ("LAB-ACT-01",),
+        "Quality pilot only",
     ),
     Card(
         "LAB-CORPUS-02",
         "Bounded public metadata collector",
-        "OWNER_GATED",
-        ("LAB-CORPUS-01",),
+        "BACKLOG",
+        ("LAB-CORPUS-01", "LAB-ACT-01"),
         "No raw landing",
     ),
     Card(
         "LAB-CORPUS-03",
         "Normalizer and coverage profiler",
-        "OWNER_GATED",
-        ("LAB-CORPUS-02",),
+        "BACKLOG",
+        ("LAB-CORPUS-02", "LAB-ACT-01"),
         "Explicit coverage",
     ),
     Card(
@@ -154,21 +162,67 @@ CARDS = (
         ("LAB-CORPUS-03",),
         "Expansion decision",
     ),
+    Card(
+        "LAB-GOV-01",
+        "Research governor control plane",
+        "DONE",
+        ("LAB-OS-01",),
+        "Governor seeded",
+    ),
+    Card(
+        "LAB-ACT-01",
+        "Real-data activation preconditions (tier flip, executable sinks and deny rules, "
+        "secret scanning)",
+        "BACKLOG",
+        ("LAB-GOV-01",),
+        "Non-C0 lanes unlocked",
+    ),
+    Card(
+        "LAB-REL-01",
+        "v0.1.0 release wave: AGPL and notices, community files, package metadata, "
+        "dependency triage (issue #5), C0 release assets",
+        "BACKLOG",
+        ("LAB-GOV-01",),
+        "Tagged v0.1.0",
+    ),
+    Card(
+        "LAB-SURV-01",
+        "Integration-tail survival study (product issue #174): KM + AFT over the product "
+        "input contract",
+        "BACKLOG",
+        ("LAB-BRIDGE-01", "LAB-WBC1-06"),
+        "Product-owned view + rich report",
+    ),
+    Card(
+        "LAB-CONTRACT-03",
+        "MethodTrialView representative-preference reconcile (issue #23; product-owned "
+        "schema change)",
+        "BACKLOG",
+        ("LAB-BRIDGE-01",),
+        "Contract-faithful preference declaration",
+    ),
 )
 
 # ACTIVE and IN_REVIEW prerequisites deliberately permit speculative stacked work. They do not
 # mean the prerequisite is complete or allow dependent work to merge ahead of it.
 STACKABLE_DEPENDENCY_STATUSES = {"ACTIVE", "IN_REVIEW", "DONE"}
 
+# The governor (constitution v2) runs an unbounded opportunity backlog behind the active wave, so
+# there is no fixed active-horizon cap. Status is still a closed vocabulary: BACKLOG is authorized
+# opportunity-backlog work not yet promoted into the wave; OWNER_GATED and PARKED remain explicit
+# holds; ACTIVE/IN_REVIEW are the wave; DONE is landed.
+ALLOWED_STATUSES = {"DONE", "ACTIVE", "IN_REVIEW", "BACKLOG", "OWNER_GATED", "PARKED"}
 
-def _validate() -> None:
-    by_id = {card.id: card for card in CARDS}
-    if len(by_id) != len(CARDS):
+
+def _validate(cards: tuple[Card, ...] = CARDS) -> None:
+    by_id = {card.id: card for card in cards}
+    if len(by_id) != len(cards):
         raise ValueError("duplicate card ID")
-    horizon = {card.id for card in CARDS if card.status in {"ACTIVE", "IN_REVIEW"}}
-    if len(horizon) > 6:
-        raise ValueError("active horizon exceeds six cards")
-    for card in CARDS:
+    for card in cards:
+        if card.status not in ALLOWED_STATUSES:
+            raise ValueError(f"{card.id} has unknown status: {card.status}")
+    horizon = {card.id for card in cards if card.status in {"ACTIVE", "IN_REVIEW"}}
+    for card in cards:
         unknown = set(card.depends_on) - set(by_id)
         if unknown:
             raise ValueError(f"{card.id} has unknown dependencies: {sorted(unknown)}")
@@ -187,8 +241,8 @@ def _validate() -> None:
 
 def _json_text() -> str:
     payload = {
-        "schema_version": "lab-task-programme.v1",
-        "active_limit": 6,
+        "schema_version": "lab-task-programme.v2",
+        "active_limit": None,
         "cards": [{**asdict(card), "depends_on": list(card.depends_on)} for card in CARDS],
     }
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
