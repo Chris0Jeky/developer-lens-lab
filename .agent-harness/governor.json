@@ -1,0 +1,143 @@
+{
+  "schema": "dllab-governor.v1",
+  "purpose": "Durable machine-readable research-governor policy. No secrets, no local paths, no volatile Git/GitHub state. Prose semantics live in docs/agent-system/.",
+  "authorities": {
+    "owner_constitution": "docs/OWNER_CONSTITUTION.md",
+    "tier": ".agent-harness/tier.json",
+    "canon": "CLAUDE.md",
+    "codex_adapter": "AGENTS.md",
+    "human_actions": "HUMAN_TODO.md",
+    "resume_point": "docs/CURRENT_STATE.md",
+    "task_source": "tools/cards.py",
+    "implementation_history": "docs/IMPLEMENTATION_LEDGER.md",
+    "experiment_history": "docs/EXPERIMENT_LEDGER.md",
+    "failure_archive": "docs/FAILURE_ARCHIVE.md",
+    "product_boundary": "docs/PRODUCT_BOUNDARY.md",
+    "data_policy": "docs/DATA_POLICY.md",
+    "contracts": "docs/CONTRACTS.md",
+    "governor_docs": "docs/agent-system/README.md"
+  },
+  "focus": {
+    "research": 7,
+    "story_product": 5,
+    "distribution": 3,
+    "community": 2,
+    "realdata_standalone": 0
+  },
+  "model_routing": {
+    "flagship_coordinator": {
+      "model": "claude-fable-5",
+      "owns": [
+        "authority reconciliation",
+        "methodology architecture",
+        "experiment-programme selection",
+        "data/publication policy interpretation",
+        "cross-repo contracts",
+        "governor evolution",
+        "final merge judgment"
+      ]
+    },
+    "scout": {
+      "model": "claude-opus-5",
+      "effort": "low",
+      "owns": ["large reads", "archaeology", "inventory", "idea mining", "admin discovery"]
+    },
+    "implementer": {
+      "agent": ".claude/agents/dll-implementer.md",
+      "model": "claude-opus-5",
+      "effort": "high",
+      "owns": ["bounded implementation under a coordinator-scoped card"]
+    },
+    "reviewer": {
+      "agent": ".claude/agents/dll-reviewer.md",
+      "model": "claude-opus-5",
+      "effort": "high",
+      "owns": ["fresh-context adversarial review of exact diffs"]
+    },
+    "mechanic": {
+      "agent": ".claude/agents/dll-mechanic.md",
+      "model": "claude-sonnet-4-6",
+      "effort": "high",
+      "owns": ["well-specified low-judgment sweeps"]
+    },
+    "governor_lite": {
+      "prompt": "docs/agent-system/PROMPT_LIBRARY.md",
+      "autonomy": "L0-L2; pre-approved L3 plans only",
+      "models": ["capable non-flagship orchestrators"]
+    },
+    "prohibited_models": ["haiku"]
+  },
+  "risk_classes": {
+    "L0": "observation: read state, inspect CI, inventory, compare, report; any capable model; no writes",
+    "L1": "mechanical research administration: card/index regeneration, verified state/ledger sync, labels, link repair, post-merge sweep, release metadata",
+    "L2": "bounded implementation: harness parity, verifiers, deterministic fixes, dependency upgrades, packaging, reproducibility checks; implementer + separate review",
+    "L3": "methodology/data/model/cross-repo design: splits, holdouts, candidates, real-data pipelines, contracts, promotion architecture; flagship designs, independent methodology review",
+    "L4": "owner-only: legal/licence terms, public release of private outputs, credentials/billing, data-owner consent, irreversible policy, aesthetic sign-off"
+  },
+  "experiment_lifecycle": [
+    "IDEA",
+    "QUESTION_DEFINED",
+    "PREREGISTERED",
+    "DATA_AUTHORISED",
+    "READY",
+    "RUNNING",
+    "RUN_RECORDED",
+    "REPRODUCED",
+    "INDEPENDENT_REVIEW",
+    "DECIDED(REJECTED|REVISE_ONCE|BENCHMARKED|ABSTAINED|INVALIDATED)",
+    "PRODUCT_PROPOSAL",
+    "ARCHIVED"
+  ],
+  "data_lanes": {
+    "S_synthetic": { "status": "active", "class": "C0" },
+    "O_own_private": { "status": "authorised_awaiting_preconditions", "outputs": "local by default" },
+    "C_curated_public": { "status": "authorised_awaiting_preconditions", "pilot": "tiny allowlisted REST" },
+    "P_publishable_c0": { "status": "active_with_release_review", "transformation": "must be disclosed exactly" }
+  },
+  "activation_preconditions": {
+    "description": "Every non-synthetic lane stays closed until ALL of these are mechanically true; docs/agent-system/DATASET_PROTOCOL.md holds the semantics.",
+    "items": [
+      "tier.json reclassified truthfully (sensitive_data=true, protected roots declared) with context-verify rules updated in the same change",
+      "data-policy classes/sinks for the lane are executable, not prose-only",
+      "read-deny rules cover the declared raw/private roots for both agent runtimes",
+      "secret scanning rejects credential material at every sink the lane can write",
+      "dependency vulnerability triage is current (lab issue #5)",
+      "the lane's task names exact scope, budgets, retention, and deletion behaviour"
+    ]
+  },
+  "review_gates": {
+    "aging_minutes_after_push": 15,
+    "fix_round_ceiling": 2,
+    "fresh_context_review_required_for": ["non-trivial code", "methodology", "contracts", "governor changes"],
+    "post_merge_late_comment_sweep": true
+  },
+  "queues": {
+    "opportunity_backlog": "tools/cards.py (unlimited; BACKLOG/OWNER_GATED/PARKED states)",
+    "active_wave": "ACTIVE/IN_REVIEW cards; lanes, writers, dependencies, and stop conditions recorded in docs/CURRENT_STATE.md",
+    "active_wave_cap": null
+  },
+  "cross_repo": {
+    "counterpart": "Chris0Jeky/developer-lens",
+    "product_owns": ["stable runtime", "public stable UX", "canonical presentation/input schemas", "stable release", "promotion acceptance"],
+    "lab_owns": ["research questions", "generators/datasets", "candidate registry", "evaluation", "reports", "reproducibility", "experimental preview", "public C0 scientific assets"],
+    "handshake": "pinned generated snapshots + provenance checksums only; sync is check-only outside an intentional contract change; merge order explicit; post-merge compatibility check"
+  },
+  "self_evolution": {
+    "may_improve_with_repeated_evidence": [
+      "prompts", "model routing", "experiment templates", "review checklists",
+      "card taxonomy", "reproducibility checks", "data-quality gates", "report formats",
+      "context budgets", "skill parity", "failure-archive structure"
+    ],
+    "may_never_self_relax": [
+      "secret prohibition", "data authority", "private-output locality", "missingness honesty",
+      "deterministic fallback", "holdout integrity", "model-output labelling",
+      "owner-only decisions", "stable-product promotion boundary", "review/merge gates"
+    ]
+  },
+  "generated_indexes": ["generated/task-cards.json", "docs/CARD_INDEX.md"],
+  "runtime_state": {
+    "path": ".agent-harness/runtime/",
+    "tracked": false,
+    "note": "gitignored, regenerable, non-authoritative; never stores private paths, allowlists, credentials, or output data"
+  }
+}
