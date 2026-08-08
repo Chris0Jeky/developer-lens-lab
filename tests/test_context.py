@@ -363,8 +363,14 @@ def test_governor_weakened_review_gate_values_fail(tmp_path: Path) -> None:
 
 def test_governor_authority_outside_the_repo_fails(tmp_path: Path) -> None:
     # An absolute path or a `..` escape points the authority list at a machine-local file no
-    # reviewer sees; both must fail on containment, before any existence check.
-    for escape in ("C:/Windows/System32/drivers/etc/hosts", "/etc/hosts", "../../secrets.md"):
+    # reviewer sees; both must fail on containment, before any existence check. Escapes are
+    # constructed from tmp_path so each is genuinely absolute (or genuinely traversing) on
+    # whichever platform runs the suite — a hardcoded drive-letter path is relative on POSIX.
+    for escape in (
+        str(tmp_path.parent / "outside-escape.md"),
+        "../outside-escape.md",
+        "../../secrets.md",
+    ):
         payload = _load_governor()
         payload["authorities"]["canon"] = escape
         _write_governor(tmp_path, payload)
