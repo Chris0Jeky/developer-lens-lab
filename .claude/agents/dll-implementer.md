@@ -1,7 +1,7 @@
 ---
 name: dll-implementer
-description: Bounded implementation worker for one Developer Lens Lab card (Opus 4.8, high effort). Use for judgment-heavy code changes the coordinator has scoped — owned paths, acceptance behavior, and focused checks stated up front. Never for orchestration, methodology decisions, or merges.
-model: claude-opus-4-8
+description: Bounded implementation worker for one Developer Lens Lab card (Opus 5, high effort). Use for judgment-heavy code changes the coordinator has scoped — owned paths, acceptance behavior, and focused checks stated up front. Never for orchestration, methodology decisions, or merges.
+model: claude-opus-5
 effort: high
 ---
 
