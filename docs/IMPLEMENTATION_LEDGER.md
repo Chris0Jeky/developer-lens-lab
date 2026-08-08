@@ -495,3 +495,50 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `mkdocs build --strict`, `verify_hygiene.py`, `dllab doctor`. This entry authorizes no
   research, collection, model call, or lane activation — activation preconditions still gate
   every non-C0 lane.
+
+## 2026-08-08 — WB-C1 correctness fixes reconciled on PR #24 (partial #6 closure)
+
+- Branch `claude/lab-wbc1-correctness-6` (PR #24) carries four WB-C1 correctness fixes against the
+  P2 findings consolidated in issue #6 from the delayed original PR #3 connector review. The
+  reconciled head `6d71cdc` is a clean merge of `origin/main` `f14da50` over the four authored
+  commits `f044b36`, `a11872d`, `6b9ebf6`, and the `acc3b95` format pass.
+- Closes #6 finding 2 (run-owned validation artifacts): `_store_research_pack` (`wbc1/runner.py`)
+  no longer writes a second copy of each `coverage`/`repository_week` Parquet into a shared
+  pack-id scope. `validate_pack_artifacts` (`validation.py`) gains an optional `scope` argument
+  defaulting to `pack.pack_id`, so standalone `dllab pack validate` keeps its behavior, while the
+  runner validates against the run-owned scope — `invalidate_scope(run_id)` now reaches every
+  artifact a run wrote instead of leaving copies in a never-invalidated scope.
+- Closes finding 4 (controlled error for malformed manifests): `reproduce_run` and `build_report`
+  read every required run-manifest field through new `_require_field`/`_require_ref` helpers, and
+  `_assert_reproduced_reference` wraps its own reference validation. A missing key or a malformed
+  artifact reference now raises a controlled `RunnerError` naming the field, instead of an
+  uncaught `KeyError` or a raw pydantic `ValidationError`.
+- Closes finding 5 (present primary-domain metrics): `decide_benchmark` (`wbc1/evaluation.py`)
+  gains a leading `PRIMARY_DOMAIN_METRICS_PRESENT` gate requiring both baseline and candidate
+  `detection_rate` to be actually present. A partition that planted no true changes reports an
+  absent detection rate, which the downstream `or 0.0` coercions would otherwise let through as a
+  `benchmarked` verdict resting on unmeasured evidence. Missing evidence stays explicit, not zero.
+- Closes finding 6 (numeric zero-delay ordering): the `select_threshold` tie-break replaced
+  `median_detection_delay or float("inf")` with an explicit `is not None` test, so a genuine
+  median detection delay of `0` ranks as the best tie-break rather than collapsing to the worst.
+- Still mapped, not closed by this lane: finding 1 (confound observability) and finding 3
+  (threshold-selection workload counting). Both would move the generator or the recorded
+  EvaluationBundle, custody record, or digests, and so depend on the methodology and run handling
+  already recorded in the entries above rather than fitting this correctness lane. They remain
+  open in #6. The later PR #8 follow-up set in #6 is untouched and also remains open.
+- Scope held: C0 invented data only; five changed files (`validation.py`, `wbc1/evaluation.py`,
+  `wbc1/runner.py`, `tests/test_wbc1_evaluation.py`, `tests/test_wbc1_runner.py`) carrying five
+  new regression tests. No canonical run was executed, and no recorded run, metric, artifact,
+  custody record, or digest moved.
+- Verified in an isolated worktree using a worktree-local uv 0.12.3 bootstrap with
+  `UV_PROJECT_ENVIRONMENT=.venv/project` (project interpreter Python 3.12.7): locked
+  `uv sync --all-groups` left `uv.lock` unchanged, and focused
+  `pytest tests/test_wbc1_evaluation.py tests/test_wbc1_runner.py` passed 19 with the declared
+  Windows symlink skip. The full gate then passed at this head: `dllab doctor`, `dllab context
+  verify`, Ruff format (75 files) and lint, repo-wide strict Pyright at 0 errors/0 warnings, 106
+  pytest tests with 3 declared host symlink skips, strict MkDocs, `verify_hygiene.py`, and
+  `git diff --check`. This is the first entry whose Pyright ran clean repo-wide: the earlier
+  entries' import-resolution noise came from the ad-hoc `.venv` fallback, not the code, and a
+  properly locked uv project environment resolves it on this host.
+- NOT verified: hosted CI and independent review of this exact head are later gates and are not
+  claimed by this entry, which authorizes no research, collection, model call, or lane activation.
