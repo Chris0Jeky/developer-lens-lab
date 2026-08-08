@@ -479,10 +479,19 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   files, schema/key checks, authority-file existence, haiku prohibition, the ten hardcoded
   never-self-relax invariants, focus axes, and agent-pin coherence against `.claude/agents/`
   frontmatter. New tests in `tests/test_context.py` and `tests/test_tasks.py`.
-- Verified locally via `.venv` (no uv on host): ruff format/check, focused + full pytest
-  (88 passed / 3 pre-existing symlink skips), focused pyright on the four changed code files
-  (0 errors; repo-wide pyright has pre-existing venv import-resolution noise — hosted `Prove
-  the lab` remains the arbiter), `tools/cards.py --check`, `dllab context verify`,
+- Review rounds (ceiling 2, both spent): round 1 (fresh-context adversarial, 0 CRITICAL/HIGH)
+  hardened enforcement — routed-model prohibition over `model`/`models` keys, loud pin-role
+  failures, gate-value floors (≥7 activation items, aging ≥15, fix rounds ≤2), plus the q-9
+  owner-scope precondition, skill-block gate pointer, and CLAUDE.md external-model clause;
+  LOWs tracked as #27. Round 2 (Codex, 3 P1 / 5 P2) pinned values by identity — authority
+  paths bounded inside the repo, lane statuses hardcoded (O/C stay
+  `authorised_awaiting_preconditions` until LAB-ACT-01), precondition token identity, the
+  binding 7/5/3/2/0 focus weights, non-numeric review gates (four fresh-review triggers +
+  sweep=True) — and fixed the q-9 circularity and lane-P real-data wording.
+- Verified locally at the final head via `.venv` (no uv on host): ruff format/check, focused +
+  full pytest (101 passed / 3 pre-existing symlink skips), focused pyright on the changed code
+  files (0 errors; repo-wide pyright has pre-existing venv import-resolution noise — hosted
+  `Prove the lab` remains the arbiter), `tools/cards.py --check`, `dllab context verify`,
   `mkdocs build --strict`, `verify_hygiene.py`, `dllab doctor`. This entry authorizes no
   research, collection, model call, or lane activation — activation preconditions still gate
   every non-C0 lane.
