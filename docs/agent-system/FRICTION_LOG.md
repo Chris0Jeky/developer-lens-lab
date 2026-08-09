@@ -231,3 +231,23 @@ cheap workaround and none of them blocked a lane.
   block, and both continuation skills require one byte-identical continuation-friction block. The
   context verifier and focused tests fail on missing, duplicate, reversed, or drifted blocks. This
   is the cheapest repository-enforced half; the runtime denial itself remains an external boundary.
+
+### FR-008 — bundled review-thread reader needs UTF-8 mode on Windows
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The bundled GitHub review-thread reader failed while decoding non-ASCII review text
+  through the host's default Windows code page, so its otherwise successful GraphQL response could
+  not be parsed.
+- **impact:** Unresolved inline review state is a merge-gate input. Without an explicit encoding,
+  the failure can make a complete thread read look unavailable and tempt a flat-comment fallback
+  that omits resolution state.
+- **workaround:** Run the reader with Python UTF-8 mode enabled for that invocation. The same
+  read-only command then returned both unresolved PR #36 threads with their resolution and line
+  anchors intact.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the PR #36 review sweep.
+- **task:** lab issue #34 records prompt-operating-system post-review hardening; keep this external
+  tooling wrinkle there unless it recurs independently.
+- **promotion:** Deliberately NOT promoted after one occurrence. The reader belongs to an external
+  skill bundle rather than this repository; a second independent occurrence should be reported to
+  that bundle and should make UTF-8 decoding explicit at the tool boundary.
