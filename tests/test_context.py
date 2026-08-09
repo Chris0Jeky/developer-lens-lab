@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
+import developer_lens_lab.context.verify as context_verify
 from developer_lens_lab.context import verify_repository
 from developer_lens_lab.context.verify import (
     COMMON_PROMPT_IDS,
@@ -339,6 +342,35 @@ def test_package_smoke_markdown_is_skipped_but_tracked_docs_are_checked(tmp_path
     assert classification_failures[0].startswith(
         f"{Path('docs') / 'guide.md'}: prompt-classification 'unsupported' must be one of "
     )
+
+
+def test_markdown_scans_prune_skipped_directories_before_descent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    skipped_child = tmp_path / ".package-smoke" / "nested"
+    skipped_child.mkdir(parents=True)
+    (skipped_child / "candidate.md").write_text(
+        "[missing](missing.md)\n<!-- prompt-classification: unsupported -->\n",
+        encoding="utf-8",
+    )
+    tracked_dir = tmp_path / "docs"
+    tracked_dir.mkdir()
+    (tracked_dir / "guide.md").write_text("# Tracked\n", encoding="utf-8")
+
+    visited: list[Path] = []
+    original_walk = context_verify.os.walk
+
+    def tracking_walk(root: Path, *args: Any, **kwargs: Any) -> Any:
+        for directory, dirnames, filenames in original_walk(root, *args, **kwargs):
+            visited.append(Path(directory).relative_to(tmp_path))
+            yield directory, dirnames, filenames
+
+    monkeypatch.setattr(context_verify.os, "walk", tracking_walk)
+
+    assert verify_markdown_links(tmp_path) == []
+    assert verify_prompt_classifications(tmp_path) == []
+    assert Path("docs") in visited
+    assert all(".package-smoke" not in path.parts for path in visited)
 
 
 def _load_governor() -> dict[str, Any]:

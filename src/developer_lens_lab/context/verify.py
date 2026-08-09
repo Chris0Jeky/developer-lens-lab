@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
 import subprocess
 import sys
@@ -96,12 +97,25 @@ class VerificationReport:
         return not self.failures
 
 
+def _markdown_files(root: Path) -> list[Path]:
+    paths: list[Path] = []
+    for directory, dirnames, filenames in os.walk(root, topdown=True):
+        dirnames[:] = sorted(
+            dirname for dirname in dirnames if dirname not in SKIPPED_MARKDOWN_PARTS
+        )
+        directory_path = Path(directory)
+        paths.extend(
+            directory_path / filename
+            for filename in filenames
+            if (directory_path / filename).match("*.md")
+        )
+    return sorted(paths)
+
+
 def verify_markdown_links(root: Path) -> list[str]:
     failures: list[str] = []
-    for path in sorted(root.rglob("*.md")):
+    for path in _markdown_files(root):
         relative_parts = path.relative_to(root).parts
-        if any(part in SKIPPED_MARKDOWN_PARTS for part in relative_parts):
-            continue
         if relative_parts[:2] == ("reports", "generated"):
             continue
         text = path.read_text(encoding="utf-8")
@@ -960,10 +974,7 @@ def verify_prompt_classifications(root: Path) -> list[str]:
     `redirect` or `historical` so a reader can tell at a glance that they are not to be pasted.
     """
     failures: list[str] = []
-    for path in sorted(root.rglob("*.md")):
-        relative_parts = path.relative_to(root).parts
-        if any(part in SKIPPED_MARKDOWN_PARTS for part in relative_parts):
-            continue
+    for path in _markdown_files(root):
         for classification in PROMPT_CLASSIFICATION_RE.findall(path.read_text(encoding="utf-8")):
             if classification not in ALLOWED_PROMPT_CLASSIFICATIONS:
                 failures.append(

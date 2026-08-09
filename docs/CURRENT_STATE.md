@@ -14,13 +14,13 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `ci/lab-package-diagnostics-20260809` in its coordinator-owned isolated worktree
+    writer: branch `ci/lab-context-prune-20260809` in its coordinator-owned isolated worktree
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
-      built-artifact/package smoke, subprocess timeout, and ignored-smoke-tree traversal exclusion.
-      The selected bounded-diagnostics seam has passed the locked full gate plus isolated artifact
-      smoke; publish and merge it only under the ordinary exact-head hosted proof and review gate.
-      Keep later hardening, asset, and tag work separate, with no data activation.
+      built-artifact/package smoke, subprocess timeout, ignored-smoke-tree exclusion, and bounded
+      failure diagnostics. The selected traversal-pruning seam has passed the locked full gate plus
+      isolated artifact smoke; publish and merge it only under the ordinary exact-head hosted proof
+      and review gate. Keep later hardening, asset, and tag work separate, with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -69,11 +69,15 @@ delivered:
       `89cad7d1dff4b00db9459f2739f1db567d266351` passed hosted run `31307153939` / job
       `93229202173`, exact-final-head review, and merge gating, then merged as
       `0b7a452ee0a6ce4c69e91646400fbb98ad8f3ca1`.
-next_safe_slice: Prove, review, and merge the bounded package-smoke diagnostics branch, then select
-  one remaining issue #29 P2 seam (PATH/uv validation, sdist lineage, process-tree cleanup, or
-  traversal pruning). Lane-P candidate-content review, screenshots, publication, and owner-gated
-  release lanes remain parked. Do not inspect ignored candidate bytes, publish assets, tag, add
-  credentials, activate data or models, or enable telemetry.
+  - package_smoke_diagnostics: DONE — PR #49 final head
+      `02d3e504b4fde54bd1e33b01d24b33a4de3305c5` passed hosted run `31307993706` / job
+      `93231285624`, exact-final-head review, and merge gating, then merged as
+      `ece61e0e1ca86e1e38732916fc077c4718bf7de6`; two delayed P2 threads were tracked and resolved.
+next_safe_slice: Prove, review, and merge the bounded context-traversal-pruning branch, then
+  integrate and prove the prepared PATH/uv version-validation branch. Sdist lineage and process-tree
+  cleanup remain later issue #29 P2 seams. Lane-P candidate-content review, screenshots,
+  publication, and owner-gated release lanes remain parked. Do not inspect ignored candidate bytes,
+  publish assets, tag, add credentials, activate data or models, or enable telemetry.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -121,10 +125,11 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Continue the bounded `ci/lab-package-diagnostics-20260809` package-smoke P2
-  seam, using merged PR #45, PR #47, and PR #48 proofs as the baseline. Its integrated full local
-  gate passed 161 tests with 3 declared skips plus actual package smoke; exact hosted proof and
-  final review remain pending. The frozen producer replay at
+exact_resume_point: Continue the bounded `ci/lab-context-prune-20260809` issue #29 P2 seam at code
+  commit `08e9fce51f3908b353eef489bfd6fb8c5d7dcde7`, integrated over merged PR #49 at
+  `ece61e0e1ca86e1e38732916fc077c4718bf7de6`. Its locked gate passed 162 tests with 3 declared
+  skips plus actual package smoke; exact hosted proof and final review remain pending. The frozen
+  producer replay at
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
   `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
   rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
