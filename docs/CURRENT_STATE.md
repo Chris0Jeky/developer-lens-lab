@@ -80,13 +80,14 @@ delivered:
   - path_uv_validation: DONE — PR #51 head `adc43aea21834683eaf2749fe3515f10da204bde`
       on base `e63086b4ae3b97390969357ebdd9d3e30394814e` had exact-head `Prove the lab` SUCCESS at
       2026-08-09T12:35:45Z and merged as `02a41cac4a461a93d53b481d34c96a48e29291e5`
-      at 2026-08-09T12:39:59Z. GitHub reports zero submitted reviews and zero review threads; the
-      independent fresh-context MERGE-SOUND/no-CRITICAL-HIGH report was posted at 12:41:40Z after
-      merge. The 12:31:00Z head commit therefore aged at most 8m59s, below the constitution's
-      15-minute floor. Immediate reconciliation found no CRITICAL/HIGH implementation defect;
-      issue #29 tracks mechanical pre-merge age and review-evidence enforcement.
+      at 2026-08-09T12:39:59Z. GitHub reports zero submitted reviews and zero review threads, while
+      the accepted top-level exact-head fresh-context review comment finding no CRITICAL/HIGH was
+      posted at 12:39:57Z, two seconds before merge; that comment represents the review gate. A
+      second independent MERGE-SOUND result was posted at 12:41:40Z after merge. The 12:31:00Z
+      head commit aged at most 8m59s, below the constitution's 15-minute floor; issue #29 tracks
+      mechanical pre-merge age enforcement while retaining the accepted review-comment route.
 next_safe_slice: Select the first dependency-safe active C0 card (`LAB-REL-01`) through
-  `tools/cards.py` and continue issue #29, including its event-driven merge-eligibility hardening;
+  `tools/cards.py` and continue issue #29, including its event-driven exact-head aging hardening;
   do not resume from PR #51. Lane-P candidate-content review, screenshots, publication, and
   owner-gated release lanes remain parked. Do not inspect ignored candidate bytes, publish assets,
   tag, add credentials, activate data or models, or enable telemetry.

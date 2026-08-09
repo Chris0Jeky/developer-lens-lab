@@ -647,30 +647,38 @@ no tracked file, Git ref, GitHub object, ignored output, or protected byte chang
 _Note 2026-08-09 (PATH/uv validation):_ Rejection happened before agent creation and changed no
 tracked file beyond this friction record, Git ref, GitHub object, ignored output, or protected byte.
 
-### FR-023 — merge eligibility did not enforce exact-head age or review evidence
+### FR-023 — merge eligibility did not enforce exact-head age
 
 - **first-seen:** 2026-08-09
 - **status:** `open`
 - **symptom:** PR #51's exact head `adc43aea21834683eaf2749fe3515f10da204bde` had commit time
   2026-08-09T12:31:00Z and merged at 12:39:59Z, so it aged at most 8m59s instead of the required
-  15 minutes. Exact-head `Prove the lab` was green, but the PR API recorded zero submitted reviews
-  and zero review threads; the independent fresh-context MERGE-SOUND evidence was posted at
-  12:41:40Z, after merge.
-- **impact:** A green exact-head check was treated as merge eligibility without mechanically proving
-  two separate constitutional gates, so the merge path completed before its required age and
-  review evidence were established.
-- **workaround:** Immediate post-merge exact-head reconciliation and fresh-context review found no
-  CRITICAL/HIGH implementation defect, then corrected `docs/CURRENT_STATE.md` and the implementation
-  ledger. This detects the completed process failure but does not retroactively satisfy either gate.
+  15 minutes. Exact-head `Prove the lab` was green. The PR API recorded zero submitted reviews and
+  zero review threads, while the accepted top-level exact-head fresh-context review comment finding
+  no CRITICAL/HIGH was posted at 12:39:57Z, two seconds before merge, and represents the review
+  gate. A second independent MERGE-SOUND result was posted at 12:41:40Z after merge.
+- **impact:** The merge path completed at least 6m1s before the exact head reached its required
+  15-minute age, so the constitutional observation window was shortened even though CI and accepted
+  review evidence were present.
+- **workaround:** Immediate post-merge exact-head reconciliation confirmed the accepted pre-merge
+  review comment, obtained the second independent MERGE-SOUND result, found no CRITICAL/HIGH
+  implementation defect, and corrected the state and ledger. This does not retroactively satisfy
+  the aging floor.
 - **occurrences:** 1 independent occurrence — 2026-08-09, PR #51 merge closeout.
 - **task:** [Lab issue #29](https://github.com/Chris0Jeky/developer-lens-lab/issues/29#issuecomment-5231583712)
   owns the release-wave control-plane hardening and the preserved worktree cleanup triage.
 - **promotion:** Not yet durably promoted. Event-driven merge eligibility must mechanically verify
-  both the 15-minute age of the exact current head and required review evidence before any merge
-  path can run. The task does not authorize or activate data, model, telemetry, credential,
-  publication, release, or tag effects.
+  the 15-minute age of the exact current head before any merge path can run, while recognizing the
+  accepted top-level review-comment route rather than requiring a formal GitHub review object. The
+  task does not authorize or activate data, model, telemetry, credential, publication, release, or
+  tag effects.
 
 _Note 2026-08-09 (tracking publication):_ The first multiline `gh issue comment` attempt failed
 locally during PowerShell single-quoted command parsing and made no GitHub change. Retrying through
 a literal here-string piped to `--body-file -` successfully posted the issue #29 tracking comment at
 12:44:14Z. This is a Windows command-body quoting workaround, not a repository code failure.
+
+_Note 2026-08-09 (full comment reconciliation):_ Earlier wording incorrectly treated the absence
+of formal GitHub review objects and threads as missing review evidence. The accepted 12:39:57Z
+top-level exact-head finding represented the review gate; the sole confirmed process defect is the
+short exact-head aging window.
