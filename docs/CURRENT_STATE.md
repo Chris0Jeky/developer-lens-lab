@@ -14,9 +14,9 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29 / dependency triage #5)
-    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, and LAB-GOV-02 completion; exact next safe
-      slice is isolated dependency triage for issue #5. Keep licence/community/packaging and
-      release-asset work separate; no data activation.
+    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, and LAB-GOV-02 completion; writer unassigned;
+      exact next safe slice is isolated dependency triage for issue #5. Keep licence/community/
+      packaging and release-asset work separate; no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -24,14 +24,14 @@ delivered:
   - product_concurrent_writer_gate: Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 is closed by
       direct owner decision and clean-session evidence, recorded through product PR #223 at
       877f1ca07ccee014c0adf50925f989815e6bc7f1. This does not close or alter this repository's
-      q-8 real-study public-transformation gate.
+      Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8 real-study public-transformation gate.
 next_safe_slice: LAB-REL-01 — isolated dependency triage for issue #5, using the proved confined
   uv bootstrap; record bounded residuals and keep every other release-wave slice separate.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
-  separate Code of Conduct inbox is selected but its address is pending; CLA and all other owner
-  choices remain deferred.
+  separate Code of Conduct inbox is selected, but its address is pending under
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10; CLA and all other owner choices remain deferred.
 capabilities:
   network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)

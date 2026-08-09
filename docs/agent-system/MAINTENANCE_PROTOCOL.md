@@ -36,9 +36,10 @@ gate — is open, lab pull requests are prepared and parked, never agent-merged.
 commissioning permits isolated preparation. The gate is never inferred closed from a merged pull
 request, a quiet session, or another agent's message. Its current closure is instead directly
 recorded by owner decision and clean-session evidence through product PR #223
-(`877f1ca07ccee014c0adf50925f989815e6bc7f1`). This is not the lab's own `q-8`, which remains an
-unrelated real-data publication gate; see [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md) and
-FR-004 in [FRICTION_LOG.md](FRICTION_LOG.md).
+(`877f1ca07ccee014c0adf50925f989815e6bc7f1`). This is not
+`Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`, which remains an unrelated real-data
+publication gate; see [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md) and FR-004 in
+[FRICTION_LOG.md](FRICTION_LOG.md).
 
 ## Release protocol (v0.1.0 wave and later)
 
@@ -46,8 +47,9 @@ FR-004 in [FRICTION_LOG.md](FRICTION_LOG.md).
 2. AGPL-3.0-only licence text, SPDX/README/package notices, copyright Cristian Tcaci.
 3. Community files: CONTRIBUTING, Code of Conduct, issue/PR templates, Discussions, compact
    roadmap. A separate Code of Conduct inbox is selected, but its address is pending and must not
-   be invented. `COMMERCIAL_OPTION.md` explains intent without legal claims; substantial external
-   contributions wait for owner/legal CLA review.
+   be invented; see `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10`.
+   `COMMERCIAL_OPTION.md` explains intent without legal claims; substantial external contributions
+   wait for owner/legal CLA review.
 4. Dependency triage current (issue #5) — bounded, recorded residuals allowed.
 5. Package metadata and uvx/PyPI readiness for the lab.
 6. Selected C0 JSON/HTML release assets with provenance and licence notices; release review per

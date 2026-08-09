@@ -109,7 +109,8 @@ A change that skips a step is not compatible-by-assumption; it is unverified.
   `877f1ca07ccee014c0adf50925f989815e6bc7f1`. Therefore the conditional lab parking rule is not
   presently triggered. If the fully qualified product register is later open, prepare and park the
   lab PR again; never infer its state from a pull request, a quiet session, or another agent's
-  message. The lab's own q-8 remains the unrelated real-data public-transformation gate.
+  message. `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` remains the unrelated real-data
+  public-transformation gate.
 - **Release remains gated.** Joint release is reaffirmed, but no tag is authorized until
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off are complete. No data,

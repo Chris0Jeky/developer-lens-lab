@@ -618,12 +618,14 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   who operated GitHub.
 - Reconciled the distinct product concurrent-writer gate from direct owner decision and
   clean-session evidence recorded through product PR #223 at
-  `877f1ca07ccee014c0adf50925f989815e6bc7f1`. The product q-8 closure does not alter the lab's own
-  q-8 real-study public-transformation gate, which remains open in `HUMAN_TODO.md`.
+  `877f1ca07ccee014c0adf50925f989815e6bc7f1`. The product q-8 closure does not alter
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`, the real-study public-transformation gate,
+  which remains open in `HUMAN_TODO.md`.
 - Joint release is reaffirmed but no tag, release, data/model/telemetry/credential/publication
   lane, or additional owner gate is authorized.
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` still block tags; the separate Code of
-  Conduct inbox has a pending address, and CLA plus all other owner choices remain deferred.
+  Conduct inbox has a pending address under `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10`, and
+  CLA plus all other owner choices remain deferred.
 - Exact next safe slice: LAB-REL-01 isolated dependency triage for issue #5. Licence, community,
   packaging, and release-asset work remain separate slices.

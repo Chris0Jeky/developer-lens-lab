@@ -150,7 +150,9 @@ untestable here or merely unexercised; the entry stays `open` for that reason.
   must never be conflated.
 - **promotion:** The specific product merge-blocking owner gate is resolved by direct owner closure,
   mechanically clean `claude agents --json --all`, and report-only MCP-hygiene evidence. The
-  enforceable conditional parking rule remains promoted in
+  immutable `impact` and `workaround` text is **HISTORICAL** for periods when the product gate was
+  open; it is not a current parking instruction while this status is `resolved`.
+  The enforceable conditional parking rule remains promoted in
   [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md),
   [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) and every active prompt's LAB MERGE GATE line;
   it re-enables if `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` is later open. The underlying
@@ -161,7 +163,9 @@ wording only for the specific product q-8 merge-blocking owner gate. Direct owne
 mechanically clean `claude agents --json --all` and report-only MCP-hygiene evidence resolve that
 gate; they do not erase the general concurrent-writer collision risk, which remains governed by
 one-writer/worktree rules and the re-enabled conditional parking rule if the fully qualified product
-q-8 reopens.
+q-8 reopens. The immutable `impact` and `workaround` text is **HISTORICAL** for the period when the
+product gate was open, not a current parking instruction while status is `resolved`; it does not
+alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 
 ### FR-005 — agent floor rejects heredoc stdin and unresolvable recursive-delete targets
 
