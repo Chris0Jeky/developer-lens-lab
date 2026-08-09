@@ -31,14 +31,16 @@ The Lab currently has **no dedicated conduct inbox, no continuous monitoring ser
 contact address**. Do not put incident details in a public issue. Do not post identities, screenshots,
 logs, links, credentials, or other private data.
 
-To request a private channel, open the Lab's
-[Private conduct channel request template](.github/ISSUE_TEMPLATE/conduct_private_channel.md) and
-put only this content in the issue body:
+Opening any issue publicly reveals the GitHub account that opened it. If that visibility is unsafe,
+do not submit a request. Otherwise, to request contact without publicly revealing conduct-reporting
+intent, open the Lab's neutral
+[private contact request template](.github/ISSUE_TEMPLATE/private_contact_request.md) and put only
+this content in the issue body:
 
-> Please arrange a private channel for a Code of Conduct concern.
+> Please arrange a private contact channel.
 
-That content-free request is only a way to ask for a private contact path; it is not a place to
-report an incident. The maintainer can then provide the next step when available.
+That content-free request is only a way to ask for contact; it is not a place to report an incident.
+The maintainer can then provide the next step when available.
 
 ## Attribution
 
