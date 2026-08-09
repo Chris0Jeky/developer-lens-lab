@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tomllib
@@ -225,13 +226,74 @@ def test_package_smoke_builds_wheel_from_the_emitted_sdist(
 
     run_package_smoke(tmp_path)
 
-    build_calls = [command for command in calls if len(command) > 1 and command[1] == "build"]
-    assert len(build_calls) == 2
-    assert build_calls[0][0:4] == ["uv", "build", "--sdist", "--out-dir"]
-    assert build_calls[1][0:4] == ["uv", "build", build_calls[1][2], "--wheel"]
-    assert build_calls[1][4] == "--out-dir"
-    assert Path(build_calls[0][-1]).name == "sdist"
-    assert Path(build_calls[1][-1]).name == "wheel"
+    assert len(calls) == 5
+    sdist_command, wheel_command, venv_command, install_command, doctor_command = calls
+    assert sdist_command[0:4] == ["uv", "build", "--sdist", "--out-dir"]
+    assert Path(sdist_command[-1]).name == "sdist"
+    selected_sdist = Path(sdist_command[-1]) / "developer_lens_lab-0.1.0.tar.gz"
+    wheel_root = Path(wheel_command[-1])
+    selected_wheel = wheel_root / "developer_lens_lab-0.1.0-py3-none-any.whl"
+    venv_bin = "Scripts" if os.name == "nt" else "bin"
+    python_name = "python.exe" if os.name == "nt" else "python"
+    dllab_name = "dllab.exe" if os.name == "nt" else "dllab"
+    assert wheel_command == [
+        "uv",
+        "build",
+        str(selected_sdist),
+        "--wheel",
+        "--out-dir",
+        str(wheel_root),
+    ]
+    assert Path(wheel_command[-1]).name == "wheel"
+    venv_root = Path(venv_command[-1])
+    assert venv_command == ["uv", "venv", "--python", sys.executable, str(venv_root)]
+    python_executable = venv_root / venv_bin / python_name
+    assert install_command == [
+        "uv",
+        "pip",
+        "install",
+        "--python",
+        str(python_executable),
+        str(selected_wheel),
+    ]
+    assert doctor_command == [
+        str(venv_root / venv_bin / dllab_name),
+        "doctor",
+        "--json",
+    ]
+
+
+@pytest.mark.parametrize("wheel_names", [[], ["one.whl", "two.whl"]])
+def test_package_smoke_rejects_zero_or_multiple_wheels(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, wheel_names: list[str]
+) -> None:
+    calls: list[list[str]] = []
+
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", _stub_uv_command)
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        calls.append(command)
+        if command[1:3] == ["build", "--sdist"]:
+            output_root = Path(command[-1])
+            (output_root / "developer_lens_lab-0.1.0.tar.gz").write_bytes(b"synthetic sdist")
+        elif command[1] == "build" and command[3] == "--wheel":
+            output_root = Path(command[-1])
+            for name in wheel_names:
+                (output_root / name).write_bytes(b"synthetic wheel")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke._run", fake_run)
+
+    with pytest.raises(RuntimeError, match="wheel build did not produce exactly one wheel"):
+        run_package_smoke(tmp_path)
+
+    assert len(calls) == 2
+    assert calls[0][0:4] == ["uv", "build", "--sdist", "--out-dir"]
+    assert calls[1][0:4] == ["uv", "build", calls[1][2], "--wheel"]
+    assert all(command[1:3] != ["venv", "--python"] for command in calls)
+    assert all(command[1:3] != ["pip", "install"] for command in calls)
+    assert all(command[-2:] != ["doctor", "--json"] for command in calls)
 
 
 @pytest.mark.parametrize("sdist_names", [[], ["one.tar.gz", "two.tar.gz"]])
