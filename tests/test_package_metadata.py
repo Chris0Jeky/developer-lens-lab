@@ -14,6 +14,7 @@ from scripts.verify_package_smoke import (
     assert_doctor_report,
     build_smoke_environment,
     resolve_uv_command,
+    run_package_smoke,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,14 +49,129 @@ def test_package_smoke_rejects_context_failures() -> None:
 
 
 def test_package_smoke_falls_back_to_current_python_for_missing_path_uv(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     def missing_uv(_name: str) -> None:
         return None
 
     monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", missing_uv)
 
-    assert resolve_uv_command() == [sys.executable, "-m", "uv"]
+    def valid_module_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 0, stdout="uv 0.12.2\n", stderr="")
+
+    monkeypatch.setattr(
+        "scripts.verify_package_smoke.subprocess.run",
+        valid_module_run,
+    )
+
+    assert resolve_uv_command(cwd=tmp_path, environment={}) == [sys.executable, "-m", "uv"]
+
+
+@pytest.mark.parametrize(
+    ("reported_version", "compatible"),
+    [("0.12.2", True), ("0.12.4", True), ("0.12.1", False), ("0.13.0", False)],
+)
+def test_package_smoke_validates_uv_version_bounds(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    reported_version: str,
+    compatible: bool,
+) -> None:
+    path_uv = "uv-on-path"
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: path_uv)
+    calls: list[list[str]] = []
+
+    def version_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        calls.append(command)
+        version = reported_version if command == [path_uv, "--version"] else "0.12.2"
+        return subprocess.CompletedProcess(command, 0, stdout=f"uv {version}\n", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", version_run)
+
+    result = resolve_uv_command(cwd=tmp_path, environment={})
+
+    expected = [path_uv] if compatible else [sys.executable, "-m", "uv"]
+    assert result == expected
+    assert calls == [
+        [path_uv, "--version"],
+        *([] if compatible else [[sys.executable, "-m", "uv", "--version"]]),
+    ]
+
+
+@pytest.mark.parametrize("failure", ["malformed", "nonzero", "timeout"])
+def test_package_smoke_invalid_path_uv_uses_valid_module_fallback(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, failure: str
+) -> None:
+    path_uv = "uv-on-path"
+    module_uv = [sys.executable, "-m", "uv"]
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: path_uv)
+
+    def version_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        if command == [path_uv, "--version"]:
+            if failure == "malformed":
+                return subprocess.CompletedProcess(command, 0, stdout="not uv\n", stderr="")
+            if failure == "nonzero":
+                return subprocess.CompletedProcess(command, 1, stdout="", stderr="broken")
+            raise subprocess.TimeoutExpired(command, 300)
+        return subprocess.CompletedProcess(command, 0, stdout="uv 0.12.2\n", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", version_run)
+
+    assert resolve_uv_command(cwd=tmp_path, environment={}) == module_uv
+
+
+def test_package_smoke_rejects_invalid_uv_candidates_with_actionable_range(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    path_uv = "uv-on-path"
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: path_uv)
+    calls: list[list[str]] = []
+
+    def invalid_candidates_run(
+        command: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="uv 0.13.0\n", stderr="")
+
+    monkeypatch.setattr(
+        "scripts.verify_package_smoke.subprocess.run",
+        invalid_candidates_run,
+    )
+
+    with pytest.raises(RuntimeError, match=r">=0\.12\.2,<0\.13"):
+        resolve_uv_command(cwd=tmp_path, environment={})
+    assert calls == [[path_uv, "--version"], [sys.executable, "-m", "uv", "--version"]]
+
+
+def test_package_smoke_validates_uv_before_build(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[list[str]] = []
+
+    def unavailable_uv(*, cwd: Path, environment: dict[str, str]) -> list[str]:
+        del cwd, environment
+        raise RuntimeError("no compatible uv command found")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", unavailable_uv)
+
+    def unexpected_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(
+        "scripts.verify_package_smoke._run",
+        unexpected_run,
+    )
+
+    with pytest.raises(RuntimeError, match="no compatible uv command"):
+        run_package_smoke(tmp_path)
+
+    assert calls == []
 
 
 def test_package_smoke_confines_uv_cache_and_temp_paths(tmp_path: Path) -> None:

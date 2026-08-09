@@ -17,6 +17,11 @@ from typing import cast
 PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS = 300
 PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT = 2_000
 PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER = "\n...[truncated]"
+UV_VERSION_BOUNDS: tuple[tuple[int, int, int], tuple[int, int, int]] = (
+    (0, 12, 2),
+    (0, 13, 0),
+)
+_UV_VERSION_PATTERN = re.compile(r"^\s*uv\s+(?P<version>\d+\.\d+\.\d+)(?:\s|$)")
 
 
 def _canonicalize_line_endings(value: str) -> str:
@@ -106,10 +111,50 @@ def _format_failure_diagnostics(
     return f"\nstdout:\n{stdout_text}\nstderr:\n{stderr_text}"
 
 
-def resolve_uv_command() -> list[str]:
-    """Use PATH uv in CI, or the current interpreter's uv module locally."""
+def _uv_version_requirement() -> str:
+    minimum, maximum = UV_VERSION_BOUNDS
+    minimum_text = ".".join(str(part) for part in minimum)
+    maximum_text = ".".join(str(part) for part in maximum[:2])
+    return f">={minimum_text},<{maximum_text}"
+
+
+def _parse_uv_version(output: str) -> tuple[int, int, int] | None:
+    match = _UV_VERSION_PATTERN.match(output)
+    if match is None:
+        return None
+    parts = [int(part) for part in match.group("version").split(".")]
+    return parts[0], parts[1], parts[2]
+
+
+def _is_compatible_uv_version(version: tuple[int, int, int]) -> bool:
+    minimum, maximum = UV_VERSION_BOUNDS
+    return minimum <= version < maximum
+
+
+def _probe_uv_command(command: list[str], *, cwd: Path, environment: dict[str, str]) -> bool:
+    """Return whether a uv command reports a version in the required range."""
+    try:
+        result = _run([*command, "--version"], cwd=cwd, environment=environment)
+    except (OSError, RuntimeError):
+        return False
+    version = _parse_uv_version(result.stdout)
+    return version is not None and _is_compatible_uv_version(version)
+
+
+def resolve_uv_command(*, cwd: Path, environment: dict[str, str]) -> list[str]:
+    """Select a compatible PATH uv, then a compatible current-interpreter module."""
+    candidates: list[list[str]] = []
     uv = shutil.which("uv")
-    return [uv] if uv else [sys.executable, "-m", "uv"]
+    if uv:
+        candidates.append([uv])
+    candidates.append([sys.executable, "-m", "uv"])
+    for candidate in candidates:
+        if _probe_uv_command(candidate, cwd=cwd, environment=environment):
+            return candidate
+    raise RuntimeError(
+        "no compatible uv command found; required uv version range is "
+        f"{_uv_version_requirement()} (PATH uv and current-interpreter module were invalid)"
+    )
 
 
 def build_smoke_environment(smoke_root: Path) -> dict[str, str]:
@@ -192,12 +237,12 @@ def run_package_smoke(root: Path) -> None:
     """Build sdist/wheel and prove the wheel's CLI in an isolated environment."""
     disposable_root = root / ".package-smoke"
     disposable_root.mkdir(exist_ok=True)
-    uv = resolve_uv_command()
     with tempfile.TemporaryDirectory(
         prefix="run-", dir=disposable_root, ignore_cleanup_errors=True
     ) as temporary:
         smoke_root = Path(temporary)
         environment = build_smoke_environment(smoke_root)
+        uv = resolve_uv_command(cwd=root, environment=environment)
         distribution_root = smoke_root / "dist"
         venv_root = smoke_root / "venv"
         run_root = smoke_root / "run"
