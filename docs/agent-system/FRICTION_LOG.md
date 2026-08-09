@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 15 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 17 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -84,7 +84,10 @@ Rules that bind entries:
   package smoke), 2026-08-09 (the context-traversal-pruning worktree reused the confined route for
   its full gate and package smoke), 2026-08-09 (the PATH/uv-validation worktree reused the confined
   route for its full gate and package smoke), and 2026-08-09 (the diagnostic-redaction worktree
-  reused the confined route for its full gate and package smoke).
+  reused the confined route for its full gate and package smoke), and 2026-08-09 (the
+  diagnostic-state worktree used the installed Python module route for its docs-only gate), and
+  2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
+  coordinator).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -161,6 +164,16 @@ _Note 2026-08-09 (diagnostic redaction):_ The fifteenth isolated worktree likewi
 The confined `uv 0.12.3` bootstrap created its task-local locked environment and its reviewed
 interpreter completed the full gate plus actual package smoke. No failed workaround, global install,
 lockfile change, or ignored/protected-byte inspection occurred.
+
+_Note 2026-08-09 (diagnostic state repair):_ The sixteenth isolated worktree likewise had no PATH
+uv. The already installed `py -3 -m uv` 0.12.2 route was verified before creating the task-local
+locked environment for the bounded documentation gate. The existing maintenance-protocol
+instruction remains the cheapest truthful layer.
+
+_Note 2026-08-09 (sdist lineage):_ The seventeenth isolated worktree likewise had no PATH uv or
+task-environment Pyright. The builder completed focused tests and Ruff through available host
+modules and left locked sync, Pyright, and actual package-smoke proof to the coordinator's promoted
+confined route. No global install or lockfile change occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -687,3 +700,160 @@ reverting the completed builder's work; the failed follow-up changed no Git or G
 
 _Note 2026-08-09 (diagnostic redaction):_ Direct-body retry created the intended review checkpoint;
 the rejected empty-body request changed no GitHub comment, repository ref, or protected output.
+
+### FR-025 — the final pre-merge snapshot omitted a newly arrived top-level comment
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** PR #52 received a top-level exact-head comment at 19:47:58Z that set a conservative
+  19:58:52Z eligibility checkpoint. The coordinator's final snapshot queried head, base, hosted
+  proof, closing refs, and review threads but not top-level comments, and the merge began at
+  19:48:10Z.
+- **impact:** The merge satisfied the session prompt's three-minute floor, exact-head proof, and
+  final review, but occurred before the newly stated conservative checkpoint and required an
+  explicit post-merge process reconciliation. FR-028 separately records the constitution's
+  unsatisfied 15-minute exact-head age.
+- **workaround:** Re-read top-level comments together with head, base, hosted checks, reviews,
+  closing refs, and review threads in every final merge snapshot. Preserve the completed merge and
+  record any late signal factually rather than rewriting refs.
+- **occurrences:** 1 independent occurrence — Lab PR #52 on 2026-08-09.
+- **task:** lab issue #34 tracks the checked GitHub merge-snapshot boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If an independent omission recurs,
+  add one reusable checked pre-merge snapshot helper that returns all required surfaces together.
+
+_Note 2026-08-09 (diagnostic redaction merge):_ Exact final head
+`46961957e09bb976b34beb41fee5e69d89d21076` and hosted run `31332413187` were green, both threads
+were resolved, and the 19:51Z delayed sweep found no new defect. PR #52 records the reconciliation;
+no ref rewrite or unmerge was attempted.
+
+### FR-026 — a PowerShell DateTime comparison inverted the sweep-threshold result
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A post-merge guard compared a UTC `DateTime` value with a parsed `Z` literal and
+  incorrectly reported that the already elapsed 19:51:10Z threshold had not elapsed.
+- **impact:** The first delayed-sweep command stopped before querying GitHub and required one
+  corrected retry.
+- **workaround:** Use `DateTimeOffset::UtcNow` and parse the threshold as `DateTimeOffset` before
+  comparing absolute instants.
+- **occurrences:** 1 independent occurrence — Lab PR #52 delayed sweep on 2026-08-09.
+- **task:** lab issue #34 tracks external Windows command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent recurrence
+  should add a small checked UTC-threshold helper at the workflow boundary.
+
+_Note 2026-08-09 (diagnostic redaction merge):_ The failed guard ran no GitHub query and changed no
+tracked file, Git ref, GitHub object, ignored output, or protected byte; the `DateTimeOffset` retry
+completed the single delayed sweep.
+
+### FR-027 — an optional missing path made a read-only ripgrep probe exit nonzero
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A command-table discovery probe named a conventional `Makefile` alongside known
+  tracked files. The repository has no such path, so ripgrep printed the useful matches but exited
+  nonzero after reporting the missing file.
+- **impact:** The read-only probe was classified as failed and required one exact-file read before
+  the declared documentation commands were confirmed.
+- **workaround:** Resolve optional candidate paths before passing them to ripgrep, or search only
+  paths already returned by the repository file inventory.
+- **occurrences:** 1 independent occurrence — diagnostic-state proof discovery on 2026-08-09.
+- **task:** lab issue #34 tracks external Windows command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent recurrence
+  should move optional-path filtering into the smallest reusable repository-discovery helper.
+
+_Note 2026-08-09 (diagnostic state repair):_ The failed read changed no tracked file, Git ref,
+GitHub object, ignored output, or protected byte; the direct `CLAUDE.md` read supplied the same
+command-table evidence.
+
+### FR-028 — the merge path again failed to enforce 15-minute exact-head aging
+
+- **first-seen:** 2026-08-09
+- **status:** `open`
+- **symptom:** PR #51 merged after at most 8m59s at its exact head, and PR #52 merged 4m18s after
+  its final docs-head push. Both were below the owner constitution's 15-minute exact-head aging
+  rule even though their hosted proof and accepted exact-head review evidence were green.
+- **impact:** Two merges shortened the constitution's observation window; post-merge review found
+  no implementation defect, but the completed merges cannot retroactively satisfy that gate.
+- **workaround:** Reconcile each completed merge without rewriting refs, and treat 15 minutes as an
+  unconditional exact-head floor for every later merge in this session.
+- **occurrences:** 2 independent occurrences — Lab PR #51 and Lab PR #52 on 2026-08-09.
+- **task:** lab issue #29 tracks release-wave merge-eligibility hardening; issue comment
+  `5231583712` records the first occurrence.
+- **promotion:** The selected enforcement layer is one checked, event-driven pre-merge snapshot
+  that refuses eligibility before 15 minutes and returns head, base, hosted checks, accepted review
+  evidence, top-level comments, closing refs, and review threads together. Implementation remains
+  bounded task debt on issue #29; no third prose-only workaround is acceptable.
+
+_Note 2026-08-09 (diagnostic state repair):_ PR #52 final head
+`46961957e09bb976b34beb41fee5e69d89d21076` stayed green and its delayed sweep found no new defect.
+The process miss is recorded without rewriting the completed merge or claiming retroactive proof.
+
+### FR-029 — a concurrent closeout PR remained open after its state claims diverged
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** PR #53 remained open against obsolete base
+  `02a41cac4a461a93d53b481d34c96a48e29291e5` while live main and replacement PR #54 advanced the
+  same three state files. It had two unresolved blocking threads and a friction-ID collision with
+  already merged history.
+- **impact:** Merging or mechanically rebasing the branch could have restored stale resume claims,
+  exposed machine-local identifiers, or overwritten append-only friction history.
+- **workaround:** Confirm the still-relevant aging and worktree-preservation evidence remained on
+  issue #29, reduce the public inventory to generic state classes, reconcile and resolve both
+  threads, and archive PR #53 without merging or rewriting its commits.
+- **occurrences:** 1 independent occurrence — Lab PR #53 on 2026-08-09.
+- **task:** lab issue #29 retains the preservation and aging evidence; PR #54 carries the live state.
+- **promotion:** Resolved by the inspected GitHub state: PR #53 is closed, both review threads are
+  resolved, its commits were not merged or rewritten, and PR #54 is based on live main. The normal
+  live open-PR inventory remains the cheapest enforcing layer.
+
+_Note 2026-08-09 (diagnostic state repair):_ The archived branch and its worktree remain preserved;
+ignored and untracked contents were not inspected, and no branch was deleted.
+
+### FR-030 — the GitHub GraphQL quota exhausted during an exact-head review window
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The first post-push refresh for Lab PR #54 failed before returning PR state because
+  the authenticated GitHub GraphQL quota had reached zero. The core REST quota remained available;
+  GitHub reported the GraphQL reset at 2026-08-09T20:31:54Z.
+- **impact:** Head, base, checks, top-level comments, and thread resolution could not be refreshed
+  atomically through the normal query during the passive review window.
+- **workaround:** Keep useful local work moving, use REST only for evidence it can represent, and
+  defer the final all-surface merge snapshot until GraphQL has reset. Never merge from the stale
+  pre-exhaustion snapshot.
+- **occurrences:** 1 independent occurrence — Lab PR #54 on 2026-08-09.
+- **task:** lab issue #34 tracks external GitHub and command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent exhaustion
+  should add quota-aware admission to the selected checked pre-merge snapshot helper rather than
+  another polling loop.
+
+_Note 2026-08-09 (diagnostic state repair):_ The failed GraphQL call made no GitHub or repository
+change. The exact reset instant came from the read-only REST rate-limit endpoint, and the lane
+remains in passive observation while disjoint local proof continues.
+
+### FR-031 — bare Python selection again could not host the package-smoke uv command
+
+- **first-seen:** 2026-08-09
+- **status:** `open`
+- **symptom:** A bare `py -3` package-smoke invocation selected the host's unsupported newest
+  Python and saw `uv` only through user-site loading, which the confined smoke environment disables.
+  Inferring the interpreter named by the preceding project sync also failed because that interpreter
+  did not contain the `uv` module. Both attempts stopped at command validation before artifact build.
+- **impact:** Actual package-smoke proof required two failed interpreter-selection attempts before
+  the already reviewed confined bootstrap route was selected explicitly.
+- **workaround:** Put the reviewed worktree-confined `uv` executable on the task process PATH and
+  invoke the smoke through the task-local supported Python environment. The unchanged smoke then
+  built and exercised the sdist-derived wheel successfully.
+- **occurrences:** 2 independent occurrences — the initial built-artifact smoke and the
+  sdist-lineage integration proof on 2026-08-09.
+- **task:** lab issue #29 owns package-smoke hardening; lab issue #34 tracks external command-route
+  friction.
+- **promotion:** At the second occurrence, the selected enforcement layer is a checked package-smoke
+  launcher that passes one already validated `uv` executable explicitly instead of inferring it
+  from the host launcher. Implementation remains bounded task debt; the successful explicit route
+  is the interim workaround.
+
+_Note 2026-08-09 (sdist lineage):_ The explicit confined `uv 0.12.2` plus task-local Python route
+completed the actual smoke in 87.5 seconds. Neither failed selection built an artifact, changed a
+tracked file or lockfile, or surfaced ignored, generated, protected, credential, or private bytes.
