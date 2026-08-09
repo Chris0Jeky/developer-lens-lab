@@ -306,3 +306,19 @@ cheap workaround and none of them blocked a lane.
   guards in its remaining proving commands.
 - **promotion:** Deliberately NOT promoted after one occurrence. If it recurs independently, add a
   small checked PowerShell proving wrapper rather than relying on call-site discipline.
+
+### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A worktree-creation invocation selected the intended new worktree path as its command
+  working directory before that directory existed, so the process could not start and Git never ran.
+- **impact:** The bounded state-sync lane did not begin on the first attempt, although no ref or
+  filesystem state changed.
+- **workaround:** Run `git worktree add --detach origin/main` from the existing coordinator checkout,
+  then run `git switch -c` from the newly created worktree as a separate invocation.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the post-dependency state sync.
+- **task:** lab issue #29 owns the active release wave and its isolated-worktree execution evidence.
+- **promotion:** Deliberately NOT promoted after one occurrence. The canonical two-step worktree
+  rule already exists; if this invocation error recurs, put creation and branch setup in a checked
+  helper instead of adding more prose.
