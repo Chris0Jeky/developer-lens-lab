@@ -809,3 +809,51 @@ The process miss is recorded without rewriting the completed merge or claiming r
 
 _Note 2026-08-09 (diagnostic state repair):_ The archived branch and its worktree remain preserved;
 ignored and untracked contents were not inspected, and no branch was deleted.
+
+### FR-030 — the GitHub GraphQL quota exhausted during an exact-head review window
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The first post-push refresh for Lab PR #54 failed before returning PR state because
+  the authenticated GitHub GraphQL quota had reached zero. The core REST quota remained available;
+  GitHub reported the GraphQL reset at 2026-08-09T20:31:54Z.
+- **impact:** Head, base, checks, top-level comments, and thread resolution could not be refreshed
+  atomically through the normal query during the passive review window.
+- **workaround:** Keep useful local work moving, use REST only for evidence it can represent, and
+  defer the final all-surface merge snapshot until GraphQL has reset. Never merge from the stale
+  pre-exhaustion snapshot.
+- **occurrences:** 1 independent occurrence — Lab PR #54 on 2026-08-09.
+- **task:** lab issue #34 tracks external GitHub and command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent exhaustion
+  should add quota-aware admission to the selected checked pre-merge snapshot helper rather than
+  another polling loop.
+
+_Note 2026-08-09 (diagnostic state repair):_ The failed GraphQL call made no GitHub or repository
+change. The exact reset instant came from the read-only REST rate-limit endpoint, and the lane
+remains in passive observation while disjoint local proof continues.
+
+### FR-031 — bare Python selection again could not host the package-smoke uv command
+
+- **first-seen:** 2026-08-09
+- **status:** `open`
+- **symptom:** A bare `py -3` package-smoke invocation selected the host's unsupported newest
+  Python and saw `uv` only through user-site loading, which the confined smoke environment disables.
+  Inferring the interpreter named by the preceding project sync also failed because that interpreter
+  did not contain the `uv` module. Both attempts stopped at command validation before artifact build.
+- **impact:** Actual package-smoke proof required two failed interpreter-selection attempts before
+  the already reviewed confined bootstrap route was selected explicitly.
+- **workaround:** Put the reviewed worktree-confined `uv` executable on the task process PATH and
+  invoke the smoke through the task-local supported Python environment. The unchanged smoke then
+  built and exercised the sdist-derived wheel successfully.
+- **occurrences:** 2 independent occurrences — the initial built-artifact smoke and the
+  sdist-lineage integration proof on 2026-08-09.
+- **task:** lab issue #29 owns package-smoke hardening; lab issue #34 tracks external command-route
+  friction.
+- **promotion:** At the second occurrence, the selected enforcement layer is a checked package-smoke
+  launcher that passes one already validated `uv` executable explicitly instead of inferring it
+  from the host launcher. Implementation remains bounded task debt; the successful explicit route
+  is the interim workaround.
+
+_Note 2026-08-09 (sdist lineage):_ The explicit confined `uv 0.12.2` plus task-local Python route
+completed the actual smoke in 87.5 seconds. Neither failed selection built an artifact, changed a
+tracked file or lockfile, or surfaced ignored, generated, protected, credential, or private bytes.
