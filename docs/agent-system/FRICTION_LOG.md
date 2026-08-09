@@ -288,8 +288,9 @@ cheap workaround and none of them blocked a lane.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 3 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
-  2026-08-09 (a multiline PR body passed as one argument), and 2026-08-09 (a quoted jq literal).
+- **occurrences:** 4 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+  2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
+  2026-08-09 (an inline post-merge GraphQL repository string).
 - **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
   Windows review-tool boundary.
 - **promotion:** Promoted to the active-session shell boundary: bind GraphQL values as variables,
@@ -300,6 +301,10 @@ cheap workaround and none of them blocked a lane.
 _Note 2026-08-09 (release-gate park):_ The second and third occurrences happened while parking PR
 #37. All intended GitHub writes were subsequently re-read successfully; neither quoting failure
 changed repository refs or release authority.
+
+_Note 2026-08-09 (post-merge sweep):_ The fourth occurrence failed before returning review-thread
+data. The promoted GraphQL-variable form was used for the retry; the failed query did not change a
+repository ref or review thread.
 
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
