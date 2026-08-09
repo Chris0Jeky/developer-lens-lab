@@ -14,11 +14,12 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `codex/lab-package-identity-20260809` in its coordinator-owned isolated
-      worktree; PR #40 is open
+    writer: branch `docs/lab-community-files-20260809` in its coordinator-owned isolated worktree;
+      PR not yet opened
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, and the
-      merged distinct-signoff release prompt; exact selected slice is the isolated licence/package
-      identity PR #40. Keep community, release-note, asset, and tag work separate; no data activation.
+      merged distinct-signoff release prompt; exact selected slice is community scaffolding and the
+      bounded contribution policy. Keep release-note, package-smoke, asset, and tag work separate;
+      no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -39,16 +40,24 @@ delivered:
       `178bd6d695119b74294a8fd6fbe46f54577e49b2`; FR-008 through FR-014 are durably recorded, while
       FR-009/FR-010 enforcement remains task debt on issue #34 and escaped-environment cleanup is
       owner-gated at `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13`.
-next_safe_slice: Review and merge the isolated licence/package identity PR #40 for issue #29. The
-  next separate slice after it lands is community scaffolding and the draft contribution policy;
-  keep release-note, release-asset, and tag work separate.
+  - state_reconciliation: DONE — PR #39 final head
+      `b36bbadd0365a8958ba741e27c2e36e9458237be` merged as
+      `4f355f1e58e1eca1191f899f1fc4354af8a23a00`; exact hosted proof passed, late review was triaged,
+      and the resulting wording debt is repaired in the next delivered slice.
+  - licence_package_identity: DONE — PR #40 final head
+      `7d5610d2280e900d9e2c10c6304455830147ffcd` merged as
+      `d203461c023e1661140a1fef38a0f4b68e3454b2` after locked/full local proof, exact hosted proof,
+      fresh review, and the bounded PR #39 late-wording repair.
+next_safe_slice: Prove, publish, review, and merge the isolated community-files branch for issue
+  #29. The next separate slice is the prepared v0.1.0 changelog branch; keep package-smoke,
+  release-asset, and tag work separate.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
   separate Code of Conduct inbox is selected, but its address is pending under
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10; CLA and all other owner choices remain deferred.
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` is separate machine hygiene and does not
-  block release preparation or authorize inspection of the two named directories.
+  block release preparation or authorize inspection of the two private-handoff targets.
 capabilities:
   network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)
@@ -79,9 +88,9 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Reconcile PR #40 exact-head CI/review, then merge it under the ordinary gate.
-  Begin community scaffolding only as its next separate issue #29 slice. Keep
-  release-note/release-asset/tag work separate; keep
+exact_resume_point: Prove and publish the community-files branch from current Lab main, then merge
+  it under the ordinary gate. Integrate that result into the prepared changelog branch as the next
+  separate issue #29 slice. Keep package-smoke/release-asset/tag work separate; keep
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7
   (CLA/external-contribution strategy), Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11
   (aesthetic sign-off), Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and

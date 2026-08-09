@@ -686,3 +686,23 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Exact next slice is the already-open licence/package identity PR #40, followed by the prepared
   community-files branch. No owner sign-off, tag, publication, data/model/telemetry activation,
   credential or protected/generated operational content moved in this closeout.
+
+## 2026-08-09 — State and package-identity closeout (LAB-REL-01)
+
+- State PR #39 reached final head `b36bbadd0365a8958ba741e27c2e36e9458237be`; hosted run
+  `31300971426`, job `93213564502`, passed, fresh review was merge-sound, and it merged as
+  `4f355f1e58e1eca1191f899f1fc4354af8a23a00`. Its delayed connector P2 distinguished durable
+  friction records from durably installed remedies; the bounded wording repair landed through the
+  next slice and the thread was resolved.
+- Licence/package PR #40 integrated that base, added the canonical AGPL-3.0-only text and package
+  identity, and reached final head `7d5610d2280e900d9e2c10c6304455830147ffcd`. Its locked/full local
+  gate passed with 150 tests and 3 declared Windows symlink skips; hosted run `31301396559`, job
+  `93214649991`, passed; fresh review was merge-sound; and it merged as
+  `d203461c023e1661140a1fef38a0f4b68e3454b2`.
+- PR #40 also repaired the PR #39 wording P2 and recorded the seventh FR-001 tooling occurrence.
+  The exact built-artifact installation guard remains a separate non-credential package-smoke task
+  under issue #29; no registry, credential, upload, release, or tag action was opened.
+- Exact active slice is now community scaffolding and its bounded contribution policy. The public
+  contact-request surface is neutral and warns that the issue and requesting GitHub account are
+  public; it invents no inbox or monitoring promise. The prepared changelog remains the next
+  separate slice, and every non-C0 or owner-gated lane stays closed.
