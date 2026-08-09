@@ -204,6 +204,15 @@
       "depends_on": [
         "LAB-GOV-01"
       ],
+      "id": "LAB-GOV-02",
+      "outcome": "Copy-ready verified prompt library",
+      "status": "IN_REVIEW",
+      "title": "Prompt operating system and dual-runtime parity"
+    },
+    {
+      "depends_on": [
+        "LAB-GOV-01"
+      ],
       "id": "LAB-ACT-01",
       "outcome": "Non-C0 lanes unlocked",
       "status": "BACKLOG",

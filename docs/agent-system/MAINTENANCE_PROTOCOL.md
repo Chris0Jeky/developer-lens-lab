@@ -15,14 +15,28 @@ compatibility, and the failure archive.
 | Full code gate | the declared block in `CLAUDE.md` | every code/config milestone |
 | Contract parity | `uv run dllab contracts check`; sync commands are check-only outside an intentional change | every proving pass; after any product contract head change |
 | Canonical run reproducibility | replay the canonical WB-C1 run and byte-compare manifests | when the runner, contracts, or environment change |
+| Prompt parity | `uv run dllab context verify` (manifest schema, prompt IDs, shared-block digests, runtime clauses, qualified human refs) | every proving pass; after any shared-block or manifest change on either side |
 | Hygiene | `uv run python scripts/verify_hygiene.py` | every proving pass |
 | Dependency alerts | Dependabot view; triage per issue #5 | before release/activation; on new alerts |
 | Worktree/process hygiene | `git worktree list`; no background servers after handoff | every handoff |
 | Late-review sweep | merged PRs re-checked for late comments at the next workflow event | after every merge |
 
-On this estate's current host, `uv` is unavailable — run the same gate through the project
-virtual environment's interpreter; dependency re-locking is tooling-blocked and recorded, never
-silently skipped.
+On this estate's current host there is no repository-wide `uv` on PATH, but a **worktree-confined
+bootstrap is proved to work**: create a standard-library virtual environment, install
+`uv>=0.12.2,<0.13` into it, configure a confined worktree-local project environment, and invoke
+that environment's literal `uv` executable. `uv sync --locked --all-groups` and the full declared gate
+both run through it, so dependency re-locking is **not** tooling-blocked — it is unperformed work.
+The bootstrap directory is gitignored and `uv.lock` is never modified as a side effect. Recorded as
+FR-001 in [FRICTION_LOG.md](FRICTION_LOG.md); the superseded "tooling-blocked" claim is FR-002.
+
+## Merge gate
+
+While `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` — the **product** register's concurrent-writer
+gate — stays open, lab pull requests are prepared and parked, never agent-merged. Explicit owner
+commissioning permits isolated preparation. The gate is never inferred closed from a merged pull
+request, a quiet session, or another agent's message. This is not the lab's own `q-8`, which is an
+unrelated real-data publication gate; see [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md) and
+FR-004 in [FRICTION_LOG.md](FRICTION_LOG.md).
 
 ## Release protocol (v0.1.0 wave and later)
 

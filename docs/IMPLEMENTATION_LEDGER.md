@@ -531,7 +531,7 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   new regression tests. No canonical run was executed, and no recorded run, metric, artifact,
   custody record, or digest moved.
 - Verified in an isolated worktree using a worktree-local uv 0.12.3 bootstrap with
-  `UV_PROJECT_ENVIRONMENT=.venv/project` (project interpreter Python 3.12.7): locked
+  the confined worktree-local project environment configured for the bootstrap (project interpreter Python 3.12.7): locked
   `uv sync --locked --all-groups` left `uv.lock` unchanged, and focused
   `pytest tests/test_wbc1_evaluation.py tests/test_wbc1_runner.py` passed 19 with the declared
   Windows symlink skip. The full gate then passed at this head: `dllab doctor`, `dllab context
@@ -541,3 +541,71 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   resolved their recorded import-noise caveat for this pass.
 - NOT verified: hosted CI and independent review of this exact head are later gates and are not
   claimed by this entry, which authorizes no research, collection, model call, or lane activation.
+
+## 2026-08-09 — Prompt operating system and dual-runtime parity (LAB-GOV-02, issue #33)
+
+- Adopted the cross-repository prompt operating system on the lab side, paired with product issue
+  `Chris0Jeky/developer-lens#214`. `.agent-harness/prompt-parity.json` was copied **byte-for-byte**
+  from the product reference at commit `30529d4370ba857e4815135ee87fb14f214913a7`; both copies hash
+  to `sha256:d2f78a1481cfcc4ba6e6f925d09d1090fc5ffbe69b6ffb444bcdef4b5c740171`. The manifest was
+  not recalculated or edited on this side.
+- Rewrote `docs/agent-system/PROMPT_LIBRARY.md` around stable markers: the twelve common IDs
+  (`DL-P01`…`DL-P12`) in manifest order plus the two lab extensions
+  `DL-LX01-LAB-EXPERIMENT-HARNESS` and `DL-LX02-LAB-EVALUATION-REPRODUCIBILITY`, which carry the
+  experiment, methodology and reproduction behaviour previously held by the ad-hoc role prompts.
+- Both shared block bodies were copied verbatim from the product library and are carried exactly
+  once by every active prompt. Measured digests match the manifest exactly:
+  `runtime-bootstrap-v1 = 018c0db78a90107022e76a14a03fee5fe3afe5cbf16a7dd26b0b91e3e1839ef6`,
+  `friction-tasking-v1 = 56bc9679fc51fd4ff5f05b715c42a96c3201284a6fee1a033524c2ccc55f5a7e`.
+- Added `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md` (repeated governor-loop waves,
+  deterministic queue hop, work-while-aging, park-not-nurse, resource-bounded disjoint fan-out,
+  anti-manufacture legitimacy test, durable state every hop, no non-C0 lane, and explicit
+  policy/budget/tooling/queue stops), the append-only `docs/agent-system/FRICTION_LOG.md`
+  (FR-001…FR-005), and the lab-side `docs/agent-system/CROSS_REPO_CONTRACT.md` recording merge
+  order product #214 then lab #33.
+- Corrected a false operational claim: `MAINTENANCE_PROTOCOL.md` had stated that `uv` is
+  unavailable on this host and therefore dependency re-locking is tooling-blocked. The confined
+  bootstrap route is proved to run both the locked sync and the full gate, so the text now
+  describes that route and the superseded claim is preserved as FR-002 rather than erased.
+- Mechanical enforcement added to `src/developer_lens_lab/context/verify.py` with 32 new tests:
+  manifest schema/types/lab-entry resolution; code-pinned common and lab extension IDs required to
+  equal both the manifest and the Markdown in order; unique markers and exactly one text fence per
+  prompt; exactly one digest-matched copy of each shared block per active body under LF
+  normalization; the Claude and Codex runtime clauses; fully qualified
+  `<owner>/<repo>::HUMAN_TODO.md::q-N` refs; ordered continuous execution/stop marker pairs; and
+  redirect/historical classification where declared. Clause tokens are matched **outside** the
+  shared blocks, because `CLAUDE.md`, `AGENTS.md` and `Sol/Terra/Luna` also occur inside
+  `runtime-bootstrap-v1` and would otherwise let the shared spine satisfy the check for a prompt
+  carrying no lab routing clause at all.
+- Scope held: C0 invented control-plane work only. No data lane, model, telemetry, credential,
+  publication, release/tag, methodology, experiment, holdout, product contract, generated product
+  output, or owner-policy value changed. `governor.json` gained prompt/continuous/friction surfaces
+  and checks with authority, risk-class, data-lane and review-gate values untouched.
+  `.claude/agents` and both continuation skills were deliberately NOT edited in this slice.
+- Verified at this head with the FR-001 confined `uv 0.12.3` bootstrap
+  (confined worktree-local project environment configured for the bootstrap, project interpreter Python 3.12.7): `uv sync --locked
+  --all-groups` left `uv.lock` unchanged; `dllab doctor`; `dllab context verify` passed; Ruff
+  format (78 files) and Ruff lint clean; repo-wide strict Pyright 0 errors/0 warnings; full pytest
+  **143 passed / 3 declared host symlink skips** (78 of them in `tests/test_context.py`); strict
+  MkDocs build; `verify_hygiene.py` passed; `git diff --check` clean.
+- NOT verified: hosted CI and independent fresh-context review of this exact head are later gates
+  and are not claimed here. The three new agent-system documents are intentionally absent from the
+  MkDocs `nav` (INFO only; the strict build still exits 0) because `mkdocs.yml` is outside this
+  card's owned paths; adding the nav entries is a separate one-line slice.
+- Merge gate: this branch is prepared and parked. It must not be agent-merged while
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` — the product register's concurrent-writer gate,
+  not this repository's own `q-8` — stays open.
+
+## 2026-08-09 — Claude agent-surface fallback and parity enforcement (LAB-GOV-02, issue #33)
+
+- The required `dll-mechanic` write to `.claude/agents` was denied by the Claude runtime, matching
+  the product-side occurrence. The bounded fallback was completed by the isolated Codex writer;
+  the runtime boundary was not bypassed. FR-007 records both occurrences and the same-hop task.
+- Added the pinned `dll-scout` route and enforced the four-agent friction block plus the two-copy
+  continuation-friction block in `dllab context verify`. Missing, duplicate, reversed, or drifted
+  blocks are fail-closed; the blocks are byte-identical across their required copies.
+- Updated the prompt library runtime bootstrap to the exact product reference body and copied the
+  product parity manifest byte-for-byte. Lab-specific routing remains outside the shared block.
+- Scope remains C0 control-plane only: no research implementation, data/model/telemetry lane,
+  credential, generated output, product contract, or owner-policy value changed. LAB-GOV-02 stays
+  `IN_REVIEW` and the lab PR remains parked under the cross-repository q-8 gate.

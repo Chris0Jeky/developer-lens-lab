@@ -4,17 +4,35 @@ from typing import Any
 
 from developer_lens_lab.context import verify_repository
 from developer_lens_lab.context.verify import (
+    COMMON_PROMPT_IDS,
+    CONTINUOUS_PROMPT_ID,
+    LAB_EXTENSION_PROMPT_IDS,
+    REQUIRED_CLAUDE_CLAUSE,
+    REQUIRED_CODEX_CLAUSE,
     REQUIRED_SETTINGS_READ_DENY,
+    SHARED_BLOCK_IDS,
+    normalize_newlines,
+    prompt_entries,
+    shared_block_digest,
+    shared_blocks_in,
+    verify_agent_friction_parity,
     verify_context_budget,
+    verify_continuous_protocol,
     verify_governor,
     verify_markdown_links,
     verify_one_shared_block,
+    verify_parity_manifest,
+    verify_prompt_classifications,
+    verify_prompt_library,
+    verify_prompt_parity,
     verify_settings_deny,
     verify_skill_parity,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
 GOVERNOR = ROOT / ".agent-harness" / "governor.json"
+LIBRARY = ROOT / "docs" / "agent-system" / "PROMPT_LIBRARY.md"
+MANIFEST = ROOT / ".agent-harness" / "prompt-parity.json"
 
 
 def test_repository_context_is_valid() -> None:
@@ -119,6 +137,91 @@ def test_skill_parity_rejects_duplicate_markers(tmp_path: Path) -> None:
         and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
         for failure in failures
     )
+
+
+_AGENT_RELS = (
+    ".claude/agents/dll-implementer.md",
+    ".claude/agents/dll-mechanic.md",
+    ".claude/agents/dll-reviewer.md",
+    ".claude/agents/dll-scout.md",
+)
+_AGENT_START = "<!-- shared:agent-friction-tasking-v1 start -->"
+_AGENT_END = "<!-- shared:agent-friction-tasking-v1 end -->"
+_AGENT_BODY = (
+    "FRICTION TASKING (agent-friction-tasking-v1)\n"
+    "Every material workaround reaches docs/agent-system/FRICTION_LOG.md in the same hop and links "
+    "to an existing issue, card, or durable task.\n"
+    "A write-capable role appends it; a read-only role reports it as a required coordinator "
+    "same-hop "
+    "append.\n"
+    "Capture never widens scope. Never record a PID, absolute local path, token, or private "
+    "identifier."
+)
+
+
+def _write_agent_set(tmp_path: Path, bodies: tuple[str, ...] | None = None) -> None:
+    chosen = bodies or (_AGENT_BODY,) * len(_AGENT_RELS)
+    for rel, body in zip(_AGENT_RELS, chosen, strict=True):
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"agent\n{_AGENT_START}\n{body}\n{_AGENT_END}\n", encoding="utf-8")
+
+
+def test_agent_friction_parity_passes_on_the_real_repo() -> None:
+    assert verify_agent_friction_parity(ROOT) == []
+
+
+def test_agent_friction_parity_reports_missing_marker(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path)
+    (tmp_path / _AGENT_RELS[0]).write_text("agent\n", encoding="utf-8")
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any(_AGENT_RELS[0] in failure and "marker" in failure for failure in failures)
+
+
+def test_agent_friction_parity_reports_duplicate_marker(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path)
+    path = tmp_path / _AGENT_RELS[1]
+    path.write_text(
+        f"agent\n{_AGENT_START}\n{_AGENT_BODY}\n{_AGENT_END}\n{_AGENT_START}\n{_AGENT_END}\n",
+        encoding="utf-8",
+    )
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any(_AGENT_RELS[1] in failure and "exactly one" in failure for failure in failures)
+
+
+def test_agent_friction_parity_reports_reversed_markers(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path)
+    (tmp_path / _AGENT_RELS[2]).write_text(
+        f"agent\n{_AGENT_END}\n{_AGENT_BODY}\n{_AGENT_START}\n", encoding="utf-8"
+    )
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any(_AGENT_RELS[2] in failure and "out of order" in failure for failure in failures)
+
+
+def test_agent_friction_parity_reports_drift(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path, (_AGENT_BODY, _AGENT_BODY, _AGENT_BODY, _AGENT_BODY + "\nDrift"))
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any("bytes drift" in failure for failure in failures)
+
+
+def test_continuation_friction_marker_failures_are_enforced(tmp_path: Path) -> None:
+    marker = "shared:continuation-friction-tasking-v1"
+    start = f"<!-- {marker} start -->"
+    end = f"<!-- {marker} end -->"
+    body = (
+        "Every material workaround is logged in docs/agent-system/FRICTION_LOG.md in the same hop."
+    )
+    good = f"{start}\n{body}\n{end}\n"
+    _write_skill_pair(tmp_path, good, good)
+    assert verify_one_shared_block(tmp_path, marker) == []
+    _write_skill_pair(tmp_path, good, f"{start}\n{body}\n")
+    assert any("marker" in failure for failure in verify_one_shared_block(tmp_path, marker))
+    _write_skill_pair(tmp_path, good, f"{start}\n{body}\n{end}\n{start}\n{end}\n")
+    assert any("exactly one" in failure for failure in verify_one_shared_block(tmp_path, marker))
+    _write_skill_pair(tmp_path, good, f"{end}\n{body}\n{start}\n")
+    assert any("out of order" in failure for failure in verify_one_shared_block(tmp_path, marker))
+    _write_skill_pair(tmp_path, good, f"{start}\n{body} drift\n{end}\n")
+    assert any("drifted" in failure for failure in verify_one_shared_block(tmp_path, marker))
 
 
 def test_protected_data_defaults_block_matches_on_the_real_repo() -> None:
@@ -443,3 +546,364 @@ def test_governor_boolean_gate_values_fail(tmp_path: Path) -> None:
     failures = verify_governor(tmp_path)
     assert any("aging_minutes_after_push" in f for f in failures)
     assert any("fix_round_ceiling" in f for f in failures)
+
+
+# --- Prompt operating system parity ------------------------------------------------------------
+
+_ALL_PROMPT_IDS = COMMON_PROMPT_IDS + LAB_EXTENSION_PROMPT_IDS
+_CLAUDE_LINE = (
+    "LAB RUNTIME ROUTING\n"
+    "Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded work to "
+    "dll-implementer, review to dll-reviewer, sweeps to dll-mechanic."
+)
+_CODEX_LINE = (
+    "Codex: read AGENTS.md first, then the shared canon; invoke the "
+    "developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing."
+)
+_GATE_LINE = "GATE: Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 stays open."
+
+
+def _real_blocks() -> dict[str, str]:
+    return shared_blocks_in(LIBRARY.read_text(encoding="utf-8"))
+
+
+def _real_digests() -> dict[str, str]:
+    payload: dict[str, Any] = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    return {entry["id"]: entry["sha256"] for entry in payload["shared_blocks"]}
+
+
+def _load_manifest() -> dict[str, Any]:
+    return json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+
+def _body(
+    blocks: dict[str, str],
+    *,
+    claude: str = _CLAUDE_LINE,
+    codex: str = _CODEX_LINE,
+    gate: str = _GATE_LINE,
+) -> str:
+    parts = ["You do one bounded thing.", *(blocks[bid] for bid in SHARED_BLOCK_IDS)]
+    parts.extend(part for part in (claude, codex, gate) if part)
+    return "\n\n".join(parts)
+
+
+def _library(
+    blocks: dict[str, str],
+    ids: tuple[str, ...] = _ALL_PROMPT_IDS,
+    bodies: dict[str, str] | None = None,
+) -> str:
+    chunks = ["# Prompt library", ""]
+    for block_id in SHARED_BLOCK_IDS:
+        chunks.append(f"<!-- shared-block: {block_id} -->\n\n```text\n{blocks[block_id]}\n```\n")
+    for prompt_id in ids:
+        body = (bodies or {}).get(prompt_id, _body(blocks))
+        chunks.append(f"<!-- prompt-id: {prompt_id} status: active -->\n\n```text\n{body}\n```\n")
+    return "\n".join(chunks)
+
+
+def test_prompt_parity_passes_on_the_real_repo() -> None:
+    assert verify_prompt_parity(ROOT) == []
+
+
+def test_real_shared_blocks_match_the_manifest_digests() -> None:
+    # The manifest is copied byte-for-byte from the product reference, so this is the actual
+    # cross-repository parity assertion: the lab's block bodies hash to the product's digests.
+    blocks = _real_blocks()
+    digests = _real_digests()
+    assert set(blocks) == set(SHARED_BLOCK_IDS)
+    for block_id, body in blocks.items():
+        assert shared_block_digest(body) == digests[block_id], block_id
+
+
+def test_real_library_declares_every_pinned_id_in_order() -> None:
+    found = tuple(prompt_id for prompt_id, _, _ in prompt_entries(LIBRARY.read_text("utf-8")))
+    assert found == _ALL_PROMPT_IDS
+
+
+def test_synthetic_library_is_accepted() -> None:
+    assert verify_prompt_library(_library(_real_blocks()), _real_digests()) == []
+
+
+def test_prompt_library_is_crlf_stable() -> None:
+    # A Windows checkout must not change a digest or a body match. Same content, CRLF line endings,
+    # identical result - otherwise the parity gate would fail purely on checkout style.
+    blocks = _real_blocks()
+    text = _library(blocks)
+    assert verify_prompt_library(text.replace("\n", "\r\n"), _real_digests()) == []
+    assert normalize_newlines(text.replace("\n", "\r\n")) == text
+    for body in blocks.values():
+        assert shared_block_digest(body.replace("\n", "\r\n")) == shared_block_digest(body)
+
+
+def test_prompt_library_digest_drift_fails() -> None:
+    # Editing a shared block in the lab without the product edit landing first is the exact failure
+    # the SHA-256 pin exists to catch.
+    blocks = _real_blocks()
+    drifted = dict(blocks)
+    drifted[SHARED_BLOCK_IDS[0]] = blocks[SHARED_BLOCK_IDS[0]] + "\nAn unauthorised extra line."
+    failures = verify_prompt_library(_library(drifted), _real_digests())
+    assert any("digest" in failure and SHARED_BLOCK_IDS[0] in failure for failure in failures), (
+        failures
+    )
+
+
+def test_prompt_library_missing_id_fails() -> None:
+    blocks = _real_blocks()
+    failures = verify_prompt_library(_library(blocks, _ALL_PROMPT_IDS[:-1]), _real_digests())
+    assert any(_ALL_PROMPT_IDS[-1] in failure for failure in failures), failures
+
+
+def test_prompt_library_extra_id_fails() -> None:
+    blocks = _real_blocks()
+    text = _library(blocks, (*_ALL_PROMPT_IDS, "DL-P99-NOT-IN-THE-MANIFEST"))
+    failures = verify_prompt_library(text, _real_digests())
+    assert any("DL-P99-NOT-IN-THE-MANIFEST" in failure for failure in failures), failures
+
+
+def test_prompt_library_duplicate_marker_fails() -> None:
+    # A duplicated marker makes "the" body for an ID ambiguous; whichever copy a reader pastes, the
+    # other is unchecked drift.
+    blocks = _real_blocks()
+    text = _library(blocks, (*_ALL_PROMPT_IDS, _ALL_PROMPT_IDS[0]))
+    failures = verify_prompt_library(text, _real_digests())
+    assert any("duplicate prompt markers" in failure for failure in failures), failures
+
+
+def test_prompt_library_missing_shared_block_copy_fails() -> None:
+    blocks = _real_blocks()
+    target = _ALL_PROMPT_IDS[3]
+    stripped = "\n\n".join(
+        [
+            "You do one bounded thing.",
+            blocks[SHARED_BLOCK_IDS[0]],
+            _CLAUDE_LINE,
+            _CODEX_LINE,
+            _GATE_LINE,
+        ]
+    )
+    failures = verify_prompt_library(_library(blocks, bodies={target: stripped}), _real_digests())
+    assert any(
+        target in failure and SHARED_BLOCK_IDS[1] in failure and "found 0" in failure
+        for failure in failures
+    ), failures
+
+
+def test_prompt_library_duplicated_shared_block_copy_fails() -> None:
+    blocks = _real_blocks()
+    target = _ALL_PROMPT_IDS[1]
+    doubled = _body(blocks) + "\n\n" + blocks[SHARED_BLOCK_IDS[0]]
+    failures = verify_prompt_library(_library(blocks, bodies={target: doubled}), _real_digests())
+    assert any(
+        target in failure and SHARED_BLOCK_IDS[0] in failure and "found 2" in failure
+        for failure in failures
+    ), failures
+
+
+def test_prompt_library_missing_each_claude_clause_token_fails() -> None:
+    # Every token individually, because the tokens are checked outside the shared blocks: several
+    # of them also occur inside runtime-bootstrap-v1, and the check must not be satisfiable by the
+    # shared spine alone.
+    blocks = _real_blocks()
+    target = _ALL_PROMPT_IDS[0]
+    for token in REQUIRED_CLAUDE_CLAUSE:
+        clause = _CLAUDE_LINE.replace(token, "[removed]")
+        codex = _CODEX_LINE.replace(token, "[removed]")
+        body = _body(blocks, claude=clause, codex=codex, gate=_GATE_LINE.replace(token, "[x]"))
+        failures = verify_prompt_library(_library(blocks, bodies={target: body}), _real_digests())
+        assert any(
+            "Claude runtime clause token" in failure and repr(token) in failure
+            for failure in failures
+        ), (token, failures)
+
+
+def test_prompt_library_missing_each_codex_clause_token_fails() -> None:
+    blocks = _real_blocks()
+    target = _ALL_PROMPT_IDS[0]
+    for token in REQUIRED_CODEX_CLAUSE:
+        clause = _CODEX_LINE.replace(token, "[removed]")
+        claude = _CLAUDE_LINE.replace(token, "[removed]")
+        body = _body(blocks, claude=claude, codex=clause, gate=_GATE_LINE.replace(token, "[x]"))
+        failures = verify_prompt_library(_library(blocks, bodies={target: body}), _real_digests())
+        assert any(
+            "Codex runtime clause token" in failure and repr(token) in failure
+            for failure in failures
+        ), (token, failures)
+
+
+def test_prompt_library_rejects_a_bare_human_ref() -> None:
+    # product q-8 and lab q-8 are different gates, so an unqualified ref is genuinely ambiguous.
+    blocks = _real_blocks()
+    target = _ALL_PROMPT_IDS[2]
+    body = _body(blocks, gate="GATE: q-8 stays open.")
+    failures = verify_prompt_library(_library(blocks, bodies={target: body}), _real_digests())
+    assert any(target in failure and "unqualified human ref" in failure for failure in failures), (
+        failures
+    )
+
+
+def test_prompt_library_accepts_qualified_human_refs_for_either_repository() -> None:
+    blocks = _real_blocks()
+    for ref in (
+        "Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8",
+        "Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-9",
+    ):
+        body = _body(blocks, gate=f"GATE: {ref} stays open.")
+        bodies: dict[str, str] = {prompt_id: body for prompt_id in _ALL_PROMPT_IDS}
+        assert verify_prompt_library(_library(blocks, bodies=bodies), _real_digests()) == [], ref
+
+
+def test_prompt_library_rejects_a_stray_text_fence() -> None:
+    blocks = _real_blocks()
+    text = _library(blocks) + "\n```text\nA stray unattached prompt body.\n```\n"
+    failures = verify_prompt_library(text, _real_digests())
+    assert any("text fences" in failure for failure in failures), failures
+
+
+def test_parity_manifest_accepts_the_real_manifest() -> None:
+    assert verify_parity_manifest(_load_manifest()) == []
+
+
+def test_parity_manifest_malformed_shapes_fail() -> None:
+    payloads: tuple[object, ...] = ("not-an-object", [], 42, None, {1: "int-keyed"})
+    for payload in payloads:
+        assert verify_parity_manifest(payload), payload
+
+
+def test_parity_manifest_wrong_schema_version_fails() -> None:
+    payload = _load_manifest()
+    payload["manifest_schema_version"] = 2
+    assert any("manifest_schema_version" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_reordered_common_ids_fail() -> None:
+    # Order is part of the contract: the library is required to present prompts in manifest order.
+    payload = _load_manifest()
+    payload["common_prompt_ids"] = list(reversed(payload["common_prompt_ids"]))
+    assert any("common_prompt_ids" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_dropped_common_id_fails() -> None:
+    payload = _load_manifest()
+    payload["common_prompt_ids"] = payload["common_prompt_ids"][:-1]
+    assert any("common_prompt_ids" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_dropped_continuous_id_fails() -> None:
+    payload = _load_manifest()
+    payload["continuous_prompt_ids"] = []
+    assert any(CONTINUOUS_PROMPT_ID in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_malformed_shared_blocks_fail() -> None:
+    payload = _load_manifest()
+    payload["shared_blocks"] = [{"id": "runtime-bootstrap-v1"}]
+    assert any("shared_blocks" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_reordered_shared_blocks_fail() -> None:
+    payload = _load_manifest()
+    payload["shared_blocks"] = list(reversed(payload["shared_blocks"]))
+    assert any("shared_blocks" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_missing_lab_repository_entry_fails() -> None:
+    payload = _load_manifest()
+    payload["repositories"] = [
+        entry
+        for entry in payload["repositories"]
+        if entry["slug"] != "Chris0Jeky/developer-lens-lab"
+    ]
+    assert any("developer-lens-lab" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_wrong_lab_extension_ids_fail() -> None:
+    payload = _load_manifest()
+    for entry in payload["repositories"]:
+        if entry["slug"] == "Chris0Jeky/developer-lens-lab":
+            entry["extension_prompt_ids"] = ["DL-PX01-PRODUCT-DEEP-DISCOVERY"]
+    assert any("extension_prompt_ids" in failure for failure in verify_parity_manifest(payload))
+
+
+def test_parity_manifest_wrong_lab_role_or_paths_fail() -> None:
+    payload = _load_manifest()
+    for entry in payload["repositories"]:
+        if entry["slug"] == "Chris0Jeky/developer-lens-lab":
+            entry["role"] = "product"
+            entry["friction_log"] = "docs/elsewhere.md"
+    failures = verify_parity_manifest(payload)
+    assert any("role must be 'lab'" in failure for failure in failures), failures
+    assert any("friction_log" in failure for failure in failures), failures
+
+
+_EXEC = ("<!-- continuous-execution-begin -->", "<!-- continuous-execution-end -->")
+_STOP = ("<!-- continuous-stop-begin -->", "<!-- continuous-stop-end -->")
+
+
+def _continuous(exec_pair: str, stop_pair: str) -> str:
+    return f"# Continuous work protocol\n\n{exec_pair}\n\nThe wave.\n\n{stop_pair}\n"
+
+
+def test_continuous_protocol_passes_on_the_real_file() -> None:
+    text = (ROOT / "docs" / "agent-system" / "CONTINUOUS_WORK_PROTOCOL.md").read_text("utf-8")
+    assert verify_continuous_protocol(text) == []
+
+
+def test_continuous_protocol_accepts_ordered_pairs() -> None:
+    good = _continuous(f"{_EXEC[0]}\n\nExecution.\n\n{_EXEC[1]}", f"{_STOP[0]}\nStops.\n{_STOP[1]}")
+    assert verify_continuous_protocol(good) == []
+
+
+def test_continuous_protocol_missing_stop_marker_fails() -> None:
+    text = _continuous(f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}", f"{_STOP[0]}\nStops without an end.")
+    failures = verify_continuous_protocol(text)
+    assert any("continuous-stop" in failure and "exactly one" in failure for failure in failures)
+
+
+def test_continuous_protocol_reversed_stop_markers_fail() -> None:
+    text = _continuous(f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}", f"{_STOP[1]}\nStops.\n{_STOP[0]}")
+    failures = verify_continuous_protocol(text)
+    assert any("out of order" in failure for failure in failures), failures
+
+
+def test_continuous_protocol_duplicate_stop_markers_fail() -> None:
+    # A duplicated pair would let an extractor see only the first region and miss a divergent one.
+    duplicated = f"{_STOP[0]}\nStops.\n{_STOP[1]}\n\n{_STOP[0]}\nDivergent stops.\n{_STOP[1]}"
+    text = _continuous(f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}", duplicated)
+    failures = verify_continuous_protocol(text)
+    assert any("continuous-stop" in failure and "exactly one" in failure for failure in failures)
+
+
+def test_continuous_protocol_missing_execution_pair_fails() -> None:
+    text = _continuous("No execution markers here.", f"{_STOP[0]}\nStops.\n{_STOP[1]}")
+    failures = verify_continuous_protocol(text)
+    assert any("continuous-execution" in failure for failure in failures), failures
+
+
+def test_prompt_classifications_pass_on_the_real_repo() -> None:
+    assert verify_prompt_classifications(ROOT) == []
+
+
+def test_prompt_classification_accepts_supported_values(tmp_path: Path) -> None:
+    for value in ("redirect", "historical"):
+        (tmp_path / "doc.md").write_text(
+            f"# Old prompt\n\n<!-- prompt-classification: {value} -->\n", encoding="utf-8"
+        )
+        assert verify_prompt_classifications(tmp_path) == [], value
+
+
+def test_prompt_classification_rejects_an_unsupported_value(tmp_path: Path) -> None:
+    # "active" outside the library would claim a second executable-prompt surface.
+    (tmp_path / "doc.md").write_text(
+        "# Old prompt\n\n<!-- prompt-classification: active -->\n", encoding="utf-8"
+    )
+    failures = verify_prompt_classifications(tmp_path)
+    assert any("prompt-classification 'active'" in failure for failure in failures), failures
+
+
+def test_prompt_parity_reports_a_malformed_manifest(tmp_path: Path) -> None:
+    harness = tmp_path / ".agent-harness"
+    harness.mkdir()
+    (harness / "prompt-parity.json").write_text("{not json", encoding="utf-8")
+    failures = verify_prompt_parity(tmp_path)
+    assert any("invalid .agent-harness/prompt-parity.json" in failure for failure in failures)

@@ -28,3 +28,11 @@ Process:
 4. Try to REFUTE each finding before reporting; drop what you cannot defend. You cannot run code:
    mark runtime claims "unverified — coordinator should run X".
 5. A clean report on sound code is a SUCCESS. Do not invent findings or pad with LOW notes.
+<!-- shared:agent-friction-tasking-v1 start -->
+FRICTION TASKING (agent-friction-tasking-v1)
+Every material workaround, tooling hiccup, repeated friction, or surprising divergence reaches
+docs/agent-system/FRICTION_LOG.md in the same hop and links to an existing issue, card, or durable
+task. A write-capable role appends it; a read-only role reports it as a required coordinator same-hop
+append. Capture never widens scope. Never record a PID, absolute local path, token, or private
+identifier.
+<!-- shared:agent-friction-tasking-v1 end -->
