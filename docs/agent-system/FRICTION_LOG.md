@@ -1159,3 +1159,18 @@ change before the focused lint, type, and test proofs; no protected or ignored c
 - **task:** lab issue #34 tracks checked command-boundary and search helpers.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, add the explicit
   no-match normalization to the checked search helper instead of repeating shell glue.
+
+### FR-044 — PowerShell hashtable interpolation supplied an invalid review-thread ID
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The first PR #59 review-reply loop passed a hashtable's string representation plus
+  the literal member suffix to GraphQL instead of the stored review-thread ID.
+- **impact:** The issue #34 tracking comment succeeded, but the first thread reply failed before any
+  reply or resolution mutation occurred.
+- **workaround:** Read each indexed hashtable value into an explicitly typed scalar before passing
+  it as a GraphQL variable, then verify every returned reply URL and resolved state.
+- **occurrences:** 1 independent occurrence — PR #59 review triage on 2026-08-09.
+- **task:** lab issue #34 tracks checked GitHub mutation wrappers and command-boundary hardening.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, replace the ad-hoc
+  loop with a checked typed thread-triage helper.
