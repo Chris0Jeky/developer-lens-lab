@@ -896,3 +896,41 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   redaction-order, short-secret, pre-cap memory, sdist-lineage, and process-tree hardening remain
   separate issue #29 seams; release, tag, publication, credentials, data, model, and telemetry stay
   closed as applicable.
+
+## 2026-08-09 — PATH/uv validation merge and preservation closeout (LAB-REL-01, issue #29)
+
+- PATH/uv-validation PR #51 reached final head
+  `adc43aea21834683eaf2749fe3515f10da204bde` on exact base
+  `e63086b4ae3b97390969357ebdd9d3e30394814e`. Exact-head `Prove the lab` completed SUCCESS at
+  2026-08-09T12:35:45Z, and GitHub records merge commit
+  `02a41cac4a461a93d53b481d34c96a48e29291e5` at 2026-08-09T12:39:59Z.
+- The GitHub API records zero submitted reviews and zero review threads. A top-level coordinator
+  comment at 12:39:57Z asserted review completion but was not submitted review/thread evidence;
+  the independent fresh-context MERGE-SOUND report finding no CRITICAL/HIGH defect was posted to
+  PR #51 at 12:41:40Z, after merge. Immediate exact-head reconciliation found no CRITICAL/HIGH
+  implementation defect.
+- The exact head's commit time was 2026-08-09T12:31:00Z, so it aged at most 8m59s before merge,
+  below the owner constitution's 15-minute floor. Green CI did not satisfy that separate gate.
+  [Issue #29](https://github.com/Chris0Jeky/developer-lens-lab/issues/29#issuecomment-5231583712)
+  tracks mechanical, event-driven verification of both the exact-head age and required review
+  evidence before a future merge path can run.
+- Read-only worktree reconciliation preserved three non-removal-ready heads:
+  `codex/method-trial-export-v1` at `aa21dbd68ec9cd759240f551948a8bdeb59df9aa` is local-only with no
+  PR and has the untracked name `method-trial-view-exhibit-v3.json`; content was not inspected.
+  `docs/release-gate-sync` at `4a044dcec134cda313cffb7087389f64d28fe8c9` is the exact head of
+  closed, unmerged PR #37. `ci/lab-uv-version-20260809` at
+  `adc43aea21834683eaf2749fe3515f10da204bde` is the exact head of merged PR #51.
+- Every registered Lab worktree had ignored output and was deliberately retained. Only the
+  untracked filename above was recorded; its content and all ignored content were not inspected.
+  The deregistered `value01` location was not inspected or touched. Cleanup triage stays on
+  [issue #29](https://github.com/Chris0Jeky/developer-lens-lab/issues/29#issuecomment-5231588828);
+  no candidate-content review or publication is authorized.
+- **NOT VERIFIED:** the constitution's 15-minute exact-head floor was not satisfied; no submitted
+  GitHub review or review thread existed before merge; the human/operator behind GitHub account
+  metadata was not established; ignored and untracked contents, `value01`, candidate content,
+  worktree removal readiness, Lane-P review, screenshots, publication, tags, credentials, data,
+  models, telemetry, and every remaining owner gate were not inspected, exercised, or approved.
+- Resume from the first dependency-safe active C0 card (`LAB-REL-01`) selected by `tools/cards.py`
+  under issue #29, not from PR #51. Preserve every retained worktree until plain-removal safety is
+  directly proved; release, tag, publication, credentials, data, model, and telemetry lanes stay
+  closed as applicable.

@@ -14,14 +14,13 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `ci/lab-uv-version-20260809` in its coordinator-owned isolated worktree
+    writer: unassigned; select the first dependency-safe active C0 card through `tools/cards.py`
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
       built-artifact/package smoke, subprocess timeout, ignored-smoke-tree exclusion, and bounded
-      failure diagnostics and traversal pruning. The selected PATH/uv version-validation seam has
-      passed the locked full gate plus isolated artifact smoke; publish and merge it only under the
-      ordinary exact-head hosted proof and review gate. Keep later hardening, asset, and tag work
-      separate, with no data activation.
+      failure diagnostics, traversal pruning, and PATH/uv version validation. Resume from issue #29,
+      not from merged PR #51. Keep later hardening, asset, and tag work separate, with no data
+      activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -78,12 +77,19 @@ delivered:
       `086c9809ae2fd27b0a1bc485d4653764aea8ec08` passed hosted run `31308683005` / job
       `93232990186`, exact-final-head review, and merge gating, then merged as
       `e63086b4ae3b97390969357ebdd9d3e30394814e`.
-next_safe_slice: Prove, review, and merge the bounded PATH/uv version-validation branch, then select
-  one remaining issue #29 diagnostic P2 (environment-redaction order or short-secret coverage)
-  before the larger sdist-lineage and process-tree-cleanup seams. Lane-P candidate-content review,
-  screenshots, publication, and owner-gated release lanes remain parked. Do not inspect ignored
-  candidate bytes, publish assets, tag, add credentials, activate data or models, or enable
-  telemetry.
+  - path_uv_validation: DONE — PR #51 head `adc43aea21834683eaf2749fe3515f10da204bde`
+      on base `e63086b4ae3b97390969357ebdd9d3e30394814e` had exact-head `Prove the lab` SUCCESS at
+      2026-08-09T12:35:45Z and merged as `02a41cac4a461a93d53b481d34c96a48e29291e5`
+      at 2026-08-09T12:39:59Z. GitHub reports zero submitted reviews and zero review threads; the
+      independent fresh-context MERGE-SOUND/no-CRITICAL-HIGH report was posted at 12:41:40Z after
+      merge. The 12:31:00Z head commit therefore aged at most 8m59s, below the constitution's
+      15-minute floor. Immediate reconciliation found no CRITICAL/HIGH implementation defect;
+      issue #29 tracks mechanical pre-merge age and review-evidence enforcement.
+next_safe_slice: Select the first dependency-safe active C0 card (`LAB-REL-01`) through
+  `tools/cards.py` and continue issue #29, including its event-driven merge-eligibility hardening;
+  do not resume from PR #51. Lane-P candidate-content review, screenshots, publication, and
+  owner-gated release lanes remain parked. Do not inspect ignored candidate bytes, publish assets,
+  tag, add credentials, activate data or models, or enable telemetry.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -131,16 +137,27 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Continue the bounded `ci/lab-uv-version-20260809` issue #29 P2 seam at code
-  commits `a5978bc0302c5ab20cc40d53c7714a200332db52` and
-  `f85346e575dfb161bb16cfd3e63b982fd290b11c`, integrated over merged PR #50 at
-  `e63086b4ae3b97390969357ebdd9d3e30394814e`. Its pre-integration locked gate passed 171 tests with
-  3 declared skips plus actual package smoke; the current-base focused seam passed 107 tests and
-  exact hosted proof/final review remain pending. The frozen producer replay at
-  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
-  `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
-  rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
-  publication/sign-off boundary. Keep
+retained_worktrees:
+  observed: 2026-08-09
+  entries:
+    - branch: codex/method-trial-export-v1
+      head: aa21dbd68ec9cd759240f551948a8bdeb59df9aa
+      state: local-only, no PR; untracked name `method-trial-view-exhibit-v3.json`, content not inspected
+    - branch: docs/release-gate-sync
+      head: 4a044dcec134cda313cffb7087389f64d28fe8c9
+      state: exact head of closed, unmerged PR #37
+    - branch: ci/lab-uv-version-20260809
+      head: adc43aea21834683eaf2749fe3515f10da204bde
+      state: exact head of merged PR #51
+  disposition: Every registered Lab worktree had ignored output and was deliberately retained;
+    only the untracked filename above was recorded, while its content and all ignored content were
+    not inspected. The deregistered `value01` location was not inspected or touched. Issue #29 owns
+    cleanup triage; candidate-content review and publication remain unauthorized.
+exact_resume_point: Start from merged main `02a41cac4a461a93d53b481d34c96a48e29291e5`, refresh
+  `tools/cards.py`, and select its first dependency-safe active C0 card (`LAB-REL-01`) under issue
+  #29; do not resume from PR #51. Preserve the retained worktrees until issue #29 cleanup triage
+  proves plain removal safe. Do not substitute the rejected current-head candidate, inspect
+  ignored candidate bytes, or cross the Lane-P publication/sign-off boundary. Keep
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7
   (CLA/external-contribution strategy), Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11
   (aesthetic sign-off), Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and
