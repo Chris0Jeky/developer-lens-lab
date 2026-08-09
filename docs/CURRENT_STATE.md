@@ -14,13 +14,13 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `ci/lab-package-timeout-20260809` in its coordinator-owned isolated worktree
+    writer: branch `ci/lab-smoke-scan-ignore-20260809` in its coordinator-owned isolated worktree
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
-      built-artifact/package smoke. The selected P2 seam now bounds every package-smoke subprocess
-      to 300 seconds and has passed the locked full gate plus isolated artifact smoke; exact hosted
-      proof and review remain next. Keep later hardening, asset, and tag work separate, with no data
-      activation.
+      built-artifact/package smoke and subprocess timeout. The selected P2 seam excludes the ignored
+      package-smoke environment from Markdown/prompt traversal and has passed the locked full gate
+      plus isolated artifact smoke; exact hosted proof and review remain next. Keep later hardening,
+      asset, and tag work separate, with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -62,11 +62,14 @@ delivered:
       sweep found two additional P2s; both were tracked and resolved, leaving all six threads
       resolved. Full local proof was 154 passed / 3 declared skips, including the isolated wheel
       smoke.
-next_safe_slice: Prove, review, and merge the bounded package-smoke subprocess-timeout branch, then
-  select one remaining issue #29 P2 seam (PATH/uv validation or bounded diagnostics). Lane-P
-  candidate-content review, screenshots, publication, and owner-gated release lanes remain parked.
-  Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate data or
-  models, or enable telemetry.
+  - package_smoke_timeout: DONE — PR #47 final head
+      `ea9b39d663bc2edf020d9853ddf854d9cd0cefdc` passed hosted run `31306259562`, exact-final-head
+      review, and merge gating, then merged as `c827d6a18490838ab132fc7dc058c29fc727d68b`.
+next_safe_slice: Prove, review, and merge the bounded ignored-smoke-tree context-scan branch, then
+  select one remaining issue #29 P2 seam (PATH/uv validation, bounded diagnostics, sdist lineage,
+  or process-tree cleanup). Lane-P candidate-content review, screenshots, publication, and
+  owner-gated release lanes remain parked. Do not inspect ignored candidate bytes, publish assets,
+  tag, add credentials, activate data or models, or enable telemetry.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -114,8 +117,8 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Continue the bounded `ci/lab-package-timeout-20260809` package-smoke P2 seam,
-  using the merged PR #45 proof as the baseline. The frozen producer replay at
+exact_resume_point: Continue the bounded `ci/lab-smoke-scan-ignore-20260809` package-smoke P2 seam,
+  using the merged PR #45 and PR #47 proofs as the baseline. The frozen producer replay at
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
   `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
   rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P

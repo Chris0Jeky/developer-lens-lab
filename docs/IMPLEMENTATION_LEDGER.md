@@ -804,3 +804,22 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   diagnostics, and sdist-to-wheel lineage also remain separate. Hosted exact-head proof and fresh
   review are pending; release, tag, publication, credentials, data, model, and telemetry lanes stay
   closed.
+
+## 2026-08-09 — Timeout merge and ignored-smoke scan review lane (LAB-REL-01, issue #29)
+
+- Timeout PR #47 reached final head `ea9b39d663bc2edf020d9853ddf854d9cd0cefdc`; hosted run
+  `31306259562` and exact-final-head review passed, and it merged as
+  `c827d6a18490838ab132fc7dc058c29fc727d68b`. Descendant process-tree cleanup is tracked on issue
+  #29 as a separate P2; it did not expand the direct-child timeout slice.
+- Code commit `8fa67280edc56c152ed30ffc454ad6dfe45a9ed9` adds `.package-smoke` to the existing
+  explicit Markdown/prompt traversal skip set. An invented temporary fixture proves ignored smoke
+  Markdown is skipped while an ordinary tracked document still reports broken-link and invalid
+  prompt-classification failures. The branch integrated current Lab main
+  `c827d6a18490838ab132fc7dc058c29fc727d68b` before publication.
+- Locked sync, doctor/context, Ruff, Pyright, 155 passed / 3 declared Windows symlink skips, strict
+  MkDocs, hygiene, diff check, and the actual isolated package smoke passed in 329.8 seconds. No
+  ignored, protected, generated, candidate, cache, or private bytes were surfaced to or inspected
+  by the agent; automation used only newly created task-local environments. Hosted exact-head proof
+  and fresh review remain pending; PATH-uv validation, bounded diagnostics, sdist lineage,
+  process-tree cleanup, release, tag, publication, credentials, data, model, and telemetry remain
+  separate and closed as applicable.

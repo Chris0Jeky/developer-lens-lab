@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 10 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 11 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -77,8 +77,9 @@ Rules that bind entries:
   bootstrap-path assumption failed before execution), 2026-08-09 (the package-smoke final gate
   first found its dev environment unsynced, then used the same module route for a locked sync),
   2026-08-09 (the release-evidence state worktree reused that reviewed Python 3.12 environment),
-  and 2026-08-09 (the package-timeout worktree used the existing interpreter route for focused
-  checks while leaving the unavailable locked `uv` gate for coordinator proof).
+  2026-08-09 (the package-timeout worktree used the existing interpreter route for focused checks
+  while leaving the unavailable locked `uv` gate for coordinator proof), and 2026-08-09 (the
+  ignored-smoke-scan worktree reused the confined bootstrap for its full gate and package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -121,6 +122,13 @@ had no `pip` or `uv` module. `ensurepip` plus the pinned `uv>=0.12.2,<0.13` cons
 full declared gate. `uv` warned that the bootstrap `VIRTUAL_ENV` differed from the task-local project
 environment and correctly ignored it. This successful confined route is the existing promoted
 workaround; no global install, lockfile change, or private/generated-byte inspection occurred.
+
+_Note 2026-08-09 (ignored-smoke scan):_ The eleventh isolated worktree again lacked a directly
+resolvable `uv` and Pyright for the builder's first focused proof. The coordinator reused the
+confined `uv 0.12.3` bootstrap, created a task-local locked environment, and completed the full gate
+plus actual package smoke. The same harmless bootstrap-versus-project `VIRTUAL_ENV` warning was
+reported and ignored by `uv`; no global install, lockfile change, or ignored/protected-byte
+inspection occurred. The promoted maintenance-protocol route remains the cheapest truthful layer.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
