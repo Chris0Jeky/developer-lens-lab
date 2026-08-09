@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 17 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 18 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -87,7 +87,8 @@ Rules that bind entries:
   reused the confined route for its full gate and package smoke), and 2026-08-09 (the
   diagnostic-state worktree used the installed Python module route for its docs-only gate), and
   2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
-  coordinator).
+  coordinator), and 2026-08-09 (the wheel-contract test worktree used the confined route for its
+  actual package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -174,6 +175,12 @@ _Note 2026-08-09 (sdist lineage):_ The seventeenth isolated worktree likewise ha
 task-environment Pyright. The builder completed focused tests and Ruff through available host
 modules and left locked sync, Pyright, and actual package-smoke proof to the coordinator's promoted
 confined route. No global install or lockfile change occurred.
+
+_Note 2026-08-09 (wheel-contract tests):_ The eighteenth isolated worktree completed the declared
+gate through the installed host-module route, then its first actual smoke stopped at compatible-uv
+selection before artifact build. A worktree-confined `.venv/uv-bootstrap` installed the pinned
+`uv 0.12.3`; putting that executable on the task process PATH let the unchanged smoke pass. No
+lockfile, global tool, tracked file, protected byte, or generated artifact byte was inspected.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -845,8 +852,8 @@ remains in passive observation while disjoint local proof continues.
 - **workaround:** Put the reviewed worktree-confined `uv` executable on the task process PATH and
   invoke the smoke through the task-local supported Python environment. The unchanged smoke then
   built and exercised the sdist-derived wheel successfully.
-- **occurrences:** 2 independent occurrences — the initial built-artifact smoke and the
-  sdist-lineage integration proof on 2026-08-09.
+- **occurrences:** 3 independent occurrences — the initial built-artifact smoke, the sdist-lineage
+  integration proof, and the wheel-contract integration proof on 2026-08-09.
 - **task:** lab issue #29 owns package-smoke hardening; lab issue #34 tracks external command-route
   friction.
 - **promotion:** At the second occurrence, the selected enforcement layer is a checked package-smoke
@@ -857,6 +864,13 @@ remains in passive observation while disjoint local proof continues.
 _Note 2026-08-09 (sdist lineage):_ The explicit confined `uv 0.12.2` plus task-local Python route
 completed the actual smoke in 87.5 seconds. Neither failed selection built an artifact, changed a
 tracked file or lockfile, or surfaced ignored, generated, protected, credential, or private bytes.
+
+_Note 2026-08-09 (wheel-contract tests):_ The installed host-module route completed sync and the
+full declared gate, but the task environment still had neither compatible PATH uv nor a current-
+interpreter uv module for actual smoke. The explicit confined `uv 0.12.3` PATH route then passed.
+The third recurrence keeps the checked-launcher implementation as bounded issue #34 task debt; no
+failed selection built an artifact or surfaced ignored, generated, protected, credential, or
+private bytes.
 
 ### FR-032 — the first post-resolution GraphQL snapshot timed out during TLS setup
 
@@ -993,7 +1007,7 @@ ownership-token follow-up remain unchanged.
 ### FR-036 — proof-command lookup named absent optional paths
 
 - **first-seen:** 2026-08-09
-- **status:** `resolved`
+- **status:** `workaround-documented`
 - **symptom:** A bounded `rg` lookup named `pyproject.toml`, `Makefile`, and an optional
   `docs/agent-system/CURRENT_STATE.md` path that are absent from this checkout. It printed the useful
   `CLAUDE.md` matches but exited 1 because at least one explicit path did not exist.
@@ -1001,15 +1015,23 @@ ownership-token follow-up remain unchanged.
   were recovered; no proof command or repository state was affected.
 - **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
   derive candidate paths from tracked-file inventory first.
-- **occurrences:** 1 independent occurrence — PR #55 correction proof lookup on 2026-08-09.
+- **occurrences:** 2 independent occurrences — PR #55 correction proof lookup and the wheel-contract
+  proof-command lookup on 2026-08-09.
 - **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
-- **promotion:** Deliberately not promoted after one occurrence; tracked-file inventory is the
-  cheapest current guard, and a helper remains task debt only if the failure recurs.
+- **promotion:** At the second occurrence, the selected enforcing layer is a tracked-file inventory
+  preflight before passing explicit paths to `rg`; a checked wrapper remains bounded task debt on
+  issue #34.
 
 _Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
 explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
 `docs/agent-system/CURRENT_STATE.md` path are absent. `rg` exited 1 because at least one explicitly
 named path did not exist. This correction supersedes only that path-presence claim.
+
+_Note 2026-08-09 (wheel-contract proof lookup):_ A combined lookup named absent
+`MAINTENANCE_PROTOCOL.md` alongside tracked paths. `rg` printed the path error but returned success
+because other paths matched, so native exit status alone did not fail closed. The next lookup must
+derive every explicit candidate from tracked-file inventory first. No file, ref, GitHub object,
+ignored output, or protected byte changed.
 
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 

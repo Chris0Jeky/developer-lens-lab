@@ -14,8 +14,9 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: no active writer; PR #55's branch `ci/lab-sdist-lineage-20260809` is merged into main
-      at `02dcfb261f7216f01aa5696888715ac42f0e3830`
+    writer: >-
+      no active writer; PR #55 branch `ci/lab-sdist-lineage-20260809` is merged into main at
+      `02dcfb261f7216f01aa5696888715ac42f0e3830`
     state: POST_MERGE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       distinct-signoff release prompt and changelog, and the non-credential package-smoke,
       timeout, ignored-tree exclusion, bounded diagnostics, traversal pruning, PATH/uv validation,
