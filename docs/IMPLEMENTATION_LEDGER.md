@@ -762,3 +762,28 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`. The current-head candidate
   is rejected for this release; product-fixture checking remains next, while Lane-P byte/content
   review and publication stay NOT verified.
+
+## 2026-08-09 — Package-smoke merge and frozen-evidence closeout (LAB-REL-01, issue #29)
+
+- Package-smoke PR #45 reached final head `7f07ce221b7a405c06af70d3a5215910dca72991`; hosted run
+  `31304528858`, job `93222641130`, passed on that exact head. Exact-final-head review was
+  merge-sound, all four review threads were resolved, and the PR merged as
+  `6e13b6d84391ea7a2579e169151e3d765ad71583`.
+- The full local proof passed with 154 tests and 3 declared skips, including the isolated wheel
+  smoke. Remaining PATH, uv/diagnostics, and timeout hardening is tracked on issue #29; it does not
+  block this merged baseline or authorize credentials, publication, or a tag.
+- Detached frozen-producer proof at
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` passed context, contracts, invented `wbc1_demo`,
+  reproduce, export, report, and hygiene. Printed hashes exactly matched the frozen claims without
+  byte inspection: export `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`,
+  Markdown `f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and HTML
+  `22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`. The current-head candidate
+  is rejected for this release.
+- Product tracked fixture/schema proof at origin/main
+  `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` passed 26 focused tests and
+  `npm run check:method-trial-view`.
+- Lane-P candidate-content review, screenshots, and publication remain parked and NOT verified.
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off and
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off remain owner gates; tag,
+  credentials, data, model, and telemetry activation remain closed. The next safe slice is the
+  bounded tracked package-smoke P2 hardening on issue #29.
