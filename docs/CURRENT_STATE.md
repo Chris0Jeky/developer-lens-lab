@@ -55,11 +55,11 @@ delivered:
   - release_notes: DONE — PR #44 final head `ca8c075d286e7812873b86e12c54868b71519217`
       merged as `2e6a7c2b7ff906cb771bb4e904dd18d2717fa536` after exact hosted proof, fresh review, and a clean
       delayed sweep.
-next_safe_slice: Prove, review, and merge package-smoke PR #45. Then reconcile the automated
-  current-head replay/hash divergence for the selected invented C0 JSON/HTML exhibit: deterministic
-  replay passed at `2e6a7c2`, but provenance embeds the Lab commit and the printed candidate hashes
-  do not match the frozen canonical hashes below. Do not inspect ignored candidate bytes; Lane-P
-  content review, publication, screenshots, and the tag retain their explicit later stops.
+next_safe_slice: Prove, review, and merge package-smoke PR #45. The separate historical-producer
+  replay at `0ef1930` exactly reproduced the frozen JSON/Markdown/HTML hashes below, resolving the
+  current-head provenance choice in favour of the constitution's frozen Method Trial v1 exhibit.
+  Next run only the product-side tracked fixture/contract check. Do not inspect ignored candidate
+  bytes; Lane-P content review, publication, screenshots, and the tag retain their later stops.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -90,6 +90,8 @@ canonical_evidence:
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
   current_head_replay: deterministic at lab_commit=2e6a7c2b7ff906cb771bb4e904dd18d2717fa536;
     candidate hashes differ because lab_commit is embedded; release candidate NOT approved
+  frozen_producer_replay: verified at producer_commit=0ef193070a9b80b81cef5a1710a1d65e0b271c15;
+    export/markdown/html hashes exactly match the frozen claims; current-head candidate rejected
 blockers: No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is
   zero. The joint tag remains blocked on issue #29's unfinished pre-tag deliverables plus
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
@@ -99,10 +101,10 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Complete package-smoke PR #45 under the ordinary exact-head gate. Then resolve
-  whether issue #29's invented C0 exhibit remains pinned to the frozen producer or gains a reviewed
-  current-head provenance contract; the automated replay/hash packet is complete but mismatched.
-  Do not inspect ignored candidate bytes or cross the Lane-P publication/sign-off boundary. Keep
+exact_resume_point: Complete package-smoke PR #45 under the ordinary exact-head gate. Then run the
+  product-side tracked fixture/contract check against the proven frozen producer; do not substitute
+  the rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
+  publication/sign-off boundary. Keep
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7
   (CLA/external-contribution strategy), Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11
   (aesthetic sign-off), Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and

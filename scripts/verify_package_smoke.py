@@ -29,6 +29,7 @@ def build_smoke_environment(smoke_root: Path) -> dict[str, str]:
         {
             "TEMP": str(temp_root),
             "TMP": str(temp_root),
+            "TMPDIR": str(temp_root),
             "UV_CACHE_DIR": str(cache_root),
             "UV_CONCURRENT_BUILDS": "1",
             "UV_CONCURRENT_DOWNLOADS": "1",

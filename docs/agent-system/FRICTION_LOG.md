@@ -511,7 +511,7 @@ retains only the bounded action and its authority limits.
 ### FR-019 — current-head replay changes hashes embedded with Lab provenance
 
 - **first-seen:** 2026-08-09
-- **status:** `task-debt`
+- **status:** `resolved`
 - **symptom:** The automated invented-C0 replay was internally deterministic at current Lab main,
   but its printed JSON, Markdown and HTML hashes differed from the frozen canonical ledger hashes.
   The exporter includes `lab_commit` in provenance, so a new Lab head changes release bytes even
@@ -523,6 +523,11 @@ retains only the bounded action and its authority limits.
   producer or a reviewed current-head provenance contract.
 - **occurrences:** 1 independent occurrence — 2026-08-09 during the issue #29 C0 evidence packet.
 - **task:** Lab issue #29 owns the selected C0 release exhibit and its pre-tag provenance decision.
-- **promotion:** Deliberately NOT promoted after one occurrence. If the release needs a current-head
-  artifact, the cheapest enforcing layer is a versioned release-evidence manifest or explicit
-  frozen-producer command, chosen in that bounded task rather than inferred from prose.
+- **promotion:** No new structure was needed: the constitution, issue #29 and tracked hashes already
+  pin the frozen producer. A future current-head exhibit would require a separately reviewed
+  cross-repository contract/authority change, not an inferred hash refresh.
+
+_Closure 2026-08-09:_ A detached automated replay at producer
+`0ef193070a9b80b81cef5a1710a1d65e0b271c15` exactly matched the frozen JSON, Markdown and HTML
+hashes. The current-head candidate stays rejected; Lane-P content review and publication remain
+separate, unverified gates.

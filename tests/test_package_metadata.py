@@ -60,4 +60,5 @@ def test_package_smoke_confines_uv_cache_and_temp_paths(tmp_path: Path) -> None:
     assert Path(environment["UV_CACHE_DIR"]).is_relative_to(tmp_path)
     assert Path(environment["TMP"]).is_relative_to(tmp_path)
     assert Path(environment["TEMP"]).is_relative_to(tmp_path)
+    assert Path(environment["TMPDIR"]).is_relative_to(tmp_path)
     assert environment["UV_CONCURRENT_DOWNLOADS"] == "1"
