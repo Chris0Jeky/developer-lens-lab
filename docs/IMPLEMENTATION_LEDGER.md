@@ -967,3 +967,23 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   raw unredacted disk sink with unbounded growth; process-tree and component-skip-semantics
   hardening remain separate. Release, tag, publication, credentials, data, model, and telemetry
   stay closed as applicable.
+
+## 2026-08-09 — State reconciliation merge and sdist current-base integration (issues #29/#34)
+
+- State-reconciliation PR #54 reached final head
+  `a4eefd9cc4963f684c0376543600969c45d6d057`; hosted run `31333721317` / job `93295965974`, the
+  exact-final-head fresh review, and the binding 15-minute age passed. Its P1 and two operational
+  P2 threads were reconciled and resolved, and the final snapshot reported zero closing refs.
+  GitHub records merge commit `7fea25023d0704aea685e243708328264b9bcaad` at
+  2026-08-09T20:33:27Z. Its delayed 20:37Z sweep found no new review, comment, or thread debt.
+- The first post-resolution all-surface query failed with a TLS handshake timeout. One smaller
+  bounded retry succeeded, confirmed all threads resolved and the hosted check green, and also
+  showed that the PR had transitioned to merged before the coordinator issued a merge command. No
+  actor is inferred from account metadata; no duplicate merge command or ref rewrite was attempted.
+  FR-032 and FR-033 record the two external workflow observations.
+- Preserved sdist-lineage branch `ci/lab-sdist-lineage-20260809` integrated the new main merge with
+  merge commit `2c838bb5d1306434767a90279c6be8fab8a094e5`, retaining code commits
+  `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and
+  `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3`. Current-base scoped proof and publication remain next;
+  the pre-integration locked proof and actual sdist-derived wheel smoke remain applicable to the
+  unchanged code seam.

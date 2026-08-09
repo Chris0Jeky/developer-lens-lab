@@ -857,3 +857,62 @@ remains in passive observation while disjoint local proof continues.
 _Note 2026-08-09 (sdist lineage):_ The explicit confined `uv 0.12.2` plus task-local Python route
 completed the actual smoke in 87.5 seconds. Neither failed selection built an artifact, changed a
 tracked file or lockfile, or surfaced ignored, generated, protected, credential, or private bytes.
+
+### FR-032 — the first post-resolution GraphQL snapshot timed out during TLS setup
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** After all three PR #54 review-thread resolution mutations succeeded, the following
+  read-only all-surface GraphQL query failed with a TLS handshake timeout before returning evidence.
+- **impact:** Thread mutations had completed but the coordinator lacked the required confirming
+  snapshot and could not safely proceed from the pre-resolution state.
+- **workaround:** Retry once with a smaller query, then join its thread/head/base/comment/closing-ref
+  result to the exact-head REST check-run result. Park if the bounded retry also fails.
+- **occurrences:** 1 independent occurrence — Lab PR #54 final snapshot on 2026-08-09.
+- **task:** lab issue #34 tracks external GitHub and command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent TLS timeout
+  should add bounded retry/result joining to the selected checked pre-merge snapshot helper.
+
+_Note 2026-08-09 (state reconciliation merge):_ The smaller retry succeeded, confirmed all three
+threads resolved, zero closing refs, unchanged exact head/base, and green hosted proof. The failed
+read changed no GitHub object, tracked file, Git ref, ignored output, or protected byte.
+
+### FR-033 — PR state transitioned to merged before the coordinator merge command
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The successful final PR #54 snapshot reported state `MERGED` at 20:33:27Z even though
+  the coordinator had not issued a merge command. GitHub records the repository account in merge
+  metadata, but that does not establish the human or process behind the transition.
+- **impact:** Acting from the earlier open-state snapshot could have attempted a redundant merge or
+  produced false attribution in the durable ledger.
+- **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
+  make no duplicate merge or ref-rewrite attempt, and record attribution as unknown.
+- **occurrences:** 1 independent occurrence — Lab PR #54 on 2026-08-09.
+- **task:** lab issue #34 tracks external GitHub state-transition and command-boundary hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. If an unexplained transition
+  recurs, add expected-state/auto-merge inspection to the checked pre-merge snapshot helper.
+
+_Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
+`31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
+age elapsed. Merge commit `7fea25023d0704aea685e243708328264b9bcaad` is live on origin/main;
+no code or gate defect is known.
+
+### FR-034 — a combined state patch used one stale context hunk
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A combined three-file patch for the PR #54 merge checkpoint could not find one
+  expected current-state line and failed atomically before changing any file.
+- **impact:** The first documentation-sync attempt produced no update and required an exact reread
+  plus smaller file-scoped patches.
+- **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
+  atomic failure as the guard against partial state updates.
+- **occurrences:** 1 independent occurrence — sdist current-base state sync on 2026-08-09.
+- **task:** lab issue #34 tracks external patch-context and command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent stale-hunk
+  failure should add a pre-patch context check to the smallest reusable state-sync helper.
+
+_Note 2026-08-09 (sdist current-base integration):_ The failed combined patch changed no tracked
+file, Git ref, GitHub object, ignored output, or protected byte; the exact file-scoped retries
+applied the intended factual update.
