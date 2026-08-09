@@ -132,7 +132,7 @@ untestable here or merely unexercised; the entry stays `open` for that reason.
 ### FR-004 — concurrent-writer hazard in the lab checkout (cross-repository, owner-gated)
 
 - **first-seen:** 2026-08-07
-- **status:** `owner-gated`
+- **status:** `resolved`
 - **symptom:** A process other than the owning session was observed running Git operations inside
   the `developer-lens-lab` working directory mid-slice. A competing writer in the same working
   directory can corrupt a branch between an agent's read and its commit, and lane ownership cannot
@@ -148,11 +148,24 @@ untestable here or merely unexercised; the entry stays `open` for that reason.
 - **task:** `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8`. This is the **product** register's
   `q-8`; the lab's own `q-8` is an unrelated gate about publishing real-data studies, and the two
   must never be conflated.
-- **promotion:** Not promotable to an executable layer by an agent — terminating a stray local
-  process is a physical, owner-only action. The enforceable half is already promoted: the merge gate
-  is stated in [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md),
-  [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) and every active prompt's LAB MERGE GATE line.
-  Stays `owner-gated` until the owner confirms a clean sweep.
+- **promotion:** The specific product merge-blocking owner gate is resolved by direct owner closure,
+  mechanically clean `claude agents --json --all`, and report-only MCP-hygiene evidence. The
+  immutable `impact` and `workaround` text is **HISTORICAL** for periods when the product gate was
+  open; it is not a current parking instruction while this status is `resolved`.
+  The enforceable conditional parking rule remains promoted in
+  [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md),
+  [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) and every active prompt's LAB MERGE GATE line;
+  it re-enables if `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` is later open. The underlying
+  collision risk remains handled by the one-writer/worktree rules.
+
+_Note 2026-08-09 (PR #36 fix round 1):_ This supersedes the old current-impact/`owner-gated`
+wording only for the specific product q-8 merge-blocking owner gate. Direct owner closure plus the
+mechanically clean `claude agents --json --all` and report-only MCP-hygiene evidence resolve that
+gate; they do not erase the general concurrent-writer collision risk, which remains governed by
+one-writer/worktree rules and the re-enabled conditional parking rule if the fully qualified product
+q-8 reopens. The immutable `impact` and `workaround` text is **HISTORICAL** for the period when the
+product gate was open, not a current parking instruction while status is `resolved`; it does not
+alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 
 ### FR-005 — agent floor rejects heredoc stdin and unresolvable recursive-delete targets
 

@@ -206,7 +206,7 @@
       ],
       "id": "LAB-GOV-02",
       "outcome": "Copy-ready verified prompt library",
-      "status": "IN_REVIEW",
+      "status": "DONE",
       "title": "Prompt operating system and dual-runtime parity"
     },
     {

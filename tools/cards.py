@@ -172,7 +172,7 @@ CARDS = (
     Card(
         "LAB-GOV-02",
         "Prompt operating system and dual-runtime parity",
-        "IN_REVIEW",
+        "DONE",
         ("LAB-GOV-01",),
         "Copy-ready verified prompt library",
     ),
