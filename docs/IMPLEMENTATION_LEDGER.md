@@ -652,3 +652,17 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Scope held: no Python-support, contract, methodology, data/model/telemetry, credential,
   publication, release, tag, or owner-gate change. After this dependency slice lands and alert state
   is refreshed, the next separate pre-tag #29 deliverable is licence/package identity metadata.
+
+## 2026-08-09 — Dependency remediation merge and alert closure (LAB-REL-01, issue #5)
+
+- PR #38 reached final head `4ebb1049ddb831dc7ff76f5a0050e52bdf37f40c`; hosted Check run
+  31296773324 succeeded on that exact head, the independent review was merge-sound, and the PR
+  merged as `f893f576f71202375fe93e8c7d9c02e54fbaf08a`.
+- A post-merge GitHub Dependabot API refresh returned zero open alerts. Issue #5 was then closed at
+  05:46Z with the exact-head, check, merge, and alert evidence. The release curator still owes a
+  fresh Dependabot read at the eventual release head.
+- This entry supplies the evidence that the preceding append-only entry explicitly left NOT
+  verified while the branch was unpublished. No earlier ledger wording was rewritten.
+- The PR #38 post-merge sweep found no reviews, inline comments, or issue comments. The next
+  separate issue #29 deliverable is licence/package identity metadata; no data, model, telemetry,
+  credential, publication, tag, or owner-gate state changed here.
