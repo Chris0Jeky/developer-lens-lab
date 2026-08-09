@@ -877,26 +877,34 @@ _Note 2026-08-09 (state reconciliation merge):_ The smaller retry succeeded, con
 threads resolved, zero closing refs, unchanged exact head/base, and green hosted proof. The failed
 read changed no GitHub object, tracked file, Git ref, ignored output, or protected byte.
 
-### FR-033 — PR state transitioned to merged before the coordinator merge command
+### FR-033 — concurrent observer lacked PR merge-operation context
 
 - **first-seen:** 2026-08-09
-- **status:** `workaround-documented`
-- **symptom:** The successful final PR #54 snapshot reported state `MERGED` at 20:33:27Z even though
-  the coordinator had not issued a merge command. GitHub records the repository account in merge
-  metadata, but that does not establish the human or process behind the transition.
+- **status:** `resolved`
+- **symptom:** A concurrent observer's successful final PR #54 snapshot reported state `MERGED` at
+  20:33:27Z before that observer received the root governor's merge-operation context. GitHub merge
+  metadata alone did not identify which concurrent process issued the request.
 - **impact:** Acting from the earlier open-state snapshot could have attempted a redundant merge or
   produced false attribution in the durable ledger.
 - **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
-  make no duplicate merge or ref-rewrite attempt, and record attribution as unknown.
+  reconcile available concurrent-process operation evidence, and make no duplicate merge or ref
+  rewrite attempt.
 - **occurrences:** 1 independent occurrence — Lab PR #54 on 2026-08-09.
-- **task:** lab issue #34 tracks external GitHub state-transition and command-boundary hardening.
-- **promotion:** Deliberately NOT promoted after one occurrence. If an unexplained transition
-  recurs, add expected-state/auto-merge inspection to the checked pre-merge snapshot helper.
+- **task:** lab issue #34 comment `5233753580` supplies the direct merge-operation correction.
+- **promotion:** Resolved by direct operation evidence: a root governor issued the exact-head REST
+  merge and GitHub returned the recorded merge commit. The durable correction distinguishes a
+  concurrent observer's missing context from an unexplained external transition.
 
 _Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
 `31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
 age elapsed. Merge commit `7fea25023d0704aea685e243708328264b9bcaad` is live on origin/main;
 no code or gate defect is known.
+
+_Correction 2026-08-09 (concurrent-context reconciliation):_ The original symptom captured only
+this observer's local command history and must not be read as evidence that no coordinator issued
+the merge. Issue #34 comment `5233753580` records the other root governor's exact REST request
+(`sha=a4eefd9cc4963f684c0376543600969c45d6d057`, merge method `merge`) and GitHub's successful
+`7fea25023d0704aea685e243708328264b9bcaad` response. Human attribution remains unverified.
 
 ### FR-034 — a combined state patch used one stale context hunk
 
@@ -908,14 +916,25 @@ no code or gate defect is known.
   plus smaller file-scoped patches.
 - **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
   atomic failure as the guard against partial state updates.
-- **occurrences:** 1 independent occurrence — sdist current-base state sync on 2026-08-09.
+- **occurrences:** 2 independent occurrences — the stale combined hunk during sdist current-base
+  state sync and the ambiguous FR-033 status hunk during PR #55 review correction on 2026-08-09.
 - **task:** lab issue #34 tracks external patch-context and command-boundary workflow hardening.
-- **promotion:** Deliberately NOT promoted after one occurrence. A second independent stale-hunk
-  failure should add a pre-patch context check to the smallest reusable state-sync helper.
+- **promotion:** At the second occurrence, the selected enforcement layer is an exact section-header
+  anchor plus a pre-stage diff assertion that only the intended friction ID changed. A reusable
+  state-sync helper remains bounded task debt on issue #34.
 
 _Note 2026-08-09 (sdist current-base integration):_ The failed combined patch changed no tracked
 file, Git ref, GitHub object, ignored output, or protected byte; the exact file-scoped retries
 applied the intended factual update.
+
+_Note 2026-08-09 (PR #55 review correction):_ An unanchored status hunk matched FR-005 instead of
+FR-033. The immediate diff inspection caught it before staging; an exact header-scoped patch restored
+FR-005 and changed only FR-033. No commit, push, GitHub object, ignored output, or protected byte
+contained the transient edit.
+
+_Note 2026-08-09 (same correction hop):_ The first full-section wording patch used an assumed impact
+line and failed atomically. Narrow exact-line retries changed the title, symptom, and workaround;
+the failed attempt changed no file, ref, GitHub object, ignored output, or protected byte.
 
 ### FR-035 — an unannounced post-merge state worktree appeared at live main
 
@@ -938,3 +957,39 @@ _Note 2026-08-09 (sdist current-base integration):_ The observed branch and orig
 to `7fea25023d0704aea685e243708328264b9bcaad`; tracked status is clean and the repository has zero
 open pull requests. No ignored or untracked content was enumerated or inspected, and the worktree
 was not removed.
+
+_Note 2026-08-09 (concurrent-context reconciliation):_ Issue #34 later proved that another root
+governor process was active around the PR #54 merge. "Unannounced" describes missing coordination
+context for this observer, not an unidentified external actor. The clean retained worktree facts and
+ownership-token follow-up remain unchanged.
+
+### FR-036 — proof-command lookup named absent optional paths
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** A bounded `rg` lookup named `pyproject.toml`, `Makefile`, and an optional
+  `docs/agent-system/CURRENT_STATE.md` path that are absent from this checkout. It printed the useful
+  `CLAUDE.md` matches but exited 1 because at least one explicit path did not exist.
+- **impact:** The lookup's process status was red even though the canonical run-and-prove commands
+  were recovered; no proof command or repository state was affected.
+- **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
+  derive candidate paths from tracked-file inventory first.
+- **occurrences:** 1 independent occurrence — PR #55 correction proof lookup on 2026-08-09.
+- **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
+- **promotion:** Deliberately not promoted after one occurrence; tracked-file inventory is the
+  cheapest current guard, and a helper remains task debt only if the failure recurs.
+
+### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** An inline regex intended to compare friction-entry statuses embedded Markdown
+  backticks inside a double-quoted PowerShell command and failed at parse time.
+- **impact:** The pre-stage assertion did not run on its first attempt; the shell parsed no
+  repository mutation and changed no file, ref, GitHub object, ignored output, or protected byte.
+- **workaround:** Replace the inline regex with fixed header-and-context inspection plus the full
+  scoped diff before staging.
+- **occurrences:** 1 independent occurrence — PR #55 correction pre-stage assertion on 2026-08-09.
+- **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked script
+  file rather than adding more inline shell escaping.

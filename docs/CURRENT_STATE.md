@@ -97,8 +97,8 @@ delivered:
       `a4eefd9cc4963f684c0376543600969c45d6d057` passed hosted run `31333721317` / job
       `93295965974`, exact-final-head review, the 15-minute age, and complete thread triage, then
       merged as `7fea25023d0704aea685e243708328264b9bcaad` at 20:33:27Z; its delayed 20:37Z sweep was clean.
-      FR-032 and FR-033 record the final-snapshot TLS retry and the observed external state
-      transition.
+      FR-032 records the final-snapshot TLS retry; FR-033 records and corrects a concurrent
+      observer's incomplete merge-operation context.
 next_safe_slice: Complete ready PR #55's exact-head hosted, review, and 15-minute aging gate, then
   select the tracked zero/multiple-wheel or full-call-sequence test seam. Pre-cap diagnostic-memory
   hardening remains task debt until a design

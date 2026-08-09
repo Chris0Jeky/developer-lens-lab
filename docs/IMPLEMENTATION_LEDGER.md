@@ -978,9 +978,11 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   2026-08-09T20:33:27Z. Its delayed 20:37Z sweep found no new review, comment, or thread debt.
 - The first post-resolution all-surface query failed with a TLS handshake timeout. One smaller
   bounded retry succeeded, confirmed all threads resolved and the hosted check green, and also
-  showed that the PR had transitioned to merged before the coordinator issued a merge command. No
-  actor is inferred from account metadata; no duplicate merge command or ref rewrite was attempted.
-  FR-032 and FR-033 record the two external workflow observations.
+  showed the PR as merged before this concurrent observer had merge-operation context. Direct
+  evidence on issue #34 then confirmed that a separate root governor process had issued the
+  exact-head REST merge and received merge commit `7fea25023d0704aea685e243708328264b9bcaad`.
+  No human actor is inferred from account metadata; no duplicate merge command or ref rewrite was
+  attempted. FR-032 records the TLS retry, while corrected FR-033 records the context reconciliation.
 - Preserved sdist-lineage branch `ci/lab-sdist-lineage-20260809` integrated the new main merge with
   merge commit `2c838bb5d1306434767a90279c6be8fab8a094e5`, retaining code commits
   `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and
