@@ -15,7 +15,7 @@ head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: branch `docs/lab-release-notes-20260809` in its coordinator-owned isolated worktree;
-      PR not yet opened
+      PR #44 is open
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, and the
       merged distinct-signoff release prompt; exact selected slice is the bounded v0.1.0 changelog.
       Keep package-smoke, asset, and tag work separate; no data activation.
