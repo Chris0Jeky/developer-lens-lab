@@ -19,8 +19,9 @@ active_wave:
       merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
       built-artifact/package smoke and subprocess timeout. The selected P2 seam excludes the ignored
       package-smoke environment from Markdown/prompt traversal and has passed the locked full gate
-      plus isolated artifact smoke; exact hosted proof and review remain next. Keep later hardening,
-      asset, and tag work separate, with no data activation.
+      plus isolated artifact smoke; publish and merge it only under the ordinary exact-head hosted
+      proof and review gate. Keep later hardening, asset, and tag work separate, with no data
+      activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
