@@ -7,7 +7,19 @@ name = "developer-lens-lab"
 version = "0.1.0"
 description = "Synthetic-first research and evaluation engine for Developer Lens"
 readme = "README.md"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
+authors = [{ name = "Cristian Tcaci" }]
 requires-python = ">=3.12,<3.14"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+]
+
 dependencies = [
   "duckdb>=1.4,<2",
   "httpx>=0.28,<1",
@@ -24,6 +36,12 @@ dependencies = [
   "statsmodels>=0.14,<1",
   "typer>=0.16,<1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Chris0Jeky/developer-lens-lab"
+Repository = "https://github.com/Chris0Jeky/developer-lens-lab"
+Issues = "https://github.com/Chris0Jeky/developer-lens-lab/issues"
+Documentation = "https://github.com/Chris0Jeky/developer-lens-lab#readme"
 
 [project.scripts]
 dllab = "developer_lens_lab.cli:app"
