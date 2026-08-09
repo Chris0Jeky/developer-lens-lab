@@ -183,3 +183,54 @@ def test_package_smoke_failure_diagnostics_are_deterministic(
         "stdout:\nfailed in <task-cwd>\n"
         "stderr:\ndiagnostic"
     )
+
+
+def test_package_smoke_diagnostics_redact_canonical_multiline_path_values(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    native_path = r"C:\Synthetic\secret-root"
+    slash_swapped_path = native_path.replace("\\", "/")
+    multiline_secret = "synthetic-line-one\r\nsynthetic-line-two"
+    output = f"path={slash_swapped_path}\r\nvalue={multiline_secret}\r\n"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 3, stdout=output, stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build"],
+            cwd=tmp_path,
+            environment={"SECRET_PATH": native_path, "MULTILINE_TOKEN": multiline_secret},
+        )
+
+    message = str(exc_info.value)
+    assert native_path not in message
+    assert slash_swapped_path not in message
+    assert "synthetic-line-one\r\nsynthetic-line-two" not in message
+    assert "path=<redacted>\nvalue=<redacted>" in message
+
+
+def test_package_smoke_diagnostics_escape_terminal_controls_and_keep_newlines(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    output = "\x1b[31mred\x1b[0m\x1b]0;synthetic-title\x07\x00\nnext-line"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 4, stdout=output, stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(["uv", "build"], cwd=tmp_path, environment={"SAFE": "ok"})
+
+    message = str(exc_info.value)
+    assert "\x1b" not in message
+    assert "\x07" not in message
+    assert "\x00" not in message
+    assert r"\x1b[31mred\x1b[0m\x1b]0;synthetic-title\x07\x00" in message
+    assert r"\x07" in message
+    assert "\nnext-line" in message

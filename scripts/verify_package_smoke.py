@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from pathlib import Path
 from typing import cast
 
@@ -18,11 +19,16 @@ PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT = 2_000
 PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER = "\n...[truncated]"
 
 
+def _canonicalize_line_endings(value: str) -> str:
+    """Use one line-ending representation for diagnostics and redaction values."""
+    return value.replace("\r\n", "\n").replace("\r", "\n")
+
+
 def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
     """Return environment values that must not appear in failure diagnostics."""
     sensitive_names = ("auth", "credential", "cookie", "key", "password", "secret", "token")
     values = {
-        value
+        _canonicalize_line_endings(value)
         for name, value in environment.items()
         if value and (len(value) >= 4 or any(marker in name.lower() for marker in sensitive_names))
     }
@@ -35,16 +41,31 @@ def _replace_path(text: str, path: str, replacement: str) -> str:
     for variant in sorted(variants, key=len, reverse=True):
         if not variant:
             continue
-        flags = re.IGNORECASE if os.name == "nt" else 0
+        windows_path = re.match(r"^[a-z]:[\\/]", variant, flags=re.IGNORECASE) is not None
+        flags = re.IGNORECASE if os.name == "nt" or windows_path else 0
         text = re.sub(re.escape(variant), replacement, text, flags=flags)
     return text
+
+
+def _escape_terminal_controls(value: str) -> str:
+    """Render terminal/control characters visibly while preserving line breaks."""
+    escaped: list[str] = []
+    for character in value:
+        if character == "\n":
+            escaped.append(character)
+        elif unicodedata.category(character) in {"Cc", "Cf"}:
+            codepoint = ord(character)
+            escaped.append(f"\\x{codepoint:02x}" if codepoint <= 0xFF else f"\\u{codepoint:04x}")
+        else:
+            escaped.append(character)
+    return "".join(escaped)
 
 
 def _bounded_diagnostic_stream(
     output: str, *, cwd: Path, command: list[str], environment: dict[str, str]
 ) -> str:
     """Normalize, redact, and cap one subprocess diagnostic stream."""
-    normalized = output.replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    normalized = _canonicalize_line_endings(output)
     cwd_path = str(cwd)
     normalized = _replace_path(normalized, cwd_path, "<task-cwd>")
     with contextlib.suppress(OSError):
@@ -53,7 +74,8 @@ def _bounded_diagnostic_stream(
         if Path(argument).is_absolute():
             normalized = _replace_path(normalized, argument, "<task-path>")
     for value in _environment_values_to_redact(environment):
-        normalized = normalized.replace(value, "<redacted>")
+        normalized = _replace_path(normalized, value, "<redacted>")
+    normalized = _escape_terminal_controls(normalized).rstrip("\n")
     if len(normalized) <= PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT:
         return normalized
     limit = PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT - len(PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER)
