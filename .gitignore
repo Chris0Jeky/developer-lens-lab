@@ -1,4 +1,5 @@
 .venv/
+.package-smoke/
 .uv-cache/
 /.dllab/scopes
 .pytest_cache/

@@ -463,3 +463,17 @@ retains only the bounded action and its authority limits.
 - **task:** lab issue #34 tracks the external Windows/GitHub CLI workflow boundary.
 - **promotion:** Deliberately NOT promoted after one occurrence. If it recurs, add a checked wrapper
   that captures the created PR URL/number and performs the exact numbered re-read.
+
+### FR-017 - PowerShell lacks `Get-Date -AsUTC`
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Windows PowerShell rejected `Get-Date -AsUTC` because that parameter is unavailable
+  in the host version.
+- **impact:** A timestamp probe failed before any repository state changed, briefly interrupting
+  the bounded issue #29 release-evidence lane.
+- **workaround:** Use `[DateTime]::UtcNow.ToString('o')` for an equivalent UTC timestamp.
+- **occurrences:** 1 independent occurrence - 2026-08-09 during the issue #29 package-smoke lane.
+- **task:** Lab issue #29 owns the release-evidence boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If an independent recurrence
+  appears, consider a compatibility helper at the smallest shared command layer.
