@@ -179,3 +179,34 @@ path in a shell variable and invoking it (`$UV run …`) is refused as a dynamic
 workaround is identical: invoke the literal interpreter or executable path. This strengthens the
 `occurrences` picture but does not change the promotion decision, since all three forms share one
 cheap workaround and none of them blocked a lane.
+
+### FR-006 — orchestration wall-clock timeout terminated a session after its work was complete
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A 30-minute orchestration wrapper around an agent session expired and terminated the
+  owned agent process. The timeout fired *after* the session's final gate subprocess had already
+  exited and the tracked tree was clean, so every commit survived; what was lost was the session's
+  own closing report, not repository work. The wall-clock limit is a property of the wrapper, not of
+  any repository command.
+- **impact:** The real cost is epistemic, not mechanical. A terminated session leaves recorded
+  claims — here, an implementation-ledger entry asserting a green full gate at an exact head — with
+  no live witness that they were ever true. A successor that trusts such a claim inherits an
+  unverified assertion; one that re-proves everything from scratch pays for the whole gate again.
+  The full declared gate costs roughly 2 minutes of wall clock on this host, most of it pytest.
+- **workaround:** Resume in the same checkout rather than a fresh clone, and reconcile instead of
+  assuming: verify branch, HEAD, base and tree cleanliness against the pins first, then re-run the
+  narrowest proof for the slice before the full gate. The worktree-confined `uv` bootstrap from
+  FR-001 survives process termination, so no re-bootstrap is needed — reuse
+  `.venv/uv-bootstrap` with `UV_PROJECT_ENVIRONMENT=.venv/project`. On 2026-08-09 this route
+  re-confirmed the prior session's claim exactly: 78 context tests, then the full gate green at the
+  unchanged head `a4702354cfb7a029d77af5a61ec518982d7f5262`, with `uv.lock` untouched. The ledger
+  claim was therefore accurate and required no correction.
+- **occurrences:** 1 recorded — 2026-08-09 (LAB-GOV-02 prompt-system slice).
+- **task:** lab issue #33 (LAB-GOV-02), the slice that was in flight when the wrapper expired.
+- **promotion:** Deliberately NOT promoted. The controllable half is already canon: committing in
+  small logical increments and writing durable state every hop is what made this timeout cost a
+  report rather than a slice — see the "Durable state every hop" section of
+  [CONTINUOUS_WORK_PROTOCOL.md](CONTINUOUS_WORK_PROTOCOL.md). The uncontrollable half is an external
+  wrapper budget, which no repository check can enforce. Revisit only if a timeout lands mid-write
+  and leaves a dirty tree, which would be a materially different failure.
