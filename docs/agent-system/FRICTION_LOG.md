@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 13 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 14 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -81,8 +81,9 @@ Rules that bind entries:
   while leaving the unavailable locked `uv` gate for coordinator proof), and 2026-08-09 (the
   ignored-smoke-scan worktree reused the confined bootstrap for its full gate and package smoke),
   and 2026-08-09 (the bounded-diagnostics worktree reused that confined route for its full gate and
-  package smoke), and 2026-08-09 (the context-traversal-pruning worktree reused the confined route
-  for its full gate and package smoke).
+  package smoke), 2026-08-09 (the context-traversal-pruning worktree reused the confined route for
+  its full gate and package smoke), and 2026-08-09 (the PATH/uv-validation worktree reused the
+  confined route for its full gate and package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -148,6 +149,12 @@ then selected the task environment's Python-module fallback, which has no `uv` m
 before building an artifact. Retrying only the smoke through the reviewed bootstrap interpreter
 passed. No global install, lockfile change, or ignored/protected-byte inspection occurred; the
 prepared PATH/version-validation slice addresses command selection separately.
+
+_Note 2026-08-09 (PATH/uv validation):_ The fourteenth isolated worktree likewise had no PATH uv.
+The confined `uv 0.12.3` bootstrap created its task-local locked environment for the full gate and
+its reviewed interpreter ran the actual package smoke. The first full-gate attempt stopped at a real
+test-type error before suite or smoke execution; after the typed test fix, the unchanged confined
+route passed. No global install, lockfile change, or ignored/protected-byte inspection occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
