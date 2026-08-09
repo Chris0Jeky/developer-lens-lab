@@ -629,3 +629,26 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   CLA plus all other owner choices remain deferred.
 - Exact next safe slice: LAB-REL-01 isolated dependency triage for issue #5. Licence, community,
   packaging, and release-asset work remain separate slices.
+
+## 2026-08-09 — Patched dependency bounds for LAB-REL-01 (issue #5)
+
+- Raised the direct runtime constraint from `pyarrow>=21,<23` to `pyarrow>=23.0.1,<24` and the
+  development constraint from `pytest>=8.4,<9` to `pytest>=9.0.3,<10`, then regenerated the locked
+  resolution with the confined uv 0.12.3 bootstrap. The lock moves only `pyarrow` 22.0.0 to 23.0.1
+  and `pytest` 8.4.2 to 9.1.1; no transitive package changed.
+- Integrated Lab main merge `faa36c6cb193af4a72d750ed557c7ac9719c2430` before final proof. The
+  dependency change still touches only `pyproject.toml` and `uv.lock`; this append-only entry is the
+  required durable evidence record. The corrected bootstrap instructions already landed in the
+  maintenance protocol and were not rewritten here.
+- Verified at combined head `2bc4f9fe490ce0a6f9aac04ffe35d0813a2fc048`: locked all-group sync;
+  Python 3.12.7 imports reporting pyarrow 23.0.1 and pytest 9.1.1; doctor; context verification;
+  Ruff format and lint; strict Pyright with 0 errors, warnings, or information; full pytest with
+  149 passed and 3 declared Windows symlink skips; strict MkDocs; repository hygiene; and a fresh
+  invented-only WB-C1 smoke run whose deterministic reproduce and report commands passed. Generated
+  artifact contents were not inspected.
+- NOT verified until the branch is published: hosted exact-head CI/review and live Dependabot alert
+  closure. The existing Material-for-MkDocs upstream warning and three unnav'ed agent-system pages
+  remain non-blocking; no opportunistic documentation-toolchain upgrade was attempted.
+- Scope held: no Python-support, contract, methodology, data/model/telemetry, credential,
+  publication, release, tag, or owner-gate change. After this dependency slice lands and alert state
+  is refreshed, the next separate pre-tag #29 deliverable is licence/package identity metadata.
