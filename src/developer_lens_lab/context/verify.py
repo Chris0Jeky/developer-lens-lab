@@ -77,6 +77,7 @@ LOCAL_LINK_RE = re.compile(r"\[[^]]+\]\((?!https?://|mailto:|#)([^)]+)\)")
 SKIPPED_MARKDOWN_PARTS = {
     ".dllab",
     ".git",
+    ".package-smoke",
     ".pytest_cache",
     ".ruff_cache",
     ".venv",

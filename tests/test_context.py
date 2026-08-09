@@ -317,6 +317,30 @@ def test_link_verifier_does_not_read_generated_output(tmp_path: Path) -> None:
     assert verify_markdown_links(tmp_path) == []
 
 
+def test_package_smoke_markdown_is_skipped_but_tracked_docs_are_checked(tmp_path: Path) -> None:
+    ignored_doc = tmp_path / ".package-smoke" / "candidate.md"
+    ignored_doc.parent.mkdir()
+    ignored_doc.write_text(
+        "[missing](missing.md)\n<!-- prompt-classification: unsupported -->\n",
+        encoding="utf-8",
+    )
+    tracked_doc = tmp_path / "docs" / "guide.md"
+    tracked_doc.parent.mkdir()
+    tracked_doc.write_text(
+        "[missing](missing.md)\n<!-- prompt-classification: unsupported -->\n",
+        encoding="utf-8",
+    )
+
+    assert verify_markdown_links(tmp_path) == [
+        f"broken local link in {Path('docs') / 'guide.md'}: missing.md"
+    ]
+    classification_failures = verify_prompt_classifications(tmp_path)
+    assert len(classification_failures) == 1
+    assert classification_failures[0].startswith(
+        f"{Path('docs') / 'guide.md'}: prompt-classification 'unsupported' must be one of "
+    )
+
+
 def _load_governor() -> dict[str, Any]:
     return json.loads(GOVERNOR.read_text(encoding="utf-8"))
 
