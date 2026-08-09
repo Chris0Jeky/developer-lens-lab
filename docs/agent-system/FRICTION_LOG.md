@@ -68,13 +68,14 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 7 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 8 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
   route), 2026-08-09 (the community-files worktree used the installed Python module route), and
   2026-08-09 (the package-identity base refresh reused that module route after a stale literal
-  bootstrap-path assumption failed before execution).
+  bootstrap-path assumption failed before execution), and 2026-08-09 (the package-smoke final gate
+  first found its dev environment unsynced, then used the same module route for a locked sync).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -95,6 +96,12 @@ _Note 2026-08-09 (package-identity base refresh):_ The seventh occurrence first 
 bootstrap path that was not present in that worktree, so no proving command ran. The already
 installed `py -3 -m uv` 0.12.2 route was then verified directly and kept the project environment
 worktree-local; no cache contents were enumerated or inspected.
+
+_Note 2026-08-09 (package smoke):_ The eighth occurrence first ran the full gate with `--no-sync`;
+`uv` created an empty project environment and could not resolve `dllab`, so no repository check ran.
+A later bare `py -3` smoke selected the host's default Python outside the package's declared
+`<3.14` range and failed before exercising the supported package seam. The promoted worktree-local
+Python 3.12 bootstrap route then completed the locked full gate and isolated artifact smoke.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 

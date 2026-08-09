@@ -46,7 +46,10 @@ def test_package_smoke_rejects_context_failures() -> None:
 def test_package_smoke_falls_back_to_current_python_for_missing_path_uv(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: None)
+    def missing_uv(_name: str) -> None:
+        return None
+
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", missing_uv)
 
     assert resolve_uv_command() == [sys.executable, "-m", "uv"]
 
