@@ -20,7 +20,18 @@ authority.
 | [DATASET_PROTOCOL.md](DATASET_PROTOCOL.md) | Data lanes S/O/C/P and activation preconditions |
 | [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) | Recurring checks, admin, release, health report |
 | [IDEA_PROTOCOL.md](IDEA_PROTOCOL.md) | Idea lifecycle and independent criticism |
-| [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) | Reusable role prompts, including Research Governor Lite |
+| [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) | Every executable prompt, behind a stable ID |
+| [CONTINUOUS_WORK_PROTOCOL.md](CONTINUOUS_WORK_PROTOCOL.md) | Repeated waves, queue hop, stop conditions |
+| [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md) | Product/lab split, prompt parity, merge order |
+| [FRICTION_LOG.md](FRICTION_LOG.md) | Append-only friction debt and promotion decisions |
+
+Prompts are the executable surface of this governor. [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) holds
+all of them behind stable IDs: twelve common IDs shared byte-compatibly with `developer-lens` plus
+two lab extensions. Two shared blocks (`runtime-bootstrap-v1`, `friction-tasking-v1`) are pinned by
+SHA-256 in `.agent-harness/prompt-parity.json` and carried verbatim by every active prompt, so a
+runtime that reads any single prompt learns which canon to read first, how to route on Claude and on
+Codex, and that friction is logged in the same hop. See
+[CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md) for how a shared block is changed.
 
 `docs/CURRENT_STATE.md` stays the single tracked live resume point; `tools/cards.py` stays the
 authoritative task source; the ledgers and failure archive stay history; `HUMAN_TODO.md` holds
