@@ -1053,6 +1053,28 @@ no repository mutation, ignored-output access, protected-byte access, or GitHub 
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked PR
   triage helper rather than hand-authoring the orchestration wrapper.
 
+### FR-039 — strict MkDocs emits an upstream Material-for-MkDocs warning
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The strict documentation build emitted the upstream Material-for-MkDocs warning
+  about forthcoming MkDocs 2.0 incompatibilities while still completing successfully.
+- **impact:** Proof output contains a non-failing upstream compatibility warning that can be
+  mistaken for a repository documentation failure.
+- **workaround:** Keep the declared MkDocs/Material version bounds, record the warning separately,
+  and use the process exit status plus the generated documentation result for pass/fail.
+- **occurrences:** 3 independent occurrences — PR #55 correction/finalization proof, PR #55
+  post-merge reconciliation, and issue #58 current-base full-gate proof on 2026-08-09.
+- **task:** lab issue #34 tracks reusable proof-command and tooling-boundary hardening.
+- **promotion:** At the second occurrence this remains task debt rather than a suppression rule:
+  the warning is emitted upstream while the pinned build succeeds, and hiding it would remove useful
+  upgrade evidence. Dependency-range maintenance on issue #34 is the cheapest effective layer if
+  the pinned dependency changes or the warning becomes an actionable failure.
+
+_Note 2026-08-09 (issue #58 current-base proof):_ The strict build passed again with the same
+upstream warning after the PyYAML lock refresh. No MkDocs/Material bound, generated documentation
+content, release evidence, or publication state was changed or inspected.
+
 ### FR-040 — focused Ruff format check found new line wrapping
 
 - **first-seen:** 2026-08-09
