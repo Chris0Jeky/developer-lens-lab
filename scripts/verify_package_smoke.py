@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import cast
 
+PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS = 300
+
 
 def resolve_uv_command() -> list[str]:
     """Use PATH uv in CI, or the current interpreter's uv module locally."""
@@ -63,14 +65,22 @@ def assert_doctor_report(output: str) -> dict[str, object]:
 def _run(
     command: list[str], *, cwd: Path, environment: dict[str, str]
 ) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(
-        command,
-        cwd=cwd,
-        env=environment,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        rendered = " ".join(command)
+        raise RuntimeError(
+            "package smoke command timed out after "
+            f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}"
+        ) from exc
     if result.returncode:
         rendered = " ".join(command)
         raise RuntimeError(f"package smoke command failed ({result.returncode}): {rendered}")
