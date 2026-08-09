@@ -1074,10 +1074,112 @@ ignored output, or protected byte changed.
   mistaken for a repository documentation failure.
 - **workaround:** Keep the declared MkDocs/Material version bounds, record the warning separately,
   and use the process exit status plus the generated documentation result for pass/fail.
-- **occurrences:** 2 independent occurrences — PR #55 correction/finalization proof and PR #55
-  post-merge reconciliation on 2026-08-09.
+- **occurrences:** 3 independent occurrences — PR #55 correction/finalization proof, PR #55
+  post-merge reconciliation, and issue #58 current-base full-gate proof on 2026-08-09.
 - **task:** lab issue #34 tracks reusable proof-command and tooling-boundary hardening.
 - **promotion:** At the second occurrence this remains task debt rather than a suppression rule:
   the warning is emitted upstream while the pinned build succeeds, and hiding it would remove useful
   upgrade evidence. Dependency-range maintenance on issue #34 is the cheapest effective layer if
   the pinned dependency changes or the warning becomes an actionable failure.
+
+_Note 2026-08-09 (issue #58 current-base proof):_ The strict build passed again with the same
+upstream warning after the PyYAML lock refresh. No MkDocs/Material bound, generated documentation
+content, release evidence, or publication state was changed or inspected.
+
+### FR-040 — focused Ruff format check found new line wrapping
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The focused Ruff format check rejected two newly added line layouts in the verifier
+  and tests.
+- **impact:** The format gate stopped before Ruff lint and Pyright; no semantic or protected-data
+  behavior was affected.
+- **workaround:** Run the repository-pinned Ruff formatter on the two changed Python files, then
+  rerun the focused format, lint, type, and test checks.
+- **occurrences:** 2 independent occurrences — the issue #58 writer change and the coordinator's
+  closing-fence refinement on 2026-08-09.
+- **task:** lab issue #58 owns the focused verifier and test changes.
+- **promotion:** At the second occurrence, the repository-pinned formatter remains the cheapest
+  enforcing layer and must run before the focused format check on changed Python files.
+
+_Note 2026-08-09 (coordinator review):_ The focused check rejected the iterator layout added while
+allowing unrelated later Markdown fences. The pinned formatter made only the mechanical layout
+change before the focused lint, type, and test proofs; no protected or ignored content was read.
+
+### FR-041 — package-smoke script ignored a help probe
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Invoking the package-smoke script with `--help` did not print usage or reject the
+  unknown flag; its zero-argument entry point started the normal smoke path instead.
+- **impact:** A command-discovery probe unexpectedly reached environment validation and produced a
+  failed attempt before the intended proof command was run.
+- **workaround:** Treat the tracked script's zero-argument `main` as the command contract and run it
+  only with the reviewed confined `uv` directory on PATH; use tracked source for discovery.
+- **occurrences:** 1 independent occurrence — issue #58 package proof on 2026-08-09.
+- **task:** lab issue #34 tracks checked command discovery; lab issue #29 owns package-smoke
+  hardening.
+- **promotion:** Deliberately not promoted after one occurrence. If command-line use expands, add an
+  explicit argument parser or a checked wrapper rather than relying on ignored arguments.
+
+### FR-042 — canonical replay was attempted before its clean-tree precondition
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The issue #58 canonical invented replay was started while its already-verified
+  friction-log reconciliation remained uncommitted, so the runner rejected the tracked-dirty tree.
+- **impact:** The first replay attempt stopped before creating a run and had to be repeated after the
+  documentation commit.
+- **workaround:** Finish the scoped documentation proof and commit first, confirm tracked status is
+  clean, then run the same replay in a disposable synthetic artifact root.
+- **occurrences:** 1 independent occurrence — issue #58 environment proof on 2026-08-09.
+- **task:** lab issue #58 owns the current replay; lab issue #34 tracks reusable proof sequencing.
+- **promotion:** Deliberately not promoted after one occurrence; the runner's clean-tree refusal is
+  the effective guard. Promote only if orchestration repeatedly orders replay before final staging.
+
+### FR-043 — expected ripgrep no-match left the proof wrapper red
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A tracked friction lookup correctly found no prior clean-replay entry and returned
+  ripgrep's documented no-match status, but the PowerShell wrapper retained that status after
+  classifying it as acceptable, so orchestration reported the read-only command as failed.
+- **impact:** The lookup result was usable but appeared as a red command and required explicit
+  reconciliation before the friction entry could be selected.
+- **workaround:** After accepting a no-match result, terminate the wrapper with an explicit success
+  status; retain nonzero status only for an actual search error.
+- **occurrences:** 1 independent occurrence — issue #58 friction lookup on 2026-08-09.
+- **task:** lab issue #34 tracks checked command-boundary and search helpers.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, add the explicit
+  no-match normalization to the checked search helper instead of repeating shell glue.
+
+### FR-044 — PowerShell hashtable interpolation supplied an invalid review-thread ID
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The first PR #59 review-reply loop passed a hashtable's string representation plus
+  the literal member suffix to GraphQL instead of the stored review-thread ID.
+- **impact:** The issue #34 tracking comment succeeded, but the first thread reply failed before any
+  reply or resolution mutation occurred.
+- **workaround:** Read each indexed hashtable value into an explicitly typed scalar before passing
+  it as a GraphQL variable, then verify every returned reply URL and resolved state.
+- **occurrences:** 1 independent occurrence — PR #59 review triage on 2026-08-09.
+- **task:** lab issue #34 tracks checked GitHub mutation wrappers and command-boundary hardening.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, replace the ad-hoc
+  loop with a checked typed thread-triage helper.
+
+### FR-045 — YAML comment syntax truncated the active-wave issue reference
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** PyYAML accepted the active-wave lane's plain scalar but treated the space before its
+  `#29` issue reference as a comment, so the parsed value silently lost the task identifier.
+- **impact:** Context verification passed a machine-readable resume block whose active lane no
+  longer named the GitHub issue that owns it.
+- **workaround:** Represent the lane as a folded scalar and assert that safe loading preserves the
+  complete issue-bearing value.
+- **occurrences:** 1 independent occurrence — PR #59 exact-final-head review on 2026-08-09.
+- **task:** lab issue #58 owns the current repair; lab issue #34 tracks deeper YAML semantic
+  validation.
+- **promotion:** Deliberately not promoted after one occurrence; the focused repository-state
+  regression is the cheapest enforcing layer for this canonical field.

@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
+import yaml
+
 from developer_lens_lab.schemas import check_schemas
 
 REQUIRED_FILES = (
@@ -87,6 +89,25 @@ SKIPPED_MARKDOWN_PARTS = {
     "site",
 }
 
+CURRENT_STATE_REQUIRED_KEYS = (
+    "updated",
+    "phase",
+    "posture",
+    "repository",
+    "branch",
+    "head",
+    "active_wave",
+    "delivered",
+    "next_safe_slice",
+    "release_and_owner_gates",
+    "capabilities",
+    "canonical_evidence",
+    "blockers",
+    "late_review_debt",
+    "exact_resume_point",
+)
+CURRENT_STATE_MAPPING_KEYS = ("capabilities", "canonical_evidence")
+
 
 @dataclass(frozen=True)
 class VerificationReport:
@@ -126,6 +147,83 @@ def verify_markdown_links(root: Path) -> list[str]:
             resolved = (path.parent / target).resolve()
             if not resolved.exists():
                 failures.append(f"broken local link in {path.relative_to(root)}: {raw_target}")
+    return failures
+
+
+def verify_current_state_yaml(root: Path) -> list[str]:
+    """Validate the single machine-readable CURRENT_STATE.md YAML fence."""
+    path = root / "docs" / "CURRENT_STATE.md"
+    if not path.is_file():
+        return ["missing docs/CURRENT_STATE.md"]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    openings = [index for index, line in enumerate(lines) if line.strip() == "```yaml"]
+    if len(openings) != 1:
+        return [
+            f"docs/CURRENT_STATE.md must contain exactly one YAML fence (found {len(openings)})"
+        ]
+    opening = openings[0]
+    closing = next(
+        (index for index, line in enumerate(lines) if index > opening and line.strip() == "```"),
+        None,
+    )
+    if closing is None:
+        return [
+            "docs/CURRENT_STATE.md must contain exactly one closing YAML fence "
+            f"after line {opening + 1}"
+        ]
+    body = "\n".join(lines[opening + 1 : closing])
+    try:
+        payload: object = yaml.safe_load(body)
+    except yaml.YAMLError as exc:
+        mark = getattr(exc, "problem_mark", None)
+        line = opening + 2 + getattr(mark, "line", 0)
+        problem = getattr(exc, "problem", "invalid YAML")
+        return [f"docs/CURRENT_STATE.md:{line}: invalid YAML: {problem}"]
+    if not isinstance(payload, dict):
+        return [f"docs/CURRENT_STATE.md:{opening + 2}: YAML top level must be a mapping"]
+    mapping = cast(dict[object, object], payload)
+    if not all(isinstance(key, str) for key in mapping):
+        return [f"docs/CURRENT_STATE.md:{opening + 2}: YAML keys must be strings"]
+    values = cast(dict[str, object], mapping)
+    failures = [
+        f"docs/CURRENT_STATE.md:{opening + 2}: YAML missing required key {key!r}"
+        for key in CURRENT_STATE_REQUIRED_KEYS
+        if key not in values
+    ]
+    for key in CURRENT_STATE_MAPPING_KEYS:
+        if key in values and not isinstance(values[key], dict):
+            failures.append(
+                f"docs/CURRENT_STATE.md:{opening + 2}: YAML key {key!r} must be a mapping"
+            )
+    active_wave = values.get("active_wave")
+    if active_wave is not None and not isinstance(active_wave, list):
+        failures.append(
+            f"docs/CURRENT_STATE.md:{opening + 2}: YAML key 'active_wave' must be a list"
+        )
+    delivered = values.get("delivered")
+    if delivered is not None:
+        if not isinstance(delivered, list):
+            failures.append(
+                f"docs/CURRENT_STATE.md:{opening + 2}: YAML key 'delivered' must be a list"
+            )
+        else:
+            delivered_items = cast(list[object], delivered)
+            for index, item in enumerate(delivered_items, start=1):
+                if not isinstance(item, dict):
+                    failures.append(
+                        f"docs/CURRENT_STATE.md:{opening + 2}: delivered entry "
+                        f"{index} must be a one-key mapping"
+                    )
+                else:
+                    item_mapping = cast(dict[object, object], item)
+                    if len(item_mapping) != 1 or not all(
+                        isinstance(item_key, str) and isinstance(item_value, str)
+                        for item_key, item_value in item_mapping.items()
+                    ):
+                        failures.append(
+                            f"docs/CURRENT_STATE.md:{opening + 2}: delivered entry "
+                            f"{index} must contain exactly one string key and value"
+                        )
     return failures
 
 
@@ -1132,6 +1230,7 @@ def verify_repository(root: Path) -> VerificationReport:
             failures.append("CURRENT_STATE.md must contain exactly one exact_resume_point")
         if "live git and ci outrank this file" not in text.lower():
             failures.append("CURRENT_STATE.md must state the live-evidence precedence rule")
+    failures.extend(verify_current_state_yaml(root))
     if (root / "developer_lens_lab_bootstrap_agent_prompt.md").exists():
         failures.append("the commissioning prompt must not become a competing repo authority")
     failures.extend(_verify_tier(root))
