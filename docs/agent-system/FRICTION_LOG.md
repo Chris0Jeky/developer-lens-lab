@@ -979,6 +979,11 @@ ownership-token follow-up remain unchanged.
 - **promotion:** Deliberately not promoted after one occurrence; tracked-file inventory is the
   cheapest current guard, and a helper remains task debt only if the failure recurs.
 
+_Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
+explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
+`docs/agent-system/CURRENT_STATE.md` path are absent. `rg` exited 1 because at least one explicitly
+named path did not exist. This correction supersedes only that path-presence claim.
+
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
 - **first-seen:** 2026-08-09
