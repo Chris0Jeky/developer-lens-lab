@@ -495,7 +495,7 @@ retains only the bounded action and its authority limits.
 - **first-seen:** 2026-08-09
 - **status:** `workaround-documented`
 - **symptom:** A release-wave issue comment fully qualified one Lab human action, then referred to a
-  second Lab action as a bare `q-13`. The required repository prefix was therefore absent from one
+  second Lab action by number alone. The required repository prefix was therefore absent from one
   live operational reference.
 - **impact:** A later coordinator could attribute the shorthand to the product repository and route
   the machine-hygiene action through the wrong owner gate.
