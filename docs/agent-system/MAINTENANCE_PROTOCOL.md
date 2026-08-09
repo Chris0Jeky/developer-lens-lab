@@ -53,8 +53,9 @@ FR-004 in [FRICTION_LOG.md](FRICTION_LOG.md).
 6. Selected C0 JSON/HTML release assets with provenance and licence notices; release review per
    lane P.
 7. Synchronized changelog/release notes; tag; verify the release renders and installs. A joint
-   release is reaffirmed, but no tag is authorized until product q-10(c) release sign-off and lab
-   q-11 aesthetic sign-off are complete.
+   release is reaffirmed, but no tag is authorized until
+   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and
+   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off are complete.
 8. The frozen Method Trial v1 ships as the canonical exhibit — do not wait for the next
    experiment to tag.
 

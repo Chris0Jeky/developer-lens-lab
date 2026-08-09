@@ -27,10 +27,11 @@ delivered:
       q-8 real-study public-transformation gate.
 next_safe_slice: LAB-REL-01 — isolated dependency triage for issue #5, using the proved confined
   uv bootstrap; record bounded residuals and keep every other release-wave slice separate.
-release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized. Product
-  q-10(c) release sign-off and lab q-11 aesthetic sign-off still block tags. A separate Code of
-  Conduct inbox is selected but its address is pending; CLA and all other owner choices remain
-  deferred.
+release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
+  separate Code of Conduct inbox is selected but its address is pending; CLA and all other owner
+  choices remain deferred.
 capabilities:
   network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)
@@ -60,6 +61,8 @@ late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-up
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
 exact_resume_point: Begin LAB-REL-01 with the isolated dependency-triage #5 slice using the
   proved confined uv bootstrap (FR-001). Keep licence/community/packaging/release-asset work
-  separate; keep q-7 (CLA/external-contribution strategy), q-11 (aesthetic sign-off), product
-  q-10(c) release sign-off, and every non-C0 lane explicit and closed as applicable.
+  separate; keep Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7
+  (CLA/external-contribution strategy), Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11
+  (aesthetic sign-off), Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and
+  every non-C0 lane explicit and closed as applicable.
 ```
