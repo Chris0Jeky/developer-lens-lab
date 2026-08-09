@@ -1031,7 +1031,7 @@ ownership-token follow-up remain unchanged.
 - **status:** `workaround-documented`
 - **symptom:** A bounded `rg` lookup named `pyproject.toml`, `Makefile`, and an optional
   `docs/agent-system/CURRENT_STATE.md` path that are absent from this checkout. It printed the useful
-  `CLAUDE.md` matches but exited 2 because at least one explicit path did not exist.
+  `CLAUDE.md` matches but exited 1 because at least one explicit path did not exist.
 - **impact:** The lookup's process status was red even though the canonical run-and-prove commands
   were recovered; no proof command or repository state was affected.
 - **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
@@ -1043,15 +1043,19 @@ ownership-token follow-up remain unchanged.
   preflight before passing explicit paths to `rg`; a checked wrapper remains bounded task debt on
   issue #34.
 
-_Correction 2026-08-10 (PR #56 P2 triage):_ The original entry recorded the wrong native exit code.
-`pyproject.toml` exists and was read successfully; `Makefile` and the optional
-`docs/agent-system/CURRENT_STATE.md` path are absent. Ripgrep returns exit 2 for an explicit missing
-path even when another named path matches. This correction supersedes only the exit-status claim.
+_Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
+explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
+`docs/agent-system/CURRENT_STATE.md` path are absent. `rg` exited 1 because at least one explicitly
+named path did not exist. This correction supersedes only that path-presence claim.
 
 _Note 2026-08-09 (wheel-contract proof lookup):_ A combined lookup named absent
 `MAINTENANCE_PROTOCOL.md` alongside tracked paths. Ripgrep printed the path error and returned exit 2;
 the next lookup must derive every explicit candidate from tracked-file inventory first. No file, ref,
 GitHub object, ignored output, or protected byte changed.
+
+_Correction 2026-08-10 (PR #56 final blocker-fix):_ A live synthetic check confirmed native ripgrep
+returns exit 2 when an explicitly named path is missing, even when another named path matches. This
+supersedes only the earlier exit-status claim; the original symptom and dated correction remain above.
 
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
@@ -1229,11 +1233,16 @@ change before the focused lint, type, and test proofs; no protected or ignored c
   friction log.
 - **workaround:** Compare the parent-main and final-head blocks mechanically before staging, restore
   every parent record, and retain only explicitly appended corrections.
-- **occurrences:** 1 independent occurrence — PR #56 final blocker-fix review on 2026-08-10.
+- **occurrences:** 2 independent occurrences — the PR #56 refresh merge-resolution loss and the
+  PR #56 final blocker-fix FR-036 preservation loss on 2026-08-10.
 - **task:** lab issue #34 tracks checked merge/state reconciliation helpers.
-- **promotion:** Deliberately not promoted after one occurrence; exact parent-range comparison is the
-  current guard until a checked state-sync helper exists.
+- **promotion:** At the second occurrence, promote the exact parent-range comparison to a checked
+  state-sync helper on issue #34; every reconciliation must prove append-only history before staging.
 
-_Note 2026-08-10 (PR #56 final blocker-fix):_ Exact range review caught the loss before merge; all
-parent FR-031, FR-034, and FR-037 records were restored. No protected content, GitHub mutation,
+_Note 2026-08-10 (PR #56 first blocker-fix):_ Exact range review caught the first loss before merge;
+all parent FR-031, FR-034, and FR-037 records were restored. No protected content, GitHub mutation,
 ignored output, or capability boundary was crossed.
+
+_Note 2026-08-10 (PR #56 final blocker-fix):_ Exact range review caught the second loss before merge;
+the original FR-036 symptom and dated correction were restored before appending the exit-2 correction.
+No protected content, GitHub mutation, ignored output, or capability boundary was crossed.

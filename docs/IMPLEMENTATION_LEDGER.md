@@ -1010,3 +1010,15 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   credential, data, model, and telemetry lanes remain separate or closed.
 - The delayed `2026-08-09T21:25:06Z` sweep found no late review, comment, thread, or closing-reference
   debt. The package-smoke test seam is therefore the next ready issue #29 item.
+
+## 2026-08-09 — Package-smoke wheel-contract PR #57 post-merge milestone (issues #29/#34)
+
+- PR #57 final head `bd4d244f079b46c0425e0618043c37b48abb29c7` was based on
+  `02dcfb261f7216f01aa5696888715ac42f0e3830`, passed hosted run `31337621819` / job
+  `93305956992`, 181 passed / 3 declared skips plus the actual confined package smoke, an
+  independent review with no CRITICAL/HIGH findings, and the binding 15-minute exact-head age.
+  GitHub merged it as `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad` at
+  `2026-08-09T21:59:55Z`; its delayed `23:10:19 BST` sweep was clean.
+- The delivered test seam covers both zero/multiple-wheel behavior and the full call sequence. The
+  prior tail's statement that this seam was next-ready is superseded by this merged milestone; the
+  next selection is the remaining dependency-safe Lab #29 pre-tag work recorded in CURRENT_STATE.
