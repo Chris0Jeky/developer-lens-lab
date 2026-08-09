@@ -871,3 +871,28 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   redaction-order, short-secret, and pre-cap memory hardening remain separate issue #29 seams.
   Hosted exact-head proof and final review for traversal pruning remain pending; release, tag,
   publication, credentials, data, model, and telemetry lanes stay closed as applicable.
+
+## 2026-08-09 — Traversal-pruning merge and PATH/uv validation review lane (LAB-REL-01, issue #29)
+
+- Context-traversal-pruning PR #50 reached final head
+  `086c9809ae2fd27b0a1bc485d4653764aea8ec08`; hosted run `31308683005` / job `93232990186` and
+  exact-final-head review passed, and it merged as `e63086b4ae3b97390969357ebdd9d3e30394814e`.
+  A delayed sweep at 2026-08-09T12:28:24Z found zero hosted reviews and zero review threads; its
+  single top-level exact-review comment was unchanged.
+- Code commit `a5978bc0302c5ab20cc40d53c7714a200332db52` validates a PATH `uv` command before any
+  package build, accepts only `>=0.12.2,<0.13`, and deterministically probes the current-interpreter
+  module before failing safely. Synthetic tests cover both bounds, compatible versions, malformed,
+  nonzero and timed-out probes, valid fallback, both candidates invalid, and no build before
+  validation. Commit `f85346e575dfb161bb16cfd3e63b982fd290b11c` repairs strict test typing and pins the
+  rendered runtime range to `pyproject.toml`.
+- The first full gate stopped at six strict Pyright errors from three untyped test lambdas, before
+  suite or smoke execution. After the typed-helper fix, the confined locked gate passed
+  doctor/context, Ruff, Pyright, 171 tests with 3 declared Windows symlink skips, strict MkDocs,
+  hygiene, diff check, and actual package smoke in 290.5 seconds. After integrating merged PR #50,
+  the focused current-base context/package seam passed 107 tests with context, Ruff, Pyright, and
+  diff checks green.
+- No ignored, protected, generated, candidate, cache, or private bytes were surfaced to or
+  inspected by the agent. Hosted exact-head proof and final review remain pending. Diagnostic
+  redaction-order, short-secret, pre-cap memory, sdist-lineage, and process-tree hardening remain
+  separate issue #29 seams; release, tag, publication, credentials, data, model, and telemetry stay
+  closed as applicable.

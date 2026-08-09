@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 13 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 14 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -81,8 +81,9 @@ Rules that bind entries:
   while leaving the unavailable locked `uv` gate for coordinator proof), and 2026-08-09 (the
   ignored-smoke-scan worktree reused the confined bootstrap for its full gate and package smoke),
   and 2026-08-09 (the bounded-diagnostics worktree reused that confined route for its full gate and
-  package smoke), and 2026-08-09 (the context-traversal-pruning worktree reused the confined route
-  for its full gate and package smoke).
+  package smoke), 2026-08-09 (the context-traversal-pruning worktree reused the confined route for
+  its full gate and package smoke), and 2026-08-09 (the PATH/uv-validation worktree reused the
+  confined route for its full gate and package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -148,6 +149,12 @@ then selected the task environment's Python-module fallback, which has no `uv` m
 before building an artifact. Retrying only the smoke through the reviewed bootstrap interpreter
 passed. No global install, lockfile change, or ignored/protected-byte inspection occurred; the
 prepared PATH/version-validation slice addresses command selection separately.
+
+_Note 2026-08-09 (PATH/uv validation):_ The fourteenth isolated worktree likewise had no PATH uv.
+The confined `uv 0.12.3` bootstrap created its task-local locked environment for the full gate and
+its reviewed interpreter ran the actual package smoke. The first full-gate attempt stopped at a real
+test-type error before suite or smoke execution; after the typed test fix, the unchanged confined
+route passed. No global install, lockfile change, or ignored/protected-byte inspection occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -598,3 +605,44 @@ separate, unverified gates.
 
 _Note 2026-08-09 (bounded package diagnostics):_ The failed helper changed no repository ref or
 protected output. The retry used `CommandArgs` and the same confined environment.
+
+### FR-021 — managed PowerShell failed to start under transient resource pressure
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Two consecutive task-wrapper launches failed before PowerShell loaded, reporting
+  Windows error `0x800705af`. The intended Git/GitHub publication command and the follow-up machine
+  guidance read therefore never started.
+- **impact:** A fully proved branch could not be published from the coordinator process at that
+  workflow boundary; neither failed launch produced repository or GitHub evidence.
+- **workaround:** Preserve the clean branch and hand the exact bounded commit/publication command to
+  a fresh worker process. Do not short-poll the failing shell or broaden the task.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during PATH/uv-validation publication;
+  both failed starts were retries of the same operation.
+- **task:** lab issue #34 tracks external Windows and command-wrapper workflow hardening.
+- **promotion:** Deliberately NOT promoted after one independent occurrence. If a separate session
+  reproduces the startup failure, add the machine's existing resource-hygiene sweep at the narrow
+  pre-publication boundary or record why it remains machine debt.
+
+_Note 2026-08-09 (PATH/uv validation):_ Both failures occurred before a command or manifest read;
+no tracked file, Git ref, GitHub object, ignored output, or protected byte changed in either attempt.
+
+### FR-022 — a full-history agent fork cannot also override the worker role
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The first publication handoff requested both a full-history fork and an explicit
+  worker role. The orchestrator rejected that combination before creating an agent.
+- **impact:** The alternate publication process did not start on the first attempt; no delegated
+  proof or Git/GitHub action occurred.
+- **workaround:** Use a no-history worker fork with a context-complete bounded task brief when a role
+  override is required.
+- **occurrences:** 1 independent occurrence — 2026-08-09 while recovering the PATH/uv-validation
+  publication lane from FR-021.
+- **task:** lab issue #34 tracks external agent-routing and command-wrapper workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. The corrected invocation is the
+  cheapest layer; a second independent recurrence should move the compatibility rule into the
+  routing skill or its executable schema.
+
+_Note 2026-08-09 (PATH/uv validation):_ Rejection happened before agent creation and changed no
+tracked file beyond this friction record, Git ref, GitHub object, ignored output, or protected byte.
