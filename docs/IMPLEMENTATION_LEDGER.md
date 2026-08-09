@@ -877,6 +877,8 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Context-traversal-pruning PR #50 reached final head
   `086c9809ae2fd27b0a1bc485d4653764aea8ec08`; hosted run `31308683005` / job `93232990186` and
   exact-final-head review passed, and it merged as `e63086b4ae3b97390969357ebdd9d3e30394814e`.
+  A delayed sweep at 2026-08-09T12:28:24Z found zero hosted reviews and zero review threads; its
+  single top-level exact-review comment was unchanged.
 - Code commit `a5978bc0302c5ab20cc40d53c7714a200332db52` validates a PATH `uv` command before any
   package build, accepts only `>=0.12.2,<0.13`, and deterministically probes the current-interpreter
   module before failing safely. Synthetic tests cover both bounds, compatible versions, malformed,

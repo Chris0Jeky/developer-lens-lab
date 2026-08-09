@@ -605,3 +605,44 @@ separate, unverified gates.
 
 _Note 2026-08-09 (bounded package diagnostics):_ The failed helper changed no repository ref or
 protected output. The retry used `CommandArgs` and the same confined environment.
+
+### FR-021 — managed PowerShell failed to start under transient resource pressure
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Two consecutive task-wrapper launches failed before PowerShell loaded, reporting
+  Windows error `0x800705af`. The intended Git/GitHub publication command and the follow-up machine
+  guidance read therefore never started.
+- **impact:** A fully proved branch could not be published from the coordinator process at that
+  workflow boundary; neither failed launch produced repository or GitHub evidence.
+- **workaround:** Preserve the clean branch and hand the exact bounded commit/publication command to
+  a fresh worker process. Do not short-poll the failing shell or broaden the task.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during PATH/uv-validation publication;
+  both failed starts were retries of the same operation.
+- **task:** lab issue #34 tracks external Windows and command-wrapper workflow hardening.
+- **promotion:** Deliberately NOT promoted after one independent occurrence. If a separate session
+  reproduces the startup failure, add the machine's existing resource-hygiene sweep at the narrow
+  pre-publication boundary or record why it remains machine debt.
+
+_Note 2026-08-09 (PATH/uv validation):_ Both failures occurred before a command or manifest read;
+no tracked file, Git ref, GitHub object, ignored output, or protected byte changed in either attempt.
+
+### FR-022 — a full-history agent fork cannot also override the worker role
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The first publication handoff requested both a full-history fork and an explicit
+  worker role. The orchestrator rejected that combination before creating an agent.
+- **impact:** The alternate publication process did not start on the first attempt; no delegated
+  proof or Git/GitHub action occurred.
+- **workaround:** Use a no-history worker fork with a context-complete bounded task brief when a role
+  override is required.
+- **occurrences:** 1 independent occurrence — 2026-08-09 while recovering the PATH/uv-validation
+  publication lane from FR-021.
+- **task:** lab issue #34 tracks external agent-routing and command-wrapper workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. The corrected invocation is the
+  cheapest layer; a second independent recurrence should move the compatibility rule into the
+  routing skill or its executable schema.
+
+_Note 2026-08-09 (PATH/uv validation):_ Rejection happened before agent creation and changed no
+tracked file beyond this friction record, Git ref, GitHub object, ignored output, or protected byte.
