@@ -14,14 +14,17 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `ci/lab-sdist-lineage-20260809` at
-      `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` in its coordinator-owned isolated worktree
-    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
+    writer: branch `ci/lab-sdist-lineage-20260809` with code head
+      `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` and main-integration commit
+      `2c838bb5d1306434767a90279c6be8fab8a094e5` in its coordinator-owned isolated worktree; ready PR
+      #55 carries the current head
+    state: IN_REVIEW after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       distinct-signoff release prompt and changelog, and the non-credential package-smoke,
       timeout, ignored-tree exclusion, bounded diagnostics, traversal pruning, PATH/uv validation,
-      and diagnostic-redaction seams all merged. Sdist-to-wheel lineage is implemented and locally
-      proved; after this state repair lands, integrate refreshed main, re-prove the affected seam,
-      and publish it under the ordinary gate. Keep later hardening, asset, and tag work separate,
+      and diagnostic-redaction/state-reconciliation seams all merged. Sdist-to-wheel lineage is
+      implemented, integrated with live main, locally proved at 179 passed / 3 declared skips plus
+      automated sdist-derived wheel smoke, and published as ready PR #55. Complete its exact-head
+      hosted, review, and 15-minute aging gate. Keep later hardening, asset, and tag work separate,
       with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
@@ -90,9 +93,15 @@ delivered:
       `b966341d293a50d2b51f448fa23d3248d7e575fd`; both review threads are resolved and its delayed
       19:51Z sweep found no new feedback. FR-025 records the separate pre-merge snapshot miss;
       FR-028 records the second exact-head aging-floor miss and selected enforcement layer.
-next_safe_slice: Finish the bounded state-repair gate, then integrate refreshed main into preserved
-  branch `ci/lab-sdist-lineage-20260809` at `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3`, re-prove the
-  affected seam, and publish it. Pre-cap diagnostic-memory hardening remains task debt until a design
+  - diagnostic_state_reconciliation: DONE — PR #54 final head
+      `a4eefd9cc4963f684c0376543600969c45d6d057` passed hosted run `31333721317` / job
+      `93295965974`, exact-final-head review, the 15-minute age, and complete thread triage, then
+      merged as `7fea25023d0704aea685e243708328264b9bcaad` at 20:33:27Z; its delayed 20:37Z sweep was clean.
+      FR-032 records the final-snapshot TLS retry; FR-033 records and corrects a concurrent
+      observer's incomplete merge-operation context.
+next_safe_slice: Complete ready PR #55's exact-head hosted, review, and 15-minute aging gate, then
+  select the tracked zero/multiple-wheel or full-call-sequence test seam. Pre-cap diagnostic-memory
+  hardening remains task debt until a design
   avoids both unbounded capture and a raw unredacted disk sink; process-tree cleanup stays separate.
   Lane-P candidate-content review, screenshots, publication, and owner-gated release lanes remain
   parked. Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate
@@ -131,9 +140,11 @@ canonical_evidence:
     context/contracts/invented wbc1_demo/reproduce/export/report/hygiene all passed; printed
     export/markdown/html hashes exactly match the frozen claims without byte inspection; current-head
     candidate rejected
-  product_tracked_fixture_schema_check: product origin/main at
+  product_tracked_fixture_schema_check: product commit
     7bbb8ee6f9124424b3d8362170f0f4d738f5cb43; 26 focused tests and
-    `npm run check:method-trial-view` passed
+    `npm run check:method-trial-view` passed. Product origin/main is now
+    7ae4b31861ad5403587adf8fefb90a085598bd57 after routing-only PR #229; the fixture/schema proof
+    was not rerun because that merge did not touch the proved seam
 blockers: No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is
   zero. The joint tag remains blocked on issue #29's tracked P2 hardening and unfinished pre-tag
   deliverables plus
@@ -144,11 +155,13 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: If `docs/lab-redaction-state-20260809` is not yet merged, finish its docs-only
-  proof, exact-head review, and merge over `b966341d293a50d2b51f448fa23d3248d7e575fd`. Otherwise
-  resume preserved branch `ci/lab-sdist-lineage-20260809` at
-  `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3`, integrate refreshed live `main`, re-prove the
-  affected package-smoke seam, and publish it for issue #29. Commits
+exact_resume_point: Continue ready PR #55 on preserved branch `ci/lab-sdist-lineage-20260809` at its
+  live GitHub head. Code head
+  `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` is integrated with Lab main merge
+  `7fea25023d0704aea685e243708328264b9bcaad` through integration commit
+  `2c838bb5d1306434767a90279c6be8fab8a094e5`. The current-base locked gate passed doctor/context,
+  Ruff, Pyright, 179 tests with 3 declared skips, strict docs, hygiene, diff check, and automated
+  actual sdist-derived wheel smoke; finish only the live hosted/review/aging/merge gate. Commits
   `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and
   `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` build exactly one sdist, build exactly one wheel from
   that selected archive, and add typed synthetic lineage/fail-closed tests; the combined locked
@@ -158,7 +171,8 @@ exact_resume_point: If `docs/lab-redaction-state-20260809` is not yet merged, fi
   missed top-level-comment snapshot and FR-028 records the unsatisfied 15-minute exact-head age.
   The frozen producer replay at
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
-  `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
+  commit `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; current product `origin/main` is
+  `7ae4b31861ad5403587adf8fefb90a085598bd57`. Do not substitute the
   rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
   publication/sign-off boundary. Keep
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7

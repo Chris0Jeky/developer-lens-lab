@@ -263,21 +263,31 @@ def run_package_smoke(root: Path) -> None:
         smoke_root = Path(temporary)
         environment = build_smoke_environment(smoke_root)
         uv = resolve_uv_command(cwd=root, environment=environment)
-        distribution_root = smoke_root / "dist"
+        sdist_root = smoke_root / "sdist"
+        wheel_root = smoke_root / "wheel"
         venv_root = smoke_root / "venv"
         run_root = smoke_root / "run"
-        distribution_root.mkdir()
+        sdist_root.mkdir()
+        wheel_root.mkdir()
         run_root.mkdir()
 
         _run(
-            [*uv, "build", "--sdist", "--wheel", "--out-dir", str(distribution_root)],
+            [*uv, "build", "--sdist", "--out-dir", str(sdist_root)],
             cwd=root,
             environment=environment,
         )
-        wheels = sorted(distribution_root.glob("*.whl"))
-        sdists = sorted(distribution_root.glob("*.tar.gz"))
-        if len(wheels) != 1 or len(sdists) != 1:
-            raise RuntimeError("package build did not produce one wheel and one sdist")
+        sdists = sorted(sdist_root.glob("*.tar.gz"))
+        if len(sdists) != 1:
+            raise RuntimeError("source distribution build did not produce exactly one sdist")
+
+        _run(
+            [*uv, "build", str(sdists[0]), "--wheel", "--out-dir", str(wheel_root)],
+            cwd=root,
+            environment=environment,
+        )
+        wheels = sorted(wheel_root.glob("*.whl"))
+        if len(wheels) != 1:
+            raise RuntimeError("wheel build did not produce exactly one wheel")
 
         _run(
             [*uv, "venv", "--python", sys.executable, str(venv_root)],

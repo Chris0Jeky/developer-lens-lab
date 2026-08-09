@@ -25,6 +25,11 @@ def _path_uv(_name: str) -> str:
     return "uv-on-path"
 
 
+def _stub_uv_command(*, cwd: Path, environment: dict[str, str]) -> list[str]:
+    del cwd, environment
+    return ["uv"]
+
+
 def test_package_metadata_declares_license_identity() -> None:
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
@@ -183,6 +188,77 @@ def test_package_smoke_validates_uv_before_build(
         run_package_smoke(tmp_path)
 
     assert calls == []
+
+
+def test_package_smoke_builds_wheel_from_the_emitted_sdist(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[list[str]] = []
+    sdist_path: Path | None = None
+
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", _stub_uv_command)
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        nonlocal sdist_path
+        calls.append(command)
+        if command[1:3] == ["build", "--sdist"]:
+            sdist_path = Path(command[-1]) / "developer_lens_lab-0.1.0.tar.gz"
+            sdist_path.write_bytes(b"synthetic sdist")
+        elif command[1] == "build" and command[3] == "--wheel":
+            assert sdist_path is not None
+            assert command[2] == str(sdist_path)
+            assert command[2] != str(tmp_path)
+            (Path(command[-1]) / "developer_lens_lab-0.1.0-py3-none-any.whl").write_bytes(
+                b"synthetic wheel"
+            )
+        elif command[-2:] == ["doctor", "--json"]:
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout='{"failures": [], "network_collection": "disabled", "ok": true}',
+                stderr="",
+            )
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke._run", fake_run)
+
+    run_package_smoke(tmp_path)
+
+    build_calls = [command for command in calls if len(command) > 1 and command[1] == "build"]
+    assert len(build_calls) == 2
+    assert build_calls[0][0:4] == ["uv", "build", "--sdist", "--out-dir"]
+    assert build_calls[1][0:4] == ["uv", "build", build_calls[1][2], "--wheel"]
+    assert build_calls[1][4] == "--out-dir"
+    assert Path(build_calls[0][-1]).name == "sdist"
+    assert Path(build_calls[1][-1]).name == "wheel"
+
+
+@pytest.mark.parametrize("sdist_names", [[], ["one.tar.gz", "two.tar.gz"]])
+def test_package_smoke_rejects_zero_or_multiple_sdists(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sdist_names: list[str]
+) -> None:
+    calls: list[list[str]] = []
+
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", _stub_uv_command)
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        calls.append(command)
+        if command[1:3] == ["build", "--sdist"]:
+            output_root = Path(command[-1])
+            for name in sdist_names:
+                (output_root / name).write_bytes(b"synthetic sdist")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke._run", fake_run)
+
+    with pytest.raises(RuntimeError, match="exactly one sdist"):
+        run_package_smoke(tmp_path)
+
+    build_calls = [command for command in calls if len(command) > 1 and command[1] == "build"]
+    assert len(build_calls) == 1
+    assert build_calls[0][0:4] == ["uv", "build", "--sdist", "--out-dir"]
 
 
 def test_package_smoke_confines_uv_cache_and_temp_paths(tmp_path: Path) -> None:
