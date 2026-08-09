@@ -916,3 +916,25 @@ no code or gate defect is known.
 _Note 2026-08-09 (sdist current-base integration):_ The failed combined patch changed no tracked
 file, Git ref, GitHub object, ignored output, or protected byte; the exact file-scoped retries
 applied the intended factual update.
+
+### FR-035 — an unannounced post-merge state worktree appeared at live main
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** After integrating PR #54, the worktree inventory contained a newly registered
+  `docs/postmerge-state-20260809` branch at the exact live-main merge with no tracked changes and no
+  open pull request. It was absent from the coordinator's earlier inventory.
+- **impact:** An unrecognized state worktree could represent a competing writer and create
+  overlapping documentation edits if publication continued without reconciliation.
+- **workaround:** Verify only tracked status, head, live-main identity, and open-PR state; because
+  all match and no writer is active, preserve the worktree without inspecting ignored content or
+  deleting it, and keep the sdist branch as the sole active writer.
+- **occurrences:** 1 independent occurrence — sdist current-base integration on 2026-08-09.
+- **task:** lab issue #29 tracks retained-worktree reconciliation and safe cleanup.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent unannounced
+  writer/worktree should add an ownership token or checked writer registry at worktree creation.
+
+_Note 2026-08-09 (sdist current-base integration):_ The observed branch and origin/main both point
+to `7fea25023d0704aea685e243708328264b9bcaad`; tracked status is clean and the repository has zero
+open pull requests. No ignored or untracked content was enumerated or inspected, and the worktree
+was not removed.
