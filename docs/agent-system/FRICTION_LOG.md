@@ -880,7 +880,7 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 ### FR-033 — concurrent observer lacked PR merge-operation context
 
 - **first-seen:** 2026-08-09
-- **status:** `resolved`
+- **status:** `workaround-documented`
 - **symptom:** A concurrent observer's successful final PR #54 snapshot reported state `MERGED` at
   20:33:27Z before that observer received the root governor's merge-operation context. GitHub merge
   metadata alone did not identify which concurrent process issued the request.
@@ -889,11 +889,13 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 - **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
   reconcile available concurrent-process operation evidence, and make no duplicate merge or ref
   rewrite attempt.
-- **occurrences:** 1 independent occurrence — Lab PR #54 on 2026-08-09.
-- **task:** lab issue #34 comment `5233753580` supplies the direct merge-operation correction.
-- **promotion:** Resolved by direct operation evidence: a root governor issued the exact-head REST
-  merge and GitHub returned the recorded merge commit. The durable correction distinguishes a
-  concurrent observer's missing context from an unexplained external transition.
+- **occurrences:** 2 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09.
+- **task:** lab issue #34 tracks the ownership-token or merge-lease preflight; comment `5233753580`
+  supplies the first occurrence's direct merge-operation correction.
+- **promotion:** The first occurrence was resolved by direct operation evidence: a root governor
+  issued the exact-head REST merge and GitHub returned the recorded merge commit. The second
+  occurrence selects an ownership token or merge lease checked by a preflight as the cheapest
+  enforceable layer; issue #34 retains the implementation task.
 
 _Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
 `31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
@@ -906,6 +908,18 @@ the merge. Issue #34 comment `5233753580` records the other root governor's exac
 (`sha=a4eefd9cc4963f684c0376543600969c45d6d057`, merge method `merge`) and GitHub's successful
 `7fea25023d0704aea685e243708328264b9bcaad` response. Human attribution remains unverified.
 
+_Note 2026-08-09 (PR #55 concurrent-context recurrence):_ The final observer snapshot saw PR #55
+as `MERGED` before that observer issued its own merge command. GitHub metadata names only the
+account, so no process or actor is inferred. This is the second independent FR-033 occurrence.
+The cheapest enforceable follow-up is an ownership token or merge lease checked by a preflight
+that records the operation owner before a merge request and requires the final snapshot to carry
+that token; issue #34 retains this task. Until that helper exists, the workaround remains exact
+head/base/check/thread/closing-ref snapshots plus no duplicate merge attempt.
+
+_Note 2026-08-09 (PR #55 delayed sweep):_ The 21:25:06Z post-merge sweep found no late review,
+comment, thread, or closing-reference debt. The occurrence is safely reconciled, but status remains
+`workaround-documented` until issue #34's ownership-token or merge-lease preflight is implemented.
+
 ### FR-034 — a combined state patch used one stale context hunk
 
 - **first-seen:** 2026-08-09
@@ -916,12 +930,14 @@ the merge. Issue #34 comment `5233753580` records the other root governor's exac
   plus smaller file-scoped patches.
 - **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
   atomic failure as the guard against partial state updates.
-- **occurrences:** 2 independent occurrences — the stale combined hunk during sdist current-base
-  state sync and the ambiguous FR-033 status hunk during PR #55 review correction on 2026-08-09.
+- **occurrences:** 4 independent occurrences — the stale combined hunk during sdist current-base
+  state sync, the ambiguous FR-033 status hunk during PR #55 review correction, and the
+  unanchored FR-033 occurrence and status edits during PR #55 post-merge reconciliation on 2026-08-09.
 - **task:** lab issue #34 tracks external patch-context and command-boundary workflow hardening.
-- **promotion:** At the second occurrence, the selected enforcement layer is an exact section-header
-  anchor plus a pre-stage diff assertion that only the intended friction ID changed. A reusable
-  state-sync helper remains bounded task debt on issue #34.
+- **promotion:** At the second occurrence, the selected enforcement layer was an exact section-header
+  anchor plus a pre-stage diff assertion. The third occurrence shows that an ad-hoc command does not
+  reliably enforce that guard; a checked state-sync helper is now the selected task-debt layer on
+  issue #34.
 
 _Note 2026-08-09 (sdist current-base integration):_ The failed combined patch changed no tracked
 file, Git ref, GitHub object, ignored output, or protected byte; the exact file-scoped retries
@@ -935,6 +951,17 @@ contained the transient edit.
 _Note 2026-08-09 (same correction hop):_ The first full-section wording patch used an assumed impact
 line and failed atomically. Narrow exact-line retries changed the title, symptom, and workaround;
 the failed attempt changed no file, ref, GitHub object, ignored output, or protected byte.
+
+_Note 2026-08-09 (PR #55 post-merge reconciliation):_ An unanchored occurrence-count patch
+temporarily matched FR-030 instead of FR-033. The diff inspection caught and restored FR-030 before
+staging; an exact FR-033 header-scoped patch then changed only the intended entry. No commit, push,
+GitHub object, ignored output, or protected byte contained the transient edit.
+
+_Note 2026-08-09 (same reconciliation, fourth occurrence):_ A later unanchored status patch matched
+FR-004 instead of FR-033. The required pre-stage inspection caught it, restored FR-004, and applied
+the FR-033 status under its exact section header. No commit, push, GitHub object, ignored output, or
+protected byte contained the transient edit. This recurrence strengthens issue #34's checked-helper
+task; hand-authored status/occurrence patches are not an enforcing layer.
 
 ### FR-035 — an unannounced post-merge state worktree appeared at live main
 
@@ -1014,3 +1041,21 @@ named path did not exist. This correction supersedes only that path-presence cla
 - **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked PR
   triage helper rather than hand-authoring the orchestration wrapper.
+
+### FR-039 — strict MkDocs emits an upstream Material-for-MkDocs warning
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The strict documentation build emitted the upstream Material-for-MkDocs warning
+  about forthcoming MkDocs 2.0 incompatibilities while still completing successfully.
+- **impact:** Proof output contains a non-failing upstream compatibility warning that can be
+  mistaken for a repository documentation failure.
+- **workaround:** Keep the declared MkDocs/Material version bounds, record the warning separately,
+  and use the process exit status plus the generated documentation result for pass/fail.
+- **occurrences:** 2 independent occurrences — PR #55 correction/finalization proof and PR #55
+  post-merge reconciliation on 2026-08-09.
+- **task:** lab issue #34 tracks reusable proof-command and tooling-boundary hardening.
+- **promotion:** At the second occurrence this remains task debt rather than a suppression rule:
+  the warning is emitted upstream while the pinned build succeeds, and hiding it would remove useful
+  upgrade evidence. Dependency-range maintenance on issue #34 is the cheapest effective layer if
+  the pinned dependency changes or the warning becomes an actionable failure.

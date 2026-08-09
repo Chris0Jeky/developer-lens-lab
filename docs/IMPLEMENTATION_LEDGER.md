@@ -993,3 +993,20 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   Pyright, 179 tests with 3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and
   the automated actual sdist-derived wheel smoke. Ready PR #55 now carries the branch; its live
   exact-head hosted, review, 15-minute age, merge, and delayed-sweep gates remain pending.
+
+## 2026-08-09 - Sdist-lineage PR #55 post-merge reconciliation (issues #29/#34)
+
+- PR #55 final head `c122868e976ee7f5acce8c6aac20608873c0fa43` passed hosted run `31335915850` /
+  job `93301598278`, fresh exact-head review with the scoped HIGH resolution, zero unresolved
+  threads and zero closing refs, and the binding 15-minute exact-head age. GitHub merged it as
+  `02dcfb261f7216f01aa5696888715ac42f0e3830` at `2026-08-09T21:20:44Z`.
+- The final observer snapshot saw `MERGED` before that observer issued its own merge command. The
+  merge metadata names only the account; no process or actor is inferred. FR-033 now records this
+  as its second concurrent-context occurrence, with issue #34 retaining the ownership-token or
+  merge-lease/preflight enforcement follow-up.
+- The delayed post-merge review/comment sweep remains the next workflow-boundary check. The next
+  bounded issue #29 seam is the tracked zero/multiple-wheel or full-call-sequence test coverage;
+  pre-cap diagnostic-memory, process-tree, component-skip-semantics, release, tag, publication,
+  credential, data, model, and telemetry lanes remain separate or closed.
+- The delayed `2026-08-09T21:25:06Z` sweep found no late review, comment, thread, or closing-reference
+  debt. The package-smoke test seam is therefore the next ready issue #29 item.
