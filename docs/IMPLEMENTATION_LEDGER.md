@@ -847,3 +847,27 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and actual package smoke in
   318.3 seconds. Hosted exact-head proof and final review remain pending. No ignored, protected,
   generated, candidate, cache, or private bytes were surfaced to or inspected by the agent.
+
+## 2026-08-09 — Diagnostics merge and context-traversal-pruning review lane (LAB-REL-01, issue #29)
+
+- Package diagnostics PR #49 reached final head `02d3e504b4fde54bd1e33b01d24b33a4de3305c5`;
+  hosted run `31307993706` / job `93231285624` and exact-final-head review passed, and it merged as
+  `ece61e0e1ca86e1e38732916fc077c4718bf7de6`. Pre-merge review left two non-blocking diagnostic
+  hardening seams on issue #29. Its delayed sweep found two connector P2 threads: environment-value
+  redaction order was newly tracked, while pre-cap stream scanning duplicated existing debt. Both
+  threads were replied to and resolved without reopening the merged slice.
+- Code commit `08e9fce51f3908b353eef489bfd6fb8c5d7dcde7` replaces eager recursive Markdown globbing with one
+  deterministic shared walk that prunes every existing `SKIPPED_MARKDOWN_PARTS` directory before
+  descent. An invented temporary fixture records visited directories and proves `.package-smoke`
+  descendants are never entered while ordinary tracked Markdown remains checked. The branch
+  integrated merged PR #49 before publication.
+- The confined locked gate passed doctor/context, Ruff, Pyright, 162 tests with 3 declared Windows
+  symlink skips, strict MkDocs, hygiene, and diff check. The first package-smoke call selected a
+  task-environment Python without the `uv` module and failed before artifact build; the bounded
+  retry through the reviewed `uv 0.12.3` bootstrap interpreter passed the actual isolated package
+  smoke in 282.8 seconds. No ignored, protected, generated, candidate, cache, or private bytes were
+  surfaced to or inspected by the agent.
+- PATH/uv validation is prepared separately; sdist lineage, process-tree cleanup, diagnostic
+  redaction-order, short-secret, and pre-cap memory hardening remain separate issue #29 seams.
+  Hosted exact-head proof and final review for traversal pruning remain pending; release, tag,
+  publication, credentials, data, model, and telemetry lanes stay closed as applicable.
