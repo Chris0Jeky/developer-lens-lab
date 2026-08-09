@@ -68,10 +68,11 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 3 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 5 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
-  sync reused its surviving confined bootstrap after the global launcher lacked Python 3.12 and the
-  global Python 3.13 lacked locked project dependencies).
+  sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
+  worktree bootstrapped its own copy), and 2026-08-09 (the licence/package-identity worktree reused
+  the route).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -82,6 +83,10 @@ Rules that bind entries:
 _Note 2026-08-09 (release-gate sync):_ The promoted route remained sufficient on the third
 occurrence: the existing worktree-confined bootstrap ran the locked context verifier without a
 new install or lockfile change.
+
+_Note 2026-08-09 (release wave):_ The fourth and fifth isolated worktrees used the same promoted
+route. This repeated cost stays environment debt: the existing maintenance-protocol instruction is
+the cheapest truthful layer, and an automatic installer would hide network and time side effects.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -322,3 +327,21 @@ cheap workaround and none of them blocked a lane.
 - **promotion:** Deliberately NOT promoted after one occurrence. The canonical two-step worktree
   rule already exists; if this invocation error recurs, put creation and branch setup in a checked
   helper instead of adding more prose.
+
+### FR-012 — locked environment creation exceeded the narrow docs-proof window
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Two attempts to create the full locked project environment for a two-file state sync
+  exceeded the 120-second shell window before `dllab context verify` could start; a later
+  `--no-sync` invocation confirmed that the environment was still incomplete.
+- **impact:** The narrow documentation proof can spend more time installing heavy runtime packages
+  than reading the changed authority files, and a timeout supplies no verifier result.
+- **workaround:** In a separate gitignored Python 3.13 context environment, install the lock-pinned
+  `pydantic` and `jsonschema` versions, set `PYTHONPATH=src`, and call `verify_repository` directly.
+  That exercised the same repository verifier and passed, followed by `git diff --check`.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the post-dependency state sync.
+- **task:** lab issue #29 owns the current release-preparation proof boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If the full environment blocks a
+  second narrow docs proof, add a lock-pinned context-only dependency group or checked wrapper;
+  until then, keep the explicit lightweight invocation as task debt.
