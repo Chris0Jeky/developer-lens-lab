@@ -16,14 +16,16 @@ active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: branch `ci/lab-sdist-lineage-20260809` with code head
       `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` and main-integration commit
-      `2c838bb5d1306434767a90279c6be8fab8a094e5` in its coordinator-owned isolated worktree
-    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
+      `2c838bb5d1306434767a90279c6be8fab8a094e5` in its coordinator-owned isolated worktree; ready PR
+      #55 carries the current head
+    state: IN_REVIEW after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       distinct-signoff release prompt and changelog, and the non-credential package-smoke,
       timeout, ignored-tree exclusion, bounded diagnostics, traversal pruning, PATH/uv validation,
       and diagnostic-redaction/state-reconciliation seams all merged. Sdist-to-wheel lineage is
-      implemented, locally proved, and integrated with live main; finish its scoped current-base
-      proof and publish it under the ordinary gate. Keep later hardening, asset, and tag work
-      separate, with no data activation.
+      implemented, integrated with live main, locally proved at 179 passed / 3 declared skips plus
+      automated sdist-derived wheel smoke, and published as ready PR #55. Complete its exact-head
+      hosted, review, and 15-minute aging gate. Keep later hardening, asset, and tag work separate,
+      with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -97,9 +99,9 @@ delivered:
       merged as `7fea25023d0704aea685e243708328264b9bcaad` at 20:33:27Z; its delayed 20:37Z sweep was clean.
       FR-032 and FR-033 record the final-snapshot TLS retry and the observed external state
       transition.
-next_safe_slice: Finish scoped current-base proof on preserved branch
-  `ci/lab-sdist-lineage-20260809`, then publish it under the exact-head hosted, review, and
-  15-minute aging gate. Pre-cap diagnostic-memory hardening remains task debt until a design
+next_safe_slice: Complete ready PR #55's exact-head hosted, review, and 15-minute aging gate, then
+  select the tracked zero/multiple-wheel or full-call-sequence test seam. Pre-cap diagnostic-memory
+  hardening remains task debt until a design
   avoids both unbounded capture and a raw unredacted disk sink; process-tree cleanup stays separate.
   Lane-P candidate-content review, screenshots, publication, and owner-gated release lanes remain
   parked. Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate
@@ -153,11 +155,13 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Resume preserved branch `ci/lab-sdist-lineage-20260809`; code head
+exact_resume_point: Continue ready PR #55 on preserved branch `ci/lab-sdist-lineage-20260809` at its
+  live GitHub head. Code head
   `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` is integrated with Lab main merge
   `7fea25023d0704aea685e243708328264b9bcaad` through integration commit
-  `2c838bb5d1306434767a90279c6be8fab8a094e5`. Finish scoped current-base context, static, test,
-  hygiene, and diff proof, then publish the current branch head for issue #29. Commits
+  `2c838bb5d1306434767a90279c6be8fab8a094e5`. The current-base locked gate passed doctor/context,
+  Ruff, Pyright, 179 tests with 3 declared skips, strict docs, hygiene, diff check, and automated
+  actual sdist-derived wheel smoke; finish only the live hosted/review/aging/merge gate. Commits
   `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and
   `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` build exactly one sdist, build exactly one wheel from
   that selected archive, and add typed synthetic lineage/fail-closed tests; the combined locked

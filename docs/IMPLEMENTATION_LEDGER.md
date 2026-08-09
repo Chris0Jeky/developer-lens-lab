@@ -987,3 +987,7 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3`. Current-base scoped proof and publication remain next;
   the pre-integration locked proof and actual sdist-derived wheel smoke remain applicable to the
   unchanged code seam.
+- Integrated head `adffe0b66131f085a4b48899cca863fc46faa779` then passed doctor/context, Ruff,
+  Pyright, 179 tests with 3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and
+  the automated actual sdist-derived wheel smoke. Ready PR #55 now carries the branch; its live
+  exact-head hosted, review, 15-minute age, merge, and delayed-sweep gates remain pending.
