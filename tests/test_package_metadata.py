@@ -25,6 +25,11 @@ def _path_uv(_name: str) -> str:
     return "uv-on-path"
 
 
+def _stub_uv_command(*, cwd: Path, environment: dict[str, str]) -> list[str]:
+    del cwd, environment
+    return ["uv"]
+
+
 def test_package_metadata_declares_license_identity() -> None:
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
@@ -191,7 +196,7 @@ def test_package_smoke_builds_wheel_from_the_emitted_sdist(
     calls: list[list[str]] = []
     sdist_path: Path | None = None
 
-    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", lambda **_: ["uv"])
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", _stub_uv_command)
 
     def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         del kwargs
@@ -235,7 +240,7 @@ def test_package_smoke_rejects_zero_or_multiple_sdists(
 ) -> None:
     calls: list[list[str]] = []
 
-    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", lambda **_: ["uv"])
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", _stub_uv_command)
 
     def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         del kwargs
