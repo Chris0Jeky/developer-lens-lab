@@ -14,11 +14,12 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `docs/lab-release-notes-20260809` in its coordinator-owned isolated worktree;
-      PR #44 is open
+    writer: branch `ci/lab-package-smoke-20260809` in its coordinator-owned isolated worktree;
+      PR #45 is the active review lane
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, and the
-      merged distinct-signoff release prompt; exact selected slice is the bounded v0.1.0 changelog.
-      Keep package-smoke, asset, and tag work separate; no data activation.
+      merged distinct-signoff release prompt and changelog; exact selected slice is the bounded
+      non-credential built-artifact/package smoke. Keep asset and tag work separate; no data
+      activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -51,8 +52,13 @@ delivered:
       `871e014c73972fd65b8e9cd39e0665b6b2cdb65d` merged as
       `56c889141cd4575d12f80c3e0a16a574277e0ddd` after locked/full local proof, exact hosted proof,
       fresh review, complete thread triage, and the neutral public-contact privacy repair.
-next_safe_slice: Prove, publish, review, and merge the isolated v0.1.0 changelog branch for issue
-  #29. Keep the mapped built-artifact/package-smoke residual, release assets, and tag work separate.
+  - release_notes: DONE — PR #44 final head `ca8c075d286e7812873b86e12c54868b71519217`
+      merged as `2e6a7c2b7ff906cb771bb4e904dd18d2717fa536` after exact hosted proof, fresh review, and a clean
+      delayed sweep.
+next_safe_slice: Prove, review, and merge package-smoke PR #45. Then prepare the separate automated
+  canonical replay/hash evidence packet for the selected invented C0 JSON/HTML exhibit without
+  inspecting ignored candidate bytes; Lane-P content review, publication, screenshots, and the tag
+  retain their explicit later stops.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -90,9 +96,9 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Prove and publish the changelog branch from current Lab main, then merge it
-  under the ordinary gate. Select the mapped non-credential package-smoke residual as the next
-  separate issue #29 slice. Keep release-asset/tag work separate; keep
+exact_resume_point: Complete package-smoke PR #45 under the ordinary exact-head gate. Then select
+  only the automated replay/hash evidence packet for issue #29's invented C0 exhibit; do not inspect
+  ignored candidate bytes or cross the Lane-P publication/sign-off boundary. Keep
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7
   (CLA/external-contribution strategy), Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11
   (aesthetic sign-off), Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and

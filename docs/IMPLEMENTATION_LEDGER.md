@@ -723,3 +723,22 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Exact active slice is the bounded v0.1.0 changelog. The non-credential built-artifact/package-smoke
   guard remains the next separate issue #29 residual; no tag, asset, registry, credential,
   publication, owner sign-off, or non-C0 lane moved here.
+
+## 2026-08-09 — Changelog closeout and package-smoke review lane (LAB-REL-01)
+
+- Changelog PR #44 reached final head `ca8c075d286e7812873b86e12c54868b71519217`; hosted run
+  `31302156997`, job `93216571555`, passed; fresh review found no causal CRITICAL/HIGH defect; and it
+  merged as `2e6a7c2b7ff906cb771bb4e904dd18d2717fa536`. The delayed sweep found no new comment or thread
+  debt.
+- Package-smoke PR #45 starts from that merge. Code head
+  `8523a1b19f8f62a132c081e488bd6916b1e3d82e` adds a confined sdist/wheel build, isolated wheel
+  install, installed `dllab doctor --json` proof, focused tests, and the matching CI step. The full
+  local gate passed with 154 tests and 3 declared Windows symlink skips; the supported Python 3.12
+  artifact smoke passed. Exact hosted proof and final review remain pending on the final docs head.
+- FR-001 records the repeated confined-environment setup cost, FR-017 records the unavailable
+  PowerShell UTC switch, and FR-009 records the failed outer-wrapper Markdown quoting attempt; each
+  failed before changing a protected output or unintended ref.
+- After PR #45, the only unattended-safe asset step is an automated canonical replay/hash evidence
+  packet for the invented C0 exhibit. Candidate-byte inspection, Lane-P publication, screenshots,
+  release/tag actions, credentials, and both distinct owner sign-offs remain NOT verified and
+  closed as applicable.

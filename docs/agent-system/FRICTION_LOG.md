@@ -302,9 +302,10 @@ cheap workaround and none of them blocked a lane.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 4 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 5 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
-  2026-08-09 (an inline post-merge GraphQL repository string).
+  2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
+  terminated an outer JavaScript command wrapper before PowerShell started).
 - **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
   Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
@@ -319,6 +320,10 @@ changed repository refs or release authority.
 _Note 2026-08-09 (post-merge sweep):_ The fourth occurrence failed before returning review-thread
 data. The promoted GraphQL-variable form was used for the retry; the failed query did not change a
 repository ref or review thread.
+
+_Note 2026-08-09 (package-smoke publish):_ The fifth occurrence failed in the orchestration parser
+before the shell, Git, or GitHub ran. The retry removed Markdown code ticks from the inline body;
+no repository or remote state changed in the failed attempt.
 
 _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
 route was not durable enforcement. The status and promotion field now record task debt rather than
