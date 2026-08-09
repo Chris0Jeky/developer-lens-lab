@@ -14,11 +14,11 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: none; PR #45 was completed from the coordinator-owned isolated worktree
-    state: COMPLETE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
+    writer: branch `ci/lab-package-timeout-20260809` in its coordinator-owned isolated worktree
+    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
-      built-artifact/package smoke. Keep P2 hardening, asset, and tag work separate; no data
-      activation.
+      built-artifact/package smoke. The selected P2 seam bounds package-smoke subprocesses; keep
+      later hardening, asset, and tag work separate, with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -59,10 +59,11 @@ delivered:
       six review threads including the delayed-sweep findings, then merged as
       `6e13b6d84391ea7a2579e169151e3d765ad71583`. Full local
       proof was 154 passed / 3 declared skips, including the isolated wheel smoke.
-next_safe_slice: Proceed with the bounded tracked package-smoke P2 hardening on issue #29 (PATH,
-  uv/diagnostics, and timeout behavior) while Lane-P candidate-content review, screenshots,
-  publication, and owner-gated release lanes remain parked. Do not inspect ignored candidate bytes,
-  publish assets, tag, add credentials, activate data or models, or enable telemetry.
+next_safe_slice: Prove, review, and merge the bounded package-smoke subprocess-timeout branch, then
+  select one remaining issue #29 P2 seam (PATH/uv validation or bounded diagnostics). Lane-P
+  candidate-content review, screenshots, publication, and owner-gated release lanes remain parked.
+  Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate data or
+  models, or enable telemetry.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -110,8 +111,8 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Continue the bounded package-smoke P2 hardening tracked on issue #29, using the
-  merged PR #45 proof as the baseline. The frozen producer replay at
+exact_resume_point: Continue the bounded `ci/lab-package-timeout-20260809` package-smoke P2 seam,
+  using the merged PR #45 proof as the baseline. The frozen producer replay at
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
   `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
   rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
