@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 11 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 12 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -79,7 +79,9 @@ Rules that bind entries:
   2026-08-09 (the release-evidence state worktree reused that reviewed Python 3.12 environment),
   2026-08-09 (the package-timeout worktree used the existing interpreter route for focused checks
   while leaving the unavailable locked `uv` gate for coordinator proof), and 2026-08-09 (the
-  ignored-smoke-scan worktree reused the confined bootstrap for its full gate and package smoke).
+  ignored-smoke-scan worktree reused the confined bootstrap for its full gate and package smoke),
+  and 2026-08-09 (the bounded-diagnostics worktree reused that confined route for its full gate and
+  package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -129,6 +131,14 @@ confined `uv 0.12.3` bootstrap, created a task-local locked environment, and com
 plus actual package smoke. The same harmless bootstrap-versus-project `VIRTUAL_ENV` warning was
 reported and ignored by `uv`; no global install, lockfile change, or ignored/protected-byte
 inspection occurred. The promoted maintenance-protocol route remains the cheapest truthful layer.
+
+_Note 2026-08-09 (bounded package diagnostics):_ The twelfth isolated worktree reused the same
+confined `uv 0.12.3` bootstrap and task-local locked environment for the full gate plus actual
+package smoke. `uv` again reported and ignored the harmless bootstrap-versus-project `VIRTUAL_ENV`
+warning. A later direct Pyright invocation inherited the wrong interpreter context and failed before
+providing a valid type-check signal; the retry used the confined route and explicit task-local
+environment. No global install, lockfile change, or ignored/protected-byte inspection occurred; the
+existing maintenance-protocol route remains the cheapest truthful layer.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -558,3 +568,24 @@ _Closure 2026-08-09:_ A detached automated replay at producer
 `0ef193070a9b80b81cef5a1710a1d65e0b271c15` exactly matched the frozen JSON, Markdown and HTML
 hashes. The current-head candidate stays rejected; Lane-P content review and publication remain
 separate, unverified gates.
+
+### FR-020 — PowerShell automatic `$args` swallowed a helper's command array
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A task-local proving helper named its explicit command-array parameter `Args`.
+  PowerShell's case-insensitive automatic `$args` variable took precedence, so the wrapper invoked
+  `uv run` without the intended command and exited before any repository check ran.
+- **impact:** The proving pass stopped at its first command and had to be rerun with an unambiguous
+  parameter name; no evidence from the failed wrapper was usable.
+- **workaround:** Name explicit array parameters `CommandArgs` (or another non-automatic name) and
+  splat that variable into the command.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the bounded package-diagnostics
+  post-documentation proof.
+- **task:** lab issue #34 tracks external Windows and command-wrapper workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. The one-line parameter rename is
+  the cheapest current workaround; a second independent occurrence should add a checked shared
+  wrapper or lint rule at the command boundary.
+
+_Note 2026-08-09 (bounded package diagnostics):_ The failed helper changed no repository ref or
+protected output. The retry used `CommandArgs` and the same confined environment.
