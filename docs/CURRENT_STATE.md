@@ -14,12 +14,11 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: branch `ci/lab-package-smoke-20260809` in its coordinator-owned isolated worktree;
-      PR #45 is the active review lane
-    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, and the
-      merged distinct-signoff release prompt and changelog; exact selected slice is the bounded
-      non-credential built-artifact/package smoke. Keep asset and tag work separate; no data
-      activation.
+    writer: branch `ci/lab-package-timeout-20260809` in its coordinator-owned isolated worktree
+    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
+      merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
+      built-artifact/package smoke. The selected P2 seam bounds package-smoke subprocesses; keep
+      later hardening, asset, and tag work separate, with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -55,11 +54,17 @@ delivered:
   - release_notes: DONE — PR #44 final head `ca8c075d286e7812873b86e12c54868b71519217`
       merged as `2e6a7c2b7ff906cb771bb4e904dd18d2717fa536` after exact hosted proof, fresh review, and a clean
       delayed sweep.
-next_safe_slice: Prove, review, and merge package-smoke PR #45. The separate historical-producer
-  replay at `0ef1930` exactly reproduced the frozen JSON/Markdown/HTML hashes below, resolving the
-  current-head provenance choice in favour of the constitution's frozen Method Trial v1 exhibit.
-  Next run only the product-side tracked fixture/contract check. Do not inspect ignored candidate
-  bytes; Lane-P content review, publication, screenshots, and the tag retain their later stops.
+  - package_smoke: DONE — PR #45 final head `7f07ce221b7a405c06af70d3a5215910dca72991` passed
+      hosted run `31304528858` / job `93222641130` and exact-final-head review, then merged as
+      `6e13b6d84391ea7a2579e169151e3d765ad71583` with four pre-merge threads resolved. Its delayed
+      sweep found two additional P2s; both were tracked and resolved, leaving all six threads
+      resolved. Full local proof was 154 passed / 3 declared skips, including the isolated wheel
+      smoke.
+next_safe_slice: Prove, review, and merge the bounded package-smoke subprocess-timeout branch, then
+  select one remaining issue #29 P2 seam (PATH/uv validation or bounded diagnostics). Lane-P
+  candidate-content review, screenshots, publication, and owner-gated release lanes remain parked.
+  Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate data or
+  models, or enable telemetry.
 release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized.
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still block tags. A
@@ -91,9 +96,15 @@ canonical_evidence:
   current_head_replay: deterministic at lab_commit=2e6a7c2b7ff906cb771bb4e904dd18d2717fa536;
     candidate hashes differ because lab_commit is embedded; release candidate NOT approved
   frozen_producer_replay: verified at producer_commit=0ef193070a9b80b81cef5a1710a1d65e0b271c15;
-    export/markdown/html hashes exactly match the frozen claims; current-head candidate rejected
+    context/contracts/invented wbc1_demo/reproduce/export/report/hygiene all passed; printed
+    export/markdown/html hashes exactly match the frozen claims without byte inspection; current-head
+    candidate rejected
+  product_tracked_fixture_schema_check: product origin/main at
+    7bbb8ee6f9124424b3d8362170f0f4d738f5cb43; 26 focused tests and
+    `npm run check:method-trial-view` passed
 blockers: No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is
-  zero. The joint tag remains blocked on issue #29's unfinished pre-tag deliverables plus
+  zero. The joint tag remains blocked on issue #29's tracked P2 hardening and unfinished pre-tag
+  deliverables plus
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
@@ -101,12 +112,15 @@ blockers: No dependency-alert blocker remains: issue #5 is closed and the post-m
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: Complete package-smoke PR #45 under the ordinary exact-head gate. Then run the
-  product-side tracked fixture/contract check against the proven frozen producer; do not substitute
-  the rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
+exact_resume_point: Continue the bounded `ci/lab-package-timeout-20260809` package-smoke P2 seam,
+  using the merged PR #45 proof as the baseline. The frozen producer replay at
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
+  `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
+  rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P
   publication/sign-off boundary. Keep
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7
   (CLA/external-contribution strategy), Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11
   (aesthetic sign-off), Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and
-  every non-C0 lane explicit and closed as applicable.
+  every non-C0 lane explicit and closed as applicable; tag, credentials, data, models, and
+  telemetry remain closed.
 ```
