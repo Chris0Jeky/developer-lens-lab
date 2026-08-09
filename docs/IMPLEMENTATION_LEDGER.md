@@ -993,3 +993,30 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   Pyright, 179 tests with 3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and
   the automated actual sdist-derived wheel smoke. Ready PR #55 now carries the branch; its live
   exact-head hosted, review, 15-minute age, merge, and delayed-sweep gates remain pending.
+
+## 2026-08-10 — Post-merge release-wave state replacement (LAB-REL-01, issues #29/#58)
+
+- Live `origin/main` is `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`. PR #55 reached final head
+  `c122868e976ee7f5acce8c6aac20608873c0fa43`, passed hosted run `31335915850` / job
+  `93301598278`, exact-head review, the 15-minute age, and delayed sweep, then merged as
+  `02dcfb261f7216f01aa5696888715ac42f0e3830`. Its sdist-to-wheel lineage is delivered.
+- PR #57 reached final head `bd4d244f079b46c0425e0618043c37b48abb29c7`, passed hosted run
+  `31337621819` / job `93305956992`, exact-head review, the 15-minute age, and delayed sweep,
+  then merged as `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`. Its zero/multiple-wheel and
+  full-call-sequence test seam is complete; production package-smoke behavior was unchanged.
+- PR #59 reached final head `df87407bb74d78277d96aa383148da7211735a6a`, passed hosted run
+  `31340060061` / job `93312246758`, then merged as `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`
+  and closed issue #58. The current-state YAML enforcement is now on live main.
+- PR #56 is superseded at `634b765e87c833756294bb1ea393cc7b994ab3a3` on an obsolete base after
+  its two-round ceiling. This slice records no PR #56 close or comment and rewrites no historical
+  ledger or friction entry. The prepared local short-env diagnostics redaction branch remains
+  pre-publication at `81aa98c6e0f3dd855755f2892fbaa2bc6e87fb60`; it and other scoped Lane-P or
+  actually tracked issue #29 pre-tag work remain ordinary next slices.
+- The closed product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` remains distinct from the open
+  Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`; product
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, Lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7`, Lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`, and Lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` remain explicit owner gates or human actions.
+  No tag, release/publication, data, model, credential, or telemetry action is authorized by this
+  state replacement.
