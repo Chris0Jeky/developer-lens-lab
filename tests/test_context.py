@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 import developer_lens_lab.context.verify as context_verify
 from developer_lens_lab.context import verify_repository
@@ -72,6 +73,16 @@ exact_resume_point: test
 def test_current_state_yaml_requires_one_fence_and_valid_shape(tmp_path: Path) -> None:
     _write_current_state(tmp_path, _VALID_CURRENT_STATE)
     assert verify_current_state_yaml(tmp_path) == []
+
+
+def test_repository_current_state_preserves_active_wave_issue_reference() -> None:
+    lines = (ROOT / "docs" / "CURRENT_STATE.md").read_text(encoding="utf-8").splitlines()
+    fence = chr(96) * 3
+    opening = lines.index(fence + "yaml")
+    closing = lines.index(fence, opening + 1)
+    payload = yaml.safe_load("\n".join(lines[opening + 1 : closing]))
+
+    assert payload["active_wave"][0]["lane"] == "LAB-REL-01 v0.1.0 release wave (issue #29)"
 
 
 def test_current_state_yaml_rejects_missing_or_multiple_fences(tmp_path: Path) -> None:

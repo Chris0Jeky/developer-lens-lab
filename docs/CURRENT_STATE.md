@@ -14,7 +14,8 @@ repository: Chris0Jeky/developer-lens-lab (public)
 branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
-  - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
+  - lane: >-
+      LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
       branch `ci/lab-sdist-lineage-20260809` with code head
       `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` and main-integration commit

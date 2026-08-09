@@ -1174,3 +1174,19 @@ change before the focused lint, type, and test proofs; no protected or ignored c
 - **task:** lab issue #34 tracks checked GitHub mutation wrappers and command-boundary hardening.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, replace the ad-hoc
   loop with a checked typed thread-triage helper.
+
+### FR-045 — YAML comment syntax truncated the active-wave issue reference
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** PyYAML accepted the active-wave lane's plain scalar but treated the space before its
+  `#29` issue reference as a comment, so the parsed value silently lost the task identifier.
+- **impact:** Context verification passed a machine-readable resume block whose active lane no
+  longer named the GitHub issue that owns it.
+- **workaround:** Represent the lane as a folded scalar and assert that safe loading preserves the
+  complete issue-bearing value.
+- **occurrences:** 1 independent occurrence — PR #59 exact-final-head review on 2026-08-09.
+- **task:** lab issue #58 owns the current repair; lab issue #34 tracks deeper YAML semantic
+  validation.
+- **promotion:** Deliberately not promoted after one occurrence; the focused repository-state
+  regression is the cheapest enforcing layer for this canonical field.
