@@ -68,11 +68,13 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 6 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 7 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
-  route), and 2026-08-09 (the community-files worktree used the installed Python module route).
+  route), 2026-08-09 (the community-files worktree used the installed Python module route), and
+  2026-08-09 (the package-identity base refresh reused that module route after a stale literal
+  bootstrap-path assumption failed before execution).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -88,6 +90,11 @@ _Note 2026-08-09 (release wave):_ The fourth through sixth isolated worktrees us
 promoted route. This repeated cost stays environment debt: the existing maintenance-protocol
 instruction is the cheapest truthful layer, and an automatic installer would hide network and
 time side effects. FR-014 separately records that the sixth environment was not kept confined.
+
+_Note 2026-08-09 (package-identity base refresh):_ The seventh occurrence first tried a literal
+bootstrap path that was not present in that worktree, so no proving command ran. The already
+installed `py -3 -m uv` 0.12.2 route was then verified directly and kept the project environment
+worktree-local; no cache contents were enumerated or inspected.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 

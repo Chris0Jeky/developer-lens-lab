@@ -9,6 +9,12 @@ Bootstrap is C0 invented-data-only. The repository is public by explicit owner d
 GitHub corpus collection, credential read, model request, real/private input, or product promotion
 is active yet; non-essential hardening is tracked for later rather than blocking the runnable loop.
 
+## License and package
+
+Developer Lens Lab is copyright (C) 2026 Cristian Tcaci and is released under the GNU Affero
+General Public License v3.0 only (`AGPL-3.0-only`). See [LICENSE](LICENSE). The Python package is
+distributed as `developer-lens-lab` and provides the `dllab` command.
+
 ## Golden path
 
 Install [uv](https://docs.astral.sh/uv/), then run:

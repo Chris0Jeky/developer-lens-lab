@@ -36,8 +36,9 @@ delivered:
       and merged as `38ac2eb14c8c9ba742b5f269b7022c7e549b7a5d` after exact hosted proof and fresh review.
   - friction_reconciliation: DONE — PR #41 final head
       `3604e301a5e9930e56edce193ea293698a4870bd` merged as
-      `178bd6d695119b74294a8fd6fbe46f54577e49b2`; FR-008 through FR-014 are durable, and escaped
-      environment cleanup is owner-gated at `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13`.
+      `178bd6d695119b74294a8fd6fbe46f54577e49b2`; FR-008 through FR-014 are durably recorded, while
+      FR-009/FR-010 enforcement remains task debt on issue #34 and escaped-environment cleanup is
+      owner-gated at `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13`.
 next_safe_slice: Review and merge the isolated licence/package identity PR #40 for issue #29. The
   next separate slice after it lands is community scaffolding and the draft contribution policy;
   keep release-note, release-asset, and tag work separate.
