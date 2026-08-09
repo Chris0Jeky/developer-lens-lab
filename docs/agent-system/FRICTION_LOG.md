@@ -1010,7 +1010,7 @@ ownership-token follow-up remain unchanged.
 - **status:** `workaround-documented`
 - **symptom:** A bounded `rg` lookup named `pyproject.toml`, `Makefile`, and an optional
   `docs/agent-system/CURRENT_STATE.md` path that are absent from this checkout. It printed the useful
-  `CLAUDE.md` matches but exited 1 because at least one explicit path did not exist.
+  `CLAUDE.md` matches but exited 2 because at least one explicit path did not exist.
 - **impact:** The lookup's process status was red even though the canonical run-and-prove commands
   were recovered; no proof command or repository state was affected.
 - **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
@@ -1022,16 +1022,15 @@ ownership-token follow-up remain unchanged.
   preflight before passing explicit paths to `rg`; a checked wrapper remains bounded task debt on
   issue #34.
 
-_Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
-explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
-`docs/agent-system/CURRENT_STATE.md` path are absent. `rg` exited 1 because at least one explicitly
-named path did not exist. This correction supersedes only that path-presence claim.
+_Correction 2026-08-10 (PR #56 P2 triage):_ The original entry recorded the wrong native exit code.
+`pyproject.toml` exists and was read successfully; `Makefile` and the optional
+`docs/agent-system/CURRENT_STATE.md` path are absent. Ripgrep returns exit 2 for an explicit missing
+path even when another named path matches. This correction supersedes only the exit-status claim.
 
 _Note 2026-08-09 (wheel-contract proof lookup):_ A combined lookup named absent
-`MAINTENANCE_PROTOCOL.md` alongside tracked paths. `rg` printed the path error but returned success
-because other paths matched, so native exit status alone did not fail closed. The next lookup must
-derive every explicit candidate from tracked-file inventory first. No file, ref, GitHub object,
-ignored output, or protected byte changed.
+`MAINTENANCE_PROTOCOL.md` alongside tracked paths. Ripgrep printed the path error and returned exit 2;
+the next lookup must derive every explicit candidate from tracked-file inventory first. No file, ref,
+GitHub object, ignored output, or protected byte changed.
 
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
