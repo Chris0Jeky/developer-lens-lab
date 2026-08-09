@@ -628,12 +628,13 @@ Verify, with evidence for each: licence text and notices; dependency-triage curr
 release notes; package metadata and install path; and the exact artifact set with its provenance
 checksums.
 
-Before handing back any joint v0.1.0 tag decision, verify and report that
-Chris0Jeky/developer-lens-lab#29 (release preparation) and Chris0Jeky/developer-lens-lab#5
-(dependency remediation) are complete, and that
+Before handing back any joint v0.1.0 tag decision, verify and report that the pre-tag deliverables
+tracked by Chris0Jeky/developer-lens-lab#29 (release preparation) are complete,
+Chris0Jeky/developer-lens-lab#5 (dependency remediation) is complete, and
 Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) records the owner's five-minute aesthetic
-sign-off. Under owner decision H7=BOTH, a product-only tag is not a fallback. Do not infer any
-condition from silence, an unrelated merged pull request, or an agent message.
+sign-off. Do not require #29 itself to close before tagging: its acceptance condition includes the
+tag. Under owner decision H7=BOTH, a product-only tag is not a fallback. Do not infer any condition
+from silence, an unrelated merged pull request, or an agent message.
 
 Run the lane-P release review before proposing any public artifact: the exact transformation is
 disclosed; no secrets; no private identity; no vague anonymity claim. A C0 artifact derived from
