@@ -927,3 +927,22 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   pre-cap memory, process-tree, and component-skip-semantics hardening remain separate issue #29
   debt. Exact fix-head hosted run `31332035344` and final review passed; merge remains pending.
   Release, tag, publication, credentials, data, model, and telemetry stay closed as applicable.
+
+## 2026-08-09 — Diagnostic-redaction merge and sdist-lineage selection (LAB-REL-01, issues #29/#34)
+
+- Diagnostic-redaction PR #52 reached final head
+  `46961957e09bb976b34beb41fee5e69d89d21076`; hosted run `31332413187` / job `93292650747`, the
+  locked local gate, and exact-final-head review passed. Both hosted review threads were resolved,
+  and the PR merged as `b966341d293a50d2b51f448fa23d3248d7e575fd` at
+  2026-08-09T19:48:10Z. Its delayed 19:51Z sweep found no new review, comment, or unresolved-thread
+  debt.
+- A top-level exact-head comment posted at 19:47:58Z set a conservative 19:58:52Z eligibility
+  checkpoint. The coordinator's final snapshot covered head, base, hosted proof, closing refs, and
+  review threads but omitted top-level comments, so the merge began nine seconds after that comment
+  arrived and before its stated checkpoint. The repository's three-minute floor, exact-head green
+  proof, and exact-final-head review were satisfied; no code or gate defect is known. The miss was
+  reconciled on PR #52 and is recorded as FR-025 without rewriting refs or merge history.
+- Sdist-to-wheel lineage is the next bounded issue #29 code seam. The TemporaryFile pre-cap design
+  remains parked because it would create a raw unredacted disk sink with unbounded growth;
+  process-tree and component-skip-semantics hardening remain separate. Release, tag, publication,
+  credentials, data, model, and telemetry stay closed as applicable.

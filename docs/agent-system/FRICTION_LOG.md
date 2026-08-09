@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 15 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 16 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -84,7 +84,8 @@ Rules that bind entries:
   package smoke), 2026-08-09 (the context-traversal-pruning worktree reused the confined route for
   its full gate and package smoke), 2026-08-09 (the PATH/uv-validation worktree reused the confined
   route for its full gate and package smoke), and 2026-08-09 (the diagnostic-redaction worktree
-  reused the confined route for its full gate and package smoke).
+  reused the confined route for its full gate and package smoke), and 2026-08-09 (the
+  diagnostic-state worktree used the installed Python module route for its docs-only gate).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -161,6 +162,11 @@ _Note 2026-08-09 (diagnostic redaction):_ The fifteenth isolated worktree likewi
 The confined `uv 0.12.3` bootstrap created its task-local locked environment and its reviewed
 interpreter completed the full gate plus actual package smoke. No failed workaround, global install,
 lockfile change, or ignored/protected-byte inspection occurred.
+
+_Note 2026-08-09 (diagnostic state repair):_ The sixteenth isolated worktree likewise had no PATH
+uv. The already installed `py -3 -m uv` 0.12.2 route was verified before creating the task-local
+locked environment for the bounded documentation gate. The existing maintenance-protocol
+instruction remains the cheapest truthful layer.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -687,3 +693,66 @@ reverting the completed builder's work; the failed follow-up changed no Git or G
 
 _Note 2026-08-09 (diagnostic redaction):_ Direct-body retry created the intended review checkpoint;
 the rejected empty-body request changed no GitHub comment, repository ref, or protected output.
+
+### FR-025 — the final pre-merge snapshot omitted a newly arrived top-level comment
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** PR #52 received a top-level exact-head comment at 19:47:58Z that set a conservative
+  19:58:52Z eligibility checkpoint. The coordinator's final snapshot queried head, base, hosted
+  proof, closing refs, and review threads but not top-level comments, and the merge began at
+  19:48:10Z.
+- **impact:** The merge satisfied the repository three-minute floor, exact-head proof, and final
+  review, but occurred before the newly stated conservative checkpoint and required an explicit
+  post-merge process reconciliation.
+- **workaround:** Re-read top-level comments together with head, base, hosted checks, reviews,
+  closing refs, and review threads in every final merge snapshot. Preserve the completed merge and
+  record any late signal factually rather than rewriting refs.
+- **occurrences:** 1 independent occurrence — Lab PR #52 on 2026-08-09.
+- **task:** lab issue #34 tracks the checked GitHub merge-snapshot boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If an independent omission recurs,
+  add one reusable checked pre-merge snapshot helper that returns all required surfaces together.
+
+_Note 2026-08-09 (diagnostic redaction merge):_ Exact final head
+`46961957e09bb976b34beb41fee5e69d89d21076` and hosted run `31332413187` were green, both threads
+were resolved, and the 19:51Z delayed sweep found no new defect. PR #52 records the reconciliation;
+no ref rewrite or unmerge was attempted.
+
+### FR-026 — a PowerShell DateTime comparison inverted the sweep-threshold result
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A post-merge guard compared a UTC `DateTime` value with a parsed `Z` literal and
+  incorrectly reported that the already elapsed 19:51:10Z threshold had not elapsed.
+- **impact:** The first delayed-sweep command stopped before querying GitHub and required one
+  corrected retry.
+- **workaround:** Use `DateTimeOffset::UtcNow` and parse the threshold as `DateTimeOffset` before
+  comparing absolute instants.
+- **occurrences:** 1 independent occurrence — Lab PR #52 delayed sweep on 2026-08-09.
+- **task:** lab issue #34 tracks external Windows command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent recurrence
+  should add a small checked UTC-threshold helper at the workflow boundary.
+
+_Note 2026-08-09 (diagnostic redaction merge):_ The failed guard ran no GitHub query and changed no
+tracked file, Git ref, GitHub object, ignored output, or protected byte; the `DateTimeOffset` retry
+completed the single delayed sweep.
+
+### FR-027 — an optional missing path made a read-only ripgrep probe exit nonzero
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A command-table discovery probe named a conventional `Makefile` alongside known
+  tracked files. The repository has no such path, so ripgrep printed the useful matches but exited
+  nonzero after reporting the missing file.
+- **impact:** The read-only probe was classified as failed and required one exact-file read before
+  the declared documentation commands were confirmed.
+- **workaround:** Resolve optional candidate paths before passing them to ripgrep, or search only
+  paths already returned by the repository file inventory.
+- **occurrences:** 1 independent occurrence — diagnostic-state proof discovery on 2026-08-09.
+- **task:** lab issue #34 tracks external Windows command-boundary workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent recurrence
+  should move optional-path filtering into the smallest reusable repository-discovery helper.
+
+_Note 2026-08-09 (diagnostic state repair):_ The failed read changed no tracked file, Git ref,
+GitHub object, ignored output, or protected byte; the direct `CLAUDE.md` read supplied the same
+command-table evidence.
