@@ -54,8 +54,8 @@ actions stay unchecked.
   repository names internally; the external rebrand and commercial terms are deferred owner
   decisions.
 - [ ] **q-13 — Remove two escaped community-bootstrap environments.** Without inspecting their
-  contents, remove only the directories named `developer-lens-lab-community-uv-20260809` and
-  `developer-lens-lab-community-uv2-20260809` from the public Codex shell temporary root. Both names
+  contents, remove only the two targets identified in the session's private owner handoff from the
+  public Codex shell temporary root. Their exact local names are intentionally not tracked. Both
   were confirmed present on 2026-08-09; the agent's exact recursive cleanup was denied before
   execution. This is machine hygiene only and does not authorize any data, model, telemetry,
   credential, publication, release or tag action.
