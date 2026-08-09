@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -7,6 +8,8 @@ from pathlib import Path
 import pytest
 
 from scripts.verify_package_smoke import (
+    PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+    _run,  # pyright: ignore[reportPrivateUsage] - direct timeout seam coverage
     assert_doctor_report,
     build_smoke_environment,
     resolve_uv_command,
@@ -62,3 +65,55 @@ def test_package_smoke_confines_uv_cache_and_temp_paths(tmp_path: Path) -> None:
     assert Path(environment["TEMP"]).is_relative_to(tmp_path)
     assert Path(environment["TMPDIR"]).is_relative_to(tmp_path)
     assert environment["UV_CONCURRENT_DOWNLOADS"] == "1"
+
+
+def test_package_smoke_run_passes_named_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[list[str], dict[str, object]]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", fake_run)
+
+    result = _run(["uv", "build", "--wheel"], cwd=tmp_path, environment={"SAFE": "yes"})
+
+    assert result.returncode == 0
+    assert calls == [
+        (
+            ["uv", "build", "--wheel"],
+            {
+                "cwd": tmp_path,
+                "env": {"SAFE": "yes"},
+                "capture_output": True,
+                "text": True,
+                "check": False,
+                "timeout": PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+            },
+        )
+    ]
+
+
+def test_package_smoke_run_reports_timeout_without_environment(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def timeout_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        raise subprocess.TimeoutExpired(command, PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS)
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", timeout_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "pip", "install", "package.whl"],
+            cwd=tmp_path,
+            environment={"SECRET_VALUE": "must-not-appear"},
+        )
+
+    message = str(exc_info.value)
+    assert (
+        message == "package smoke command timed out after 300 seconds: uv pip install package.whl"
+    )
+    assert "must-not-appear" not in message
