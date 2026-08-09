@@ -46,6 +46,13 @@ lanes in principle but activates none of them.
 - Preserve a complete deterministic fallback and allow a clean rejection decision.
 <!-- shared:evaluation-integrity end -->
 
+<!-- shared:continuation-friction-tasking-v1 start -->
+Every material workaround, tooling hiccup, repeated friction or surprising divergence is logged in
+docs/agent-system/FRICTION_LOG.md in the same hop and linked to an existing issue/card or durable
+task. Capture is not permission to widen scope; never record PID, absolute local path, token, or
+private identifier.
+<!-- shared:continuation-friction-tasking-v1 end -->
+
 ## Prove and hand off
 
 Run the focused check, then the full gate in `CLAUDE.md` for a code/config milestone. Review the

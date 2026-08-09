@@ -43,6 +43,7 @@
       ]
     },
     "scout": {
+      "agent": ".claude/agents/dll-scout.md",
       "model": "claude-opus-5",
       "effort": "low",
       "owns": ["large reads", "archaeology", "inventory", "idea mining", "admin discovery"]

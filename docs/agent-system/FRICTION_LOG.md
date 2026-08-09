@@ -210,3 +210,23 @@ cheap workaround and none of them blocked a lane.
   [CONTINUOUS_WORK_PROTOCOL.md](CONTINUOUS_WORK_PROTOCOL.md). The uncontrollable half is an external
   wrapper budget, which no repository check can enforce. Revisit only if a timeout lands mid-write
   and leaves a dirty tree, which would be a materially different failure.
+
+### FR-007 — Claude runtime denied writes to the committed agent surface
+
+- **first-seen:** 2026-08-09
+- **status:** `promoted`
+- **symptom:** The required mechanical delegation could not write a committed `.claude/agents`
+  file because the Claude runtime denied that surface. The same denial had already occurred in the
+  sibling product repository.
+- **impact:** The prescribed Claude mechanic lane cannot complete agent-file parity changes even
+  when the recipe is bounded and the target is tracked. Without a defined fallback, the coordinator
+  would either lose the parity slice or be tempted to bypass the runtime boundary.
+- **workaround:** The coordinator used the Codex implementation fallback in the isolated writer
+  worktree, preserving one writer and the exact bounded recipe; no runtime boundary was bypassed.
+- **occurrences:** 2 recorded — 2026-08-09 (product and lab prompt-operating-system slices).
+- **task:** lab issue #33 (LAB-GOV-02), with the corresponding product issue #214.
+- **promotion:** Promoted to the Codex fallback plus executable parity: `dll-scout` is now pinned in
+  `.agent-harness/governor.json`, all four lab Claude agents require one byte-identical friction
+  block, and both continuation skills require one byte-identical continuation-friction block. The
+  context verifier and focused tests fail on missing, duplicate, reversed, or drifted blocks. This
+  is the cheapest repository-enforced half; the runtime denial itself remains an external boundary.

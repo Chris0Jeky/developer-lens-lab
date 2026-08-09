@@ -22,7 +22,7 @@
   "shared_blocks": [
     {
       "id": "runtime-bootstrap-v1",
-      "sha256": "018c0db78a90107022e76a14a03fee5fe3afe5cbf16a7dd26b0b91e3e1839ef6"
+      "sha256": "3313bc1a9884e5f3e62f621f124da212842e49e018361c99840927836bfedc0e"
     },
     {
       "id": "friction-tasking-v1",

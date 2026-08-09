@@ -19,3 +19,11 @@ Rules:
 4. Commit in small logical increments on the branch you were given. Never merge, never push
    unless told to, never touch `main`.
 5. Close with: Changed / Verified / NOT verified / Anything skipped or ambiguous.
+<!-- shared:agent-friction-tasking-v1 start -->
+FRICTION TASKING (agent-friction-tasking-v1)
+Every material workaround, tooling hiccup, repeated friction, or surprising divergence reaches
+docs/agent-system/FRICTION_LOG.md in the same hop and links to an existing issue, card, or durable
+task. A write-capable role appends it; a read-only role reports it as a required coordinator same-hop
+append. Capture never widens scope. Never record a PID, absolute local path, token, or private
+identifier.
+<!-- shared:agent-friction-tasking-v1 end -->

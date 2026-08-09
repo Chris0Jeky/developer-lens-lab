@@ -595,3 +595,17 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Merge gate: this branch is prepared and parked. It must not be agent-merged while
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` — the product register's concurrent-writer gate,
   not this repository's own `q-8` — stays open.
+
+## 2026-08-09 — Claude agent-surface fallback and parity enforcement (LAB-GOV-02, issue #33)
+
+- The required `dll-mechanic` write to `.claude/agents` was denied by the Claude runtime, matching
+  the product-side occurrence. The bounded fallback was completed by the isolated Codex writer;
+  the runtime boundary was not bypassed. FR-007 records both occurrences and the same-hop task.
+- Added the pinned `dll-scout` route and enforced the four-agent friction block plus the two-copy
+  continuation-friction block in `dllab context verify`. Missing, duplicate, reversed, or drifted
+  blocks are fail-closed; the blocks are byte-identical across their required copies.
+- Updated the prompt library runtime bootstrap to the exact product reference body and copied the
+  product parity manifest byte-for-byte. Lab-specific routing remains outside the shared block.
+- Scope remains C0 control-plane only: no research implementation, data/model/telemetry lane,
+  credential, generated output, product contract, or owner-policy value changed. LAB-GOV-02 stays
+  `IN_REVIEW` and the lab PR remains parked under the cross-repository q-8 gate.

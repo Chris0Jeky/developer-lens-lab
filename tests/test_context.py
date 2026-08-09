@@ -15,6 +15,7 @@ from developer_lens_lab.context.verify import (
     prompt_entries,
     shared_block_digest,
     shared_blocks_in,
+    verify_agent_friction_parity,
     verify_context_budget,
     verify_continuous_protocol,
     verify_governor,
@@ -136,6 +137,91 @@ def test_skill_parity_rejects_duplicate_markers(tmp_path: Path) -> None:
         and ".agents/skills/developer-lens-lab-continuation/SKILL.md" in failure
         for failure in failures
     )
+
+
+_AGENT_RELS = (
+    ".claude/agents/dll-implementer.md",
+    ".claude/agents/dll-mechanic.md",
+    ".claude/agents/dll-reviewer.md",
+    ".claude/agents/dll-scout.md",
+)
+_AGENT_START = "<!-- shared:agent-friction-tasking-v1 start -->"
+_AGENT_END = "<!-- shared:agent-friction-tasking-v1 end -->"
+_AGENT_BODY = (
+    "FRICTION TASKING (agent-friction-tasking-v1)\n"
+    "Every material workaround reaches docs/agent-system/FRICTION_LOG.md in the same hop and links "
+    "to an existing issue, card, or durable task.\n"
+    "A write-capable role appends it; a read-only role reports it as a required coordinator "
+    "same-hop "
+    "append.\n"
+    "Capture never widens scope. Never record a PID, absolute local path, token, or private "
+    "identifier."
+)
+
+
+def _write_agent_set(tmp_path: Path, bodies: tuple[str, ...] | None = None) -> None:
+    chosen = bodies or (_AGENT_BODY,) * len(_AGENT_RELS)
+    for rel, body in zip(_AGENT_RELS, chosen, strict=True):
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"agent\n{_AGENT_START}\n{body}\n{_AGENT_END}\n", encoding="utf-8")
+
+
+def test_agent_friction_parity_passes_on_the_real_repo() -> None:
+    assert verify_agent_friction_parity(ROOT) == []
+
+
+def test_agent_friction_parity_reports_missing_marker(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path)
+    (tmp_path / _AGENT_RELS[0]).write_text("agent\n", encoding="utf-8")
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any(_AGENT_RELS[0] in failure and "marker" in failure for failure in failures)
+
+
+def test_agent_friction_parity_reports_duplicate_marker(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path)
+    path = tmp_path / _AGENT_RELS[1]
+    path.write_text(
+        f"agent\n{_AGENT_START}\n{_AGENT_BODY}\n{_AGENT_END}\n{_AGENT_START}\n{_AGENT_END}\n",
+        encoding="utf-8",
+    )
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any(_AGENT_RELS[1] in failure and "exactly one" in failure for failure in failures)
+
+
+def test_agent_friction_parity_reports_reversed_markers(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path)
+    (tmp_path / _AGENT_RELS[2]).write_text(
+        f"agent\n{_AGENT_END}\n{_AGENT_BODY}\n{_AGENT_START}\n", encoding="utf-8"
+    )
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any(_AGENT_RELS[2] in failure and "out of order" in failure for failure in failures)
+
+
+def test_agent_friction_parity_reports_drift(tmp_path: Path) -> None:
+    _write_agent_set(tmp_path, (_AGENT_BODY, _AGENT_BODY, _AGENT_BODY, _AGENT_BODY + "\nDrift"))
+    failures = verify_agent_friction_parity(tmp_path)
+    assert any("bytes drift" in failure for failure in failures)
+
+
+def test_continuation_friction_marker_failures_are_enforced(tmp_path: Path) -> None:
+    marker = "shared:continuation-friction-tasking-v1"
+    start = f"<!-- {marker} start -->"
+    end = f"<!-- {marker} end -->"
+    body = (
+        "Every material workaround is logged in docs/agent-system/FRICTION_LOG.md in the same hop."
+    )
+    good = f"{start}\n{body}\n{end}\n"
+    _write_skill_pair(tmp_path, good, good)
+    assert verify_one_shared_block(tmp_path, marker) == []
+    _write_skill_pair(tmp_path, good, f"{start}\n{body}\n")
+    assert any("marker" in failure for failure in verify_one_shared_block(tmp_path, marker))
+    _write_skill_pair(tmp_path, good, f"{start}\n{body}\n{end}\n{start}\n{end}\n")
+    assert any("exactly one" in failure for failure in verify_one_shared_block(tmp_path, marker))
+    _write_skill_pair(tmp_path, good, f"{end}\n{body}\n{start}\n")
+    assert any("out of order" in failure for failure in verify_one_shared_block(tmp_path, marker))
+    _write_skill_pair(tmp_path, good, f"{start}\n{body} drift\n{end}\n")
+    assert any("drifted" in failure for failure in verify_one_shared_block(tmp_path, marker))
 
 
 def test_protected_data_defaults_block_matches_on_the_real_repo() -> None:

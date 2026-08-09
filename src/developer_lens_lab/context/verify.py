@@ -32,6 +32,7 @@ REQUIRED_FILES = (
     ".claude/agents/dll-implementer.md",
     ".claude/agents/dll-mechanic.md",
     ".claude/agents/dll-reviewer.md",
+    ".claude/agents/dll-scout.md",
     ".claude/settings.json",
     ".claude/skills/developer-lens-lab-continuation/SKILL.md",
     "HUMAN_TODO.md",
@@ -198,7 +199,7 @@ GOVERNOR_REQUIRED_FOCUS = (
     ("community", 2),
     ("realdata_standalone", 0),
 )
-GOVERNOR_PIN_ROLES = ("implementer", "reviewer", "mechanic")
+GOVERNOR_PIN_ROLES = ("scout", "implementer", "reviewer", "mechanic")
 # Lane statuses are hardcoded until LAB-ACT-01 replaces them with executable activation state.
 # Until then this is the only thing stopping a non-synthetic lane from being flipped open by an
 # unreviewed edit, so the pin is deliberately exact rather than a presence check.
@@ -542,10 +543,30 @@ REQUIRED_SETTINGS_READ_DENY = (
 # Every named block that must stay byte-identical between the two SKILL.md copies. Each entry is
 # guarded independently so a new shared block only needs its marker pair added here plus the two
 # marker lines wrapped around the paragraph in both files.
-SHARED_SKILL_MARKERS = ("shared:evaluation-integrity", "shared:protected-data-defaults")
+SHARED_SKILL_MARKERS = (
+    "shared:evaluation-integrity",
+    "shared:protected-data-defaults",
+    "shared:continuation-friction-tasking-v1",
+)
 SKILL_PARITY_FILES = (
     ".claude/skills/developer-lens-lab-continuation/SKILL.md",
     ".agents/skills/developer-lens-lab-continuation/SKILL.md",
+)
+
+AGENT_FRICTION_MARKER = "shared:agent-friction-tasking-v1"
+AGENT_FRICTION_FILES = (
+    ".claude/agents/dll-implementer.md",
+    ".claude/agents/dll-mechanic.md",
+    ".claude/agents/dll-reviewer.md",
+    ".claude/agents/dll-scout.md",
+)
+AGENT_FRICTION_REQUIRED_CLAUSES = (
+    "docs/agent-system/FRICTION_LOG.md in the same hop and links to an existing issue, card, or "
+    "durable",
+    "A write-capable role appends it; a read-only role reports it as a required coordinator "
+    "same-hop",
+    "Capture never widens scope",
+    "Never record a PID, absolute local path, token, or private",
 )
 
 
@@ -585,6 +606,44 @@ def verify_skill_parity(root: Path) -> list[str]:
     failures: list[str] = []
     for marker in SHARED_SKILL_MARKERS:
         failures.extend(verify_one_shared_block(root, marker))
+    return failures
+
+
+def verify_agent_friction_parity(root: Path) -> list[str]:
+    """Require one identical, role-aware friction block across all lab Claude agents."""
+    start_marker = f"<!-- {AGENT_FRICTION_MARKER} start -->"
+    end_marker = f"<!-- {AGENT_FRICTION_MARKER} end -->"
+    failures: list[str] = []
+    blocks: list[tuple[str, str]] = []
+    for rel in AGENT_FRICTION_FILES:
+        path = root / rel
+        try:
+            normalized = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        except OSError:
+            failures.append(f"{rel}: missing agent friction marker(s)")
+            continue
+        start_count = normalized.count(start_marker)
+        end_count = normalized.count(end_marker)
+        if start_count != 1 or end_count != 1:
+            failures.append(
+                f"{rel}: expected exactly one agent friction marker pair "
+                f"(found {start_count}/{end_count})"
+            )
+            continue
+        start = normalized.find(start_marker)
+        end = normalized.find(end_marker)
+        if end <= start:
+            failures.append(f"{rel}: agent friction markers are out of order")
+            continue
+        body = normalized[start + len(start_marker) : end]
+        blocks.append((rel, body))
+        for clause in AGENT_FRICTION_REQUIRED_CLAUSES:
+            if clause not in body:
+                failures.append(f"{rel}: agent friction block is missing required clause: {clause}")
+    if len(blocks) == len(AGENT_FRICTION_FILES) and len({body for _, body in blocks}) > 1:
+        failures.append(
+            f"agent friction block bytes drift between {blocks[0][0]} and other agent files"
+        )
     return failures
 
 
@@ -1066,6 +1125,7 @@ def verify_repository(root: Path) -> VerificationReport:
     failures.extend(_verify_tier(root))
     failures.extend(verify_governor(root))
     failures.extend(verify_skill_parity(root))
+    failures.extend(verify_agent_friction_parity(root))
     failures.extend(verify_prompt_parity(root))
     failures.extend(verify_context_budget(root))
     failures.extend(verify_markdown_links(root))
