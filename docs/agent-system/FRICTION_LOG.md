@@ -447,3 +447,19 @@ retains only the bounded action and its authority limits.
 - **promotion:** Deliberately NOT promoted after one occurrence. If the CLI-wrapper import recurs in
   a dependency-light proof, add a checked context-only entry point rather than relying on an
   incidental global package set.
+
+### FR-016 — `gh pr view --repo` does not infer the current branch
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Immediately after `gh pr create` returned the new pull-request URL, a follow-up
+  `gh pr view --repo ...` call without a number failed with `argument required when using the
+  --repo flag` instead of inferring the checked-out branch.
+- **impact:** A successful pull-request write can be followed by a failed verification read, leaving
+  its exact head, base, draft state, and hosted-check state unverified if the URL is not retained.
+- **workaround:** Capture the number printed by `gh pr create` and pass that exact number to every
+  `gh pr view --repo` verification read.
+- **occurrences:** 1 independent occurrence — 2026-08-09 while opening the community-files PR.
+- **task:** lab issue #34 tracks the external Windows/GitHub CLI workflow boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs, add a checked wrapper
+  that captures the created PR URL/number and performs the exact numbered re-read.
