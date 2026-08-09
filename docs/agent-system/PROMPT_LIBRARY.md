@@ -624,9 +624,21 @@ dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
 
-Verify, with evidence for each: licence text and notices; dependency-triage currency; changelog and
-release notes; package metadata and install path; and the exact artifact set with its provenance
-checksums.
+Verify, with evidence for each: licence text and notices; dependency-triage currency and completed
+remediation at Chris0Jeky/developer-lens-lab#5; changelog and release notes; package metadata and
+install path; and the exact artifact set with its provenance checksums.
+
+Before handing back a joint v0.1.0 tag decision, verify every prerequisite from live issue, merge
+and exact-head gate evidence:
+- the pre-tag deliverables tracked by Chris0Jeky/developer-lens-lab#29 are complete; do not require
+  #29 itself to close before tagging because its acceptance condition includes the tag;
+- `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` records the product five-minute release
+  sign-off; and
+- `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` separately records the Lab
+  screenshot/video-package aesthetic sign-off.
+These are distinct approvals for distinct scopes: one approval or checklist record cannot satisfy
+the other. Under owner decision H7=BOTH, a product-only tag is not a fallback. If any prerequisite
+is missing, stop and report the exact gate instead of handing back the tag decision.
 
 Run the lane-P release review before proposing any public artifact: the exact transformation is
 disclosed; no secrets; no private identity; no vague anonymity claim. A C0 artifact derived from
@@ -634,9 +646,8 @@ invented data says so explicitly, and its generator is described without shippin
 identifiers as if they were findings.
 
 Publication of anything derived from real or curated data is a separate owner gate
-(Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8) and is not part of a C0 release. Aesthetic
-sign-off is owner-only (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11); do not self-approve
-visual quality.
+(`Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`) and is not part of a C0 release. Do not infer
+either release sign-off or self-approve visual quality.
 
 Do not tag, publish or push a release from this prompt. Stage, prove, and hand the decision back.
 

@@ -652,3 +652,37 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Scope held: no Python-support, contract, methodology, data/model/telemetry, credential,
   publication, release, tag, or owner-gate change. After this dependency slice lands and alert state
   is refreshed, the next separate pre-tag #29 deliverable is licence/package identity metadata.
+
+## 2026-08-09 — Dependency remediation merge and alert closure (LAB-REL-01, issue #5)
+
+- PR #38 reached final head `4ebb1049ddb831dc7ff76f5a0050e52bdf37f40c`; hosted Check run
+  31296773324 succeeded on that exact head, the independent review was merge-sound, and the PR
+  merged as `f893f576f71202375fe93e8c7d9c02e54fbaf08a`.
+- A post-merge GitHub Dependabot API refresh returned zero open alerts. Issue #5 was then closed at
+  05:46Z with the exact-head, check, merge, and alert evidence. The release curator still owes a
+  fresh Dependabot read at the eventual release head.
+- This entry supplies the evidence that the preceding append-only entry explicitly left NOT
+  verified while the branch was unpublished. No earlier ledger wording was rewritten.
+- The PR #38 post-merge sweep found no reviews, inline comments, or issue comments. The next
+  separate issue #29 deliverable is licence/package identity metadata; no data, model, telemetry,
+  credential, publication, tag, or owner-gate state changed here.
+
+## 2026-08-09 — Distinct-signoff prompt and friction closeout (LAB-REL-01)
+
+- Lab PR #37 was archived at `4a044dcec134cda313cffb7087389f64d28fe8c9` after two fix rounds; its
+  unresolved HIGH thread remains provenance and received no third fix commit. Replacement PR #42
+  changed only DL-P09 at final head `e290d1b94aff9f39de677fd80670f4f9e8f15227` and merged as
+  `38ac2eb14c8c9ba742b5f269b7022c7e549b7a5d`.
+- PR #42 hosted run `31299725193`, job `93210447311`, passed on the exact head. Fresh review found no
+  causal CRITICAL/HIGH defect; the sole connector P2 about future bounded dependency residuals was
+  tracked on issue #34 and resolved without a fix commit. The T+3:54 post-merge sweep was clean.
+- Friction PR #41 integrated that base, passed hosted run `31300174204`, job `93211576790`, at final
+  head `3604e301a5e9930e56edce193ea293698a4870bd`, then merged as
+  `178bd6d695119b74294a8fd6fbe46f54577e49b2` after fresh merge-sound review and complete thread
+  triage. Its known FR-001 wording P2 stays tracked on issue #34 without another fix.
+- `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` now owns removal of the two escaped bootstrap
+  directories. Their names were confirmed present without content inspection; cleanup remains
+  NOT verified and does not block C0 release preparation.
+- Exact next slice is the already-open licence/package identity PR #40, followed by the prepared
+  community-files branch. No owner sign-off, tag, publication, data/model/telemetry activation,
+  credential or protected/generated operational content moved in this closeout.

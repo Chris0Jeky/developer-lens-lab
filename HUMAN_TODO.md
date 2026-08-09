@@ -53,3 +53,9 @@ actions stay unchecked.
 - [ ] **q-12 — Later: external umbrella brand and any commercial licence terms.** Keep current
   repository names internally; the external rebrand and commercial terms are deferred owner
   decisions.
+- [ ] **q-13 — Remove two escaped community-bootstrap environments.** Without inspecting their
+  contents, remove only the two targets identified in the session's private owner handoff from the
+  public Codex shell temporary root. Their exact local names are intentionally not tracked. Both
+  were confirmed present on 2026-08-09; the agent's exact recursive cleanup was denied before
+  execution. This is machine hygiene only and does not authorize any data, model, telemetry,
+  credential, publication, release or tag action.
