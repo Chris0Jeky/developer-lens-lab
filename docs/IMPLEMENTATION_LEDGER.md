@@ -706,3 +706,20 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   contact-request surface is neutral and warns that the issue and requesting GitHub account are
   public; it invents no inbox or monitoring promise. The prepared changelog remains the next
   separate slice, and every non-C0 or owner-gated lane stays closed.
+
+## 2026-08-09 — Community scaffolding closeout (LAB-REL-01)
+
+- Community PR #43 integrated package-identity merge
+  `d203461c023e1661140a1fef38a0f4b68e3454b2` and reached final head
+  `871e014c73972fd65b8e9cd39e0665b6b2cdb65d`. The locked/full local gate passed with 150 tests and
+  3 declared Windows symlink skips; hosted run `31301825986`, job `93215733777`, passed; fresh
+  review was merge-sound; and the PR merged as `56c889141cd4575d12f80c3e0a16a574277e0ddd`.
+- The public contact request exposes only a neutral contact category, warns that the issue and
+  requesting account are public, and contains no conduct-reporting intent. The exact-final-head P2
+  about that intentional neutral category was explicitly declined; no inbox or monitoring promise
+  was invented.
+- FR-016 records the failed unnumbered `gh pr view --repo` verification read after PR creation. The
+  numbered retry verified the exact head/base; no ref or PR content was lost.
+- Exact active slice is the bounded v0.1.0 changelog. The non-credential built-artifact/package-smoke
+  guard remains the next separate issue #29 residual; no tag, asset, registry, credential,
+  publication, owner sign-off, or non-C0 lane moved here.
