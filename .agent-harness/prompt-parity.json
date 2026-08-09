@@ -1,0 +1,56 @@
+{
+  "manifest_schema_version": 1,
+  "description": "Cross-repository prompt-operating-system parity manifest. This file is repo-neutral and byte-identical in every listed repository; each side resolves its own entry by matching its declared repository slug. Product issue Chris0Jeky/developer-lens#214, lab issue Chris0Jeky/developer-lens-lab#33.",
+  "shared_block_normalization": "Digest input is the exact fenced block body from the prompt library, CRLF and CR normalized to LF, with no trailing newline, hashed as UTF-8 with SHA-256 and rendered lowercase hex.",
+  "common_prompt_ids": [
+    "DL-P01-FLAGSHIP-GOVERNOR",
+    "DL-P02-GOVERNOR-LITE",
+    "DL-P03-OVERNIGHT-CONTINUOUS",
+    "DL-P04-RESUME-RECONCILE",
+    "DL-P05-BOUNDED-IMPLEMENTER",
+    "DL-P06-INDEPENDENT-REVIEWER",
+    "DL-P07-MECHANICAL-SWEEP",
+    "DL-P08-CI-REVIEW-RECOVERY",
+    "DL-P09-RELEASE-CURATOR",
+    "DL-P10-CROSS-REPO-COORDINATOR",
+    "DL-P11-DISCOVERY-IDEA-MINER",
+    "DL-P12-FRICTION-BURNDOWN"
+  ],
+  "continuous_prompt_ids": [
+    "DL-P03-OVERNIGHT-CONTINUOUS"
+  ],
+  "shared_blocks": [
+    {
+      "id": "runtime-bootstrap-v1",
+      "sha256": "018c0db78a90107022e76a14a03fee5fe3afe5cbf16a7dd26b0b91e3e1839ef6"
+    },
+    {
+      "id": "friction-tasking-v1",
+      "sha256": "56bc9679fc51fd4ff5f05b715c42a96c3201284a6fee1a033524c2ccc55f5a7e"
+    }
+  ],
+  "repositories": [
+    {
+      "slug": "Chris0Jeky/developer-lens",
+      "role": "product",
+      "prompt_library": "docs/agent-system/PROMPT_LIBRARY.md",
+      "continuous_work_protocol": "docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md",
+      "friction_log": "docs/agent-system/FRICTION_LOG.md",
+      "extension_prompt_ids": [
+        "DL-PX01-PRODUCT-DEEP-DISCOVERY",
+        "DL-PX02-PRODUCT-ANALYTICAL-VERTICAL"
+      ]
+    },
+    {
+      "slug": "Chris0Jeky/developer-lens-lab",
+      "role": "lab",
+      "prompt_library": "docs/agent-system/PROMPT_LIBRARY.md",
+      "continuous_work_protocol": "docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md",
+      "friction_log": "docs/agent-system/FRICTION_LOG.md",
+      "extension_prompt_ids": [
+        "DL-LX01-LAB-EXPERIMENT-HARNESS",
+        "DL-LX02-LAB-EVALUATION-REPRODUCIBILITY"
+      ]
+    }
+  ]
+}
