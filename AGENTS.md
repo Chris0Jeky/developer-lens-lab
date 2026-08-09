@@ -17,6 +17,17 @@ paths. Escalate judgment-heavy implementation or review to Terra/Sol. Risk class
 protocols live in `.agent-harness/governor.json` and `docs/agent-system/`; non-flagship
 orchestrators use the Research Governor Lite prompt in `docs/agent-system/PROMPT_LIBRARY.md`.
 
+## Prompts and friction (full rule in `CLAUDE.md`)
+
+Executable prompts live only in `docs/agent-system/PROMPT_LIBRARY.md` behind stable IDs pinned by
+`.agent-harness/prompt-parity.json`. Every active prompt tells Codex to read `AGENTS.md` first, then
+the shared `CLAUDE.md` canon, invoke `$developer-lens-lab-continuation`, and follow Sol/Terra/Luna
+routing — and tells Claude to read `CLAUDE.md` and delegate to Opus 5 low scouts, `dll-implementer`,
+`dll-reviewer` and `dll-mechanic`. Human refs are always
+`<owner>/<repo>::HUMAN_TODO.md::q-N`; a bare `q-N` fails the verifier, because product `q-8` and lab
+`q-8` are different gates. Log material friction in `docs/agent-system/FRICTION_LOG.md` in the SAME
+hop and link it to a task; capture is not permission to detour.
+
 ## Protected data (full rule in `CLAUDE.md`)
 
 Invented fixtures only. Never inspect real repositories, provider accounts, credentials, browser

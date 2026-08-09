@@ -14,8 +14,7 @@ This file is the shared canon for every agent runtime; `AGENTS.md` is the thin C
 3. Invoke the `developer-lens-lab-continuation` skill before implementation, contract, corpus,
    experiment, artifact-store, or handoff work (Codex form: `$developer-lens-lab-continuation`).
 4. Read `docs/PRODUCT_BOUNDARY.md` and `docs/DATA_POLICY.md` before any data or model change;
-   `docs/CONTRACTS.md` before touching a contract seam; `docs/agent-system/README.md` before
-   selecting or sequencing multi-lane work.
+   `docs/CONTRACTS.md` before a contract seam; `docs/agent-system/README.md` before multi-lane work.
 5. Use invented fixtures unless a task names a newer explicit owner approval and exact data scope.
 
 ## Source of truth
@@ -39,13 +38,11 @@ This file is the shared canon for every agent runtime; `AGENTS.md` is the thin C
 
 - T1 sandbox, public synthetic route, C0 invented tracked/runtime inputs only.
 - Push and merge are free after the declared checks, review, and aging gates.
-- Favor runnable product/research value over non-essential security ceremony. Track deferred
-  hardening rather than making it a prerequisite.
-- Owner constitution v2 authorizes real own/curated data, layered people/team research, raw
-  content (secrets prohibited absolutely), and an experimental channel — but every non-C0 lane
-  stays closed until the activation preconditions in `.agent-harness/governor.json` are
-  mechanically true. External model calls and credentials still need their own explicit gate.
-  No durable cross-repo identity key; promotion stays product-governed.
+- Favor runnable value over non-essential ceremony; track deferred hardening, never gate on it.
+- Owner constitution v2 authorizes real own/curated data, layered people/team research, raw content
+  (secrets prohibited absolutely), and an experimental channel — but every non-C0 lane stays closed
+  until `.agent-harness/governor.json` preconditions are mechanically true. External model calls and
+  credentials need their own gate; no cross-repo identity key; promotion stays product-governed.
 - Product contract work is additive, synthetic-only, and lands through Developer Lens's own gate.
 
 ## Protected-data rule
@@ -84,11 +81,20 @@ any networked command are opt-in and must not become normal PR checks until meas
   non-overlapping paths. Subagents can move HEAD — pin git state in prompts, re-verify after each.
 - `bypassPermissions` lives only in gitignored `.claude/settings.local.json`, never committed.
 
+## Prompts and friction
+
+Executable prompts live only in `docs/agent-system/PROMPT_LIBRARY.md`, behind stable IDs pinned by
+`.agent-harness/prompt-parity.json` (twelve shared with Developer Lens, two lab extensions). Each
+active prompt carries both shared blocks verbatim, routes Claude via this file and the `dll-*`
+agents and Codex via `AGENTS.md` then this canon, and writes human refs as
+`<owner>/<repo>::HUMAN_TODO.md::q-N`; a bare `q-N` fails the verifier. Log material friction in
+`docs/agent-system/FRICTION_LOG.md` the SAME hop; waves: `CONTINUOUS_WORK_PROTOCOL.md`.
+
 ## Collaboration and handoff
 
-Keep no server, notebook kernel, or background agent after handoff. Use one fresh-context
-adversarial review for non-trivial code or methodology and review the exact final head. Update the
-implementation ledger for code milestones, the experiment ledger for run/holdout decisions, the
-failure archive for killed approaches, and `docs/CURRENT_STATE.md` only at a phase boundary. Close
-with changed / verified / NOT verified / failures and workarounds / docs-state sync / residual
-risk / human actions / exact branch-HEAD-PR-check-worktree state / exact resume point.
+Keep no server, kernel, or background agent after handoff. Use one fresh-context adversarial review
+for non-trivial code or methodology, against the exact final head. Update the implementation ledger
+for code milestones, the experiment ledger for run/holdout decisions, the failure archive for killed
+approaches, and `docs/CURRENT_STATE.md` only at a phase boundary. Close with changed / verified /
+NOT verified / failures and workarounds / docs-state sync / residual risk / human actions / exact
+branch-HEAD-PR-check-worktree state / exact resume point.
