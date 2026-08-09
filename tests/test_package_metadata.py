@@ -9,6 +9,7 @@ import pytest
 
 from scripts.verify_package_smoke import (
     PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+    PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT,
     _run,  # pyright: ignore[reportPrivateUsage] - direct timeout seam coverage
     assert_doctor_report,
     build_smoke_environment,
@@ -117,3 +118,68 @@ def test_package_smoke_run_reports_timeout_without_environment(
         message == "package smoke command timed out after 300 seconds: uv pip install package.whl"
     )
     assert "must-not-appear" not in message
+
+
+def test_package_smoke_run_reports_bounded_redacted_diagnostics(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    secret = "synthetic-package-secret"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(
+            command,
+            17,
+            stdout=("stdout-detail " + secret + " " + "x" * 3_000),
+            stderr=("stderr-detail " + secret + " " + "y" * 3_000),
+        )
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build", str(tmp_path / "package.whl")],
+            cwd=tmp_path,
+            environment={"SECRET_VALUE": secret, "SAFE_VALUE": "synthetic-safe"},
+        )
+
+    message = str(exc_info.value)
+    assert message.startswith("package smoke command failed (17): uv build <task-path>")
+    assert "stdout:\nstdout-detail <redacted>" in message
+    assert "stderr:\nstderr-detail <redacted>" in message
+    assert secret not in message
+    assert str(tmp_path) not in message
+    assert "x" * 3_000 not in message
+    assert "y" * 3_000 not in message
+    assert len(message.split("stdout:\n", 1)[1].split("\nstderr:\n", 1)[0]) <= (
+        PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT
+    )
+    assert len(message.split("\nstderr:\n", 1)[1]) <= PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT
+
+
+def test_package_smoke_failure_diagnostics_are_deterministic(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    command = ["uv", "build"]
+    output = f"failed in {tmp_path}\r\n"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 2, stdout=output, stderr="diagnostic\r\n")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    def failure_message(environment: dict[str, str]) -> str:
+        with pytest.raises(RuntimeError) as exc_info:
+            _run(command, cwd=tmp_path, environment=environment)
+        return str(exc_info.value)
+
+    first = failure_message({"SECOND": "synthetic-second", "FIRST": "synthetic-first"})
+    second = failure_message({"FIRST": "synthetic-first", "SECOND": "synthetic-second"})
+
+    assert first == second
+    assert first == (
+        "package smoke command failed (2): uv build\n"
+        "stdout:\nfailed in <task-cwd>\n"
+        "stderr:\ndiagnostic"
+    )

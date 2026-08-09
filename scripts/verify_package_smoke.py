@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -12,6 +14,74 @@ from pathlib import Path
 from typing import cast
 
 PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS = 300
+PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT = 2_000
+PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER = "\n...[truncated]"
+
+
+def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
+    """Return environment values that must not appear in failure diagnostics."""
+    sensitive_names = ("auth", "credential", "cookie", "key", "password", "secret", "token")
+    values = {
+        value
+        for name, value in environment.items()
+        if value and (len(value) >= 4 or any(marker in name.lower() for marker in sensitive_names))
+    }
+    return sorted(values, key=lambda value: (-len(value), value))
+
+
+def _replace_path(text: str, path: str, replacement: str) -> str:
+    """Replace a path in either native or slash-normalized form."""
+    variants = {path, path.replace("\\", "/"), path.replace("/", "\\")}
+    for variant in sorted(variants, key=len, reverse=True):
+        if not variant:
+            continue
+        flags = re.IGNORECASE if os.name == "nt" else 0
+        text = re.sub(re.escape(variant), replacement, text, flags=flags)
+    return text
+
+
+def _bounded_diagnostic_stream(
+    output: str, *, cwd: Path, command: list[str], environment: dict[str, str]
+) -> str:
+    """Normalize, redact, and cap one subprocess diagnostic stream."""
+    normalized = output.replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    cwd_path = str(cwd)
+    normalized = _replace_path(normalized, cwd_path, "<task-cwd>")
+    with contextlib.suppress(OSError):
+        normalized = _replace_path(normalized, str(cwd.resolve()), "<task-cwd>")
+    for argument in command:
+        if Path(argument).is_absolute():
+            normalized = _replace_path(normalized, argument, "<task-path>")
+    for value in _environment_values_to_redact(environment):
+        normalized = normalized.replace(value, "<redacted>")
+    if len(normalized) <= PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT:
+        return normalized
+    limit = PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT - len(PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER)
+    return normalized[:limit] + PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER
+
+
+def _render_command(command: list[str]) -> str:
+    """Render a command without exposing absolute task paths."""
+    rendered_parts: list[str] = []
+    for argument in command:
+        if Path(argument).is_absolute():
+            rendered_parts.append("<task-path>")
+        else:
+            rendered_parts.append(argument)
+    return " ".join(rendered_parts)
+
+
+def _format_failure_diagnostics(
+    *, command: list[str], cwd: Path, environment: dict[str, str], stdout: str, stderr: str
+) -> str:
+    """Format deterministic bounded diagnostics for a failed subprocess."""
+    stdout_text = _bounded_diagnostic_stream(
+        stdout, cwd=cwd, command=command, environment=environment
+    )
+    stderr_text = _bounded_diagnostic_stream(
+        stderr, cwd=cwd, command=command, environment=environment
+    )
+    return f"\nstdout:\n{stdout_text}\nstderr:\n{stderr_text}"
 
 
 def resolve_uv_command() -> list[str]:
@@ -76,14 +146,23 @@ def _run(
             timeout=PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
         )
     except subprocess.TimeoutExpired as exc:
-        rendered = " ".join(command)
+        rendered = _render_command(command)
         raise RuntimeError(
             "package smoke command timed out after "
             f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}"
         ) from exc
     if result.returncode:
-        rendered = " ".join(command)
-        raise RuntimeError(f"package smoke command failed ({result.returncode}): {rendered}")
+        rendered = _render_command(command)
+        diagnostics = _format_failure_diagnostics(
+            command=command,
+            cwd=cwd,
+            environment=environment,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
+        raise RuntimeError(
+            f"package smoke command failed ({result.returncode}): {rendered}{diagnostics}"
+        )
     return result
 
 
