@@ -55,10 +55,11 @@ delivered:
       merged as `2e6a7c2b7ff906cb771bb4e904dd18d2717fa536` after exact hosted proof, fresh review, and a clean
       delayed sweep.
   - package_smoke: DONE — PR #45 final head `7f07ce221b7a405c06af70d3a5215910dca72991` passed
-      hosted run `31304528858` / job `93222641130`, exact-final-head review, and resolution of all
-      six review threads including the delayed-sweep findings, then merged as
-      `6e13b6d84391ea7a2579e169151e3d765ad71583`. Full local
-      proof was 154 passed / 3 declared skips, including the isolated wheel smoke.
+      hosted run `31304528858` / job `93222641130` and exact-final-head review, then merged as
+      `6e13b6d84391ea7a2579e169151e3d765ad71583` with four pre-merge threads resolved. Its delayed
+      sweep found two additional P2s; both were tracked and resolved, leaving all six threads
+      resolved. Full local proof was 154 passed / 3 declared skips, including the isolated wheel
+      smoke.
 next_safe_slice: Prove, review, and merge the bounded package-smoke subprocess-timeout branch, then
   select one remaining issue #29 P2 seam (PATH/uv validation or bounded diagnostics). Lane-P
   candidate-content review, screenshots, publication, and owner-gated release lanes remain parked.
