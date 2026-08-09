@@ -816,10 +816,11 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   Markdown is skipped while an ordinary tracked document still reports broken-link and invalid
   prompt-classification failures. The branch integrated current Lab main
   `c827d6a18490838ab132fc7dc058c29fc727d68b` before publication.
-- Locked sync, doctor/context, Ruff, Pyright, 155 passed / 3 declared Windows symlink skips, strict
-  MkDocs, hygiene, diff check, and the actual isolated package smoke passed in 329.8 seconds. No
-  ignored, protected, generated, candidate, cache, or private bytes were surfaced to or inspected
-  by the agent; automation used only newly created task-local environments. Hosted exact-head proof
-  and fresh review remain pending; PATH-uv validation, bounded diagnostics, sdist lineage,
-  process-tree cleanup, release, tag, publication, credentials, data, model, and telemetry remain
-  separate and closed as applicable.
+- The pre-timeout-base local gate passed locked sync, doctor/context, Ruff, Pyright, 155 passed / 3
+  declared Windows symlink skips, strict MkDocs, hygiene, diff check, and the actual isolated package
+  smoke in 329.8 seconds. After integrating PR #47's two tests, exact-head hosted run `31306855781`
+  passed the full combined gate at 157 passed / 3 skips; the focused current-base recheck passed 92
+  tests. No ignored, protected, generated, candidate, cache, or private bytes were surfaced to or
+  inspected by the agent; automation used only newly created task-local environments. PATH-uv
+  validation, bounded diagnostics, sdist lineage, process-tree cleanup, release, tag, publication,
+  credentials, data, model, and telemetry remain separate and closed as applicable.
