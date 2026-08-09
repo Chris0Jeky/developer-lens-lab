@@ -26,7 +26,7 @@ Generated from `tools/cards.py`; do not edit by hand.
 | `LAB-CORPUS-03` | Normalizer and coverage profiler | BACKLOG | LAB-CORPUS-02, LAB-ACT-01 | Explicit coverage |
 | `LAB-DQ-01` | Data-quality and candidate-support report | PARKED | LAB-CORPUS-03 | Expansion decision |
 | `LAB-GOV-01` | Research governor control plane | DONE | LAB-OS-01 | Governor seeded |
-| `LAB-GOV-02` | Prompt operating system and dual-runtime parity | IN_REVIEW | LAB-GOV-01 | Copy-ready verified prompt library |
+| `LAB-GOV-02` | Prompt operating system and dual-runtime parity | DONE | LAB-GOV-01 | Copy-ready verified prompt library |
 | `LAB-ACT-01` | Real-data activation preconditions (tier flip, executable sinks and deny rules, secret scanning) | BACKLOG | LAB-GOV-01 | Non-C0 lanes unlocked |
 | `LAB-REL-01` | v0.1.0 release wave: AGPL and notices, community files, package metadata, dependency triage (issue #5), C0 release assets | ACTIVE | LAB-GOV-01 | Tagged v0.1.0 |
 | `LAB-SURV-01` | Integration-tail survival study (product issue #174): KM + AFT over the product input contract | BACKLOG | LAB-BRIDGE-01, LAB-WBC1-06 | Product-owned view + rich report |
