@@ -68,13 +68,14 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 7 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 8 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
   route), 2026-08-09 (the community-files worktree used the installed Python module route), and
   2026-08-09 (the package-identity base refresh reused that module route after a stale literal
-  bootstrap-path assumption failed before execution).
+  bootstrap-path assumption failed before execution), and 2026-08-09 (the package-smoke final gate
+  first found its dev environment unsynced, then used the same module route for a locked sync).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -95,6 +96,12 @@ _Note 2026-08-09 (package-identity base refresh):_ The seventh occurrence first 
 bootstrap path that was not present in that worktree, so no proving command ran. The already
 installed `py -3 -m uv` 0.12.2 route was then verified directly and kept the project environment
 worktree-local; no cache contents were enumerated or inspected.
+
+_Note 2026-08-09 (package smoke):_ The eighth occurrence first ran the full gate with `--no-sync`;
+`uv` created an empty project environment and could not resolve `dllab`, so no repository check ran.
+A later bare `py -3` smoke selected the host's default Python outside the package's declared
+`<3.14` range and failed before exercising the supported package seam. The promoted worktree-local
+Python 3.12 bootstrap route then completed the locked full gate and isolated artifact smoke.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -295,9 +302,10 @@ cheap workaround and none of them blocked a lane.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 4 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 5 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
-  2026-08-09 (an inline post-merge GraphQL repository string).
+  2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
+  terminated an outer JavaScript command wrapper before PowerShell started).
 - **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
   Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
@@ -312,6 +320,10 @@ changed repository refs or release authority.
 _Note 2026-08-09 (post-merge sweep):_ The fourth occurrence failed before returning review-thread
 data. The promoted GraphQL-variable form was used for the retry; the failed query did not change a
 repository ref or review thread.
+
+_Note 2026-08-09 (package-smoke publish):_ The fifth occurrence failed in the orchestration parser
+before the shell, Git, or GitHub ran. The retry removed Markdown code ticks from the inline body;
+no repository or remote state changed in the failed attempt.
 
 _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
 route was not durable enforcement. The status and promotion field now record task debt rather than
@@ -463,3 +475,59 @@ retains only the bounded action and its authority limits.
 - **task:** lab issue #34 tracks the external Windows/GitHub CLI workflow boundary.
 - **promotion:** Deliberately NOT promoted after one occurrence. If it recurs, add a checked wrapper
   that captures the created PR URL/number and performs the exact numbered re-read.
+
+### FR-017 - PowerShell lacks `Get-Date -AsUTC`
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Windows PowerShell rejected `Get-Date -AsUTC` because that parameter is unavailable
+  in the host version.
+- **impact:** A timestamp probe failed before any repository state changed, briefly interrupting
+  the bounded issue #29 release-evidence lane.
+- **workaround:** Use `[DateTime]::UtcNow.ToString('o')` for an equivalent UTC timestamp.
+- **occurrences:** 1 independent occurrence - 2026-08-09 during the issue #29 package-smoke lane.
+- **task:** Lab issue #29 owns the release-evidence boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If an independent recurrence
+  appears, consider a compatibility helper at the smallest shared command layer.
+
+### FR-018 — a live issue checkpoint abbreviated a cross-repository human action
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A release-wave issue comment fully qualified one Lab human action, then referred to a
+  second Lab action by number alone. The required repository prefix was therefore absent from one
+  live operational reference.
+- **impact:** A later coordinator could attribute the shorthand to the product repository and route
+  the machine-hygiene action through the wrong owner gate.
+- **workaround:** The same comment was re-read and patched immediately so every human action carries
+  its complete owner/repository/file reference. No authority, ref, gate status or release action
+  changed.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the issue #29 package-smoke update.
+- **task:** Lab issue #34 owns prompt-system and cross-repository human-reference hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. The tracked active-prompt verifier
+  already rejects a bare reference in prompt bodies; if an independent outbound-comment recurrence
+  appears, add a body preflight at the narrow GitHub-write boundary rather than another reminder.
+
+### FR-019 — current-head replay changes hashes embedded with Lab provenance
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The automated invented-C0 replay was internally deterministic at current Lab main,
+  but its printed JSON, Markdown and HTML hashes differed from the frozen canonical ledger hashes.
+  The exporter includes `lab_commit` in provenance, so a new Lab head changes release bytes even
+  when the research decision and synthetic inputs are unchanged.
+- **impact:** Issue #29 cannot truthfully publish both the frozen hashes and current-head candidate
+  bytes. Treating either set as interchangeable would break reproducibility and release provenance.
+- **workaround:** Record both evidence sets without opening ignored candidate bytes; stop before
+  Lane-P content review, publication or tagging until a bounded slice explicitly selects the frozen
+  producer or a reviewed current-head provenance contract.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the issue #29 C0 evidence packet.
+- **task:** Lab issue #29 owns the selected C0 release exhibit and its pre-tag provenance decision.
+- **promotion:** No new structure was needed: the constitution, issue #29 and tracked hashes already
+  pin the frozen producer. A future current-head exhibit would require a separately reviewed
+  cross-repository contract/authority change, not an inferred hash refresh.
+
+_Closure 2026-08-09:_ A detached automated replay at producer
+`0ef193070a9b80b81cef5a1710a1d65e0b271c15` exactly matched the frozen JSON, Markdown and HTML
+hashes. The current-head candidate stays rejected; Lane-P content review and publication remain
+separate, unverified gates.
