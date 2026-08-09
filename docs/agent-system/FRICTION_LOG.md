@@ -845,18 +845,41 @@ remains in passive observation while disjoint local proof continues.
 - **workaround:** Put the reviewed worktree-confined `uv` executable on the task process PATH and
   invoke the smoke through the task-local supported Python environment. The unchanged smoke then
   built and exercised the sdist-derived wheel successfully.
-- **occurrences:** 2 independent occurrences — the initial built-artifact smoke and the
-  sdist-lineage integration proof on 2026-08-09.
-- **task:** lab issue #29 owns package-smoke hardening; lab issue #34 tracks external command-route
-  friction.
-- **promotion:** At the second occurrence, the selected enforcement layer is a checked package-smoke
+- **occurrences:** 5 independent occurrences — the initial built-artifact smoke, the sdist-lineage
+  integration proof, the wheel-contract integration proof, the issue #58 lockfile refresh, and the
+  issue #58 package-smoke help probe on 2026-08-09.
+- **task:** lab issue #29 owns package-smoke hardening; lab issue #34 tracks a reusable checked
+  external-command route; lab issue #58 owns this lockfile refresh.
+- **promotion:** At the second occurrence, the selected enforcement layer became a checked task-local
   launcher that passes one already validated `uv` executable explicitly instead of inferring it
-  from the host launcher. Implementation remains bounded task debt; the successful explicit route
-  is the interim workaround.
+  from the host launcher or PATH. Implementation remains bounded task debt; the successful explicit
+  route is the interim workaround.
 
 _Note 2026-08-09 (sdist lineage):_ The explicit confined `uv 0.12.2` plus task-local Python route
 completed the actual smoke in 87.5 seconds. Neither failed selection built an artifact, changed a
 tracked file or lockfile, or surfaced ignored, generated, protected, credential, or private bytes.
+
+_Note 2026-08-09 (wheel-contract tests):_ The installed host-module route completed sync and the
+full declared gate, but the task environment still had neither compatible PATH `uv` nor a current-
+interpreter `uv` module for actual smoke. The explicit confined `uv 0.12.3` PATH route then passed.
+The third recurrence keeps the checked-launcher implementation as bounded issue #34 task debt; no
+failed selection built an artifact or surfaced ignored, generated, protected, credential, or
+private bytes.
+
+_Note 2026-08-09 (current-state YAML):_ The issue #58 lockfile refresh first failed because the
+repository `uv` command was unavailable on PowerShell PATH. The already reviewed worktree-confined
+executable completed the same bounded lock operation; the reusable checked launcher remains task
+debt on issue #34.
+
+_Note 2026-08-09 (package-smoke help probe):_ The script's unsupported `--help` probe started normal
+validation with no compatible `uv` on the subprocess PATH and failed before artifact build. The
+actual proof uses the already reviewed explicit confined executable route. No ignored or protected
+content was opened, and no tracked file, ref, GitHub object, credential, or publication changed.
+
+_Note 2026-08-09 (issue #58 package proof):_ With that confined `uv 0.12.3` directory explicitly on
+PATH, the unchanged smoke built one sdist, built one wheel from it, installed the wheel in an
+isolated environment, and passed installed-doctor verification. Generated and ignored bytes were
+not opened or enumerated.
 
 ### FR-032 — the first post-resolution GraphQL snapshot timed out during TLS setup
 
@@ -916,12 +939,15 @@ the merge. Issue #34 comment `5233753580` records the other root governor's exac
   plus smaller file-scoped patches.
 - **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
   atomic failure as the guard against partial state updates.
-- **occurrences:** 2 independent occurrences — the stale combined hunk during sdist current-base
-  state sync and the ambiguous FR-033 status hunk during PR #55 review correction on 2026-08-09.
+- **occurrences:** 5 independent occurrences — the stale combined hunk during sdist current-base
+  state sync, the ambiguous FR-033 status hunk during PR #55 review correction, the unanchored
+  FR-033 occurrence and status edits during PR #55 post-merge reconciliation, and the unanchored
+  FR-037 status edit during issue #58 proof reconciliation on 2026-08-09.
 - **task:** lab issue #34 tracks external patch-context and command-boundary workflow hardening.
-- **promotion:** At the second occurrence, the selected enforcement layer is an exact section-header
-  anchor plus a pre-stage diff assertion that only the intended friction ID changed. A reusable
-  state-sync helper remains bounded task debt on issue #34.
+- **promotion:** At the second occurrence, the selected enforcement layer was an exact section-header
+  anchor plus a pre-stage diff assertion. Later occurrences show that an ad-hoc command does not
+  reliably enforce that guard; a checked state-sync helper is the selected task-debt layer on
+  issue #34.
 
 _Note 2026-08-09 (sdist current-base integration):_ The failed combined patch changed no tracked
 file, Git ref, GitHub object, ignored output, or protected byte; the exact file-scoped retries
@@ -935,6 +961,21 @@ contained the transient edit.
 _Note 2026-08-09 (same correction hop):_ The first full-section wording patch used an assumed impact
 line and failed atomically. Narrow exact-line retries changed the title, symptom, and workaround;
 the failed attempt changed no file, ref, GitHub object, ignored output, or protected byte.
+
+_Note 2026-08-09 (PR #55 post-merge reconciliation):_ An unanchored occurrence-count patch
+temporarily matched FR-030 instead of FR-033. The diff inspection caught and restored FR-030 before
+staging; an exact FR-033 header-scoped patch then changed only the intended entry. No commit, push,
+GitHub object, ignored output, or protected byte contained the transient edit.
+
+_Note 2026-08-09 (same reconciliation, fourth occurrence):_ A later unanchored status patch matched
+FR-004 instead of FR-033. The required pre-stage inspection caught it, restored FR-004, and applied
+the FR-033 status under its exact section header. No commit, push, GitHub object, ignored output, or
+protected byte contained the transient edit.
+
+_Note 2026-08-09 (issue #58 proof reconciliation):_ An unanchored FR-037 status patch again matched
+FR-004. The immediate diff inspection caught and restored FR-004 before staging, then an exact
+FR-037 section-header patch applied the intended status. No commit, push, GitHub object,
+ignored-output access, or protected-byte access contained the transient edit.
 
 ### FR-035 — an unannounced post-merge state worktree appeared at live main
 
@@ -987,17 +1028,32 @@ named path did not exist. This correction supersedes only that path-presence cla
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
 - **first-seen:** 2026-08-09
-- **status:** `resolved`
+- **status:** `workaround-documented`
 - **symptom:** An inline regex intended to compare friction-entry statuses embedded Markdown
   backticks inside a double-quoted PowerShell command and failed at parse time.
 - **impact:** The pre-stage assertion did not run on its first attempt; the shell parsed no
   repository mutation and changed no file, ref, GitHub object, ignored output, or protected byte.
 - **workaround:** Replace the inline regex with fixed header-and-context inspection plus the full
   scoped diff before staging.
-- **occurrences:** 1 independent occurrence — PR #55 correction pre-stage assertion on 2026-08-09.
-- **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
-- **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked script
-  file rather than adding more inline shell escaping.
+- **occurrences:** 3 independent occurrences — PR #55 correction pre-stage assertion, PR #56
+  fenced-YAML parse proof, and issue #58 safe-load assertion on 2026-08-09.
+- **task:** lab issue #34 tracks a reusable checked proof helper; lab issue #58 owns the current
+  YAML proof.
+- **promotion:** At the second occurrence, the selected enforcing layer became a checked script or
+  stdin command that constructs Markdown fences from character codes rather than nesting literal
+  backticks and Python string quotes inside a PowerShell command; issue #34 retains the helper task.
+
+_Note 2026-08-09 (PR #56 fenced-YAML proof):_ An inline Python parse command embedded literal
+Markdown backticks inside a PowerShell double-quoted command. PowerShell transformed the argument,
+and the resulting local pass did not prove the complete intended fenced YAML. Exact-head review
+caught the still-malformed adjacent state scalar before merge. A fix commit had been pushed, but no
+merge, protected-byte access, ignored-output inspection, or capability change occurred; the retry
+constructs the fence without literal backticks.
+
+_Note 2026-08-09 (issue #58 safe-load proof):_ A direct `python -c` assertion nested Python string
+quotes inside the PowerShell orchestration command. The interpreter received an invalid expression
+and exited before reading the state file. The quote-safe retry supplies the same assertion on stdin;
+no repository mutation, ignored-output access, protected-byte access, or GitHub change occurred.
 
 ### FR-038 — PR-comment shell body omitted the orchestration wrapper
 
@@ -1014,3 +1070,123 @@ named path did not exist. This correction supersedes only that path-presence cla
 - **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked PR
   triage helper rather than hand-authoring the orchestration wrapper.
+
+### FR-039 — strict MkDocs emits an upstream Material-for-MkDocs warning
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The strict documentation build emitted the upstream Material-for-MkDocs warning
+  about forthcoming MkDocs 2.0 incompatibilities while still completing successfully.
+- **impact:** Proof output contains a non-failing upstream compatibility warning that can be
+  mistaken for a repository documentation failure.
+- **workaround:** Keep the declared MkDocs/Material version bounds, record the warning separately,
+  and use the process exit status plus the generated documentation result for pass/fail.
+- **occurrences:** 3 independent occurrences — PR #55 correction/finalization proof, PR #55
+  post-merge reconciliation, and issue #58 current-base full-gate proof on 2026-08-09.
+- **task:** lab issue #34 tracks reusable proof-command and tooling-boundary hardening.
+- **promotion:** At the second occurrence this remains task debt rather than a suppression rule:
+  the warning is emitted upstream while the pinned build succeeds, and hiding it would remove useful
+  upgrade evidence. Dependency-range maintenance on issue #34 is the cheapest effective layer if
+  the pinned dependency changes or the warning becomes an actionable failure.
+
+_Note 2026-08-09 (issue #58 current-base proof):_ The strict build passed again with the same
+upstream warning after the PyYAML lock refresh. No MkDocs/Material bound, generated documentation
+content, release evidence, or publication state was changed or inspected.
+
+### FR-040 — focused Ruff format check found new line wrapping
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The focused Ruff format check rejected two newly added line layouts in the verifier
+  and tests.
+- **impact:** The format gate stopped before Ruff lint and Pyright; no semantic or protected-data
+  behavior was affected.
+- **workaround:** Run the repository-pinned Ruff formatter on the two changed Python files, then
+  rerun the focused format, lint, and type checks.
+- **occurrences:** 2 independent occurrences — the issue #58 writer change and the coordinator's
+  closing-fence refinement on 2026-08-09.
+- **task:** lab issue #58 owns the focused verifier and test changes.
+- **promotion:** At the second occurrence, the repository-pinned formatter remains the cheapest
+  enforcing layer and must run before the focused format check on changed Python files.
+
+_Note 2026-08-09 (coordinator review):_ The focused check rejected the iterator layout added while
+allowing unrelated later Markdown fences. The pinned formatter made only the mechanical layout
+change before the focused lint, type, and test proofs; no protected or ignored content was read.
+
+### FR-041 — package-smoke script ignored a help probe
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Invoking the package-smoke script with `--help` did not print usage or reject the
+  unknown flag; its zero-argument entry point started the normal smoke path instead.
+- **impact:** A command-discovery probe unexpectedly reached environment validation and produced a
+  failed attempt before the intended proof command was run.
+- **workaround:** Treat the tracked script's zero-argument `main` as the command contract and run it
+  only with the reviewed confined `uv` directory on PATH; use tracked source for discovery.
+- **occurrences:** 1 independent occurrence — issue #58 package proof on 2026-08-09.
+- **task:** lab issue #34 tracks checked command discovery; lab issue #29 owns package-smoke
+  hardening.
+- **promotion:** Deliberately not promoted after one occurrence. If command-line use expands, add an
+  explicit argument parser or a checked wrapper rather than relying on ignored arguments.
+
+### FR-042 — canonical replay was attempted before its clean-tree precondition
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The issue #58 canonical invented replay was started while its already-verified
+  friction-log reconciliation remained uncommitted, so the runner rejected the tracked-dirty tree.
+- **impact:** The first replay attempt stopped before creating a run and had to be repeated after the
+  documentation commit.
+- **workaround:** Finish the scoped documentation proof and commit first, confirm tracked status is
+  clean, then run the same replay in a disposable synthetic artifact root.
+- **occurrences:** 1 independent occurrence — issue #58 environment proof on 2026-08-09.
+- **task:** lab issue #58 owns the current replay; lab issue #34 tracks reusable proof sequencing.
+- **promotion:** Deliberately not promoted after one occurrence; the runner's clean-tree refusal is
+  the effective guard. Promote only if orchestration repeatedly orders replay before final staging.
+
+### FR-043 — expected ripgrep no-match left the proof wrapper red
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A tracked friction lookup correctly found no prior clean-replay entry and returned
+  ripgrep's documented no-match status, but the PowerShell wrapper retained that status after
+  classifying it as acceptable, so orchestration reported the read-only command as failed.
+- **impact:** The lookup result was usable but appeared as a red command and required explicit
+  reconciliation before the friction entry could be selected.
+- **workaround:** After accepting a no-match result, terminate the wrapper with an explicit success
+  status; retain nonzero status only for an actual search error.
+- **occurrences:** 1 independent occurrence — issue #58 friction lookup on 2026-08-09.
+- **task:** lab issue #34 tracks checked command-boundary and search helpers.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, add the explicit
+  no-match normalization to the checked search helper instead of repeating shell glue.
+
+### FR-044 — PowerShell hashtable interpolation supplied an invalid review-thread ID
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** The first PR #59 review-reply loop passed a hashtable's string representation plus
+  the literal member suffix to GraphQL instead of the stored review-thread ID.
+- **impact:** The issue #34 tracking comment succeeded, but the first thread reply failed before any
+  reply or resolution mutation occurred.
+- **workaround:** Read each indexed hashtable value into an explicitly typed scalar before passing
+  it as a GraphQL variable, then verify every returned reply URL and resolved state.
+- **occurrences:** 1 independent occurrence — PR #59 review triage on 2026-08-09.
+- **task:** lab issue #34 tracks checked GitHub mutation wrappers and command-boundary hardening.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, replace the ad-hoc
+  loop with a checked typed thread-triage helper.
+
+### FR-045 — YAML comment syntax truncated the active-wave issue reference
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** PyYAML accepted the active-wave lane's plain scalar but treated the space before its
+  `#29` issue reference as a comment, so the parsed value silently lost the task identifier.
+- **impact:** Context verification passed a machine-readable resume block whose active lane no
+  longer named the GitHub issue that owns it.
+- **workaround:** Represent the lane as a folded scalar and assert that safe loading preserves the
+  complete issue-bearing value.
+- **occurrences:** 1 independent occurrence — PR #59 exact-final-head review on 2026-08-09.
+- **task:** lab issue #58 owns the current repair; lab issue #34 tracks deeper YAML semantic
+  validation.
+- **promotion:** Deliberately not promoted after one occurrence; the focused repository-state
+  regression is the cheapest enforcing layer for this canonical field.
