@@ -824,3 +824,26 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   inspected by the agent; automation used only newly created task-local environments. PATH-uv
   validation, bounded diagnostics, sdist lineage, process-tree cleanup, release, tag, publication,
   credentials, data, model, and telemetry remain separate and closed as applicable.
+
+## 2026-08-09 — Ignored-smoke scan merge and bounded-diagnostics review lane (LAB-REL-01, issue #29)
+
+- Ignored-smoke scan PR #48 reached final head
+  `89cad7d1dff4b00db9459f2739f1db567d266351`; hosted run `31307153939` / job `93229202173` and
+  exact-final-head review passed, and it merged as `0b7a452ee0a6ce4c69e91646400fbb98ad8f3ca1`.
+  Its delayed 10:13Z sweep found no new review, comment, or unresolved-thread debt. The non-blocking
+  traversal-enumeration performance finding is tracked on issue #29; it did not expand the bounded
+  skip-set slice.
+- Diagnostics commits `2ec21e8003a24a10ebb4d4c10f2bd5ba4b61fc96` and
+  `f9da437e1f1ff0ac601361ccbbdd0fd2b932b0ed` add deterministic, labelled stdout/stderr failure
+  diagnostics with a 2,000-character per-stream cap, environment/path redaction, and escaped
+  terminal control characters. Invented synthetic tests cover caps, secrets, Windows path forms,
+  multiline values, control characters, and formatting. The branch integrated Lab main
+  `0b7a452ee0a6ce4c69e91646400fbb98ad8f3ca1` before publication.
+- An early fresh-context review found two P2 sanitization gaps: slash-swapped path values and
+  terminal control characters. Both were repaired in `f9da437e1f1ff0ac601361ccbbdd0fd2b932b0ed`
+  before publication. Redaction remains exact-value based after canonicalization; unusual
+  transformations remain outside this bounded slice.
+- The confined `uv 0.12.3` route completed locked sync, doctor/context, Ruff, Pyright, 161 passed /
+  3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and actual package smoke in
+  318.3 seconds. Hosted exact-head proof and final review remain pending. No ignored, protected,
+  generated, candidate, cache, or private bytes were surfaced to or inspected by the agent.

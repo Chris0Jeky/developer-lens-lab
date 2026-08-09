@@ -9,6 +9,7 @@ import pytest
 
 from scripts.verify_package_smoke import (
     PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+    PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT,
     _run,  # pyright: ignore[reportPrivateUsage] - direct timeout seam coverage
     assert_doctor_report,
     build_smoke_environment,
@@ -117,3 +118,119 @@ def test_package_smoke_run_reports_timeout_without_environment(
         message == "package smoke command timed out after 300 seconds: uv pip install package.whl"
     )
     assert "must-not-appear" not in message
+
+
+def test_package_smoke_run_reports_bounded_redacted_diagnostics(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    secret = "synthetic-package-secret"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(
+            command,
+            17,
+            stdout=("stdout-detail " + secret + " " + "x" * 3_000),
+            stderr=("stderr-detail " + secret + " " + "y" * 3_000),
+        )
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build", str(tmp_path / "package.whl")],
+            cwd=tmp_path,
+            environment={"SECRET_VALUE": secret, "SAFE_VALUE": "synthetic-safe"},
+        )
+
+    message = str(exc_info.value)
+    assert message.startswith("package smoke command failed (17): uv build <task-path>")
+    assert "stdout:\nstdout-detail <redacted>" in message
+    assert "stderr:\nstderr-detail <redacted>" in message
+    assert secret not in message
+    assert str(tmp_path) not in message
+    assert "x" * 3_000 not in message
+    assert "y" * 3_000 not in message
+    assert len(message.split("stdout:\n", 1)[1].split("\nstderr:\n", 1)[0]) <= (
+        PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT
+    )
+    assert len(message.split("\nstderr:\n", 1)[1]) <= PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT
+
+
+def test_package_smoke_failure_diagnostics_are_deterministic(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    command = ["uv", "build"]
+    output = f"failed in {tmp_path}\r\n"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 2, stdout=output, stderr="diagnostic\r\n")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    def failure_message(environment: dict[str, str]) -> str:
+        with pytest.raises(RuntimeError) as exc_info:
+            _run(command, cwd=tmp_path, environment=environment)
+        return str(exc_info.value)
+
+    first = failure_message({"SECOND": "synthetic-second", "FIRST": "synthetic-first"})
+    second = failure_message({"FIRST": "synthetic-first", "SECOND": "synthetic-second"})
+
+    assert first == second
+    assert first == (
+        "package smoke command failed (2): uv build\n"
+        "stdout:\nfailed in <task-cwd>\n"
+        "stderr:\ndiagnostic"
+    )
+
+
+def test_package_smoke_diagnostics_redact_canonical_multiline_path_values(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    native_path = r"C:\Synthetic\secret-root"
+    slash_swapped_path = native_path.replace("\\", "/")
+    multiline_secret = "synthetic-line-one\r\nsynthetic-line-two"
+    output = f"path={slash_swapped_path}\r\nvalue={multiline_secret}\r\n"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 3, stdout=output, stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build"],
+            cwd=tmp_path,
+            environment={"SECRET_PATH": native_path, "MULTILINE_TOKEN": multiline_secret},
+        )
+
+    message = str(exc_info.value)
+    assert native_path not in message
+    assert slash_swapped_path not in message
+    assert "synthetic-line-one\r\nsynthetic-line-two" not in message
+    assert "path=<redacted>\nvalue=<redacted>" in message
+
+
+def test_package_smoke_diagnostics_escape_terminal_controls_and_keep_newlines(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    output = "\x1b[31mred\x1b[0m\x1b]0;synthetic-title\x07\x00\nnext-line"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 4, stdout=output, stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(["uv", "build"], cwd=tmp_path, environment={"SAFE": "ok"})
+
+    message = str(exc_info.value)
+    assert "\x1b" not in message
+    assert "\x07" not in message
+    assert "\x00" not in message
+    assert r"\x1b[31mred\x1b[0m\x1b]0;synthetic-title\x07\x00" in message
+    assert r"\x07" in message
+    assert "\nnext-line" in message
