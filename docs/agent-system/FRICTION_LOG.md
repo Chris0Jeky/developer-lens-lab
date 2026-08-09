@@ -280,7 +280,7 @@ cheap workaround and none of them blocked a lane.
 ### FR-009 — inline `gh` quoting is fragile in PowerShell
 
 - **first-seen:** 2026-08-09
-- **status:** `promoted`
+- **status:** `workaround-documented`
 - **symptom:** Inline `gh` arguments containing nested GraphQL, multiline Markdown or quoted jq
   literals lost quoting expected by the downstream parser under PowerShell.
 - **impact:** Review-thread state and PR-body accuracy are merge-gate inputs. Shell boundary damage
@@ -288,23 +288,32 @@ cheap workaround and none of them blocked a lane.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 3 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
-  2026-08-09 (a multiline PR body passed as one argument), and 2026-08-09 (a quoted jq literal).
+- **occurrences:** 4 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+  2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
+  2026-08-09 (an inline post-merge GraphQL repository string).
 - **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
   Windows review-tool boundary.
-- **promotion:** Promoted to the active-session shell boundary: bind GraphQL values as variables,
-  stream multiline Markdown through `--body-file -`, and parse returned JSON with
-  `ConvertFrom-Json`. This stays orchestration guidance rather than a repository helper because the
-  affected `gh` subcommands and payload shapes are unrelated.
+- **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
+  through `--body-file -`, and parsing JSON with `ConvertFrom-Json` worked in this session, but no
+  executable prompt currently requires that route. Issue #34 owns the smallest prompt/canon
+  enforcement; a repository helper cannot wrap the unrelated `gh` payload shapes safely.
 
 _Note 2026-08-09 (release-gate park):_ The second and third occurrences happened while parking PR
 #37. All intended GitHub writes were subsequently re-read successfully; neither quoting failure
 changed repository refs or release authority.
 
+_Note 2026-08-09 (post-merge sweep):_ The fourth occurrence failed before returning review-thread
+data. The promoted GraphQL-variable form was used for the retry; the failed query did not change a
+repository ref or review thread.
+
+_Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
+route was not durable enforcement. The status and promotion field now record task debt rather than
+claiming that a fresh session inherits the workaround.
+
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
 - **first-seen:** 2026-08-09
-- **status:** `promoted`
+- **status:** `workaround-documented`
 - **symptom:** A missing requested Python runtime failed, but a following successful
   `git diff --check` became the shell invocation's final exit status and made the combined command
   appear successful.
@@ -318,11 +327,15 @@ changed repository refs or release authority.
   successful GitHub reads).
 - **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
   guards in its remaining proving commands.
-- **promotion:** Promoted to the active-session PowerShell preamble for every multi-command probe:
-  set `$ErrorActionPreference = 'Stop'` and `$PSNativeCommandUseErrorActionPreference = $true`, while
-  retaining explicit `$LASTEXITCODE` guards where portability matters. This belongs at the
-  orchestration shell boundary rather than in a repository helper: the failures were arbitrary
-  external command compositions, and a repo script could not enforce callers that bypass it.
+- **promotion:** Not durably promoted. This session set `$ErrorActionPreference = 'Stop'` and
+  `$PSNativeCommandUseErrorActionPreference = $true` for multi-command probes and retained explicit
+  `$LASTEXITCODE` guards, but no executable prompt currently requires that preamble. Issue #34 owns
+  the smallest prompt/canon enforcement; a repository helper cannot enforce arbitrary external
+  command compositions that bypass it.
+
+_Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
+preamble was not durable enforcement. The status and promotion field now record task debt until an
+applicable executable instruction installs the guard.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
@@ -403,3 +416,27 @@ its field.
 _Note 2026-08-09 (exact-head review):_ The two exact directory names were rechecked as present
 without listing or inspecting their contents. PR #41's first fix round added q-13 and the fully
 qualified link after the connector correctly identified this as human-only machine hygiene.
+
+_Note 2026-08-09 (late-review reconciliation):_ The live q-13 action no longer tracks the local
+target names. The private owner handoff retains the exact cleanup targets; the public repository
+retains only the bounded action and its authority limits.
+
+### FR-015 — the dependency-light verifier seam does not include the CLI wrapper
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A narrow state-document proof imported `developer_lens_lab.cli.context_verify`
+  through the global Python interpreter, but that interpreter does not include the CLI-only `typer`
+  dependency, so import failed before repository verification began.
+- **impact:** The first proof command supplied no verifier result. No repository or protected data
+  changed, and the verifier implementation itself remained available.
+- **workaround:** With `PYTHONPATH=src`, import `verify_repository` from
+  `developer_lens_lab.context` directly and fail on its returned report, then run
+  `git diff --check`. This is the same verifier used by `dllab context verify` without importing the
+  optional command wrapper.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the post-release-prompt state sync.
+- **task:** lab issue #34 owns prompt-operating-system and friction-ledger hardening; issue #29 owns
+  the current release-preparation proof boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If the CLI-wrapper import recurs in
+  a dependency-light proof, add a checked context-only entry point rather than relying on an
+  incidental global package set.
