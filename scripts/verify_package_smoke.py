@@ -31,11 +31,27 @@ def _canonicalize_line_endings(value: str) -> str:
 
 def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
     """Return environment values that must not appear in failure diagnostics."""
-    sensitive_names = ("auth", "credential", "cookie", "key", "password", "secret", "token")
+    sensitive_names = (
+        "auth",
+        "credential",
+        "cookie",
+        "key",
+        "password",
+        "secret",
+        "token",
+    )
+    short_secret_markers = {"pass", "pwd"}
     values = {
         _canonicalize_line_endings(value)
         for name, value in environment.items()
-        if value and (len(value) >= 4 or any(marker in name.lower() for marker in sensitive_names))
+        if value
+        and (
+            len(value) >= 4
+            or any(marker in name.lower() for marker in sensitive_names)
+            or any(
+                marker in re.split(r"[^a-z0-9]+", name.lower()) for marker in short_secret_markers
+            )
+        )
     }
     return sorted(values, key=lambda value: (-len(value), value))
 
@@ -71,15 +87,19 @@ def _bounded_diagnostic_stream(
 ) -> str:
     """Normalize, redact, and cap one subprocess diagnostic stream."""
     normalized = _canonicalize_line_endings(output)
-    cwd_path = str(cwd)
-    normalized = _replace_path(normalized, cwd_path, "<task-cwd>")
+    replacements: list[tuple[str, str, int]] = [
+        (value, "<redacted>", 0) for value in _environment_values_to_redact(environment)
+    ]
+    replacements.append((str(cwd), "<task-cwd>", 1))
     with contextlib.suppress(OSError):
-        normalized = _replace_path(normalized, str(cwd.resolve()), "<task-cwd>")
-    for argument in command:
-        if Path(argument).is_absolute():
-            normalized = _replace_path(normalized, argument, "<task-path>")
-    for value in _environment_values_to_redact(environment):
-        normalized = _replace_path(normalized, value, "<redacted>")
+        replacements.append((str(cwd.resolve()), "<task-cwd>", 1))
+    replacements.extend(
+        (argument, "<task-path>", 2) for argument in command if Path(argument).is_absolute()
+    )
+    for source, replacement, _ in sorted(
+        replacements, key=lambda candidate: (-len(candidate[0]), candidate[2])
+    ):
+        normalized = _replace_path(normalized, source, replacement)
     normalized = _escape_terminal_controls(normalized).rstrip("\n")
     if len(normalized) <= PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT:
         return normalized

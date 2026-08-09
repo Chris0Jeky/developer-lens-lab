@@ -340,6 +340,108 @@ def test_package_smoke_diagnostics_redact_canonical_multiline_path_values(
     assert "path=<redacted>\nvalue=<redacted>" in message
 
 
+def test_package_smoke_diagnostics_redact_environment_values_before_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    command_path = tmp_path / "synthetic-tool.exe"
+    environment_value = f"{command_path}-environment-suffix"
+    output = f"value={environment_value}\r\n"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 5, stdout=output, stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build", str(command_path)],
+            cwd=tmp_path,
+            environment={"PATH_VALUE": environment_value},
+        )
+
+    message = str(exc_info.value)
+    assert environment_value not in message
+    assert "environment-suffix" not in message
+    assert "value=<redacted>" in message
+
+
+def test_package_smoke_diagnostics_redact_cwd_before_short_environment_values(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cwd = tmp_path / "synthetic-true-project"
+    command_path = cwd / "synthetic-tool.exe"
+    output = f"cwd={cwd}\r\npath={command_path}\r\n"
+
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 7, stdout=output, stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build", str(command_path)],
+            cwd=cwd,
+            environment={"CI": "true"},
+        )
+
+    message = str(exc_info.value)
+    assert f"cwd={cwd}" not in message
+    assert f"path={command_path}" not in message
+    assert "synthetic-<redacted>-project" not in message
+    assert "cwd=<task-cwd>" in message
+    assert "path=<task-path>" in message
+
+
+def test_package_smoke_diagnostics_redact_short_pass_values_but_not_safe_values(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(command, 6, stdout="pass=abc safe=ok", stderr="")
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build"],
+            cwd=tmp_path,
+            environment={"DB_PASS": "abc", "SAFE_SHORT": "ok"},
+        )
+
+    message = str(exc_info.value)
+    assert "pass=<redacted> safe=ok" in message
+    assert "abc" not in message
+
+
+def test_package_smoke_diagnostics_redact_short_pwd_values_but_not_bypass_or_compass_values(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def failed_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        return subprocess.CompletedProcess(
+            command, 8, stdout="pwd=xyz bypass=no compass=ok", stderr=""
+        )
+
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_run)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _run(
+            ["uv", "build"],
+            cwd=tmp_path,
+            environment={
+                "DB_PWD": "xyz",
+                "BYPASS_MODE": "no",
+                "COMPASS_ENABLED": "ok",
+            },
+        )
+
+    message = str(exc_info.value)
+    assert "pwd=<redacted> bypass=no compass=ok" in message
+    assert "xyz" not in message
+
+
 def test_package_smoke_diagnostics_escape_terminal_controls_and_keep_newlines(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

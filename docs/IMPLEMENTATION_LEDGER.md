@@ -896,3 +896,34 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   redaction-order, short-secret, pre-cap memory, sdist-lineage, and process-tree hardening remain
   separate issue #29 seams; release, tag, publication, credentials, data, model, and telemetry stay
   closed as applicable.
+
+## 2026-08-09 — PATH/uv merge and diagnostic-redaction review lane (LAB-REL-01, issue #29)
+
+- PATH/uv-validation PR #51 reached final head `adc43aea21834683eaf2749fe3515f10da204bde`;
+  hosted run `31313571499` / job `93245084619` and exact-final-head review passed, and it merged as
+  `02a41cac4a461a93d53b481d34c96a48e29291e5`. Its delayed 12:44Z sweep found zero reviews and
+  zero review threads; two top-level exact-review comments were merge-sound and informational.
+- Code commit `e3e1ab6aa7fe4c0c68521da4e3658a6eec41d6cc` redacts canonical environment values before cwd
+  and command-path substitutions, preventing path replacement from exposing a secret suffix. It
+  also treats `pass` as a sensitive key marker so short invented `DB_PASS` values are redacted
+  without lowering the global short-value threshold. Two synthetic regressions preserve safe short
+  non-secret text and prove neither a complete path-valued secret nor its suffix survives.
+- The confined `uv 0.12.3` route completed the initial locked sync, doctor/context, Ruff, Pyright,
+  174 tests with 3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and actual
+  package smoke in 195.5 seconds.
+- Exact-head hosted review on `eb51ccd0d32714ca040b0feb7030eb070015e2f3` found one blocking path
+  redaction-order defect and one non-blocking short-marker collision; the fresh independent lens
+  also found that short `PWD` values remained exposed. The single blocking fix commit
+  `261fb4ed71006f5210c92de29b1bf9fde4bcd73f` applies every replacement longest-source-first with
+  environment-priority ties, and recognizes only exact `PASS`/`PWD` key components for the new
+  short-secret exception. Synthetic regressions cover cwd/env collisions, path-valued secrets,
+  `DB_PASS`, `DB_PWD`, and safe `BYPASS`/`COMPASS` values.
+- The exact fix-head locked gate passed doctor/context, Ruff, Pyright, 176 tests with 3 declared
+  Windows symlink skips, strict MkDocs, hygiene, diff check, and actual package smoke in 179.7
+  seconds. No ignored, protected, generated, candidate, cache, or private bytes were surfaced to or
+  inspected by the agent.
+- A TemporaryFile pre-cap design was parked: it would move raw potentially X-class diagnostics to
+  an unredacted disk sink and leave disk growth unbounded. Sdist-lineage is the next bounded seam;
+  pre-cap memory, process-tree, and component-skip-semantics hardening remain separate issue #29
+  debt. Exact fix-head hosted run `31332035344` and final review passed; merge remains pending.
+  Release, tag, publication, credentials, data, model, and telemetry stay closed as applicable.

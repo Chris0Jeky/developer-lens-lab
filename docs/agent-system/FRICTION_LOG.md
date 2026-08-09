@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 14 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 15 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -82,8 +82,9 @@ Rules that bind entries:
   ignored-smoke-scan worktree reused the confined bootstrap for its full gate and package smoke),
   and 2026-08-09 (the bounded-diagnostics worktree reused that confined route for its full gate and
   package smoke), 2026-08-09 (the context-traversal-pruning worktree reused the confined route for
-  its full gate and package smoke), and 2026-08-09 (the PATH/uv-validation worktree reused the
-  confined route for its full gate and package smoke).
+  its full gate and package smoke), 2026-08-09 (the PATH/uv-validation worktree reused the confined
+  route for its full gate and package smoke), and 2026-08-09 (the diagnostic-redaction worktree
+  reused the confined route for its full gate and package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -155,6 +156,11 @@ The confined `uv 0.12.3` bootstrap created its task-local locked environment for
 its reviewed interpreter ran the actual package smoke. The first full-gate attempt stopped at a real
 test-type error before suite or smoke execution; after the typed test fix, the unchanged confined
 route passed. No global install, lockfile change, or ignored/protected-byte inspection occurred.
+
+_Note 2026-08-09 (diagnostic redaction):_ The fifteenth isolated worktree likewise had no PATH uv.
+The confined `uv 0.12.3` bootstrap created its task-local locked environment and its reviewed
+interpreter completed the full gate plus actual package smoke. No failed workaround, global install,
+lockfile change, or ignored/protected-byte inspection occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -646,3 +652,38 @@ no tracked file, Git ref, GitHub object, ignored output, or protected byte chang
 
 _Note 2026-08-09 (PATH/uv validation):_ Rejection happened before agent creation and changed no
 tracked file beyond this friction record, Git ref, GitHub object, ignored output, or protected byte.
+
+### FR-023 — a completed builder thread could not accept the blocking fix follow-up
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** The first attempt to return PR #52's blocking review fix to its completed builder was
+  rejected because that agent thread had reached its turn limit.
+- **impact:** The blocking fix did not start on the original handoff; no code, test or ref changed in
+  the failed delegation.
+- **workaround:** Spawn a fresh bounded writer on the same preserved worktree with the exact head,
+  owned files, finding, and proving seam.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during PR #52's first fix round.
+- **task:** lab issue #34 tracks external agent-routing and command-wrapper workflow hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. A second independent thread-limit
+  handoff should move the fresh-writer fallback into the routing skill or its executable schema.
+
+_Note 2026-08-09 (diagnostic redaction):_ The fresh writer committed the bounded fix without
+reverting the completed builder's work; the failed follow-up changed no Git or GitHub state.
+
+### FR-024 — a piped GitHub comment body arrived empty
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A single-line PR #52 review checkpoint piped to `gh pr comment --body-file -` reached
+  GitHub as an empty body and was rejected before comment creation.
+- **impact:** The first attempt recorded no review checkpoint and required one bounded retry.
+- **workaround:** Pass a quoting-safe single-line body directly with `--body`, then re-read the
+  resulting comment URL.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during PR #52 review triage.
+- **task:** lab issue #34 tracks external Windows and GitHub command-boundary hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. If stdin body loss recurs, add a
+  checked body-file helper at the GitHub-write boundary rather than another prose reminder.
+
+_Note 2026-08-09 (diagnostic redaction):_ Direct-body retry created the intended review checkpoint;
+the rejected empty-body request changed no GitHub comment, repository ref, or protected output.
