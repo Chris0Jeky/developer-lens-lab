@@ -665,7 +665,7 @@ def shared_blocks_in(library_text: str) -> dict[str, str]:
     normalized = normalize_newlines(library_text)
     blocks: dict[str, str] = {}
     for block_id in SHARED_BLOCK_IDS:
-        pattern = r"<!-- shared-block: %s -->\n\n```text\n(.*?)\n```" % re.escape(block_id)
+        pattern = rf"<!-- shared-block: {re.escape(block_id)} -->\n\n```text\n(.*?)\n```"
         match = re.search(pattern, normalized, re.S)
         if match is not None:
             blocks[block_id] = match.group(1)
@@ -854,7 +854,7 @@ def _verify_active_body(prompt_id: str, body: str, blocks: dict[str, str]) -> li
     for token in REQUIRED_CLAUDE_CLAUSE:
         if token not in outside:
             failures.append(
-                f"{PROMPT_LIBRARY}: {prompt_id} is missing the Claude runtime clause token {token!r}"
+                f"{PROMPT_LIBRARY}: {prompt_id} is missing Claude runtime clause token {token!r}"
             )
     for token in REQUIRED_CODEX_CLAUSE:
         if token not in outside:
@@ -888,7 +888,7 @@ def verify_continuous_protocol(text: str) -> list[str]:
             continue
         if normalized.find(end_marker) <= normalized.find(start_marker):
             failures.append(
-                f"{CONTINUOUS_WORK_PROTOCOL}: {start_marker} / {end_marker} markers are out of order"
+                f"{CONTINUOUS_WORK_PROTOCOL}: {start_marker} / {end_marker} are out of order"
             )
     return failures
 

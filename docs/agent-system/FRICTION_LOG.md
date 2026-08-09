@@ -122,6 +122,13 @@ Rules that bind entries:
   and, more importantly, a narrowed cause: an executable assertion about a skip whose reason is
   unproved would pin the symptom rather than enforce the property.
 
+_Note 2026-08-09 (LAB-GOV-02):_ the full gate run for this card names the three skips exactly, so
+they are no longer anonymous: `tests/test_contract_sync.py` skips with "directory symlinks are
+unavailable on this host", and `tests/test_method_trial_export.py` and `tests/test_wbc1_runner.py`
+each skip with "file symlinks are unavailable on this host". Two distinct conditions, not one. Still
+unproved is *why* the host cannot create them and whether the skipped behaviour is genuinely
+untestable here or merely unexercised; the entry stays `open` for that reason.
+
 ### FR-004 — concurrent-writer hazard in the lab checkout (cross-repository, owner-gated)
 
 - **first-seen:** 2026-08-07
@@ -166,3 +173,9 @@ Rules that bind entries:
 - **promotion:** Deliberately NOT promoted. This is agent-harness behaviour, not a repository
   invariant: the cheapest layer is session memory, which is outside this repository's enforcement
   ladder. Revisit only if it recurs in a way that costs a lane rather than a minute.
+
+_Note 2026-08-09 (LAB-GOV-02):_ a third form appeared in the same session — holding an executable
+path in a shell variable and invoking it (`$UV run …`) is refused as a dynamic executable name. The
+workaround is identical: invoke the literal interpreter or executable path. This strengthens the
+`occurrences` picture but does not change the promotion decision, since all three forms share one
+cheap workaround and none of them blocked a lane.

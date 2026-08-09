@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-08
+updated: 2026-08-09
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real
   own/curated data, layered people/team research, and raw content are authorized in principle,
@@ -16,6 +16,15 @@ active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29 / dependency triage #5)
     state: ACTIVE after LAB-GOV-01 and LAB-WBC1-06 completion; writer unassigned; no data
       activation; licence/community/packaging and dependency triage are separate slices
+  - lane: LAB-GOV-02 prompt operating system and dual-runtime parity (issue #33, paired with
+      product issue #214)
+    state: IN_REVIEW side lane on branch docs/prompt-system-overhaul; C0 control-plane only —
+      no data lane, model, telemetry, contract, methodology, or owner-policy change. The
+      byte-identical parity manifest and both shared blocks are copied from the product
+      reference and pinned by SHA-256 in the context verifier. Merge order is product #214
+      first, then lab #33; the lab PR is prepared and parked, NOT agent-merged, while
+      Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 stays open — that is the product
+      register's concurrent-writer gate, not this repository's own q-8
 backlog_next: LAB-ACT-01 real-data activation preconditions; LAB-SURV-01 product #174
   survival study; LAB-CONTRACT-03 MethodTrialView preference reconcile (#23, product-owned)
 capabilities:
@@ -45,8 +54,10 @@ blockers: dependency re-lock (issue #5) remains unperformed; a worktree-local uv
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: begin LAB-REL-01 with an isolated dependency-triage #5 slice using a
-  worktree-local uv bootstrap; keep licence/community/packaging/release-asset work separate;
-  keep q-7 (CLA/external-contribution strategy) and q-11 (aesthetic sign-off) gates explicit;
-  keep every non-C0 lane closed
+exact_resume_point: LAB-GOV-02 is complete and parked for review on
+  docs/prompt-system-overhaul — take the fresh-context adversarial review of that branch, and
+  do not agent-merge it. Then begin LAB-REL-01 with an isolated dependency-triage #5 slice
+  using the proved confined uv bootstrap (FR-001); keep licence/community/packaging/
+  release-asset work separate; keep q-7 (CLA/external-contribution strategy) and q-11
+  (aesthetic sign-off) gates explicit; keep every non-C0 lane closed
 ```

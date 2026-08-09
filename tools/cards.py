@@ -170,6 +170,13 @@ CARDS = (
         "Governor seeded",
     ),
     Card(
+        "LAB-GOV-02",
+        "Prompt operating system and dual-runtime parity",
+        "IN_REVIEW",
+        ("LAB-GOV-01",),
+        "Copy-ready verified prompt library",
+    ),
+    Card(
         "LAB-ACT-01",
         "Real-data activation preconditions (tier flip, executable sinks and deny rules, "
         "secret scanning)",

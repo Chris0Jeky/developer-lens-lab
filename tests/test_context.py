@@ -663,7 +663,7 @@ def test_prompt_library_accepts_qualified_human_refs_for_either_repository() -> 
         "Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-9",
     ):
         body = _body(blocks, gate=f"GATE: {ref} stays open.")
-        bodies = dict.fromkeys(_ALL_PROMPT_IDS, body)
+        bodies: dict[str, str] = {prompt_id: body for prompt_id in _ALL_PROMPT_IDS}
         assert verify_prompt_library(_library(blocks, bodies=bodies), _real_digests()) == [], ref
 
 
@@ -679,7 +679,8 @@ def test_parity_manifest_accepts_the_real_manifest() -> None:
 
 
 def test_parity_manifest_malformed_shapes_fail() -> None:
-    for payload in ("not-an-object", [], 42, None):
+    payloads: tuple[object, ...] = ("not-an-object", [], 42, None, {1: "int-keyed"})
+    for payload in payloads:
         assert verify_parity_manifest(payload), payload
 
 
