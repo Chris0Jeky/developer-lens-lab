@@ -68,11 +68,13 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 6 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 7 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
-  route), and 2026-08-09 (the community-files worktree used the installed Python module route).
+  route), 2026-08-09 (the community-files worktree used the installed Python module route), and
+  2026-08-09 (the package-identity base refresh reused that module route after a stale literal
+  bootstrap-path assumption failed before execution).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -88,6 +90,11 @@ _Note 2026-08-09 (release wave):_ The fourth through sixth isolated worktrees us
 promoted route. This repeated cost stays environment debt: the existing maintenance-protocol
 instruction is the cheapest truthful layer, and an automatic installer would hide network and
 time side effects. FR-014 separately records that the sixth environment was not kept confined.
+
+_Note 2026-08-09 (package-identity base refresh):_ The seventh occurrence first tried a literal
+bootstrap path that was not present in that worktree, so no proving command ran. The already
+installed `py -3 -m uv` 0.12.2 route was then verified directly and kept the project environment
+worktree-local; no cache contents were enumerated or inspected.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -440,3 +447,19 @@ retains only the bounded action and its authority limits.
 - **promotion:** Deliberately NOT promoted after one occurrence. If the CLI-wrapper import recurs in
   a dependency-light proof, add a checked context-only entry point rather than relying on an
   incidental global package set.
+
+### FR-016 — `gh pr view --repo` does not infer the current branch
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** Immediately after `gh pr create` returned the new pull-request URL, a follow-up
+  `gh pr view --repo ...` call without a number failed with `argument required when using the
+  --repo flag` instead of inferring the checked-out branch.
+- **impact:** A successful pull-request write can be followed by a failed verification read, leaving
+  its exact head, base, draft state, and hosted-check state unverified if the URL is not retained.
+- **workaround:** Capture the number printed by `gh pr create` and pass that exact number to every
+  `gh pr view --repo` verification read.
+- **occurrences:** 1 independent occurrence — 2026-08-09 while opening the community-files PR.
+- **task:** lab issue #34 tracks the external Windows/GitHub CLI workflow boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs, add a checked wrapper
+  that captures the created PR URL/number and performs the exact numbered re-read.

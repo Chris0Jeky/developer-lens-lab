@@ -1,0 +1,10 @@
+# Blank issues stay disabled so the invented/public-data and conduct-boundary warnings are shown
+# at the point where a public issue is created.
+blank_issues_enabled: false
+contact_links:
+  - name: Lab Discussions
+    url: https://github.com/Chris0Jeky/developer-lens-lab/discussions
+    about: Ask questions or discuss research ideas with invented/public examples only.
+  - name: Contribution and data boundaries
+    url: https://github.com/Chris0Jeky/developer-lens-lab/blob/main/CONTRIBUTING.md
+    about: Read the Lab's invented-data, contract, fallback, and contribution rules first.
