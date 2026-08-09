@@ -993,3 +993,19 @@ ownership-token follow-up remain unchanged.
 - **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked script
   file rather than adding more inline shell escaping.
+
+### FR-038 — PR-comment shell body omitted the orchestration wrapper
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** A PR-comment attempt supplied PowerShell directly to the JavaScript orchestration
+  cell instead of calling the nested shell tool, so the JavaScript parser rejected the body.
+- **impact:** The intended review-triage comment was not posted on the first attempt; parsing stopped
+  before any shell command, GitHub write, repository mutation, ignored-output access, or protected
+  byte access.
+- **workaround:** Invoke the PowerShell body through the nested shell tool, then verify the returned
+  comment URL before treating the external write as complete.
+- **occurrences:** 1 independent occurrence — PR #55 fix-round triage on 2026-08-09.
+- **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, use a checked PR
+  triage helper rather than hand-authoring the orchestration wrapper.
