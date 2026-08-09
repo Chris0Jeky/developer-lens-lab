@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 17 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 18 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -87,7 +87,8 @@ Rules that bind entries:
   reused the confined route for its full gate and package smoke), and 2026-08-09 (the
   diagnostic-state worktree used the installed Python module route for its docs-only gate), and
   2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
-  coordinator).
+  coordinator), and 2026-08-09 (the wheel-contract test worktree used the confined route for its
+  actual package smoke).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -174,6 +175,12 @@ _Note 2026-08-09 (sdist lineage):_ The seventeenth isolated worktree likewise ha
 task-environment Pyright. The builder completed focused tests and Ruff through available host
 modules and left locked sync, Pyright, and actual package-smoke proof to the coordinator's promoted
 confined route. No global install or lockfile change occurred.
+
+_Note 2026-08-09 (wheel-contract tests):_ The eighteenth isolated worktree completed the declared
+gate through the installed host-module route, then its first actual smoke stopped at compatible-uv
+selection before artifact build. A worktree-confined bootstrap installed the pinned `uv 0.12.3`;
+putting that executable on the task process PATH let the unchanged smoke pass. No lockfile, global
+tool, tracked file, protected byte, or generated artifact byte was inspected.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -903,7 +910,7 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 ### FR-033 — concurrent observer lacked PR merge-operation context
 
 - **first-seen:** 2026-08-09
-- **status:** `resolved`
+- **status:** `workaround-documented`
 - **symptom:** A concurrent observer's successful final PR #54 snapshot reported state `MERGED` at
   20:33:27Z before that observer received the root governor's merge-operation context. GitHub merge
   metadata alone did not identify which concurrent process issued the request.
@@ -912,11 +919,13 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 - **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
   reconcile available concurrent-process operation evidence, and make no duplicate merge or ref
   rewrite attempt.
-- **occurrences:** 1 independent occurrence — Lab PR #54 on 2026-08-09.
-- **task:** lab issue #34 comment `5233753580` supplies the direct merge-operation correction.
-- **promotion:** Resolved by direct operation evidence: a root governor issued the exact-head REST
-  merge and GitHub returned the recorded merge commit. The durable correction distinguishes a
-  concurrent observer's missing context from an unexplained external transition.
+- **occurrences:** 2 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09.
+- **task:** lab issue #34 tracks the ownership-token or merge-lease preflight; comment `5233753580`
+  supplies the first occurrence's direct merge-operation correction.
+- **promotion:** The first occurrence was resolved by direct operation evidence: a root governor
+  issued the exact-head REST merge and GitHub returned the recorded merge commit. The second
+  occurrence selects an ownership token or merge lease checked by a preflight as the cheapest
+  enforceable layer; issue #34 retains the implementation task.
 
 _Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
 `31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
@@ -928,6 +937,18 @@ this observer's local command history and must not be read as evidence that no c
 the merge. Issue #34 comment `5233753580` records the other root governor's exact REST request
 (`sha=a4eefd9cc4963f684c0376543600969c45d6d057`, merge method `merge`) and GitHub's successful
 `7fea25023d0704aea685e243708328264b9bcaad` response. Human attribution remains unverified.
+
+_Note 2026-08-09 (PR #55 concurrent-context recurrence):_ The final observer snapshot saw PR #55
+as `MERGED` before that observer issued its own merge command. GitHub metadata names only the
+account, so no process or actor is inferred. This is the second independent FR-033 occurrence.
+The cheapest enforceable follow-up is an ownership token or merge lease checked by a preflight
+that records the operation owner before a merge request and requires the final snapshot to carry
+that token; issue #34 retains this task. Until that helper exists, the workaround remains exact
+head/base/check/thread/closing-ref snapshots plus no duplicate merge attempt.
+
+_Note 2026-08-09 (PR #55 delayed sweep):_ The post-merge sweep found no late review, comment,
+thread, or closing-reference debt. The occurrence is safely reconciled, but status remains
+`workaround-documented` until issue #34's ownership-token or merge-lease preflight is implemented.
 
 ### FR-034 — a combined state patch used one stale context hunk
 
@@ -1007,23 +1028,30 @@ ownership-token follow-up remain unchanged.
 ### FR-036 — proof-command lookup named absent optional paths
 
 - **first-seen:** 2026-08-09
-- **status:** `resolved`
+- **status:** `workaround-documented`
 - **symptom:** A bounded `rg` lookup named `pyproject.toml`, `Makefile`, and an optional
   `docs/agent-system/CURRENT_STATE.md` path that are absent from this checkout. It printed the useful
-  `CLAUDE.md` matches but exited 1 because at least one explicit path did not exist.
+  `CLAUDE.md` matches but exited 2 because at least one explicit path did not exist.
 - **impact:** The lookup's process status was red even though the canonical run-and-prove commands
   were recovered; no proof command or repository state was affected.
 - **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
   derive candidate paths from tracked-file inventory first.
-- **occurrences:** 1 independent occurrence — PR #55 correction proof lookup on 2026-08-09.
+- **occurrences:** 2 independent occurrences — PR #55 correction proof lookup and the wheel-contract
+  proof-command lookup on 2026-08-09.
 - **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
-- **promotion:** Deliberately not promoted after one occurrence; tracked-file inventory is the
-  cheapest current guard, and a helper remains task debt only if the failure recurs.
+- **promotion:** At the second occurrence, the selected enforcing layer is a tracked-file inventory
+  preflight before passing explicit paths to `rg`; a checked wrapper remains bounded task debt on
+  issue #34.
 
-_Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
-explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
-`docs/agent-system/CURRENT_STATE.md` path are absent. `rg` exited 1 because at least one explicitly
-named path did not exist. This correction supersedes only that path-presence claim.
+_Correction 2026-08-10 (PR #56 P2 triage):_ The original entry recorded the wrong native exit code.
+`pyproject.toml` exists and was read successfully; `Makefile` and the optional
+`docs/agent-system/CURRENT_STATE.md` path are absent. Ripgrep returns exit 2 for an explicit missing
+path even when another named path matches. This correction supersedes only the exit-status claim.
+
+_Note 2026-08-09 (wheel-contract proof lookup):_ A combined lookup named absent
+`MAINTENANCE_PROTOCOL.md` alongside tracked paths. Ripgrep printed the path error and returned exit 2;
+the next lookup must derive every explicit candidate from tracked-file inventory first. No file, ref,
+GitHub object, ignored output, or protected byte changed.
 
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
@@ -1190,3 +1218,41 @@ change before the focused lint, type, and test proofs; no protected or ignored c
   validation.
 - **promotion:** Deliberately not promoted after one occurrence; the focused repository-state
   regression is the cheapest enforcing layer for this canonical field.
+
+### FR-046 — merge resolution reduced append-only friction history before range review
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** Resolving the PR #56 refresh against current main reduced already-merged FR-031,
+  FR-034, and FR-037 evidence in the working tree.
+- **impact:** A continuation could have lost recurrence counts and proof notes from the append-only
+  friction log.
+- **workaround:** Compare the parent-main and final-head blocks mechanically before staging, restore
+  every parent record, and retain only explicitly appended corrections.
+- **occurrences:** 1 independent occurrence — PR #56 final blocker-fix review on 2026-08-10.
+- **task:** lab issue #34 tracks checked merge/state reconciliation helpers.
+- **promotion:** Deliberately not promoted after one occurrence; exact parent-range comparison is the
+  current guard until a checked state-sync helper exists.
+
+_Note 2026-08-10 (PR #56 final blocker-fix):_ Exact range review caught the loss before merge; all
+parent FR-031, FR-034, and FR-037 records were restored. No protected content, GitHub mutation,
+ignored output, or capability boundary was crossed.
+
+### FR-047 — thread-fetch helper inherited a Windows console decoding failure
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** The bundled review-thread fetch helper failed while probing its usage because a
+  subprocess response contained bytes that the Windows default console codec could not decode.
+- **impact:** The helper produced no usable thread JSON, so its result could not be used as review
+  evidence.
+- **workaround:** Use an encoding-safe direct `gh api graphql` query and parse the returned JSON in
+  PowerShell; verify the exact thread IDs, paths, resolution state, and comments from that query.
+- **occurrences:** 1 independent occurrence — PR #60 review-thread refresh on 2026-08-10.
+- **task:** lab issue #34 tracks checked GitHub mutation and command-boundary helpers.
+- **promotion:** Deliberately not promoted after one occurrence; the direct GraphQL query is the
+  current bounded fallback until the helper handles Windows output encoding.
+
+_Note 2026-08-10 (PR #60 thread refresh):_ The helper failure occurred before any GitHub mutation,
+repository mutation, ignored-output access, or protected-byte access. The direct query returned all
+four unresolved PR #60 threads.
