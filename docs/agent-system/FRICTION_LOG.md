@@ -68,14 +68,20 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 2 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
-  2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout).
+- **occurrences:** 3 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+  2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
+  sync reused its surviving confined bootstrap after the global launcher lacked Python 3.12 and the
+  global Python 3.13 lacked locked project dependencies).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
   which now states the confined-bootstrap route rather than declaring the gate unrunnable. Not
   promoted to an executable check: installing a toolchain is an environment action, not a
   repository invariant, and a check that bootstrapped `uv` as a side effect would hide the cost.
+
+_Note 2026-08-09 (release-gate sync):_ The promoted route remained sufficient on the third
+occurrence: the existing worktree-confined bootstrap ran the locked context verifier without a
+new install or lockfile change.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -264,3 +270,39 @@ cheap workaround and none of them blocked a lane.
 - **promotion:** Deliberately NOT promoted after one occurrence. The reader belongs to an external
   skill bundle rather than this repository; a second independent occurrence should be reported to
   that bundle and should make UTF-8 decoding explicit at the tool boundary.
+
+### FR-009 — inline GraphQL quoting is fragile in PowerShell
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** An inline `gh api graphql` query containing the hyphenated repository name lost the
+  string quoting expected by GraphQL under PowerShell and returned a type-coercion error instead of
+  the requested review-thread state.
+- **impact:** Review-thread state is a merge-gate input, so a shell-quoting failure can interrupt an
+  otherwise ready merge boundary.
+- **workaround:** Use the REST review, inline-comment, and issue-comment endpoints for the bounded
+  empty-thread check, or pass GraphQL values as variables instead of embedding repository strings.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the PR #38 merge-boundary sweep.
+- **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
+  Windows review-tool boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs independently, move
+  the canonical thread query into the reviewed helper with variable binding rather than adding
+  more shell-specific escaping guidance.
+
+### FR-010 — a later native command can mask an earlier failure in PowerShell
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A missing requested Python runtime failed, but a following successful
+  `git diff --check` became the shell invocation's final exit status and made the combined command appear
+  successful.
+- **impact:** A proving command can be reported green even though the command that exercised the
+  changed seam never ran.
+- **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
+  exit on failure before starting the next command. The release-gate sync then used the promoted
+  confined-bootstrap route and produced a real context-verifier pass.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the release-gate sync proof.
+- **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
+  guards in its remaining proving commands.
+- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs independently, add a
+  small checked PowerShell proving wrapper rather than relying on call-site discipline.

@@ -631,7 +631,8 @@ checksums.
 Before handing back any joint v0.1.0 tag decision, verify and report that the pre-tag deliverables
 tracked by Chris0Jeky/developer-lens-lab#29 (release preparation) are complete,
 Chris0Jeky/developer-lens-lab#5 (dependency remediation) is complete, and
-Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) records the owner's five-minute aesthetic
+Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
+Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 both record the owner's five-minute aesthetic
 sign-off. Do not require #29 itself to close before tagging: its acceptance condition includes the
 tag. Under owner decision H7=BOTH, a product-only tag is not a fallback. Do not infer any condition
 from silence, an unrelated merged pull request, or an agent message.
