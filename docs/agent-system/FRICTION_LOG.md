@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 16 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 17 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -85,7 +85,9 @@ Rules that bind entries:
   its full gate and package smoke), 2026-08-09 (the PATH/uv-validation worktree reused the confined
   route for its full gate and package smoke), and 2026-08-09 (the diagnostic-redaction worktree
   reused the confined route for its full gate and package smoke), and 2026-08-09 (the
-  diagnostic-state worktree used the installed Python module route for its docs-only gate).
+  diagnostic-state worktree used the installed Python module route for its docs-only gate), and
+  2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
+  coordinator).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -167,6 +169,11 @@ _Note 2026-08-09 (diagnostic state repair):_ The sixteenth isolated worktree lik
 uv. The already installed `py -3 -m uv` 0.12.2 route was verified before creating the task-local
 locked environment for the bounded documentation gate. The existing maintenance-protocol
 instruction remains the cheapest truthful layer.
+
+_Note 2026-08-09 (sdist lineage):_ The seventeenth isolated worktree likewise had no PATH uv or
+task-environment Pyright. The builder completed focused tests and Ruff through available host
+modules and left locked sync, Pyright, and actual package-smoke proof to the coordinator's promoted
+confined route. No global install or lockfile change occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -702,9 +709,10 @@ the rejected empty-body request changed no GitHub comment, repository ref, or pr
   19:58:52Z eligibility checkpoint. The coordinator's final snapshot queried head, base, hosted
   proof, closing refs, and review threads but not top-level comments, and the merge began at
   19:48:10Z.
-- **impact:** The merge satisfied the repository three-minute floor, exact-head proof, and final
-  review, but occurred before the newly stated conservative checkpoint and required an explicit
-  post-merge process reconciliation.
+- **impact:** The merge satisfied the session prompt's three-minute floor, exact-head proof, and
+  final review, but occurred before the newly stated conservative checkpoint and required an
+  explicit post-merge process reconciliation. FR-028 separately records the constitution's
+  unsatisfied 15-minute exact-head age.
 - **workaround:** Re-read top-level comments together with head, base, hosted checks, reviews,
   closing refs, and review threads in every final merge snapshot. Preserve the completed merge and
   record any late signal factually rather than rewriting refs.
@@ -756,3 +764,48 @@ completed the single delayed sweep.
 _Note 2026-08-09 (diagnostic state repair):_ The failed read changed no tracked file, Git ref,
 GitHub object, ignored output, or protected byte; the direct `CLAUDE.md` read supplied the same
 command-table evidence.
+
+### FR-028 — the merge path again failed to enforce 15-minute exact-head aging
+
+- **first-seen:** 2026-08-09
+- **status:** `open`
+- **symptom:** PR #51 merged after at most 8m59s at its exact head, and PR #52 merged 4m18s after
+  its final docs-head push. Both were below the owner constitution's 15-minute exact-head aging
+  rule even though their hosted proof and accepted exact-head review evidence were green.
+- **impact:** Two merges shortened the constitution's observation window; post-merge review found
+  no implementation defect, but the completed merges cannot retroactively satisfy that gate.
+- **workaround:** Reconcile each completed merge without rewriting refs, and treat 15 minutes as an
+  unconditional exact-head floor for every later merge in this session.
+- **occurrences:** 2 independent occurrences — Lab PR #51 and Lab PR #52 on 2026-08-09.
+- **task:** lab issue #29 tracks release-wave merge-eligibility hardening; issue comment
+  `5231583712` records the first occurrence.
+- **promotion:** The selected enforcement layer is one checked, event-driven pre-merge snapshot
+  that refuses eligibility before 15 minutes and returns head, base, hosted checks, accepted review
+  evidence, top-level comments, closing refs, and review threads together. Implementation remains
+  bounded task debt on issue #29; no third prose-only workaround is acceptable.
+
+_Note 2026-08-09 (diagnostic state repair):_ PR #52 final head
+`46961957e09bb976b34beb41fee5e69d89d21076` stayed green and its delayed sweep found no new defect.
+The process miss is recorded without rewriting the completed merge or claiming retroactive proof.
+
+### FR-029 — a concurrent closeout PR remained open after its state claims diverged
+
+- **first-seen:** 2026-08-09
+- **status:** `resolved`
+- **symptom:** PR #53 remained open against obsolete base
+  `02a41cac4a461a93d53b481d34c96a48e29291e5` while live main and replacement PR #54 advanced the
+  same three state files. It had two unresolved blocking threads and a friction-ID collision with
+  already merged history.
+- **impact:** Merging or mechanically rebasing the branch could have restored stale resume claims,
+  exposed machine-local identifiers, or overwritten append-only friction history.
+- **workaround:** Confirm the still-relevant aging and worktree-preservation evidence remained on
+  issue #29, reduce the public inventory to generic state classes, reconcile and resolve both
+  threads, and archive PR #53 without merging or rewriting its commits.
+- **occurrences:** 1 independent occurrence — Lab PR #53 on 2026-08-09.
+- **task:** lab issue #29 retains the preservation and aging evidence; PR #54 carries the live state.
+- **promotion:** Resolved by the inspected GitHub state: PR #53 is closed, both review threads are
+  resolved, its commits were not merged or rewritten, and PR #54 is based on live main. The normal
+  live open-PR inventory remains the cheapest enforcing layer.
+
+_Note 2026-08-09 (diagnostic state repair):_ The archived branch and its worktree remain preserved;
+ignored and untracked contents were not inspected, and no branch was deleted.

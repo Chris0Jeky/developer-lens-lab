@@ -86,7 +86,8 @@ delivered:
       `46961957e09bb976b34beb41fee5e69d89d21076` passed hosted run `31332413187` / job
       `93292650747`, exact-final-head review, and the locked local gate, then merged as
       `b966341d293a50d2b51f448fa23d3248d7e575fd`; both review threads are resolved and its delayed
-      19:51Z sweep found no new feedback. FR-025 records the separate pre-merge snapshot miss.
+      19:51Z sweep found no new feedback. FR-025 records the separate pre-merge snapshot miss;
+      FR-028 records the second exact-head aging-floor miss and selected enforcement layer.
 next_safe_slice: Select the sdist-to-wheel lineage seam as the next bounded issue #29 code slice.
   Pre-cap diagnostic-memory hardening remains task debt until a design
   avoids both unbounded capture and a raw unredacted disk sink; process-tree cleanup stays separate.
@@ -145,7 +146,8 @@ exact_resume_point: If `docs/lab-redaction-state-20260809` is not yet merged, fi
   branch from refreshed live `main` for the bounded sdist-to-wheel lineage seam on issue #29.
   PR #52 final head `46961957e09bb976b34beb41fee5e69d89d21076` and hosted run `31332413187`
   are green and merged as `b966341d293a50d2b51f448fa23d3248d7e575fd`; FR-025 records its
-  process-only aging-snapshot divergence. The frozen producer replay at
+  missed top-level-comment snapshot and FR-028 records the unsatisfied 15-minute exact-head age.
+  The frozen producer replay at
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
   `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
   rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P

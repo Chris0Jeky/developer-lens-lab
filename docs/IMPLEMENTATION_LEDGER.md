@@ -939,9 +939,16 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - A top-level exact-head comment posted at 19:47:58Z set a conservative 19:58:52Z eligibility
   checkpoint. The coordinator's final snapshot covered head, base, hosted proof, closing refs, and
   review threads but omitted top-level comments, so the merge began nine seconds after that comment
-  arrived and before its stated checkpoint. The repository's three-minute floor, exact-head green
-  proof, and exact-final-head review were satisfied; no code or gate defect is known. The miss was
-  reconciled on PR #52 and is recorded as FR-025 without rewriting refs or merge history.
+  arrived and before its stated checkpoint. The session prompt's three-minute floor, exact-head
+  green proof, and exact-final-head review were satisfied, but the owner constitution's 15-minute
+  exact-head age was not. No code defect is known. FR-025 records the missed comment surface and
+  FR-028 records the second aging-floor miss plus selected enforcement layer; neither rewrites refs
+  or merge history.
+- Concurrent closeout PR #53 was found open against obsolete base `02a41cac4a461a93d53b481d34c96a48e29291e5`
+  with two unresolved blocking threads and overlapping state files. Its still-relevant aging and
+  preservation evidence already remained on issue #29; the public preservation note was reduced to
+  generic state classes, both threads were reconciled and resolved, and #53 was archived without
+  merging or rewriting its commits. FR-029 records this stale-branch divergence.
 - Sdist-to-wheel lineage is the next bounded issue #29 code seam. The TemporaryFile pre-cap design
   remains parked because it would create a raw unredacted disk sink with unbounded growth;
   process-tree and component-skip-semantics hardening remain separate. Release, tag, publication,
