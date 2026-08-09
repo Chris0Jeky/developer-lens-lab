@@ -11,6 +11,7 @@ from scripts.verify_package_smoke import (
     PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
     PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT,
     _run,  # pyright: ignore[reportPrivateUsage] - direct timeout seam coverage
+    _uv_version_requirement,  # pyright: ignore[reportPrivateUsage] - config parity coverage
     assert_doctor_report,
     build_smoke_environment,
     resolve_uv_command,
@@ -18,6 +19,10 @@ from scripts.verify_package_smoke import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _path_uv(_name: str) -> str:
+    return "uv-on-path"
 
 
 def test_package_metadata_declares_license_identity() -> None:
@@ -33,6 +38,12 @@ def test_package_metadata_declares_license_identity() -> None:
     assert "Developer Lens Lab" in license_text.splitlines()[:1]
     assert "SPDX-License-Identifier: AGPL-3.0-only" in license_text
     assert "GNU AFFERO GENERAL PUBLIC LICENSE" in license_text
+
+
+def test_package_smoke_uv_requirement_matches_pyproject() -> None:
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert _uv_version_requirement() == metadata["tool"]["uv"]["required-version"]
 
 
 def test_package_smoke_accepts_only_a_healthy_offline_context() -> None:
@@ -79,7 +90,7 @@ def test_package_smoke_validates_uv_version_bounds(
     compatible: bool,
 ) -> None:
     path_uv = "uv-on-path"
-    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: path_uv)
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", _path_uv)
     calls: list[list[str]] = []
 
     def version_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
@@ -106,7 +117,7 @@ def test_package_smoke_invalid_path_uv_uses_valid_module_fallback(
 ) -> None:
     path_uv = "uv-on-path"
     module_uv = [sys.executable, "-m", "uv"]
-    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: path_uv)
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", _path_uv)
 
     def version_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         del kwargs
@@ -127,7 +138,7 @@ def test_package_smoke_rejects_invalid_uv_candidates_with_actionable_range(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     path_uv = "uv-on-path"
-    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", lambda _name: path_uv)
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", _path_uv)
     calls: list[list[str]] = []
 
     def invalid_candidates_run(
