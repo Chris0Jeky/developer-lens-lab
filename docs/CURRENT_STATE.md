@@ -14,14 +14,15 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29)
-    writer: no code writer at this checkpoint; the bounded state-only branch
-      `docs/lab-redaction-state-20260809` records the completed diagnostic-redaction result
-    state: READY after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
+    writer: branch `ci/lab-sdist-lineage-20260809` at
+      `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` in its coordinator-owned isolated worktree
+    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       distinct-signoff release prompt and changelog, and the non-credential package-smoke,
       timeout, ignored-tree exclusion, bounded diagnostics, traversal pruning, PATH/uv validation,
-      and diagnostic-redaction seams all merged. Select sdist-to-wheel lineage as the next bounded
-      issue #29 code seam. Keep later hardening, asset, and tag work separate, with no data
-      activation.
+      and diagnostic-redaction seams all merged. Sdist-to-wheel lineage is implemented and locally
+      proved; after this state repair lands, integrate refreshed main, re-prove the affected seam,
+      and publish it under the ordinary gate. Keep later hardening, asset, and tag work separate,
+      with no data activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub
@@ -80,16 +81,18 @@ delivered:
       `e63086b4ae3b97390969357ebdd9d3e30394814e`.
   - package_smoke_uv_validation: DONE — PR #51 final head
       `adc43aea21834683eaf2749fe3515f10da204bde` passed hosted run `31313571499` / job
-      `93245084619`, exact-final-head review, and merge gating, then merged as
-      `02a41cac4a461a93d53b481d34c96a48e29291e5`; its delayed sweep was clean.
+      `93245084619` and exact-final-head review, then merged as
+      `02a41cac4a461a93d53b481d34c96a48e29291e5` before the binding 15-minute exact-head age;
+      FR-028 records the gate miss. Its delayed sweep was otherwise clean.
   - package_smoke_redaction: DONE — PR #52 final head
       `46961957e09bb976b34beb41fee5e69d89d21076` passed hosted run `31332413187` / job
       `93292650747`, exact-final-head review, and the locked local gate, then merged as
       `b966341d293a50d2b51f448fa23d3248d7e575fd`; both review threads are resolved and its delayed
       19:51Z sweep found no new feedback. FR-025 records the separate pre-merge snapshot miss;
       FR-028 records the second exact-head aging-floor miss and selected enforcement layer.
-next_safe_slice: Select the sdist-to-wheel lineage seam as the next bounded issue #29 code slice.
-  Pre-cap diagnostic-memory hardening remains task debt until a design
+next_safe_slice: Finish the bounded state-repair gate, then integrate refreshed main into preserved
+  branch `ci/lab-sdist-lineage-20260809` at `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3`, re-prove the
+  affected seam, and publish it. Pre-cap diagnostic-memory hardening remains task debt until a design
   avoids both unbounded capture and a raw unredacted disk sink; process-tree cleanup stays separate.
   Lane-P candidate-content review, screenshots, publication, and owner-gated release lanes remain
   parked. Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate
@@ -143,7 +146,13 @@ late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-up
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
 exact_resume_point: If `docs/lab-redaction-state-20260809` is not yet merged, finish its docs-only
   proof, exact-head review, and merge over `b966341d293a50d2b51f448fa23d3248d7e575fd`. Otherwise
-  branch from refreshed live `main` for the bounded sdist-to-wheel lineage seam on issue #29.
+  resume preserved branch `ci/lab-sdist-lineage-20260809` at
+  `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3`, integrate refreshed live `main`, re-prove the
+  affected package-smoke seam, and publish it for issue #29. Commits
+  `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and
+  `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` build exactly one sdist, build exactly one wheel from
+  that selected archive, and add typed synthetic lineage/fail-closed tests; the combined locked
+  gate passed 179 tests with 3 declared skips plus automated actual smoke in 87.5 seconds.
   PR #52 final head `46961957e09bb976b34beb41fee5e69d89d21076` and hosted run `31332413187`
   are green and merged as `b966341d293a50d2b51f448fa23d3248d7e575fd`; FR-025 records its
   missed top-level-comment snapshot and FR-028 records the unsatisfied 15-minute exact-head age.

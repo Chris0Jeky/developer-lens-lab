@@ -949,7 +949,21 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   preservation evidence already remained on issue #29; the public preservation note was reduced to
   generic state classes, both threads were reconciled and resolved, and #53 was archived without
   merging or rewriting its commits. FR-029 records this stale-branch divergence.
-- Sdist-to-wheel lineage is the next bounded issue #29 code seam. The TemporaryFile pre-cap design
-  remains parked because it would create a raw unredacted disk sink with unbounded growth;
-  process-tree and component-skip-semantics hardening remain separate. Release, tag, publication,
-  credentials, data, model, and telemetry stay closed as applicable.
+- Sdist-to-wheel commits `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and
+  `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` are preserved on
+  `ci/lab-sdist-lineage-20260809` over `b966341d293a50d2b51f448fa23d3248d7e575fd`. They build exactly
+  one source distribution, pass that selected archive as the source of a separate wheel build,
+  require exactly one wheel, and install that wheel. Typed invented tests prove call order,
+  selected-archive lineage, and fail-closed zero/multiple-sdist behavior.
+- The first integrated gate stopped at four strict test-typing errors before the suite or artifact
+  smoke. After the typed-helper fix, Pyright, Ruff, 179 tests with 3 declared Windows symlink skips,
+  strict MkDocs, context, hygiene, and diff checks passed. The first two smoke invocations stopped
+  at uv-command validation before artifact build; the reviewed confined `uv 0.12.2` route then
+  completed the automated sdist-derived wheel smoke in 87.5 seconds. No generated artifact,
+  ignored, protected, credential, candidate, cache, or private byte was opened or inspected.
+- The code branch is not published yet. After this state repair lands, integrate refreshed main,
+  re-prove the affected seam, and publish under the ordinary exact-head hosted, review, and
+  15-minute aging gate. The TemporaryFile pre-cap design remains parked because it would create a
+  raw unredacted disk sink with unbounded growth; process-tree and component-skip-semantics
+  hardening remain separate. Release, tag, publication, credentials, data, model, and telemetry
+  stay closed as applicable.
