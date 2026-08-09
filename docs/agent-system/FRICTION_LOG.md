@@ -114,6 +114,14 @@ The timeout builder used an existing interpreter for focused checks and left the
 for coordinator integration. The existing maintenance-protocol instruction remains the cheapest
 enforcing layer; no new automatic installer or hidden network side effect is justified.
 
+_Note 2026-08-09 (timeout integration proof):_ The tenth occurrence's coordinator pass first found
+that the host had no explicit Python 3.12 launcher and the reusable reviewed Python 3.12 environment
+had no `pip` or `uv` module. `ensurepip` plus the pinned `uv>=0.12.2,<0.13` constraint installed
+`uv 0.12.3` inside that ignored environment; the timeout worktree then completed locked sync and the
+full declared gate. `uv` warned that the bootstrap `VIRTUAL_ENV` differed from the task-local project
+environment and correctly ignored it. This successful confined route is the existing promoted
+workaround; no global install, lockfile change, or private/generated-byte inspection occurred.
+
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
 - **first-seen:** 2026-08-09
