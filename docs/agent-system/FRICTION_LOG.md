@@ -403,3 +403,23 @@ its field.
 _Note 2026-08-09 (exact-head review):_ The two exact directory names were rechecked as present
 without listing or inspecting their contents. PR #41's first fix round added q-13 and the fully
 qualified link after the connector correctly identified this as human-only machine hygiene.
+
+### FR-015 — the dependency-light verifier seam does not include the CLI wrapper
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A narrow state-document proof imported `developer_lens_lab.cli.context_verify`
+  through the global Python interpreter, but that interpreter does not include the CLI-only `typer`
+  dependency, so import failed before repository verification began.
+- **impact:** The first proof command supplied no verifier result. No repository or protected data
+  changed, and the verifier implementation itself remained available.
+- **workaround:** With `PYTHONPATH=src`, import `verify_repository` from
+  `developer_lens_lab.context` directly and fail on its returned report, then run
+  `git diff --check`. This is the same verifier used by `dllab context verify` without importing the
+  optional command wrapper.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the post-release-prompt state sync.
+- **task:** lab issue #34 owns prompt-operating-system and friction-ledger hardening; issue #29 owns
+  the current release-preparation proof boundary.
+- **promotion:** Deliberately NOT promoted after one occurrence. If the CLI-wrapper import recurs in
+  a dependency-light proof, add a checked context-only entry point rather than relying on an
+  incidental global package set.
