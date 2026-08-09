@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-09
+updated: 2026-08-10
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -17,19 +17,21 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      branch `ci/lab-sdist-lineage-20260809` with code head
-      `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` and main-integration commit
-      `2c838bb5d1306434767a90279c6be8fab8a094e5` in its coordinator-owned isolated worktree; ready PR
-      #55 carries the current head
+      no merged PR remains in review; PR #55 and PR #57 are merged on main. The prepared local branch
+      `fix/package-smoke-short-env-redaction-20260809` is parked at
+      `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after its full gate (194 passed / 3 skips) and two
+      package-smoke attempts timed out during uv pip install; issue #29 comment `5234405496` is the
+      unlocking source.
     state: >-
-      IN_REVIEW after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
-      distinct-signoff release prompt and changelog, and the non-credential package-smoke,
-      timeout, ignored-tree exclusion, bounded diagnostics, traversal pruning, PATH/uv validation,
-      and diagnostic-redaction/state-reconciliation seams all merged. Sdist-to-wheel lineage is
-      implemented, integrated with live main, locally proved at 179 passed / 3 declared skips plus
-      automated sdist-derived wheel smoke, and published as ready PR #55. Complete its exact-head
-      hosted, review, and 15-minute aging gate. Keep later hardening, asset, and tag work separate,
-      with no data activation.
+      READY_FOR_OTHER_TRACKED_SLICE after PR #55 sdist-to-wheel lineage merged as
+      `02dcfb261f7216f01aa5696888715ac42f0e3830`, PR #57 package-smoke contract tests merged as
+      `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`, and PR #59 current-state YAML enforcement merged as
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` closing issue #58. PR #56 is superseded on its
+      obsolete base and is not closed or commented in this slice. The short-redaction lane is parked
+      pending its issue #29 unlocking source; other actually tracked issue #29 work may proceed. Keep
+      remaining hardening,
+      asset, release, publication, and tag work separate, with no data, model, credential, or
+      telemetry activation.
 delivered:
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
@@ -106,20 +108,40 @@ delivered:
       thread triage, then merged as `7fea25023d0704aea685e243708328264b9bcaad` at 20:33:27Z; its
       delayed 20:37Z sweep was clean. FR-032 records the final-snapshot TLS retry; FR-033 records
       and corrects a concurrent observer's incomplete merge-operation context.
+  - package_smoke_sdist_lineage: >-
+      DONE — PR #55 final head `c122868e976ee7f5acce8c6aac20608873c0fa43` passed hosted run
+      `31335915850` / job `93301598278`, exact-head review, and the 15-minute age, then merged as
+      `02dcfb261f7216f01aa5696888715ac42f0e3830`; its delayed 22:22:38Z sweep then found no late
+      review, comment, or thread debt.
+  - package_smoke_contract_tests: >-
+      DONE — PR #57 final head `bd4d244f079b46c0425e0618043c37b48abb29c7` passed hosted run
+      `31337621819` / job `93305956992`, exact-head review, and the 15-minute age, then merged as
+      `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`; its delayed 23:10:19Z sweep then found no late
+      review, comment, or thread debt. Its zero/multiple-wheel and full-call-sequence test seam is
+      complete.
+  - current_state_yaml: >-
+      DONE — PR #59 final head `df87407bb74d78277d96aa383148da7211735a6a` passed hosted run
+      `31340060061` / job `93312246758` and merged as
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58.
 next_safe_slice: >-
-  Complete ready PR #55's exact-head hosted, review, and 15-minute aging gate, then select the
-  tracked zero/multiple-wheel or full-call-sequence test seam. Pre-cap diagnostic-memory hardening
-  remains task debt until a design avoids both unbounded capture and a raw unredacted disk sink;
-  process-tree cleanup stays separate. Lane-P candidate-content review, screenshots, publication,
-  and owner-gated release lanes remain parked. Do not inspect ignored candidate bytes, publish assets,
-  tag, add credentials, activate data or models, or enable telemetry.
+  Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
+  `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
+  `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after 194 passed / 3 skips and two package-smoke
+  timeouts during uv pip install, pending issue #29 comment `5234405496`. Lane-P candidate-content
+  review remains unauthorized and closed; no asset review, publication, tag, or release action is authorized. Pre-cap diagnostic-memory hardening remains task
+  debt until a design avoids both unbounded capture and a raw unredacted disk sink; process-tree
+  cleanup stays separate. No tag, release/publication, asset review, credential, data, model, or
+  telemetry action is authorized here.
 release_and_owner_gates: >-
-  joint release remains reaffirmed, but no tag is authorized. Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)
-  release sign-off and Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 aesthetic sign-off still
-  block tags. A separate Code of Conduct inbox is selected, but its address is pending under
-  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10; CLA and all other owner choices remain deferred.
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` is separate machine hygiene and does not
-  block release preparation or authorize inspection of the two private-handoff targets.
+  joint release remains reaffirmed, but no tag is authorized. The closed product
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` gate does not close the distinct open Lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` real-study public-transformation gate.
+  Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and Lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off still block tags. Lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7` legal review and
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` machine hygiene remain open; the separate
+  Code of Conduct inbox is pending under `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10`. None authorizes release,
+  publication, data, model, credential, or telemetry work.
 capabilities:
   network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)
@@ -167,25 +189,15 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Continue ready PR #55 on preserved branch `ci/lab-sdist-lineage-20260809` at its live GitHub head.
-  Code head `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` is integrated with Lab main merge
-  `7fea25023d0704aea685e243708328264b9bcaad` through integration commit
-  `2c838bb5d1306434767a90279c6be8fab8a094e5`. The current-base locked gate passed doctor/context,
-  Ruff, Pyright, 179 tests with 3 declared skips, strict docs, hygiene, diff check, and automated
-  actual sdist-derived wheel smoke; finish only the live hosted/review/aging/merge gate. Commits
-  `b640d8a7fecbb96a3fed88aa8e27afaeaeb22d4d` and `a23fbcd47b78d4c22400bcc7a217b70a0a9966f3` build
-  exactly one sdist, build exactly one wheel from that selected archive, and add typed synthetic
-  lineage/fail-closed tests; the combined locked gate passed 179 tests with 3 declared skips plus
-  automated actual smoke in 87.5 seconds. PR #52 final head
-  `46961957e09bb976b34beb41fee5e69d89d21076` and hosted run `31332413187` are green and merged as
-  `b966341d293a50d2b51f448fa23d3248d7e575fd`; FR-025 records its missed top-level-comment snapshot
-  and FR-028 records the unsatisfied 15-minute exact-head age. The frozen producer replay at
-  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
-  commit `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; current product `origin/main` is
-  `7ae4b31861ad5403587adf8fefb90a085598bd57`. Do not substitute the rejected current-head candidate,
-  inspect ignored candidate bytes, or cross the Lane-P publication/sign-off boundary. Keep
-  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7 (CLA/external-contribution strategy),
-  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 (aesthetic sign-off),
-  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) release sign-off, and every non-C0 lane explicit
-  and closed as applicable; tag, credentials, data, models, and telemetry remain closed.
+  Resume from live `origin/main` at `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` after merged PR #55
+  (`02dcfb261f7216f01aa5696888715ac42f0e3830`), PR #57
+  (`64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`), and PR #59
+  (`e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58). PR #57 completes the
+  zero/multiple-wheel and full-call-sequence test seam. PR #56 is open at
+  `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0` on current base
+  `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; it remains the exhausted, superseded duplicate and no
+  actor is inferred. Do not close or comment on it in this slice. The prepared short-env diagnostics
+  redaction branch is PARKED at `e673102348e8ee7d8c7d45b6ed4e1530cd775972` pending issue #29 comment
+  `5234405496`; select another tracked pre-tag seam under the ordinary gate; keep Lane-P review, release/publication, tag, credentials,
+  data, models, telemetry, and all owner gates closed.
 ```
