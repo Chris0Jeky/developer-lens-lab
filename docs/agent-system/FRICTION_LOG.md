@@ -489,3 +489,21 @@ retains only the bounded action and its authority limits.
 - **task:** Lab issue #29 owns the release-evidence boundary.
 - **promotion:** Deliberately NOT promoted after one occurrence. If an independent recurrence
   appears, consider a compatibility helper at the smallest shared command layer.
+
+### FR-018 — a live issue checkpoint abbreviated a cross-repository human action
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A release-wave issue comment fully qualified one Lab human action, then referred to a
+  second Lab action as a bare `q-13`. The required repository prefix was therefore absent from one
+  live operational reference.
+- **impact:** A later coordinator could attribute the shorthand to the product repository and route
+  the machine-hygiene action through the wrong owner gate.
+- **workaround:** The same comment was re-read and patched immediately so every human action carries
+  its complete owner/repository/file reference. No authority, ref, gate status or release action
+  changed.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the issue #29 package-smoke update.
+- **task:** Lab issue #34 owns prompt-system and cross-repository human-reference hardening.
+- **promotion:** Deliberately NOT promoted after one occurrence. The tracked active-prompt verifier
+  already rejects a bare reference in prompt bodies; if an independent outbound-comment recurrence
+  appears, add a body preflight at the narrow GitHub-write boundary rather than another reminder.
