@@ -17,8 +17,10 @@ active_wave:
     writer: branch `ci/lab-package-timeout-20260809` in its coordinator-owned isolated worktree
     state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, LAB-GOV-02, dependency remediation #5, the
       merged distinct-signoff release prompt and changelog, and the merged bounded non-credential
-      built-artifact/package smoke. The selected P2 seam bounds package-smoke subprocesses; keep
-      later hardening, asset, and tag work separate, with no data activation.
+      built-artifact/package smoke. The selected P2 seam now bounds every package-smoke subprocess
+      to 300 seconds and has passed the locked full gate plus isolated artifact smoke; exact hosted
+      proof and review remain next. Keep later hardening, asset, and tag work separate, with no data
+      activation.
 delivered:
   - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
       closed issue #33. This records the merged result only; it does not attribute the GitHub

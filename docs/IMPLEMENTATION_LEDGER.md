@@ -788,3 +788,19 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off remain owner gates; tag,
   credentials, data, model, and telemetry activation remain closed. The next safe slice is the
   bounded tracked package-smoke P2 hardening on issue #29.
+
+## 2026-08-09 — Package-smoke subprocess-timeout review lane (LAB-REL-01, issue #29)
+
+- Code commit `d7470dd1c36c0ad178e7ce8d64a43c5d834942c2` adds one named 300-second timeout to
+  every package-smoke subprocess and converts `TimeoutExpired` into a deterministic `RuntimeError`
+  that reports the command without the environment. Focused tests cover timeout propagation and
+  confirm that an environment value is not rendered. The branch integrated current Lab main
+  `a1dc7caa4015f200a10cf7218d904001c90184cc` before publication.
+- The confined `uv 0.12.3` route completed locked sync, doctor/context, Ruff, Pyright, 156 passed / 3
+  declared Windows symlink skips, strict MkDocs, hygiene, diff check, and the isolated package
+  smoke. The complete gate took 312.5 seconds; no individual subprocess reached the new ceiling.
+- No protected, generated, candidate, or private bytes were inspected. The ignored smoke-tree
+  context-scan exclusion is a separate prepared issue #29 seam; PATH-uv validation, bounded failure
+  diagnostics, and sdist-to-wheel lineage also remain separate. Hosted exact-head proof and fresh
+  review are pending; release, tag, publication, credentials, data, model, and telemetry lanes stay
+  closed.
