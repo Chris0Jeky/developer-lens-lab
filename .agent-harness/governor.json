@@ -15,7 +15,12 @@
     "product_boundary": "docs/PRODUCT_BOUNDARY.md",
     "data_policy": "docs/DATA_POLICY.md",
     "contracts": "docs/CONTRACTS.md",
-    "governor_docs": "docs/agent-system/README.md"
+    "governor_docs": "docs/agent-system/README.md",
+    "prompt_library": "docs/agent-system/PROMPT_LIBRARY.md",
+    "prompt_parity_manifest": ".agent-harness/prompt-parity.json",
+    "continuous_work_protocol": "docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md",
+    "friction_log": "docs/agent-system/FRICTION_LOG.md",
+    "cross_repo_contract": "docs/agent-system/CROSS_REPO_CONTRACT.md"
   },
   "focus": {
     "research": 7,
@@ -122,6 +127,37 @@
     "product_owns": ["stable runtime", "public stable UX", "canonical presentation/input schemas", "stable release", "promotion acceptance"],
     "lab_owns": ["research questions", "generators/datasets", "candidate registry", "evaluation", "reports", "reproducibility", "experimental preview", "public C0 scientific assets"],
     "handshake": "pinned generated snapshots + provenance checksums only; sync is check-only outside an intentional contract change; merge order explicit; post-merge compatibility check"
+  },
+  "prompt_system": {
+    "description": "Every executable prompt lives in the prompt library behind a stable ID. The parity manifest is repo-neutral and byte-identical with Chris0Jeky/developer-lens; shared block bodies are pinned by SHA-256 and carried verbatim by every active prompt.",
+    "manifest": ".agent-harness/prompt-parity.json",
+    "shared_block_ids": ["runtime-bootstrap-v1", "friction-tasking-v1"],
+    "continuous_prompt_id": "DL-P03-OVERNIGHT-CONTINUOUS",
+    "dual_runtime_rule": "Every active prompt routes Claude to CLAUDE.md plus Opus 5 low scouts, dll-implementer, dll-reviewer and dll-mechanic, and Codex to AGENTS.md then the shared CLAUDE.md canon plus developer-lens-lab-continuation and Sol/Terra/Luna routing.",
+    "human_ref_rule": "Active prompt bodies cite human actions as <owner>/<repo>::HUMAN_TODO.md::q-N; a bare q-N is rejected because product q-8 and lab q-8 are different gates.",
+    "checks": [
+      "manifest schema, types, and the lab repository entry resolve",
+      "code-pinned common and lab extension prompt IDs equal the manifest and the Markdown, in order",
+      "prompt markers are unique and each active prompt has exactly one text fence",
+      "each active body carries exactly one copy of each shared block, digest-matched under LF normalization",
+      "each active body carries the Claude and Codex runtime clauses",
+      "the continuous protocol carries ordered execution and stop marker pairs",
+      "any prompt-shaped document outside the library is classified redirect or historical"
+    ],
+    "command": "uv run dllab context verify"
+  },
+  "friction_debt": {
+    "log": "docs/agent-system/FRICTION_LOG.md",
+    "append_only": true,
+    "rule": "Material workarounds, tooling hiccups, repeated friction and surprising divergences are logged in the same hop and linked to an issue, card or fully qualified owner action. Promotion to the cheapest enforcing layer is considered at the second independent occurrence; resolution is never inferred.",
+    "may_change_on_existing_entry": ["status", "occurrences", "task", "promotion"]
+  },
+  "continuous_execution": {
+    "protocol": "docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md",
+    "launcher_prompt_id": "DL-P03-OVERNIGHT-CONTINUOUS",
+    "note": "A protocol, not a service: repeated waves inside one session, never background execution between sessions.",
+    "stop_conditions": ["policy", "budget", "tooling", "queue"],
+    "never_opens_lanes": ["real-data collection", "external model request", "telemetry destination", "credential handling"]
   },
   "self_evolution": {
     "may_improve_with_repeated_evidence": [

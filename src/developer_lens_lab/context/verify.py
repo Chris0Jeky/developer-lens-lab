@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -16,6 +17,7 @@ REQUIRED_FILES = (
     "CLAUDE.md",
     ".agent-harness/tier.json",
     ".agent-harness/governor.json",
+    ".agent-harness/prompt-parity.json",
     "docs/OWNER_CONSTITUTION.md",
     "docs/agent-system/README.md",
     "docs/agent-system/WORK_CLASSES.md",
@@ -24,6 +26,9 @@ REQUIRED_FILES = (
     "docs/agent-system/MAINTENANCE_PROTOCOL.md",
     "docs/agent-system/IDEA_PROTOCOL.md",
     "docs/agent-system/PROMPT_LIBRARY.md",
+    "docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md",
+    "docs/agent-system/FRICTION_LOG.md",
+    "docs/agent-system/CROSS_REPO_CONTRACT.md",
     ".claude/agents/dll-implementer.md",
     ".claude/agents/dll-mechanic.md",
     ".claude/agents/dll-reviewer.md",
@@ -583,6 +588,367 @@ def verify_skill_parity(root: Path) -> list[str]:
     return failures
 
 
+# --- Prompt operating system parity ------------------------------------------------------------
+#
+# The prompt library is the only executable-prompt surface, and its spine is shared byte-for-byte
+# with Chris0Jeky/developer-lens through the repo-neutral parity manifest. Everything below exists
+# because prose parity is not parity: the manifest pins the shared block bodies by SHA-256, so a
+# block edited in one prompt (or drifting from the product side) fails here instead of silently
+# giving the two repositories different operating rules.
+PROMPT_PARITY_MANIFEST = ".agent-harness/prompt-parity.json"
+PROMPT_LIBRARY = "docs/agent-system/PROMPT_LIBRARY.md"
+CONTINUOUS_WORK_PROTOCOL = "docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md"
+LAB_REPOSITORY_SLUG = "Chris0Jeky/developer-lens-lab"
+
+# Pinned in code, not merely read from the manifest: the manifest is a copied artifact, so a
+# truncated or reordered copy must fail rather than redefine what this repository requires.
+COMMON_PROMPT_IDS = (
+    "DL-P01-FLAGSHIP-GOVERNOR",
+    "DL-P02-GOVERNOR-LITE",
+    "DL-P03-OVERNIGHT-CONTINUOUS",
+    "DL-P04-RESUME-RECONCILE",
+    "DL-P05-BOUNDED-IMPLEMENTER",
+    "DL-P06-INDEPENDENT-REVIEWER",
+    "DL-P07-MECHANICAL-SWEEP",
+    "DL-P08-CI-REVIEW-RECOVERY",
+    "DL-P09-RELEASE-CURATOR",
+    "DL-P10-CROSS-REPO-COORDINATOR",
+    "DL-P11-DISCOVERY-IDEA-MINER",
+    "DL-P12-FRICTION-BURNDOWN",
+)
+LAB_EXTENSION_PROMPT_IDS = (
+    "DL-LX01-LAB-EXPERIMENT-HARNESS",
+    "DL-LX02-LAB-EVALUATION-REPRODUCIBILITY",
+)
+SHARED_BLOCK_IDS = ("runtime-bootstrap-v1", "friction-tasking-v1")
+CONTINUOUS_PROMPT_ID = "DL-P03-OVERNIGHT-CONTINUOUS"
+
+# The dual-runtime contract, as literal substrings. A prompt that names neither runtime is not
+# copy-ready: pasted cold it leaves the agent to guess which canon binds it and which agents exist.
+REQUIRED_CLAUDE_CLAUSE = (
+    "CLAUDE.md",
+    "Opus 5 low",
+    "dll-implementer",
+    "dll-reviewer",
+    "dll-mechanic",
+)
+REQUIRED_CODEX_CLAUSE = ("AGENTS.md", "developer-lens-lab-continuation", "Sol/Terra/Luna")
+
+CONTINUOUS_MARKER_PAIRS = (
+    ("<!-- continuous-execution-begin -->", "<!-- continuous-execution-end -->"),
+    ("<!-- continuous-stop-begin -->", "<!-- continuous-stop-end -->"),
+)
+ALLOWED_PROMPT_CLASSIFICATIONS = ("redirect", "historical")
+
+PROMPT_MARKER_RE = re.compile(r"<!-- prompt-id: (\S+) status: (\S+) -->")
+TEXT_FENCE_RE = re.compile(r"^```text$", re.M)
+PROMPT_CLASSIFICATION_RE = re.compile(r"<!-- prompt-classification: (\S+) -->")
+# A bare q-N and its fully qualified form. Counting both and comparing is what makes an unqualified
+# ref fail: product q-8 and lab q-8 are different gates, so an ambiguous ref is a real defect.
+BARE_HUMAN_REF_RE = re.compile(r"q-\d+")
+QUALIFIED_HUMAN_REF_RE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+::HUMAN_TODO\.md::q-\d+")
+
+
+def normalize_newlines(text: str) -> str:
+    """CRLF and CR collapsed to LF so digests are stable across platforms and checkouts."""
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def shared_block_digest(body: str) -> str:
+    """The manifest's declared digest input: the exact block body, LF-normalized, UTF-8, no
+    trailing newline."""
+    return hashlib.sha256(normalize_newlines(body).encode("utf-8")).hexdigest()
+
+
+def shared_blocks_in(library_text: str) -> dict[str, str]:
+    """Map each declared shared-block ID to its fenced body, for blocks present in the library."""
+    normalized = normalize_newlines(library_text)
+    blocks: dict[str, str] = {}
+    for block_id in SHARED_BLOCK_IDS:
+        pattern = r"<!-- shared-block: %s -->\n\n```text\n(.*?)\n```" % re.escape(block_id)
+        match = re.search(pattern, normalized, re.S)
+        if match is not None:
+            blocks[block_id] = match.group(1)
+    return blocks
+
+
+def prompt_entries(library_text: str) -> list[tuple[str, str, str]]:
+    """Every ``(prompt_id, status, body)`` in document order.
+
+    The body is the single fenced ``text`` block that must immediately follow the marker; a marker
+    with no following fence yields an empty body so the caller reports it rather than crashing.
+    """
+    normalized = normalize_newlines(library_text)
+    entries: list[tuple[str, str, str]] = []
+    for match in PROMPT_MARKER_RE.finditer(normalized):
+        remainder = normalized[match.end() :]
+        body_match = re.match(r"\n\n```text\n(.*?)\n```", remainder, re.S)
+        entries.append((match.group(1), match.group(2), body_match.group(1) if body_match else ""))
+    return entries
+
+
+def _str_list(value: object) -> list[str] | None:
+    if not isinstance(value, list):
+        return None
+    items = cast(list[object], value)
+    if not all(isinstance(item, str) for item in items):
+        return None
+    return cast(list[str], items)
+
+
+def verify_parity_manifest(payload: object) -> list[str]:
+    """Structural and identity checks on the repo-neutral parity manifest.
+
+    Pure so the malformed shapes can be tested without a repository: the manifest is copied between
+    repositories, and a copy that lost its schema version, its ordering or this repository's entry
+    must fail loudly rather than degrade into an unchecked file.
+    """
+    if not isinstance(payload, dict):
+        return ["prompt-parity.json: top level must be a string-keyed object"]
+    mapping = cast(dict[object, object], payload)
+    if not all(isinstance(key, str) for key in mapping):
+        return ["prompt-parity.json: top level must be a string-keyed object"]
+    manifest = cast(dict[str, object], mapping)
+    failures: list[str] = []
+    if manifest.get("manifest_schema_version") != 1:
+        failures.append("prompt-parity.json: manifest_schema_version must be 1")
+    common = _str_list(manifest.get("common_prompt_ids"))
+    if common is None or tuple(common) != COMMON_PROMPT_IDS:
+        failures.append(
+            "prompt-parity.json: common_prompt_ids must equal the code-pinned common IDs, in order"
+        )
+    continuous = _str_list(manifest.get("continuous_prompt_ids"))
+    if continuous is None or CONTINUOUS_PROMPT_ID not in continuous:
+        failures.append(
+            f"prompt-parity.json: continuous_prompt_ids must include {CONTINUOUS_PROMPT_ID}"
+        )
+    blocks_raw = manifest.get("shared_blocks")
+    if not isinstance(blocks_raw, list):
+        failures.append("prompt-parity.json: shared_blocks must be a list of {id, sha256} objects")
+    else:
+        block_ids: list[str] = []
+        for entry_raw in cast(list[object], blocks_raw):
+            if not isinstance(entry_raw, dict):
+                failures.append("prompt-parity.json: each shared_blocks entry must be an object")
+                continue
+            entry = cast(dict[str, object], entry_raw)
+            block_id = entry.get("id")
+            digest = entry.get("sha256")
+            if not isinstance(block_id, str) or not isinstance(digest, str):
+                failures.append(
+                    "prompt-parity.json: each shared_blocks entry needs string id and sha256"
+                )
+                continue
+            block_ids.append(block_id)
+        if block_ids and tuple(block_ids) != SHARED_BLOCK_IDS:
+            failures.append(
+                "prompt-parity.json: shared_blocks must declare the code-pinned block IDs, in order"
+            )
+    failures.extend(_verify_manifest_repository_entry(manifest))
+    return failures
+
+
+def _verify_manifest_repository_entry(manifest: dict[str, object]) -> list[str]:
+    repositories_raw = manifest.get("repositories")
+    if not isinstance(repositories_raw, list):
+        return ["prompt-parity.json: repositories must be a list containing this repository"]
+    for entry_raw in cast(list[object], repositories_raw):
+        if not isinstance(entry_raw, dict):
+            continue
+        entry = cast(dict[str, object], entry_raw)
+        if entry.get("slug") != LAB_REPOSITORY_SLUG:
+            continue
+        failures: list[str] = []
+        if entry.get("role") != "lab":
+            failures.append(f"prompt-parity.json: {LAB_REPOSITORY_SLUG} role must be 'lab'")
+        extensions = _str_list(entry.get("extension_prompt_ids"))
+        if extensions is None or tuple(extensions) != LAB_EXTENSION_PROMPT_IDS:
+            failures.append(
+                "prompt-parity.json: lab extension_prompt_ids must equal the code-pinned lab "
+                "extension IDs, in order"
+            )
+        for key, expected in (
+            ("prompt_library", PROMPT_LIBRARY),
+            ("continuous_work_protocol", CONTINUOUS_WORK_PROTOCOL),
+            ("friction_log", "docs/agent-system/FRICTION_LOG.md"),
+        ):
+            if entry.get(key) != expected:
+                failures.append(f"prompt-parity.json: lab {key} must be {expected!r}")
+        return failures
+    return [f"prompt-parity.json: repositories must contain an entry for {LAB_REPOSITORY_SLUG}"]
+
+
+def verify_prompt_library(library_text: str, digests: dict[str, str]) -> list[str]:
+    """Every structural and content rule the library itself must satisfy.
+
+    ``digests`` maps shared-block ID to the manifest's declared SHA-256. Pure on text so each
+    failure mode (drifted digest, duplicated marker, missing runtime clause, bare human ref) can be
+    tested directly.
+    """
+    normalized = normalize_newlines(library_text)
+    expected_ids = COMMON_PROMPT_IDS + LAB_EXTENSION_PROMPT_IDS
+    failures: list[str] = []
+
+    blocks = shared_blocks_in(normalized)
+    for block_id in SHARED_BLOCK_IDS:
+        body = blocks.get(block_id)
+        if body is None:
+            failures.append(f"{PROMPT_LIBRARY}: missing shared block {block_id}")
+            continue
+        expected_digest = digests.get(block_id)
+        actual = shared_block_digest(body)
+        if expected_digest is not None and actual != expected_digest:
+            failures.append(
+                f"{PROMPT_LIBRARY}: shared block {block_id} digest {actual} does not match the "
+                f"manifest digest {expected_digest}; the block has drifted from the product side"
+            )
+
+    entries = prompt_entries(normalized)
+    found_ids = [prompt_id for prompt_id, _, _ in entries]
+    duplicates = sorted({pid for pid in found_ids if found_ids.count(pid) > 1})
+    if duplicates:
+        failures.append(f"{PROMPT_LIBRARY}: duplicate prompt markers: {duplicates}")
+    if tuple(found_ids) != expected_ids:
+        missing = [pid for pid in expected_ids if pid not in found_ids]
+        extra = [pid for pid in found_ids if pid not in expected_ids]
+        failures.append(
+            f"{PROMPT_LIBRARY}: prompt markers must equal the code-pinned IDs in manifest order; "
+            f"missing: {missing}; unexpected: {extra}"
+        )
+
+    # One fence per shared block plus one per prompt. A stray or duplicated fence means a prompt
+    # body is ambiguous, which is exactly when a pasted prompt silently loses half its rules.
+    expected_fences = len(SHARED_BLOCK_IDS) + len(entries)
+    actual_fences = len(TEXT_FENCE_RE.findall(normalized))
+    if actual_fences != expected_fences:
+        failures.append(
+            f"{PROMPT_LIBRARY}: expected exactly {expected_fences} text fences "
+            f"(one per shared block and one per prompt), found {actual_fences}"
+        )
+
+    for prompt_id, status, body in entries:
+        if status != "active":
+            continue
+        if not body:
+            failures.append(f"{PROMPT_LIBRARY}: {prompt_id} has no fenced text body")
+            continue
+        failures.extend(_verify_active_body(prompt_id, body, blocks))
+    return failures
+
+
+def _verify_active_body(prompt_id: str, body: str, blocks: dict[str, str]) -> list[str]:
+    failures: list[str] = []
+    # Clause tokens are checked against the body with the shared blocks REMOVED. Several tokens
+    # ("CLAUDE.md", "AGENTS.md", "Sol/Terra/Luna") also occur inside runtime-bootstrap-v1, so
+    # checking the whole body would let the shared spine alone satisfy the check and a prompt
+    # carrying no lab routing clause at all would pass.
+    outside = body
+    for block_id, block_body in blocks.items():
+        count = body.count(block_body)
+        if count != 1:
+            failures.append(
+                f"{PROMPT_LIBRARY}: {prompt_id} must carry exactly one copy of shared block "
+                f"{block_id}, found {count}"
+            )
+        outside = outside.replace(block_body, "")
+    for token in REQUIRED_CLAUDE_CLAUSE:
+        if token not in outside:
+            failures.append(
+                f"{PROMPT_LIBRARY}: {prompt_id} is missing the Claude runtime clause token {token!r}"
+            )
+    for token in REQUIRED_CODEX_CLAUSE:
+        if token not in outside:
+            failures.append(
+                f"{PROMPT_LIBRARY}: {prompt_id} is missing the Codex runtime clause token {token!r}"
+            )
+    bare = len(BARE_HUMAN_REF_RE.findall(body))
+    qualified = len(QUALIFIED_HUMAN_REF_RE.findall(body))
+    if bare != qualified:
+        failures.append(
+            f"{PROMPT_LIBRARY}: {prompt_id} cites {bare - qualified} unqualified human ref(s); use "
+            "<owner>/<repo>::HUMAN_TODO.md::q-N, because product q-8 and lab q-8 differ"
+        )
+    return failures
+
+
+def verify_continuous_protocol(text: str) -> list[str]:
+    """Each marker pair appears exactly once and in order.
+
+    Reversed or duplicated markers are checked explicitly: a duplicated pair would let a reader (or
+    a future extractor) see only the first region and miss a second, divergent one.
+    """
+    normalized = normalize_newlines(text)
+    failures: list[str] = []
+    for start_marker, end_marker in CONTINUOUS_MARKER_PAIRS:
+        if normalized.count(start_marker) != 1 or normalized.count(end_marker) != 1:
+            failures.append(
+                f"{CONTINUOUS_WORK_PROTOCOL}: expected exactly one {start_marker} / {end_marker} "
+                "marker pair"
+            )
+            continue
+        if normalized.find(end_marker) <= normalized.find(start_marker):
+            failures.append(
+                f"{CONTINUOUS_WORK_PROTOCOL}: {start_marker} / {end_marker} markers are out of order"
+            )
+    return failures
+
+
+def verify_prompt_classifications(root: Path) -> list[str]:
+    """Any prompt-shaped document that declares a classification must declare a supported one.
+
+    The library is the only executable-prompt surface; other prompt-shaped documents opt into
+    `redirect` or `historical` so a reader can tell at a glance that they are not to be pasted.
+    """
+    failures: list[str] = []
+    for path in sorted(root.rglob("*.md")):
+        relative_parts = path.relative_to(root).parts
+        if any(part in SKIPPED_MARKDOWN_PARTS for part in relative_parts):
+            continue
+        for classification in PROMPT_CLASSIFICATION_RE.findall(path.read_text(encoding="utf-8")):
+            if classification not in ALLOWED_PROMPT_CLASSIFICATIONS:
+                failures.append(
+                    f"{path.relative_to(root)}: prompt-classification {classification!r} must be "
+                    f"one of {list(ALLOWED_PROMPT_CLASSIFICATIONS)}"
+                )
+    return failures
+
+
+def verify_prompt_parity(root: Path) -> list[str]:
+    manifest_path = root / PROMPT_PARITY_MANIFEST
+    library_path = root / PROMPT_LIBRARY
+    continuous_path = root / CONTINUOUS_WORK_PROTOCOL
+    try:
+        manifest_payload: object = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"invalid {PROMPT_PARITY_MANIFEST}: {exc}"]
+    failures = verify_parity_manifest(manifest_payload)
+
+    digests: dict[str, str] = {}
+    if isinstance(manifest_payload, dict):
+        blocks_raw = cast(dict[str, object], manifest_payload).get("shared_blocks")
+        if isinstance(blocks_raw, list):
+            for entry_raw in cast(list[object], blocks_raw):
+                if not isinstance(entry_raw, dict):
+                    continue
+                entry = cast(dict[str, object], entry_raw)
+                block_id = entry.get("id")
+                digest = entry.get("sha256")
+                if isinstance(block_id, str) and isinstance(digest, str):
+                    digests[block_id] = digest
+    try:
+        library_text = library_path.read_text(encoding="utf-8")
+    except OSError:
+        return [*failures, f"missing required file: {PROMPT_LIBRARY}"]
+    failures.extend(verify_prompt_library(library_text, digests))
+    try:
+        continuous_text = continuous_path.read_text(encoding="utf-8")
+    except OSError:
+        return [*failures, f"missing required file: {CONTINUOUS_WORK_PROTOCOL}"]
+    failures.extend(verify_continuous_protocol(continuous_text))
+    failures.extend(verify_prompt_classifications(root))
+    return failures
+
+
 CONTEXT_BUDGET_FILES = ("AGENTS.md", "CLAUDE.md")
 CHARS_PER_TOKEN = 4  # standard ~4-chars/token English heuristic; a deterministic estimate, not an exact count  # noqa: E501
 
@@ -700,6 +1066,7 @@ def verify_repository(root: Path) -> VerificationReport:
     failures.extend(_verify_tier(root))
     failures.extend(verify_governor(root))
     failures.extend(verify_skill_parity(root))
+    failures.extend(verify_prompt_parity(root))
     failures.extend(verify_context_budget(root))
     failures.extend(verify_markdown_links(root))
     if (root / "tools" / "cards.py").is_file():
