@@ -609,3 +609,20 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Scope remains C0 control-plane only: no research implementation, data/model/telemetry lane,
   credential, generated output, product contract, or owner-policy value changed. LAB-GOV-02 stays
   `IN_REVIEW` and the lab PR remains parked under the cross-repository q-8 gate.
+
+## 2026-08-09 — Post-merge LAB-GOV-02 state reconciliation
+
+- Reconciled the delivered prompt operating-system milestone: lab PR #35 merged at
+  `bba0c18261c0a2b77332a0408f63b10c774c91f4` and closed issue #33, so LAB-GOV-02 is `DONE` in the
+  task source and its generated indexes. This records the merged result only and does not infer
+  who operated GitHub.
+- Reconciled the distinct product concurrent-writer gate from direct owner decision and
+  clean-session evidence recorded through product PR #223 at
+  `877f1ca07ccee014c0adf50925f989815e6bc7f1`. The product q-8 closure does not alter the lab's own
+  q-8 real-study public-transformation gate, which remains open in `HUMAN_TODO.md`.
+- Joint release is reaffirmed but no tag, release, data/model/telemetry/credential/publication
+  lane, or additional owner gate is authorized. Product q-10(c) and lab q-11 still block tags;
+  the separate Code of Conduct inbox has a pending address, and CLA plus all other owner choices
+  remain deferred.
+- Exact next safe slice: LAB-REL-01 isolated dependency triage for issue #5. Licence, community,
+  packaging, and release-asset work remain separate slices.

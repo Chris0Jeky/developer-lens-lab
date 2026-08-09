@@ -14,19 +14,23 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: LAB-REL-01 v0.1.0 release wave (issue #29 / dependency triage #5)
-    state: ACTIVE after LAB-GOV-01 and LAB-WBC1-06 completion; writer unassigned; no data
-      activation; licence/community/packaging and dependency triage are separate slices
-  - lane: LAB-GOV-02 prompt operating system and dual-runtime parity (issue #33, paired with
-      product issue #214)
-    state: IN_REVIEW side lane on branch docs/prompt-system-overhaul; C0 control-plane only —
-      no data lane, model, telemetry, contract, methodology, or owner-policy change. The
-      byte-identical parity manifest and both shared blocks are copied from the product
-      reference and pinned by SHA-256 in the context verifier. Merge order is product #214
-      first, then lab #33; the lab PR is prepared and parked, NOT agent-merged, while
-      Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 stays open — that is the product
-      register's concurrent-writer gate, not this repository's own q-8
-backlog_next: LAB-ACT-01 real-data activation preconditions; LAB-SURV-01 product #174
-  survival study; LAB-CONTRACT-03 MethodTrialView preference reconcile (#23, product-owned)
+    state: ACTIVE after LAB-GOV-01, LAB-WBC1-06, and LAB-GOV-02 completion; exact next safe
+      slice is isolated dependency triage for issue #5. Keep licence/community/packaging and
+      release-asset work separate; no data activation.
+delivered:
+  - LAB-GOV-02: DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and
+      closed issue #33. This records the merged result only; it does not attribute the GitHub
+      operation to an actor.
+  - product_concurrent_writer_gate: Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 is closed by
+      direct owner decision and clean-session evidence, recorded through product PR #223 at
+      877f1ca07ccee014c0adf50925f989815e6bc7f1. This does not close or alter this repository's
+      q-8 real-study public-transformation gate.
+next_safe_slice: LAB-REL-01 — isolated dependency triage for issue #5, using the proved confined
+  uv bootstrap; record bounded residuals and keep every other release-wave slice separate.
+release_and_owner_gates: joint release remains reaffirmed, but no tag is authorized. Product
+  q-10(c) release sign-off and lab q-11 aesthetic sign-off still block tags. A separate Code of
+  Conduct inbox is selected but its address is pending; CLA and all other owner choices remain
+  deferred.
 capabilities:
   network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)
@@ -48,16 +52,14 @@ canonical_evidence:
   fixture_sha256: sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9
   report_sha256: markdown=f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8;
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
-blockers: dependency re-lock (issue #5) remains unperformed; a worktree-local uv 0.12.3
-  bootstrap and locked environment can run on this host (proved this session), so tool
-  availability is no longer the blocker — the selected work is not yet implemented
+blockers: dependency triage/re-lock (issue #5) remains unperformed. The confined bootstrap and
+  locked environment can run, so tool availability is not the blocker; the exact selected work
+  has not yet been implemented.
 late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-ups; product
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
-exact_resume_point: LAB-GOV-02 is complete and parked for review on
-  docs/prompt-system-overhaul — take the fresh-context adversarial review of that branch, and
-  do not agent-merge it. Then begin LAB-REL-01 with an isolated dependency-triage #5 slice
-  using the proved confined uv bootstrap (FR-001); keep licence/community/packaging/
-  release-asset work separate; keep q-7 (CLA/external-contribution strategy) and q-11
-  (aesthetic sign-off) gates explicit; keep every non-C0 lane closed
+exact_resume_point: Begin LAB-REL-01 with the isolated dependency-triage #5 slice using the
+  proved confined uv bootstrap (FR-001). Keep licence/community/packaging/release-asset work
+  separate; keep q-7 (CLA/external-contribution strategy), q-11 (aesthetic sign-off), product
+  q-10(c) release sign-off, and every non-C0 lane explicit and closed as applicable.
 ```

@@ -100,17 +100,19 @@ A change that skips a step is not compatible-by-assumption; it is unverified.
 
 ## Current status
 
-- **Prompt operating system: product side landed, lab side prepared-and-parked.** The library, the
-  repo-neutral parity manifest and both shared blocks exist in `developer-lens` (product issue
-  `Chris0Jeky/developer-lens#214`, lab issue `Chris0Jeky/developer-lens-lab#33`). This lab
-  counterpart is authored for byte-for-byte reuse of the manifest and both blocks.
-- **Merge order for this programme: product `#214` first, then lab `#33`.** Recorded here before
-  either merge, per rule 9.
-- **Lab merges are agent-blocked while `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` stays open.**
-  Explicit owner commissioning permits isolated preparation, so a parked lab branch carrying the
-  matching manifest and blocks is the correct outcome, not a failed lane. That gate is **open** and
-  is never inferred closed from a merged pull request, a quiet session, or another agent's message.
-  The hazard behind it is recorded as FR-004 in [FRICTION_LOG.md](FRICTION_LOG.md).
+- **Prompt operating system: delivered on both sides.** The product reference (issue
+  `Chris0Jeky/developer-lens#214`) preceded lab PR #35, which merged at
+  `bba0c18261c0a2b77332a0408f63b10c774c91f4` and closed lab issue #33. The lab result retains the
+  byte-for-byte manifest and shared-block reuse; this records the merge result, not its operator.
+- **Product concurrent-writer gate: closed by direct owner decision.** Clean-session evidence and
+  the explicit closeout were merged through product PR #223 at
+  `877f1ca07ccee014c0adf50925f989815e6bc7f1`. Therefore the conditional lab parking rule is not
+  presently triggered. If the fully qualified product register is later open, prepare and park the
+  lab PR again; never infer its state from a pull request, a quiet session, or another agent's
+  message. The lab's own q-8 remains the unrelated real-data public-transformation gate.
+- **Release remains gated.** Joint release is reaffirmed, but no tag is authorized until product
+  q-10(c) release sign-off and lab q-11 aesthetic sign-off are complete. No data, model,
+  telemetry, credential, or publication lane is opened by this reconciliation.
 - **Shared surfaces today:** the `methodTrialView` presentation contract with its C0 fixture parity,
   and the ResearchPack schema. Both are product-owned; the lab consumes them check-only.
 - **Data lanes stay C0.** Nothing in this contract opens a real-data lane on either side; that is
