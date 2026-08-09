@@ -18,14 +18,18 @@ active_wave:
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
       no merged PR remains in review; PR #55 and PR #57 are merged on main. The prepared local branch
-      `fix/package-smoke-short-env-redaction-20260809` at `81aa98c6e0f3dd855755f2892fbaa2bc6e87fb60`
-      remains pre-publication in its preserved worktree.
+      `fix/package-smoke-short-env-redaction-20260809` is parked at
+      `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after its full gate (194 passed / 3 skips) and two
+      package-smoke attempts timed out during uv pip install; issue #29 comment `5234405496` is the
+      unlocking source.
     state: >-
-      READY_FOR_NEXT_SLICE after PR #55 sdist-to-wheel lineage merged as
+      READY_FOR_OTHER_TRACKED_SLICE after PR #55 sdist-to-wheel lineage merged as
       `02dcfb261f7216f01aa5696888715ac42f0e3830`, PR #57 package-smoke contract tests merged as
       `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`, and PR #59 current-state YAML enforcement merged as
       `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` closing issue #58. PR #56 is superseded on its
-      obsolete base and is not closed or commented in this slice. Keep remaining hardening,
+      obsolete base and is not closed or commented in this slice. The short-redaction lane is parked
+      pending its issue #29 unlocking source; other actually tracked issue #29 work may proceed. Keep
+      remaining hardening,
       asset, release, publication, and tag work separate, with no data, model, credential, or
       telemetry activation.
 delivered:
@@ -120,10 +124,11 @@ delivered:
       `31340060061` / job `93312246758` and merged as
       `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58.
 next_safe_slice: >-
-  Continue issue #29 with the prepared `fix/package-smoke-short-env-redaction-20260809` branch at
-  `81aa98c6e0f3dd855f2892fbaa2bc6e87fb60` still pre-publication, then select one other actually
-  tracked unfinished pre-tag seam. Lane-P candidate-content review remains unauthorized and closed;
-  no asset review, publication, tag, or release action is authorized. Pre-cap diagnostic-memory hardening remains task
+  Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
+  `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
+  `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after 194 passed / 3 skips and two package-smoke
+  timeouts during uv pip install, pending issue #29 comment `5234405496`. Lane-P candidate-content
+  review remains unauthorized and closed; no asset review, publication, tag, or release action is authorized. Pre-cap diagnostic-memory hardening remains task
   debt until a design avoids both unbounded capture and a raw unredacted disk sink; process-tree
   cleanup stays separate. No tag, release/publication, asset review, credential, data, model, or
   telemetry action is authorized here.
@@ -188,10 +193,11 @@ exact_resume_point: >-
   (`02dcfb261f7216f01aa5696888715ac42f0e3830`), PR #57
   (`64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`), and PR #59
   (`e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58). PR #57 completes the
-  zero/multiple-wheel and full-call-sequence test seam. PR #56 is superseded at
-  `634b765e87c833756294bb1ea393cc7b994ab3a3` on its obsolete base; do not close or comment on it in
-  this slice. The prepared short-env diagnostics redaction branch remains at
-  `81aa98c6e0f3dd855755f2892fbaa2bc6e87fb60` and pre-publication. Select the next scoped issue #29
-  pre-tag seam under the ordinary gate; keep Lane-P review, release/publication, tag, credentials,
+  zero/multiple-wheel and full-call-sequence test seam. PR #56 is open at
+  `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0` on current base
+  `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; it remains the exhausted, superseded duplicate and no
+  actor is inferred. Do not close or comment on it in this slice. The prepared short-env diagnostics
+  redaction branch is PARKED at `e673102348e8ee7d8c7d45b6ed4e1530cd775972` pending issue #29 comment
+  `5234405496`; select another tracked pre-tag seam under the ordinary gate; keep Lane-P review, release/publication, tag, credentials,
   data, models, telemetry, and all owner gates closed.
 ```
