@@ -767,7 +767,7 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 
 - Package-smoke PR #45 reached final head `7f07ce221b7a405c06af70d3a5215910dca72991`; hosted run
   `31304528858`, job `93222641130`, passed on that exact head. Exact-final-head review was
-  merge-sound, all four review threads were resolved, and the PR merged as
+  merge-sound, all six review threads including the delayed-sweep findings were resolved, and the PR merged as
   `6e13b6d84391ea7a2579e169151e3d765ad71583`.
 - The full local proof passed with 154 tests and 3 declared skips, including the isolated wheel
   smoke. Remaining PATH, uv/diagnostics, and timeout hardening is tracked on issue #29; it does not

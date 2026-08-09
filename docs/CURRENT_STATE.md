@@ -56,7 +56,8 @@ delivered:
       delayed sweep.
   - package_smoke: DONE — PR #45 final head `7f07ce221b7a405c06af70d3a5215910dca72991` passed
       hosted run `31304528858` / job `93222641130`, exact-final-head review, and resolution of all
-      four review threads, then merged as `6e13b6d84391ea7a2579e169151e3d765ad71583`. Full local
+      six review threads including the delayed-sweep findings, then merged as
+      `6e13b6d84391ea7a2579e169151e3d765ad71583`. Full local
       proof was 154 passed / 3 declared skips, including the isolated wheel smoke.
 next_safe_slice: Proceed with the bounded tracked package-smoke P2 hardening on issue #29 (PATH,
   uv/diagnostics, and timeout behavior) while Lane-P candidate-content review, screenshots,
