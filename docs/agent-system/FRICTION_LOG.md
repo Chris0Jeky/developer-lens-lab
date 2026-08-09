@@ -56,7 +56,7 @@ Rules that bind entries:
 ### FR-001 — no repository-wide `uv` on the host; a confined bootstrap works
 
 - **first-seen:** 2026-08-08
-- **status:** `workaround-documented`
+- **status:** `promoted`
 - **symptom:** No `uv` executable is resolvable on this host's PATH, so the `uv …` commands in the
   run-and-prove table of `CLAUDE.md` cannot be invoked as written. A worktree-confined bootstrap —
   a standard-library virtual environment, `pip install "uv>=0.12.2,<0.13"` into it, and the literal
@@ -297,7 +297,7 @@ cheap workaround and none of them blocked a lane.
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
 - **first-seen:** 2026-08-09
-- **status:** `workaround-documented`
+- **status:** `promoted`
 - **symptom:** A missing requested Python runtime failed, but a following successful
   `git diff --check` became the shell invocation's final exit status and made the combined command appear
   successful.
@@ -306,11 +306,16 @@ cheap workaround and none of them blocked a lane.
 - **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
   exit on failure before starting the next command. The release-gate sync then used the promoted
   confined-bootstrap route and produced a real context-verifier pass.
-- **occurrences:** 1 independent occurrence — 2026-08-09 during the release-gate sync proof.
+- **occurrences:** 2 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
+  a later diff check), 2026-08-09 (an unsupported PowerShell `Get-Date` option was masked by later
+  successful GitHub reads).
 - **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
   guards in its remaining proving commands.
-- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs independently, add a
-  small checked PowerShell proving wrapper rather than relying on call-site discipline.
+- **promotion:** Promoted to the active-session PowerShell preamble for every multi-command probe:
+  set `$ErrorActionPreference = 'Stop'` and `$PSNativeCommandUseErrorActionPreference = $true`, while
+  retaining explicit `$LASTEXITCODE` guards where portability matters. This belongs at the
+  orchestration shell boundary rather than in a repository helper: the failures were arbitrary
+  external command compositions, and a repo script could not enforce callers that bypass it.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
@@ -345,3 +350,19 @@ cheap workaround and none of them blocked a lane.
 - **promotion:** Deliberately NOT promoted after one occurrence. If the full environment blocks a
   second narrow docs proof, add a lock-pinned context-only dependency group or checked wrapper;
   until then, keep the explicit lightweight invocation as task debt.
+
+### FR-013 — an under-anchored patch matched the wrong repeated field
+
+- **first-seen:** 2026-08-09
+- **status:** `workaround-documented`
+- **symptom:** A patch intended to promote FR-010 matched the first repeated
+  `status: workaround-documented` field in the file and changed FR-001 instead.
+- **impact:** Repeated schema fields in this append-only log make a syntactically valid patch able
+  to touch the wrong entry unless its heading is part of the match context.
+- **workaround:** Inspect the exact diff immediately, then reapply with the entry heading in the
+  patch context. FR-010 was corrected before commit. FR-001's resulting `promoted` status is also
+  truthful because its promotion field already records the maintenance-protocol promotion.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the FR-010 promotion update.
+- **task:** lab issue #29 owns the current release-wave evidence edits.
+- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs independently, add a
+  schema-aware friction-log updater or structural check rather than relying on textual patch order.
