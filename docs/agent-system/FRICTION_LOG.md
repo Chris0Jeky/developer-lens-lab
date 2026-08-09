@@ -362,7 +362,7 @@ changed repository refs or release authority.
 ### FR-013 — an under-anchored patch matched the wrong repeated field
 
 - **first-seen:** 2026-08-09
-- **status:** `workaround-documented`
+- **status:** `promoted`
 - **symptom:** A patch intended to promote FR-010 matched the first repeated
   `status: workaround-documented` field in the file and changed FR-001 instead.
 - **impact:** Repeated schema fields in this append-only log make a syntactically valid patch able
@@ -370,15 +370,22 @@ changed repository refs or release authority.
 - **workaround:** Inspect the exact diff immediately, then reapply with the entry heading in the
   patch context. FR-010 was corrected before commit. FR-001's resulting `promoted` status is also
   truthful because its promotion field already records the maintenance-protocol promotion.
-- **occurrences:** 1 independent occurrence — 2026-08-09 during the FR-010 promotion update.
-- **task:** lab issue #29 owns the current release-wave evidence edits.
-- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs independently, add a
-  schema-aware friction-log updater or structural check rather than relying on textual patch order.
+- **occurrences:** 2 independent occurrences — 2026-08-09 (the FR-010 promotion update) and
+  2026-08-09 (the PR #41 owner-gate review fix initially changed FR-003 instead of FR-014).
+- **task:** lab issue #34 owns prompt-operating-system and friction-ledger hardening.
+- **promotion:** Promoted to mandatory heading-anchored patch context plus immediate exact-diff
+  inspection for repeated-field Markdown ledgers. A schema-aware updater stays task debt: it cannot
+  infer which semantically intended entry a caller meant to target, while the heading anchor makes
+  that intent explicit at the cheapest enforceable boundary.
+
+_Note 2026-08-09 (second occurrence):_ Exact-diff inspection caught the wrong FR-003 status before
+commit. FR-003 was restored to `open`, and the corrected patch included both the FR-014 heading and
+its field.
 
 ### FR-014 — a confined bootstrap environment escaped its worktree
 
 - **first-seen:** 2026-08-09
-- **status:** `open`
+- **status:** `owner-gated`
 - **symptom:** The community-files proof created a project environment inside its worktree, then
   moved that environment and created a second environment in a public temporary root outside the
   worktree after a package-local link failed. The moved environment's internal path became stale.
@@ -387,8 +394,12 @@ changed repository refs or release authority.
 - **workaround:** None. A coordinator cleanup command was denied before execution, so no directory
   was removed and the lane is parked rather than bypassing the deny floor.
 - **occurrences:** 1 independent occurrence — 2026-08-09 during the community-files context proof.
-- **task:** lab issue #34 records the cleanup boundary and the requirement to keep future bootstrap
-  environments worktree-local.
-- **promotion:** Deliberately NOT promoted after one occurrence because the existing worktree rule
-  already forbids the move. Unlocking event: an approved cleanup route or human removal of the two
-  disposable temporary environments; no release or data lane depends on them.
+- **task:** `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` owns the physical cleanup; lab issue
+  #34 records the boundary and the requirement to keep future bootstrap environments worktree-local.
+- **promotion:** Kept owner-gated because the existing worktree rule already forbids the move and
+  the agent cleanup route was denied. Unlocking event: direct verification that the exact q-13
+  directories were removed; no release or data lane depends on them.
+
+_Note 2026-08-09 (exact-head review):_ The two exact directory names were rechecked as present
+without listing or inspecting their contents. PR #41's first fix round added q-13 and the fully
+qualified link after the connector correctly identified this as human-only machine hygiene.
