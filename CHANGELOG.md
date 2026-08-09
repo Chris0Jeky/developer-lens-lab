@@ -14,6 +14,17 @@ tag, package publication, release asset, product promotion, or owner sign-off ex
 - Kept collection, external models, telemetry, credentials, real/private inputs, third-party pack
   producers, product installation, and automatic promotion disabled.
 
+### Package and community foundation
+
+- Added the canonical [AGPL-3.0-only licence](LICENSE), package identity for
+  `developer-lens-lab`, and the `dllab` command without publishing a package or tag.
+- Added [contribution guidance](CONTRIBUTING.md), a [Code of Conduct](CODE_OF_CONDUCT.md), public
+  issue and pull-request templates, and a compact roadmap. Substantial external code remains gated
+  on the separate owner/legal decision recorded in
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7`.
+- The interim public contact request is deliberately content-free and warns that both the issue and
+  requesting GitHub account are public. No dedicated inbox or monitoring promise exists.
+
 ### Reviewed WB-C1 result
 
 The reviewed C0 benchmark used invented fixtures and ended in `reject`, not promotion. Baseline and
