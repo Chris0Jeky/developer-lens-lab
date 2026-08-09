@@ -925,5 +925,5 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - A TemporaryFile pre-cap design was parked: it would move raw potentially X-class diagnostics to
   an unredacted disk sink and leave disk growth unbounded. Sdist-lineage is the next bounded seam;
   pre-cap memory, process-tree, and component-skip-semantics hardening remain separate issue #29
-  debt. Fix-head hosted proof and final review remain pending; release, tag, publication,
-  credentials, data, model, and telemetry stay closed as applicable.
+  debt. Exact fix-head hosted run `31332035344` and final review passed; merge remains pending.
+  Release, tag, publication, credentials, data, model, and telemetry stay closed as applicable.
