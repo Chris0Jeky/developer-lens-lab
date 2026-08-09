@@ -21,6 +21,7 @@ from developer_lens_lab.context.verify import (
     verify_agent_friction_parity,
     verify_context_budget,
     verify_continuous_protocol,
+    verify_current_state_yaml,
     verify_governor,
     verify_markdown_links,
     verify_one_shared_block,
@@ -41,6 +42,74 @@ MANIFEST = ROOT / ".agent-harness" / "prompt-parity.json"
 def test_repository_context_is_valid() -> None:
     report = verify_repository(ROOT)
     assert report.ok, report.failures
+
+
+def _write_current_state(tmp_path: Path, body: str) -> None:
+    current = tmp_path / "docs" / "CURRENT_STATE.md"
+    current.parent.mkdir(parents=True, exist_ok=True)
+    current.write_text(f"# Current state\n\n```yaml\n{body}```\n", encoding="utf-8")
+
+
+_VALID_CURRENT_STATE = """updated: 2026-08-09
+phase: TEST
+posture: synthetic
+repository: example/repo
+branch: main
+head: abc
+active_wave: []
+delivered:
+  - item: done
+next_safe_slice: test
+release_and_owner_gates: test
+capabilities: {}
+canonical_evidence: {}
+blockers: none
+late_review_debt: none
+exact_resume_point: test
+"""
+
+
+def test_current_state_yaml_requires_one_fence_and_valid_shape(tmp_path: Path) -> None:
+    _write_current_state(tmp_path, _VALID_CURRENT_STATE)
+    assert verify_current_state_yaml(tmp_path) == []
+
+
+def test_current_state_yaml_rejects_missing_or_multiple_fences(tmp_path: Path) -> None:
+    current = tmp_path / "docs" / "CURRENT_STATE.md"
+    current.parent.mkdir(parents=True, exist_ok=True)
+    current.write_text("# Current state\n", encoding="utf-8")
+    assert "exactly one YAML fence" in verify_current_state_yaml(tmp_path)[0]
+    _write_current_state(tmp_path, _VALID_CURRENT_STATE)
+    current.write_text(current.read_text(encoding="utf-8") + "\n```yaml\n```\n", encoding="utf-8")
+    assert "exactly one YAML fence" in verify_current_state_yaml(tmp_path)[0]
+
+
+def test_current_state_yaml_allows_a_later_unrelated_fence(tmp_path: Path) -> None:
+    _write_current_state(tmp_path, _VALID_CURRENT_STATE)
+    current = tmp_path / "docs" / "CURRENT_STATE.md"
+    current.write_text(
+        current.read_text(encoding="utf-8") + "\n```text\nexample\n```\n",
+        encoding="utf-8",
+    )
+    assert verify_current_state_yaml(tmp_path) == []
+
+
+def test_current_state_yaml_reports_bounded_parse_error(tmp_path: Path) -> None:
+    _write_current_state(tmp_path, "updated: [unterminated\n")
+    failures = verify_current_state_yaml(tmp_path)
+    assert failures and failures[0].startswith("docs/CURRENT_STATE.md:")
+    assert "invalid YAML" in failures[0]
+
+
+def test_current_state_yaml_rejects_wrong_mapping_and_key_shapes(tmp_path: Path) -> None:
+    _write_current_state(tmp_path, "- not: a mapping\n")
+    failures = verify_current_state_yaml(tmp_path)
+    assert any("top level must be a mapping" in failure for failure in failures)
+    _write_current_state(
+        tmp_path, _VALID_CURRENT_STATE.replace("  - item: done", "  - item: [bad]")
+    )
+    failures = verify_current_state_yaml(tmp_path)
+    assert any("delivered entry 1" in failure for failure in failures)
 
 
 def test_settings_deny_requires_the_confined_and_generated_sinks() -> None:
