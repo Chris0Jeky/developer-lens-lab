@@ -742,3 +742,13 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   packet for the invented C0 exhibit. Candidate-byte inspection, Lane-P publication, screenshots,
   release/tag actions, credentials, and both distinct owner sign-offs remain NOT verified and
   closed as applicable.
+- That automated packet subsequently ran from exact Lab main
+  `2e6a7c2b7ff906cb771bb4e904dd18d2717fa536` without opening candidate bytes. Locked context,
+  contracts, the invented `wbc1_demo` smoke producer, deterministic reproduce, report build, and
+  hygiene all passed. The printed Method Trial export hash was
+  `d0a3c978392151012532d8be49ff95e23f7da096879712d3e4392ff3f6d76748`; Markdown was
+  `0243f5bac6fcaf63042b35e2ffad4eb794ef6b41a25f07015431aac808a9a96c`; HTML was
+  `bb056321d948fe1a25e43c3ac7ff7c914168a254f74d8a99f945cd22aefd2dbc`. None matches the frozen
+  producer hashes recorded above because the export provenance embeds `lab_commit`. Lane-P content
+  review and every publication action remain parked until a bounded provenance/hash reconciliation
+  chooses the frozen producer or a reviewed current-head contract.

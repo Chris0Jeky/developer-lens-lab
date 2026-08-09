@@ -507,3 +507,22 @@ retains only the bounded action and its authority limits.
 - **promotion:** Deliberately NOT promoted after one occurrence. The tracked active-prompt verifier
   already rejects a bare reference in prompt bodies; if an independent outbound-comment recurrence
   appears, add a body preflight at the narrow GitHub-write boundary rather than another reminder.
+
+### FR-019 — current-head replay changes hashes embedded with Lab provenance
+
+- **first-seen:** 2026-08-09
+- **status:** `task-debt`
+- **symptom:** The automated invented-C0 replay was internally deterministic at current Lab main,
+  but its printed JSON, Markdown and HTML hashes differed from the frozen canonical ledger hashes.
+  The exporter includes `lab_commit` in provenance, so a new Lab head changes release bytes even
+  when the research decision and synthetic inputs are unchanged.
+- **impact:** Issue #29 cannot truthfully publish both the frozen hashes and current-head candidate
+  bytes. Treating either set as interchangeable would break reproducibility and release provenance.
+- **workaround:** Record both evidence sets without opening ignored candidate bytes; stop before
+  Lane-P content review, publication or tagging until a bounded slice explicitly selects the frozen
+  producer or a reviewed current-head provenance contract.
+- **occurrences:** 1 independent occurrence — 2026-08-09 during the issue #29 C0 evidence packet.
+- **task:** Lab issue #29 owns the selected C0 release exhibit and its pre-tag provenance decision.
+- **promotion:** Deliberately NOT promoted after one occurrence. If the release needs a current-head
+  artifact, the cheapest enforcing layer is a versioned release-evidence manifest or explicit
+  frozen-producer command, chosen in that bounded task rather than inferred from prose.
