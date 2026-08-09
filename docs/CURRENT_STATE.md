@@ -83,7 +83,8 @@ delivered:
       `93245084619`, exact-final-head review, and merge gating, then merged as
       `02a41cac4a461a93d53b481d34c96a48e29291e5`; its delayed sweep was clean.
 next_safe_slice: Prove, review, and merge the bounded diagnostic-redaction branch, then select the
-  pre-cap diagnostic-memory seam before the larger sdist-lineage and process-tree-cleanup seams.
+  sdist-to-wheel lineage seam. Pre-cap diagnostic-memory hardening remains task debt until a design
+  avoids both unbounded capture and a raw unredacted disk sink; process-tree cleanup stays separate.
   Lane-P candidate-content review, screenshots, publication, and owner-gated release lanes remain
   parked. Do not inspect ignored candidate bytes, publish assets, tag, add credentials, activate
   data or models, or enable telemetry.
@@ -135,10 +136,11 @@ late_review_debt: issue #31 tracks the four non-blocking PR #24 review follow-up
   #189 remains a product-side follow-up; issue #23 tracked as LAB-CONTRACT-03
   (product-owned schema change); issue #6 remains open even though LAB-WBC1-06 is DONE
 exact_resume_point: Continue the bounded `ci/lab-diagnostic-redaction-20260809` issue #29 P2 seam at
-  code commit `e3e1ab6aa7fe4c0c68521da4e3658a6eec41d6cc` over merged PR #51 at
-  `02a41cac4a461a93d53b481d34c96a48e29291e5`. Its locked gate passed 174 tests with 3 declared
-  skips plus actual package smoke; exact hosted proof and final review remain pending. The frozen
-  producer replay at
+  code commits `e3e1ab6aa7fe4c0c68521da4e3658a6eec41d6cc` and
+  `261fb4ed71006f5210c92de29b1bf9fde4bcd73f` over merged PR #51 at
+  `02a41cac4a461a93d53b481d34c96a48e29291e5`. One blocking review fix round is complete; its exact
+  locked gate passed 176 tests with 3 declared skips plus actual package smoke. The fix-head hosted
+  proof and final review remain pending. The frozen producer replay at
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and product tracked fixture/schema proof at product
   `origin/main` `7bbb8ee6f9124424b3d8362170f0f4d738f5cb43` are complete; do not substitute the
   rejected current-head candidate, inspect ignored candidate bytes, or cross the Lane-P

@@ -908,10 +908,22 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   also treats `pass` as a sensitive key marker so short invented `DB_PASS` values are redacted
   without lowering the global short-value threshold. Two synthetic regressions preserve safe short
   non-secret text and prove neither a complete path-valued secret nor its suffix survives.
-- The confined `uv 0.12.3` route completed locked sync, doctor/context, Ruff, Pyright, 174 tests
-  with 3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and actual package
-  smoke in 195.5 seconds. No ignored, protected, generated, candidate, cache, or private bytes were
-  surfaced to or inspected by the agent.
-- Pre-cap diagnostic-memory, sdist-lineage, process-tree, and component-skip-semantics hardening
-  remain separate issue #29 seams. Hosted exact-head proof and final review remain pending;
-  release, tag, publication, credentials, data, model, and telemetry stay closed as applicable.
+- The confined `uv 0.12.3` route completed the initial locked sync, doctor/context, Ruff, Pyright,
+  174 tests with 3 declared Windows symlink skips, strict MkDocs, hygiene, diff check, and actual
+  package smoke in 195.5 seconds.
+- Exact-head hosted review on `eb51ccd0d32714ca040b0feb7030eb070015e2f3` found one blocking path
+  redaction-order defect and one non-blocking short-marker collision; the fresh independent lens
+  also found that short `PWD` values remained exposed. The single blocking fix commit
+  `261fb4ed71006f5210c92de29b1bf9fde4bcd73f` applies every replacement longest-source-first with
+  environment-priority ties, and recognizes only exact `PASS`/`PWD` key components for the new
+  short-secret exception. Synthetic regressions cover cwd/env collisions, path-valued secrets,
+  `DB_PASS`, `DB_PWD`, and safe `BYPASS`/`COMPASS` values.
+- The exact fix-head locked gate passed doctor/context, Ruff, Pyright, 176 tests with 3 declared
+  Windows symlink skips, strict MkDocs, hygiene, diff check, and actual package smoke in 179.7
+  seconds. No ignored, protected, generated, candidate, cache, or private bytes were surfaced to or
+  inspected by the agent.
+- A TemporaryFile pre-cap design was parked: it would move raw potentially X-class diagnostics to
+  an unredacted disk sink and leave disk growth unbounded. Sdist-lineage is the next bounded seam;
+  pre-cap memory, process-tree, and component-skip-semantics hardening remain separate issue #29
+  debt. Fix-head hosted proof and final review remain pending; release, tag, publication,
+  credentials, data, model, and telemetry stay closed as applicable.
