@@ -60,7 +60,7 @@ Rules that bind entries:
 - **symptom:** No `uv` executable is resolvable on this host's PATH, so the `uv …` commands in the
   run-and-prove table of `CLAUDE.md` cannot be invoked as written. A worktree-confined bootstrap —
   a standard-library virtual environment, `pip install "uv>=0.12.2,<0.13"` into it, and the literal
-  `uv` executable from that environment with `UV_PROJECT_ENVIRONMENT` pointed at a project
+  `uv` executable from that environment configured for a confined worktree-local project
   environment — resolves `uv 0.12.3` and runs `uv sync --locked --all-groups` and the full declared
   gate successfully.
 - **impact:** A session that reads the run-and-prove table literally concludes the repository cannot
@@ -198,7 +198,8 @@ cheap workaround and none of them blocked a lane.
   assuming: verify branch, HEAD, base and tree cleanliness against the pins first, then re-run the
   narrowest proof for the slice before the full gate. The worktree-confined `uv` bootstrap from
   FR-001 survives process termination, so no re-bootstrap is needed — reuse
-  `.venv/uv-bootstrap` with `UV_PROJECT_ENVIRONMENT=.venv/project`. On 2026-08-09 this route
+  `.venv/uv-bootstrap` with the confined worktree-local project environment configured for the
+  bootstrap. On 2026-08-09 this route
   re-confirmed the prior session's claim exactly: 78 context tests, then the full gate green at the
   unchanged head `a4702354cfb7a029d77af5a61ec518982d7f5262`, with `uv.lock` untouched. The ledger
   claim was therefore accurate and required no correction.

@@ -531,7 +531,7 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   new regression tests. No canonical run was executed, and no recorded run, metric, artifact,
   custody record, or digest moved.
 - Verified in an isolated worktree using a worktree-local uv 0.12.3 bootstrap with
-  `UV_PROJECT_ENVIRONMENT=.venv/project` (project interpreter Python 3.12.7): locked
+  the confined worktree-local project environment configured for the bootstrap (project interpreter Python 3.12.7): locked
   `uv sync --locked --all-groups` left `uv.lock` unchanged, and focused
   `pytest tests/test_wbc1_evaluation.py tests/test_wbc1_runner.py` passed 19 with the declared
   Windows symlink skip. The full gate then passed at this head: `dllab doctor`, `dllab context
@@ -583,7 +583,7 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   and checks with authority, risk-class, data-lane and review-gate values untouched.
   `.claude/agents` and both continuation skills were deliberately NOT edited in this slice.
 - Verified at this head with the FR-001 confined `uv 0.12.3` bootstrap
-  (`UV_PROJECT_ENVIRONMENT=.venv/project`, project interpreter Python 3.12.7): `uv sync --locked
+  (confined worktree-local project environment configured for the bootstrap, project interpreter Python 3.12.7): `uv sync --locked
   --all-groups` left `uv.lock` unchanged; `dllab doctor`; `dllab context verify` passed; Ruff
   format (78 files) and Ruff lint clean; repo-wide strict Pyright 0 errors/0 warnings; full pytest
   **143 passed / 3 declared host symlink skips** (78 of them in `tests/test_context.py`); strict

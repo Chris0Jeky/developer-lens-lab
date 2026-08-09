@@ -23,8 +23,8 @@ compatibility, and the failure archive.
 
 On this estate's current host there is no repository-wide `uv` on PATH, but a **worktree-confined
 bootstrap is proved to work**: create a standard-library virtual environment, install
-`uv>=0.12.2,<0.13` into it, point `UV_PROJECT_ENVIRONMENT` at a project environment, and invoke that
-environment's literal `uv` executable. `uv sync --locked --all-groups` and the full declared gate
+`uv>=0.12.2,<0.13` into it, configure a confined worktree-local project environment, and invoke
+that environment's literal `uv` executable. `uv sync --locked --all-groups` and the full declared gate
 both run through it, so dependency re-locking is **not** tooling-blocked — it is unperformed work.
 The bootstrap directory is gitignored and `uv.lock` is never modified as a side effect. Recorded as
 FR-001 in [FRICTION_LOG.md](FRICTION_LOG.md); the superseded "tooling-blocked" claim is FR-002.
