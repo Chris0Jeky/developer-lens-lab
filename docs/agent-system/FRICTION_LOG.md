@@ -68,14 +68,17 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 8 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 10 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
   route), 2026-08-09 (the community-files worktree used the installed Python module route), and
   2026-08-09 (the package-identity base refresh reused that module route after a stale literal
-  bootstrap-path assumption failed before execution), and 2026-08-09 (the package-smoke final gate
-  first found its dev environment unsynced, then used the same module route for a locked sync).
+  bootstrap-path assumption failed before execution), 2026-08-09 (the package-smoke final gate
+  first found its dev environment unsynced, then used the same module route for a locked sync),
+  2026-08-09 (the release-evidence state worktree reused that reviewed Python 3.12 environment),
+  and 2026-08-09 (the package-timeout worktree used the existing interpreter route for focused
+  checks while leaving the unavailable locked `uv` gate for coordinator proof).
 - **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
   runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -102,6 +105,14 @@ _Note 2026-08-09 (package smoke):_ The eighth occurrence first ran the full gate
 A later bare `py -3` smoke selected the host's default Python outside the package's declared
 `<3.14` range and failed before exercising the supported package seam. The promoted worktree-local
 Python 3.12 bootstrap route then completed the locked full gate and isolated artifact smoke.
+
+_Note 2026-08-09 (release-evidence and timeout follow-ups):_ The ninth and tenth isolated
+worktrees again had no host-resolvable `uv`. The release-evidence state proof reused the reviewed
+Python 3.12 environment for the same underlying gate commands; its first cross-worktree Pyright call
+did not infer that interpreter, so the successful retry supplied the exact Python path explicitly.
+The timeout builder used an existing interpreter for focused checks and left the full locked gate
+for coordinator integration. The existing maintenance-protocol instruction remains the cheapest
+enforcing layer; no new automatic installer or hidden network side effect is justified.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
