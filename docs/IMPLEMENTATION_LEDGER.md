@@ -1026,3 +1026,15 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` remain explicit owner gates or human actions.
   No tag, release/publication, data, model, credential, or telemetry action is authorized by this
   state replacement.
+
+## 2026-08-10 — PR #60 gate-evidence correction (LAB-REL-01, issues #29/#34)
+
+- PR #60 final head `925b8ba12c8257a111adb7ec1c7747d3d7da72e4` over base
+  `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` passed hosted run `31342280107` / job
+  `93317911368`, finished with 6 resolved review threads / 20 inline comments, and merged as
+  `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7`.
+- The demonstrated exact-head age was 11m33s, below the binding 15-minute floor. The T+3m19 sweep
+  was preliminary and invalid as delayed proof. The paginated T+19m32 sweep at
+  2026-08-10T00:06:40.440807Z was clean, but it does not retroactively satisfy the pre-merge age
+  gate. FR-028 records the third occurrence; issue #29 comment `5234553210` and issue #34 comment
+  `5234553289` retain the live reconciliation evidence.

@@ -809,9 +809,11 @@ command-table evidence.
   no implementation defect, but the completed merges cannot retroactively satisfy that gate.
 - **workaround:** Reconcile each completed merge without rewriting refs, and treat 15 minutes as an
   unconditional exact-head floor for every later merge in this session.
-- **occurrences:** 2 independent occurrences — Lab PR #51 and Lab PR #52 on 2026-08-09.
-- **task:** lab issue #29 tracks release-wave merge-eligibility hardening; issue comment
-  `5231583712` records the first occurrence.
+- **occurrences:** 3 independent occurrences — Lab PR #51 and Lab PR #52 on 2026-08-09, plus Lab
+  PR #60 on 2026-08-10.
+- **task:** lab issue #29 tracks release-wave merge-eligibility hardening; issue comments
+  `5231583712` and `5234553210` record the first and third occurrences, while issue #34 comment
+  `5234553289` records the PR #56/#60 convergence correction.
 - **promotion:** The selected enforcement layer is one checked, event-driven pre-merge snapshot
   that refuses eligibility before 15 minutes and returns head, base, hosted checks, accepted review
   evidence, top-level comments, closing refs, and review threads together. Implementation remains
@@ -820,6 +822,15 @@ command-table evidence.
 _Note 2026-08-09 (diagnostic state repair):_ PR #52 final head
 `46961957e09bb976b34beb41fee5e69d89d21076` stayed green and its delayed sweep found no new defect.
 The process miss is recorded without rewriting the completed merge or claiming retroactive proof.
+
+_Note 2026-08-10 (PR #60 third aging-floor miss):_ PR #60 final head
+`925b8ba12c8257a111adb7ec1c7747d3d7da72e4` over base
+`e5a85b20a130518a8307ebdb4cb48c3dbbb85052` passed hosted run `31342280107` / job `93317911368`,
+finished with 6 resolved review threads / 20 inline comments, and merged as
+`ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7` after a demonstrated 11m33s exact-head age. That age
+failed the binding 15-minute floor. Its T+3m19 sweep was preliminary and invalid as delayed proof;
+the genuine paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean. The later sweep does
+not retroactively satisfy the pre-merge gate.
 
 ### FR-029 — a concurrent closeout PR remained open after its state claims diverged
 
@@ -945,16 +956,13 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 - **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
   reconcile available concurrent-process operation evidence, and make no duplicate merge or ref
   rewrite attempt.
-- **occurrences:** 3 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09, plus PR #56's
-  close/reopen/re-close archive-state sequence on 2026-08-10.
-- **task:** lab issue #34 tracks the checked PR-operation preflight; comments `5233753580` and
-  `5234457237` supply the merge-context and close/reopen evidence.
+- **occurrences:** 2 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09.
+- **task:** lab issue #34 tracks the ownership-token or merge-lease preflight; comment `5233753580`
+  supplies the first occurrence's direct merge-operation correction.
 - **promotion:** The first occurrence was resolved by direct operation evidence: a root governor
   issued the exact-head REST merge and GitHub returned the recorded merge commit. The second
-  occurrence selected an ownership token or operation lease checked by a preflight. The third
-  extends that cheapest enforceable layer to close/reopen as well as merge: a checked GitHub
-  mutation helper must record operation ownership and re-read events plus final state; issue #34
-  retains the implementation task.
+  occurrence selects an ownership token or merge lease checked by a preflight as the cheapest
+  enforceable layer; issue #34 retains the implementation task.
 
 _Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
 `31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
@@ -974,14 +982,6 @@ The cheapest enforceable follow-up is an ownership token or merge lease checked 
 that records the operation owner before a merge request and requires the final snapshot to carry
 that token; issue #34 retains this task. Until that helper exists, the workaround remains exact
 head/base/check/thread/closing-ref snapshots plus no duplicate merge attempt.
-
-_Note 2026-08-10 (PR #56 archive-state recurrence):_ GitHub's public event stream records PR #56
-closed at 23:41:47Z, reopened at 23:43:22Z, and re-closed at 23:53:04Z after PR #60 merged. The
-final REST state is CLOSED/unmerged at preserved head
-`e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over pre-PR60 base
-`e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, with the branch and dirty worktree preserved. Direct
-coordination evidence reconciled the final supersession action; account metadata alone is not actor
-attribution.
 
 _Note 2026-08-09 (PR #55 delayed sweep):_ The post-merge sweep found no late review, comment,
 thread, or closing-reference debt. The occurrence is safely reconciled, but status remains
@@ -1074,7 +1074,7 @@ ownership-token follow-up remain unchanged.
 - **status:** `workaround-documented`
 - **symptom:** A bounded `rg` lookup named `pyproject.toml`, `Makefile`, and an optional
   `docs/agent-system/CURRENT_STATE.md` path that are absent from this checkout. It printed the useful
-  `CLAUDE.md` matches but exited 2 because at least one explicit path did not exist.
+  `CLAUDE.md` matches but exited 1 because at least one explicit path did not exist.
 - **impact:** The lookup's process status was red even though the canonical run-and-prove commands
   were recovered; no proof command or repository state was affected.
 - **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
@@ -1086,23 +1086,19 @@ ownership-token follow-up remain unchanged.
   preflight before passing explicit paths to `rg`; a checked wrapper remains bounded task debt on
   issue #34.
 
-_Correction 2026-08-10 (PR #56 P2 triage):_ The original entry recorded the wrong native exit code.
-`pyproject.toml` exists and was read successfully; `Makefile` and the optional
-`docs/agent-system/CURRENT_STATE.md` path are absent. Ripgrep returns exit 2 for an explicit missing
-path even when another named path matches. This correction supersedes only the exit-status claim.
-
-_Correction 2026-08-10 (post-PR #60 factual follow-up):_ The prior sentence's `only` is superseded:
-the correction governs both the original path-presence claim (`pyproject.toml` exists; the other two
-named optional paths do not) and the original native exit-status claim (`rg` returns 2 when an
-explicitly named path is missing, even if another path matches). Mechanical comparison of tracked
-PR #56 heads `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0` and
-`e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` confirmed that the late head rewrote immutable prose;
-this follow-up does not transplant that rewrite or change the existing symptom/workaround history.
+_Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
+explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
+`docs/agent-system/CURRENT_STATE.md` path are absent. `rg` exited 1 because at least one explicitly
+named path did not exist. This correction supersedes only that path-presence claim.
 
 _Note 2026-08-09 (wheel-contract proof lookup):_ A combined lookup named absent
 `MAINTENANCE_PROTOCOL.md` alongside tracked paths. Ripgrep printed the path error and returned exit 2;
 the next lookup must derive every explicit candidate from tracked-file inventory first. No file, ref,
 GitHub object, ignored output, or protected byte changed.
+
+_Correction 2026-08-10 (PR #56 final blocker-fix):_ A live synthetic check confirmed native ripgrep
+returns exit 2 when an explicitly named path is missing, even when another named path matches. This
+supersedes only the earlier exit-status claim; the original symptom and dated correction remain above.
 
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
@@ -1286,7 +1282,8 @@ change before the focused lint, type, and test proofs; no protected or ignored c
 - **workaround:** Compare the parent-main and final-head blocks mechanically before staging, restore
   every parent record, and retain only explicitly appended corrections.
 - **occurrences:** 2 independent occurrences — the PR #56 refresh merge-resolution loss and the
-  late PR #56 FR-036 immutable-history rewrite on 2026-08-10.
+  PR #60 commit `8ca88423a0977cf27ab695d23c0ac878b9018a44` FR-036 immutable-history rewrite on
+  2026-08-10.
 - **task:** lab issue #34 tracks checked merge/state reconciliation helpers.
 - **promotion:** At the second occurrence, promote the exact parent-range comparison to a checked
   state-sync helper on issue #34; every reconciliation must prove append-only history before staging.
@@ -1295,12 +1292,12 @@ _Note 2026-08-10 (PR #56 final blocker-fix):_ Exact range review caught the loss
 parent FR-031, FR-034, and FR-037 records were restored. No protected content, GitHub mutation,
 ignored output, or capability boundary was crossed.
 
-_Note 2026-08-10 (late PR #56 tracked-object comparison):_ The
-`ccf6d9e465c5fd8629de27b0762f5c43fc588fc0..e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0`
-range changed FR-036 immutable symptom/correction prose and appended a PR #57 milestone already
-present on main through PR #60. Neither change was transplanted. Only the sound second
-history-loss occurrence and checked parent-range promotion are retained here; no dirty-worktree or
-protected bytes were read.
+_Note 2026-08-10 (PR #60 / preserved PR #56 comparison):_ PR #60 commit
+`8ca88423a0977cf27ab695d23c0ac878b9018a44` first rewrote FR-036's immutable symptom and dated
+correction. Preserved PR #56 head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` restored the
+original history and appended the native-ripgrep exit-2 correction; it did not cause the rewrite.
+This follow-up restores that sound block while retaining the second history-loss occurrence and
+checked parent-range promotion. No dirty-worktree or protected bytes were read.
 
 ### FR-047 — thread-fetch helper inherited a Windows console decoding failure
 
@@ -1336,3 +1333,22 @@ four unresolved PR #60 threads.
 - **task:** lab issue #34 tracks checked command-boundary and state-reconciliation helpers.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, place the quoted
   object verification in the checked parent-range comparison helper selected by FR-046.
+
+### FR-049 — a default PowerShell text read distorted a UTF-8 block comparison
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** A mechanical FR-033/FR-036 comparison read the working file through PowerShell's
+  default text-decoding path and rendered UTF-8 em dashes as mojibake, so both otherwise identical
+  blocks compared unequal.
+- **impact:** The false mismatch paused the pre-stage preservation proof and could have prompted an
+  unnecessary rewrite of already-correct append-only history.
+- **workaround:** Confirm the tracked bytes carry the UTF-8 em-dash sequence, then read the file
+  with an explicit strict UTF-8 decoder and normalize line endings before comparing section blocks.
+  The repeated comparison then proved FR-036 equal to preserved PR #56 head `e2e2795` and FR-033
+  equal to parent main `ebc8626`.
+- **occurrences:** 1 independent occurrence — PR #61's pre-stage friction-history comparison on
+  2026-08-10.
+- **task:** lab issue #34 tracks checked state-reconciliation and Windows command-boundary helpers.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, make explicit UTF-8
+  decoding and line-ending normalization part of the checked parent-range helper selected by FR-046.

@@ -125,6 +125,15 @@ delivered:
       DONE — PR #59 final head `df87407bb74d78277d96aa383148da7211735a6a` passed hosted run
       `31340060061` / job `93312246758` and merged as
       `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58.
+  - pr60_gate_evidence_correction: >-
+      CORRECTED — PR #60 final head `925b8ba12c8257a111adb7ec1c7747d3d7da72e4` over base
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` passed hosted run `31342280107` / job
+      `93317911368`, finished with 6 resolved review threads / 20 inline comments, and merged as
+      `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7`. Its demonstrated exact-head age was 11m33s, so it
+      did not satisfy the binding 15-minute floor. The T+3m19 sweep was preliminary and invalid as
+      delayed proof; the paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean but does
+      not retroactively repair the age miss. FR-028 and issue #29 comment `5234553210` plus issue
+      #34 comment `5234553289` preserve the correction.
 next_safe_slice: >-
   Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
   `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
