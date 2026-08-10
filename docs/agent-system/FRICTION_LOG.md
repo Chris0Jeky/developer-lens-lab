@@ -1389,3 +1389,33 @@ four unresolved PR #60 threads.
   without changing the project toolchain.
 - **promotion:** Deliberately not promoted after one occurrence; restore a standalone PATH route
   only if it materially improves the supported workflow.
+
+### FR-051 — estate registry no-match stopped a batched orientation read
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** The estate registry returned no Developer Lens Lab entry; a fail-fast batched
+  orientation read stopped on that no-match before the individual binding reads.
+- **impact:** The registry lookup could not supply an estate row for orientation, so the repository
+  authority had to be established independently before continuing.
+- **workaround:** Treat the no-match as data and read repository authority separately; take no
+  registry detour.
+- **occurrences:** 1 independent occurrence — flagship governor orientation on 2026-08-10.
+- **task:** Lab #34 comment `5242537913` tracks the checked orientation path.
+- **promotion:** Deliberately not promoted after one occurrence; promote only on recurrence through
+  the canonical estate owner.
+
+### FR-052 — connector mutation response lagged remote and numbered PR state
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** After the PR #64 final wording push, the connector update response reported previous
+  head `40d7df4e` while the remote ref and numbered PR API reported `815b4170`.
+- **impact:** Trusting the connector mutation response could produce stale exact-head judgment for
+  the PR.
+- **workaround:** Re-read the remote ref and numbered PR API after mutation; Lab #34 comment
+  `5242537913` tracks a checked create/update-and-reread helper.
+- **occurrences:** 1 independent occurrence — PR #64 final wording push on 2026-08-10.
+- **task:** Lab #34 comment `5242537913` tracks the checked create/update-and-reread helper.
+- **promotion:** Deliberately not promoted after one occurrence; promote on a second independent
+  occurrence.
