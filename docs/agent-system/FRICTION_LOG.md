@@ -1413,8 +1413,8 @@ four unresolved PR #60 threads.
   head `40d7df4e` while the remote ref and numbered PR API reported `815b4170`.
 - **impact:** Trusting the connector mutation response could produce stale exact-head judgment for
   the PR.
-- **workaround:** Re-read the remote ref and numbered PR API after mutation; the checked
-  create/update-and-reread helper now captures the authoritative head.
+- **workaround:** Re-read the remote ref and numbered PR API after mutation; Lab #34 comment
+  `5242537913` tracks a checked create/update-and-reread helper.
 - **occurrences:** 1 independent occurrence — PR #64 final wording push on 2026-08-10.
 - **task:** Lab #34 comment `5242537913` tracks the checked create/update-and-reread helper.
 - **promotion:** Deliberately not promoted after one occurrence; promote on a second independent
