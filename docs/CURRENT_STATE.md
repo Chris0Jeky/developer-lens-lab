@@ -26,10 +26,12 @@ active_wave:
       READY_FOR_OTHER_TRACKED_SLICE after PR #55 sdist-to-wheel lineage merged as
       `02dcfb261f7216f01aa5696888715ac42f0e3830`, PR #57 package-smoke contract tests merged as
       `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`, and PR #59 current-state YAML enforcement merged as
-      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` closing issue #58. PR #56 is superseded on its
-      obsolete base and is not closed or commented in this slice. The short-redaction lane is parked
-      pending its issue #29 unlocking source; other actually tracked issue #29 work may proceed. Keep
-      remaining hardening,
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` closing issue #58. PR #56 is CLOSED and unmerged as
+      the exhausted, superseded duplicate at preserved head
+      `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over the stale pre-PR60 base
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; GitHub records it DIRTY/conflicting, while its branch
+      and dirty worktree remain preserved. The short-redaction lane is parked pending its issue #29
+      unlocking source; other actually tracked issue #29 work may proceed. Keep remaining hardening,
       asset, release, publication, and tag work separate, with no data, model, credential, or
       telemetry activation.
 delivered:
@@ -111,18 +113,27 @@ delivered:
   - package_smoke_sdist_lineage: >-
       DONE — PR #55 final head `c122868e976ee7f5acce8c6aac20608873c0fa43` passed hosted run
       `31335915850` / job `93301598278`, exact-head review, and the 15-minute age, then merged as
-      `02dcfb261f7216f01aa5696888715ac42f0e3830`; its delayed 22:22:38Z sweep then found no late
+      `02dcfb261f7216f01aa5696888715ac42f0e3830`; its delayed 22:22:38 BST sweep then found no late
       review, comment, or thread debt.
   - package_smoke_contract_tests: >-
       DONE — PR #57 final head `bd4d244f079b46c0425e0618043c37b48abb29c7` passed hosted run
       `31337621819` / job `93305956992`, exact-head review, and the 15-minute age, then merged as
-      `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`; its delayed 23:10:19Z sweep then found no late
+      `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`; its delayed 23:10:19 BST sweep then found no late
       review, comment, or thread debt. Its zero/multiple-wheel and full-call-sequence test seam is
       complete.
   - current_state_yaml: >-
       DONE — PR #59 final head `df87407bb74d78277d96aa383148da7211735a6a` passed hosted run
       `31340060061` / job `93312246758` and merged as
       `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58.
+  - pr60_gate_evidence_correction: >-
+      CORRECTED — PR #60 final head `925b8ba12c8257a111adb7ec1c7747d3d7da72e4` over base
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` passed hosted run `31342280107` / job
+      `93317911368`, finished with 6 resolved review threads / 20 inline comments, and merged as
+      `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7`. Its demonstrated exact-head age was 11m33s, so it
+      did not satisfy the binding 15-minute floor. The T+3m19 sweep was preliminary and invalid as
+      delayed proof; the paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean but does
+      not retroactively repair the age miss. FR-028 and issue #29 comment `5234553210` plus issue
+      #34 comment `5234553289` preserve the correction.
 next_safe_slice: >-
   Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
   `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
@@ -189,15 +200,17 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume from live `origin/main` at `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` after merged PR #55
+  Resume from live `origin/main` after refreshing it with Git; this follow-up observed PR #60 merged
+  there as `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7` after merged PR #55
   (`02dcfb261f7216f01aa5696888715ac42f0e3830`), PR #57
   (`64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`), and PR #59
   (`e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58). PR #57 completes the
-  zero/multiple-wheel and full-call-sequence test seam. PR #56 is open at
-  `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0` on current base
-  `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; it remains the exhausted, superseded duplicate and no
-  actor is inferred. Do not close or comment on it in this slice. The prepared short-env diagnostics
-  redaction branch is PARKED at `e673102348e8ee7d8c7d45b6ed4e1530cd775972` pending issue #29 comment
+  zero/multiple-wheel and full-call-sequence test seam. PR #56 is CLOSED and unmerged at preserved
+  head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0`; its final recorded comparison base is the pre-PR60
+  main `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, and GitHub reports the PR DIRTY/conflicting. It
+  remains the exhausted, superseded duplicate; preserve its branch and dirty worktree, and do not
+  reopen it or transplant its duplicate ledger/contradictory friction prose. The prepared short-env
+  diagnostics redaction branch is PARKED at `e673102348e8ee7d8c7d45b6ed4e1530cd775972` pending issue #29 comment
   `5234405496`; select another tracked pre-tag seam under the ordinary gate; keep Lane-P review, release/publication, tag, credentials,
   data, models, telemetry, and all owner gates closed.
 ```
