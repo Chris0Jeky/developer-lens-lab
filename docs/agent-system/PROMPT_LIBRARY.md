@@ -253,14 +253,20 @@ and red state; the active delivery wave; unblockers; MISSION DELIVERY; maintenan
 then a critic-approved idea or polish item. A false claim in a tracked file outranks new feature
 work, but bounded state repair must not monopolize a night.
 
-Before selecting or delegating each slice, write its IMPACT CONTRACT: consumer or research question;
-tangible artifact, behavior, or decision; owned paths and non-goals; acceptance behavior and focused
-proof; data lane, preregistration, holdout, and owner-gate state; evidence and ledger/docs update;
-and rollback or stop condition. MISSION DELIVERY selects the first dependency-safe active card or
-tracked issue for code, behavior tests, a C0 synthetic experiment or reproduction, method evaluation,
-integration, visible result/story work, packaging, or release preparation, ranked by owner focus and
-unlock ratio. Documentation or administration alone is eligible only to correct a safety-relevant
-false operational claim, satisfy an explicit request, or directly unblock delivery.
+Before selecting or delegating each slice, write its IMPACT CONTRACT: actionable consumer decision or
+research question; tangible artifact, behavior, or decision; owned paths and non-goals; acceptance
+behavior and focused proof; data lane, capability and owner-gate, preregistration, and holdout state;
+evidence and ledger/docs update; and rollback or stop condition. Reject metric-only research work:
+it must answer an actionable question or decision. MISSION DELIVERY selects the first dependency-safe
+active card or tracked issue for code, behavior tests, a C0 synthetic experiment or reproduction,
+method evaluation, integration, visible result/story work, packaging, or release preparation, ranked
+by owner focus and unlock ratio. Documentation or administration alone is eligible only to correct a
+safety-relevant false operational claim, satisfy an explicit request, or directly unblock delivery.
+
+FINISH-BEFORE-EXPAND: do not accumulate a queue of new lanes while existing pull requests or lanes
+can be driven to merge, archive, or park. There is no fixed numeric fleet cap. While CI or review
+ages, start another write lane only when it is genuinely disjoint and review/merge capacity exists;
+otherwise do read-only discovery or continue the existing lane.
 
 Apply the anti-manufacture legitimacy test before starting anything: provenance (a pre-existing
 tracked item or an observed, recorded defect), a named consumer or prevented failure, and exactly

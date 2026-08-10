@@ -818,6 +818,7 @@ P03_DELIVERY_TOKENS = (
     "FLAGSHIP DELIVERY GOVERNOR",
     "IMPACT CONTRACT",
     "MISSION DELIVERY",
+    "FINISH-BEFORE-EXPAND",
     "coordinator does not write research implementation code",
     "C0 invented data only",
     "EXPERIMENT_LEDGER",

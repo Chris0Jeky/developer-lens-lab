@@ -45,8 +45,8 @@ mean; this file adds only what changes when the loop repeats:
 
 Before any implementation or delegation, the coordinator records one per-slice **IMPACT CONTRACT**:
 
-1. **Consumer or research question** - who will use the result or what decision the experiment
-   answers.
+1. **Actionable consumer decision or research question** - who will use the result, or what
+   decision the experiment answers. Reject metric-only work that cannot inform an action or decision.
 2. **Tangible delivery** - the artifact, behavior, visible result/story surface, or decision that
    must exist when the slice ends.
 3. **Scope** - owned paths and explicit non-goals; the coordinator keeps authority interpretation,
@@ -54,8 +54,9 @@ Before any implementation or delegation, the coordinator records one per-slice *
    and final merge judgment, but does not write research implementation code.
 4. **Acceptance and proof** - observable acceptance behavior and the focused command that exercises
    it.
-5. **Research authority** - data lane, preregistration, final-holdout custody, and owner-gate
-   state. In unattended work, experiments are tracked/preregistered and C0 invented data only.
+5. **Research authority** - data lane, capability and owner-gate, preregistration, and
+   final-holdout custody state. In unattended work, experiments are tracked/preregistered and C0
+   invented data only.
 6. **Evidence and closeout** - ledger/docs update, rollback path, and stop condition. Record an
    experiment outcome in `docs/EXPERIMENT_LEDGER.md` and a killed approach in
    `docs/FAILURE_ARCHIVE.md`.
@@ -70,6 +71,15 @@ Experiments use the deterministic baseline with the same selection budget as the
 transforms only on training data with grouped splits, and never open a final holdout without explicit
 custody instruction. Invented mechanics evidence is never empirical validity. Stable promotion
 remains Product-owned.
+
+## Finish before expand
+
+**FINISH-BEFORE-EXPAND:** drive existing pull requests and lanes to merge, archive, or park before
+creating an accumulating queue of new write lanes. Owner constitution A4 remains OPEN and the
+no-fixed-fleet policy binds: this is review-capacity backpressure, not a numeric concurrency cap.
+While CI or review ages, start another write lane only when it is genuinely disjoint and review/merge
+capacity exists. Otherwise do read-only discovery or continue the existing lane. A proposed fixed
+cap conflicts with that policy and is declined.
 
 <!-- continuous-impact-end -->
 

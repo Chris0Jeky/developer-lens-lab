@@ -1066,3 +1066,13 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   authority and data boundaries. The context verifier now requires P03 delivery semantics and one
   ordered continuous-impact marker pair, with focused positive and negative tests. Shared prompt
   blocks and the parity manifest remain unchanged.
+
+## 2026-08-10 - Locked-gate correction and finish-before-expand backpressure (DL-P03)
+
+- The standalone `uv` command was absent from PowerShell PATH, but the installed route
+  `py -3 -m uv` synchronized successfully and completed the full declared gate: doctor, context,
+  Ruff format/check, Pyright, 189 pytest passes with 3 declared symlink skips, strict MkDocs, and
+  hygiene. FR-050 now records that verified workaround rather than a false tooling gap.
+- P03 and its impact protocol now require actionable research questions rather than metric-only
+  work, declare capability and owner gates, and apply finish-before-expand review-capacity
+  backpressure without a fixed fleet cap. No active-wave schema or capability implementation changed.
