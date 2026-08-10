@@ -956,13 +956,15 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 - **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
   reconcile available concurrent-process operation evidence, and make no duplicate merge or ref
   rewrite attempt.
-- **occurrences:** 2 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09.
+- **occurrences:** 3 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09, then Lab PR #61
+  on 2026-08-10.
 - **task:** lab issue #34 tracks the ownership-token or merge-lease preflight; comment `5233753580`
   supplies the first occurrence's direct merge-operation correction.
 - **promotion:** The first occurrence was resolved by direct operation evidence: a root governor
   issued the exact-head REST merge and GitHub returned the recorded merge commit. The second
   occurrence selects an ownership token or merge lease checked by a preflight as the cheapest
-  enforceable layer; issue #34 retains the implementation task.
+  enforceable layer; the third confirms that selection and issue #34 retains the implementation
+  task. Do not add another observation-only workaround.
 
 _Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
 `31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
@@ -986,6 +988,16 @@ head/base/check/thread/closing-ref snapshots plus no duplicate merge attempt.
 _Note 2026-08-09 (PR #55 delayed sweep):_ The post-merge sweep found no late review, comment,
 thread, or closing-reference debt. The occurrence is safely reconciled, but status remains
 `workaround-documented` until issue #34's ownership-token or merge-lease preflight is implemented.
+
+_Note 2026-08-10 (PR #61 concurrent-context recurrence):_ A read-only observer snapshot at
+00:52:07Z reported PR #61 OPEN and gate-eligible; before this coordinator issued any merge request,
+the next exact snapshot observed it MERGED at 00:53:07Z as merge commit
+`25567559c649b676f18a7809151d6095a80b271e`. GitHub names account `Chris0Jeky` but not the issuing
+process, so no human or session attribution is inferred and no duplicate merge was attempted. The
+exact head `9ad495e587f74f9ed0b74bf28917935dd4bbe1d1` had green hosted run `31344915046`, an exact-head
+Codex review, all 3 threads resolved, zero closing refs, and 17m04s age at merge; no gate defect is
+known. The 2026-08-10T01:03:39Z all-surface sweep was clean with no post-merge activity. Issue #34's
+selected ownership-token/merge-lease preflight remains unimplemented.
 
 ### FR-034 — a combined state patch used one stale context hunk
 
@@ -1079,12 +1091,12 @@ ownership-token follow-up remain unchanged.
   were recovered; no proof command or repository state was affected.
 - **workaround:** Use the canonical commands printed from `CLAUDE.md`; when probing optional files,
   derive candidate paths from tracked-file inventory first.
-- **occurrences:** 2 independent occurrences — PR #55 correction proof lookup and the wheel-contract
-  proof-command lookup on 2026-08-09.
+- **occurrences:** 3 independent occurrences — PR #55 correction proof lookup and the wheel-contract
+  proof-command lookup on 2026-08-09, then the PR #61 merge-follow-up proof lookup on 2026-08-10.
 - **task:** lab issue #34 tracks command-boundary hardening and reusable preflight checks.
 - **promotion:** At the second occurrence, the selected enforcing layer is a tracked-file inventory
   preflight before passing explicit paths to `rg`; a checked wrapper remains bounded task debt on
-  issue #34.
+  issue #34. The third occurrence confirms that layer; do not add another prose-only workaround.
 
 _Correction 2026-08-09 (exact-final-head review):_ The original symptom overgeneralized the
 explicit-path failure. `pyproject.toml` exists and was read successfully; `Makefile` and the optional
@@ -1099,6 +1111,11 @@ GitHub object, ignored output, or protected byte changed.
 _Correction 2026-08-10 (PR #56 final blocker-fix):_ A live synthetic check confirmed native ripgrep
 returns exit 2 when an explicitly named path is missing, even when another named path matches. This
 supersedes only the earlier exit-status claim; the original symptom and dated correction remain above.
+
+_Note 2026-08-10 (PR #61 merge follow-up):_ A combined proof-table lookup named the absent optional
+`Makefile` beside tracked `CLAUDE.md` and `pyproject.toml`. It printed the useful canonical commands
+but exited nonzero before any proof or repository mutation. The direct tracked `CLAUDE.md` read then
+supplied the command table. Issue #34 still owns the selected inventory-first wrapper.
 
 ### FR-037 — inline PowerShell status assertion misquoted Markdown backticks
 
