@@ -253,8 +253,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         snapshot = _load_snapshot(args.snapshot)
-    except (OSError, ValueError, json.JSONDecodeError) as error:
-        print(json.dumps({"eligible": False, "reasons": [f"invalid_snapshot:{error}"]}))
+    except OSError:
+        # Do not echo filesystem paths into a report; they are outside the snapshot contract.
+        print(json.dumps({"eligible": False, "reasons": ["snapshot_read_failed"]}))
+        return 1
+    except (ValueError, json.JSONDecodeError):
+        print(json.dumps({"eligible": False, "reasons": ["invalid_snapshot"]}))
         return 1
     observation = _parse_timestamp(args.now) if args.now else None
     if args.now and observation is None:
