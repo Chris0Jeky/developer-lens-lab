@@ -1091,3 +1091,19 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The full locked gate on this final pre-push tree passed through `py -3 -m uv`: sync, doctor,
   context, Ruff format/check, Pyright, 193 pytest passes with 3 declared Windows symlink skips,
   strict MkDocs, hygiene, and diff check. No shared prompt block or parity manifest changed.
+
+## 2026-08-10 - Package-smoke ordinary process-tree timeout cleanup (issue #29)
+
+- Replaced direct `subprocess.run` timeout supervision with `Popen` plus bounded `communicate`.
+  POSIX children run in a new session and timeout cleanup targets that process group; Windows uses
+  fully qualified `System32\\taskkill.exe /PID <pid> /T /F` with no shell and discarded cleanup
+  streams. Both paths require a bounded direct-child reap before reporting the ordinary timeout.
+- Cleanup denial, failure, or bounded-drain failure reports only the fixed redacted
+  `package smoke process-tree cleanup could not be confirmed` error; this slice makes no claim
+  about escaping descendants or hostile-writer containment.
+- Added invented child/grandchild lock fixture coverage. On Windows, a two-second timeout proved
+  the lock resource became available after `taskkill /T`; focused
+  `py -3 -m uv run pytest tests/test_package_metadata.py -q` passed (34 tests).
+- The full locked code/config gate passed from this worktree: locked sync, doctor, context, Ruff
+  format/check, Pyright, 197 tests with 3 declared unavailable-symlink skips, strict MkDocs, and
+  hygiene. The generated documentation directory remains ignored.

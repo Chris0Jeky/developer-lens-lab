@@ -1419,3 +1419,19 @@ four unresolved PR #60 threads.
 - **task:** Lab #34 comment `5242537913` tracks the checked create/update-and-reread helper.
 - **promotion:** Deliberately not promoted after one occurrence; promote on a second independent
   occurrence.
+
+### FR-053 — bounded writer delegation ended before a handoff
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** The assigned process-tree cleanup writer ended with uncommitted owned-path changes
+  and no completion handoff.
+- **impact:** A replacement writer had to re-establish the pinned branch/base and inspect the
+  preserved work-in-progress before continuing the same bounded slice.
+- **workaround:** Preserve the existing owned-path edits, verify branch and committed base before
+  takeover, and complete the normal focused/full proving route without expanding scope.
+- **occurrences:** 1 independent occurrence — issue #29 package-smoke process-tree slice on
+  2026-08-10.
+- **task:** Lab #34 tracks durable governor/delegation reliability follow-up.
+- **promotion:** Deliberately not promoted after one occurrence; do not infer a cause from the
+  missing handoff.
