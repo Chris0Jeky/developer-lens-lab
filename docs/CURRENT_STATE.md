@@ -17,23 +17,25 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      no merged PR remains in review; PR #55 and PR #57 are merged on main. The prepared local branch
-      `fix/package-smoke-short-env-redaction-20260809` is parked at
-      `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after its full gate (194 passed / 3 skips) and two
-      package-smoke attempts timed out during uv pip install; issue #29 comment `5234405496` is the
-      unlocking source.
+      Main's last landed change remains PR #64, merged at
+      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. PR #65 is open and ready (not draft), based on
+      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
+      `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
+      PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; GitHub reports DIRTY / CONFLICTING. Preserve its
+      coordinator-owned PR #56 refresh worktree, branch `docs/lab55-postmerge-refresh-20260810`, at
+      that same head: it has no nonignored changes, but ignored generated/cache outputs whose contents
+      were not inspected. Do not remove it until their ignored-output disposition is resolved.
     state: >-
-      READY_FOR_OTHER_TRACKED_SLICE after PR #55 sdist-to-wheel lineage merged as
-      `02dcfb261f7216f01aa5696888715ac42f0e3830`, PR #57 package-smoke contract tests merged as
-      `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`, and PR #59 current-state YAML enforcement merged as
-      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` closing issue #58. PR #56 is CLOSED and unmerged as
-      the exhausted, superseded duplicate at preserved head
-      `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over the stale pre-PR60 base
-      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; GitHub records it DIRTY/conflicting, while its branch
-      and dirty worktree remain preserved. The short-redaction lane is parked pending its issue #29
-      unlocking source; other actually tracked issue #29 work may proceed. Keep remaining hardening,
-      asset, release, publication, and tag work separate, with no data, model, credential, or
-      telemetry activation.
+      PARKED, not merge-sound, after two review rounds. The final local locked gate on the parked head
+      was green: 198 passed, 3 declared Windows symlink skips, focused package-metadata proof 35
+      passed, and Pyright was clean. Hosted run `31413655609` failed Pyright on the original head
+      `8cf95d50440047c9e9cb56d9718038600c04dee9`; hosted run `31414895754` on the parked head passed
+      package smoke, lint, type, context, and generated-contract checks, then failed pytest at the
+      taskkill-path assertion. The first exact-head review found three HIGH proof defects; the fix
+      commit closed those, and the second/final review found the remaining HIGH host-portability
+      assertion. The loop is parked under the two-review-round ceiling; no implementation from PR #65
+      is landed on main.
 delivered:
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
@@ -152,16 +154,18 @@ delivered:
       `31351467716`, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`, and had 3 resolved / 0
       unresolved review threads; its post-merge audit was clean.
 next_safe_slice: >-
-  Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
-  `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
-  `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after 194 passed / 3 skips and two package-smoke
-  timeouts during uv pip install, pending issue #29 comment `5234405496`. Lane-P candidate-content
-  review remains unauthorized and closed; no asset review, publication, tag, or release action is authorized. Pre-cap diagnostic-memory hardening remains task
-  debt until a design avoids both unbounded capture and a raw unredacted disk sink; process-tree
-  cleanup stays separate. No tag, release/publication, asset review, credential, data, model, or
-  telemetry action is authorized here.
+  SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests;
+  the current live inventory selected no other implementation seam in this hop. Then select a
+  different dependency-safe tracked LAB-REL-01 seam; if none exists, stop rather than manufacture
+  work. PR #65's portable patch is a PARKED REFERENCE only, not a next push: its exact resume reference
+  remains issue #29 comment `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
+  r"C:\Windows"` and `expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")`.
+  Reopen that reference only after a genuinely new unlocking event or explicit fresh authority. Keep
+  remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
+  contract, credential, or release activation occurred.
 release_and_owner_gates: >-
-  joint release remains reaffirmed, but no tag is authorized. The closed product
+  Live `HUMAN_TODO.md` remains the owner-gate source: joint release remains reaffirmed, but no tag is
+  authorized. The closed product
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` gate does not close the distinct open Lab
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` real-study public-transformation gate.
   Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and Lab
@@ -217,13 +221,16 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume from live `origin/main` after refreshing it with Git. The latest delivered anchor recorded
-  here is PR #63, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`. PR #63 final head
-  `d48e09cf149d75aee92665e62f3893741cd98104` passed Check run
-  `31351467716`, had 3 resolved / 0 unresolved review threads, and its post-merge audit was clean;
-  PR #62 immediately before it merged as `73a5b9653cccbb470c6bf9f0f5a4a7cd8d3cac45` from final
-  head `e833c68314f874d89523e4c97f5a3293548465cd` after Check run `31346126369` and a clean
-  post-merge audit. Preserve the existing PR #56 history and parked short-redaction facts above;
-  keep Lane-P review, release/publication, tag, credentials, data, models, telemetry, and all owner
+  Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
+  push. The current live inventory selected no other implementation seam in this hop; select a
+  different dependency-safe tracked LAB-REL-01 seam or stop if none exists. PR #65 remains parked at
+  exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
+  `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
+  only and require a genuinely new unlocking event or explicit fresh authority before reopening.
+  The last landed main anchor remains PR #64 at `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Preserve
+  the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
+  `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
+  uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the
+  selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all owner
   gates closed.
 ```
