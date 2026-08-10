@@ -1369,3 +1369,21 @@ four unresolved PR #60 threads.
 - **task:** lab issue #34 tracks checked state-reconciliation and Windows command-boundary helpers.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, make explicit UTF-8
   decoding and line-ending normalization part of the checked parent-range helper selected by FR-046.
+
+### FR-050 - the declared uv proving command was absent from the Windows PATH
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** `uv run pytest tests/test_context.py` could not start because `uv` was absent from
+  this worktree's PowerShell PATH.
+- **impact:** The declared focused verifier command was unavailable until the installed Python
+  environment was used directly with an explicit source import path.
+- **workaround:** Run `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py`; this collected
+  and passed all 94 context tests. This is local proof only and does not make the full declared
+  `uv` gate available.
+- **occurrences:** 1 independent occurrence - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10.
+- **task:** DL-P01 / DL-P03 prompt-governor slice; retain the unavailable `uv` route as an explicit
+  verification gap in its handoff.
+- **promotion:** Deliberately not promoted after one occurrence; use the repository-supported `uv`
+  route when it becomes available rather than changing the project toolchain from this slice.

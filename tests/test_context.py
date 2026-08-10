@@ -11,6 +11,7 @@ from developer_lens_lab.context.verify import (
     COMMON_PROMPT_IDS,
     CONTINUOUS_PROMPT_ID,
     LAB_EXTENSION_PROMPT_IDS,
+    P03_DELIVERY_TOKENS,
     REQUIRED_CLAUDE_CLAUSE,
     REQUIRED_CODEX_CLAUSE,
     REQUIRED_SETTINGS_READ_DENY,
@@ -697,6 +698,7 @@ _CODEX_LINE = (
     "developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing."
 )
 _GATE_LINE = "GATE: Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 stays open."
+_P03_DELIVERY_LINE = " ".join(P03_DELIVERY_TOKENS)
 
 
 def _real_blocks() -> dict[str, str]:
@@ -720,7 +722,7 @@ def _body(
     gate: str = _GATE_LINE,
 ) -> str:
     parts = ["You do one bounded thing.", *(blocks[bid] for bid in SHARED_BLOCK_IDS)]
-    parts.extend(part for part in (claude, codex, gate) if part)
+    parts.extend(part for part in (claude, codex, gate, _P03_DELIVERY_LINE) if part)
     return "\n\n".join(parts)
 
 
@@ -973,11 +975,15 @@ def test_parity_manifest_wrong_lab_role_or_paths_fail() -> None:
 
 
 _EXEC = ("<!-- continuous-execution-begin -->", "<!-- continuous-execution-end -->")
+_IMPACT = ("<!-- continuous-impact-begin -->", "<!-- continuous-impact-end -->")
 _STOP = ("<!-- continuous-stop-begin -->", "<!-- continuous-stop-end -->")
 
 
-def _continuous(exec_pair: str, stop_pair: str) -> str:
-    return f"# Continuous work protocol\n\n{exec_pair}\n\nThe wave.\n\n{stop_pair}\n"
+def _continuous(exec_pair: str, impact_pair: str, stop_pair: str) -> str:
+    return (
+        f"# Continuous work protocol\n\n{exec_pair}\n\nThe wave.\n\n{impact_pair}\n"
+        f"\nImpact.\n\n{stop_pair}\n"
+    )
 
 
 def test_continuous_protocol_passes_on_the_real_file() -> None:
@@ -986,18 +992,30 @@ def test_continuous_protocol_passes_on_the_real_file() -> None:
 
 
 def test_continuous_protocol_accepts_ordered_pairs() -> None:
-    good = _continuous(f"{_EXEC[0]}\n\nExecution.\n\n{_EXEC[1]}", f"{_STOP[0]}\nStops.\n{_STOP[1]}")
+    good = _continuous(
+        f"{_EXEC[0]}\n\nExecution.\n\n{_EXEC[1]}",
+        f"{_IMPACT[0]}\nImpact.\n{_IMPACT[1]}",
+        f"{_STOP[0]}\nStops.\n{_STOP[1]}",
+    )
     assert verify_continuous_protocol(good) == []
 
 
 def test_continuous_protocol_missing_stop_marker_fails() -> None:
-    text = _continuous(f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}", f"{_STOP[0]}\nStops without an end.")
+    text = _continuous(
+        f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}",
+        f"{_IMPACT[0]}\nImpact.\n{_IMPACT[1]}",
+        f"{_STOP[0]}\nStops without an end.",
+    )
     failures = verify_continuous_protocol(text)
     assert any("continuous-stop" in failure and "exactly one" in failure for failure in failures)
 
 
 def test_continuous_protocol_reversed_stop_markers_fail() -> None:
-    text = _continuous(f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}", f"{_STOP[1]}\nStops.\n{_STOP[0]}")
+    text = _continuous(
+        f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}",
+        f"{_IMPACT[0]}\nImpact.\n{_IMPACT[1]}",
+        f"{_STOP[1]}\nStops.\n{_STOP[0]}",
+    )
     failures = verify_continuous_protocol(text)
     assert any("out of order" in failure for failure in failures), failures
 
@@ -1005,15 +1023,42 @@ def test_continuous_protocol_reversed_stop_markers_fail() -> None:
 def test_continuous_protocol_duplicate_stop_markers_fail() -> None:
     # A duplicated pair would let an extractor see only the first region and miss a divergent one.
     duplicated = f"{_STOP[0]}\nStops.\n{_STOP[1]}\n\n{_STOP[0]}\nDivergent stops.\n{_STOP[1]}"
-    text = _continuous(f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}", duplicated)
+    text = _continuous(
+        f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}",
+        f"{_IMPACT[0]}\nImpact.\n{_IMPACT[1]}",
+        duplicated,
+    )
     failures = verify_continuous_protocol(text)
     assert any("continuous-stop" in failure and "exactly one" in failure for failure in failures)
 
 
 def test_continuous_protocol_missing_execution_pair_fails() -> None:
-    text = _continuous("No execution markers here.", f"{_STOP[0]}\nStops.\n{_STOP[1]}")
+    text = _continuous(
+        "No execution markers here.",
+        f"{_IMPACT[0]}\nImpact.\n{_IMPACT[1]}",
+        f"{_STOP[0]}\nStops.\n{_STOP[1]}",
+    )
     failures = verify_continuous_protocol(text)
     assert any("continuous-execution" in failure for failure in failures), failures
+
+
+def test_continuous_protocol_missing_impact_pair_fails() -> None:
+    text = _continuous(
+        f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}",
+        "No impact markers here.",
+        f"{_STOP[0]}\nStops.\n{_STOP[1]}",
+    )
+    failures = verify_continuous_protocol(text)
+    assert any("continuous-impact" in failure and "exactly one" in failure for failure in failures)
+
+
+def test_prompt_library_p03_requires_delivery_semantics() -> None:
+    blocks = _real_blocks()
+    body = _body(blocks).replace(_P03_DELIVERY_LINE, "")
+    failures = verify_prompt_library(
+        _library(blocks, bodies={CONTINUOUS_PROMPT_ID: body}), _real_digests()
+    )
+    assert any("flagship delivery token" in failure for failure in failures), failures
 
 
 def test_prompt_classifications_pass_on_the_real_repo() -> None:

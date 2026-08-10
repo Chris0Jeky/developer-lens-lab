@@ -1057,3 +1057,12 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   window and clean: 1 top-level comment, 6 reviews, 3 resolved threads, zero unresolved threads,
   zero closing refs, and no activity after the 00:53:07Z merge. No release, tag, publication, asset
   review, credential, data, model, telemetry, or protected-data action occurred.
+
+## 2026-08-10 - Flagship overnight delivery governor (DL-P01 / DL-P03)
+
+- Upgraded the existing `DL-P03-OVERNIGHT-CONTINUOUS` launcher and its protocol into the flagship
+  delivery governor: per-slice impact contracts, a six-step delivery-first queue, C0-only
+  preregistered experiment limits, and explicit Product-owned promotion preserve the existing
+  authority and data boundaries. The context verifier now requires P03 delivery semantics and one
+  ordered continuous-impact marker pair, with focused positive and negative tests. Shared prompt
+  blocks and the parity manifest remain unchanged.

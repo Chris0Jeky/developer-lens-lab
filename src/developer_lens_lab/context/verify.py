@@ -808,7 +808,20 @@ REQUIRED_CODEX_CLAUSE = ("AGENTS.md", "developer-lens-lab-continuation", "Sol/Te
 
 CONTINUOUS_MARKER_PAIRS = (
     ("<!-- continuous-execution-begin -->", "<!-- continuous-execution-end -->"),
+    ("<!-- continuous-impact-begin -->", "<!-- continuous-impact-end -->"),
     ("<!-- continuous-stop-begin -->", "<!-- continuous-stop-end -->"),
+)
+# The overnight launcher is the flagship delivery governor, not a documentation-maintenance
+# default. These literal clauses make that role mechanically reviewable without altering the
+# product-shared prompt spine or its parity manifest.
+P03_DELIVERY_TOKENS = (
+    "FLAGSHIP DELIVERY GOVERNOR",
+    "IMPACT CONTRACT",
+    "MISSION DELIVERY",
+    "coordinator does not write research implementation code",
+    "C0 invented data only",
+    "EXPERIMENT_LEDGER",
+    "FAILURE_ARCHIVE",
 )
 ALLOWED_PROMPT_CLASSIFICATIONS = ("redirect", "historical")
 
@@ -1040,6 +1053,12 @@ def _verify_active_body(prompt_id: str, body: str, blocks: dict[str, str]) -> li
             f"{PROMPT_LIBRARY}: {prompt_id} cites {bare - qualified} unqualified human ref(s); use "
             "<owner>/<repo>::HUMAN_TODO.md::q-N, because product q-8 and lab q-8 differ"
         )
+    if prompt_id == CONTINUOUS_PROMPT_ID:
+        for token in P03_DELIVERY_TOKENS:
+            if token not in outside:
+                failures.append(
+                    f"{PROMPT_LIBRARY}: {prompt_id} is missing flagship delivery token {token!r}"
+                )
     return failures
 
 
