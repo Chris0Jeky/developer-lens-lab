@@ -1369,3 +1369,23 @@ four unresolved PR #60 threads.
 - **task:** lab issue #34 tracks checked state-reconciliation and Windows command-boundary helpers.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, make explicit UTF-8
   decoding and line-ending normalization part of the checked parent-range helper selected by FR-046.
+
+### FR-050 - the standalone uv proving command was absent from the Windows PATH
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** `uv run pytest tests/test_context.py` could not start because `uv` was absent from
+  this worktree's PowerShell PATH.
+- **impact:** The standalone command could not start, but the installed `uv` module remained
+  available through Python.
+- **workaround:** Run `py -3 -m uv` for the declared locked route. The coordinator used that
+  invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
+  189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
+  `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
+- **occurrences:** 1 independent occurrence - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10.
+- **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
+  any recurrence/promotion decision; use the installed module invocation for future proving passes
+  without changing the project toolchain.
+- **promotion:** Deliberately not promoted after one occurrence; restore a standalone PATH route
+  only if it materially improves the supported workflow.

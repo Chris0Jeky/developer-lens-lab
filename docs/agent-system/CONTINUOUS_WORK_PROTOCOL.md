@@ -39,6 +39,51 @@ mean; this file adds only what changes when the loop repeats:
   them, and record what was learned in the ledgers and, when it was friction, in
   [FRICTION_LOG.md](FRICTION_LOG.md).
 
+<!-- continuous-impact-begin -->
+
+## Impact and delivery contract
+
+Before any implementation or delegation, the coordinator records one per-slice **IMPACT CONTRACT**:
+
+1. **Actionable consumer decision or research question** - who will use the result, or what
+   decision the experiment answers. Reject metric-only work that cannot inform an action or decision.
+2. **Tangible delivery** - the artifact, behavior, visible result/story surface, or decision that
+   must exist when the slice ends.
+3. **Scope** - owned paths and explicit non-goals; the coordinator keeps authority interpretation,
+   methodology architecture, experiment-programme selection, cross-repo coordination, sequencing,
+   and final merge judgment, but does not write research implementation code.
+4. **Acceptance and proof** - observable acceptance behavior and the focused command that exercises
+   it.
+5. **Research authority** - data lane, capability and owner-gate, preregistration, and
+   final-holdout custody state. In unattended work, experiments are tracked/preregistered and C0
+   invented data only.
+6. **Evidence and closeout** - ledger/docs update, rollback path, and stop condition. Update
+   `docs/EXPERIMENT_LEDGER.md` only for a run or holdout decision,
+   `docs/FAILURE_ARCHIVE.md` only for an approach actually killed, and
+   `docs/IMPLEMENTATION_LEDGER.md` for a code milestone; never fabricate an entry.
+
+An impact contract is not a documentation substitute. Its delivery must be a bounded implementation,
+behavior test, approved C0 experiment/reproduction, method evaluation, integration, packaging or
+release preparation, hardening, visible story surface, or evidence-backed decision. Documentation
+and administration are supporting outputs only; they are eligible alone only to correct a
+safety-relevant false operational claim, satisfy an explicit request, or directly unblock delivery.
+
+Experiments use the deterministic baseline with the same selection budget as the candidate, fit
+transforms only on training data with grouped splits, and never open a final holdout without explicit
+custody instruction. Invented mechanics evidence is never empirical validity. Stable promotion
+remains Product-owned.
+
+## Finish before expand
+
+**FINISH-BEFORE-EXPAND:** drive existing pull requests and lanes to merge, archive, or park before
+creating an accumulating queue of new write lanes. Owner constitution A4 remains OPEN and the
+no-fixed-fleet policy binds: this is review-capacity backpressure, not a numeric concurrency cap.
+While CI or review ages, start another write lane only when it is genuinely disjoint and review/merge
+capacity exists; otherwise do read-only discovery or continue the existing lane. Inspect review
+arrival only at workflow events. A proposed fixed cap conflicts with that policy and is declined.
+
+<!-- continuous-impact-end -->
+
 ## Deterministic queue hopping
 
 When the session needs work — at session start, after a merge or park, or while a review or CI
@@ -48,10 +93,14 @@ is fixed so that two different sessions reach the same next action from the same
 | # | Step | Contents |
 |---|---|---|
 | 1 | **Truth and red state** | A false operational claim in a tracked file; a red, stale or missing required CI check; unresolved or untriaged review debt; a recorded run that no longer reproduces. |
-| 2 | **Active wave** | The next step of the lane already in flight, per `docs/CURRENT_STATE.md`. |
+| 2 | **Active delivery wave** | The next delivery step of the lane already in flight, per `docs/CURRENT_STATE.md`. |
 | 3 | **Unblockers** | Work that unblocks something already recorded as blocked, including a dependency-ready card whose prerequisite just landed. |
-| 4 | **Tracked maintenance and hardening** | Items already in the backlog, [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) or `docs/HARDENING_BACKLOG.md`: drift repair, dependency triage, label and branch hygiene, contract parity re-check, friction burn-down. |
-| 5 | **Legitimate idea or polish** | An `idea`-labelled item that has passed [IDEA_PROTOCOL.md](IDEA_PROTOCOL.md) critic review, or a polish item that satisfies the legitimacy test below. |
+| 4 | **MISSION DELIVERY** | Choose the FIRST dependency-safe ACTIVE card from `tools/cards.py` for code, behavior tests, approved C0 experiment/reproduction, method evaluation, integration, visible story work, packaging, or release preparation. Only when no such card exists may a tracked issue be considered; owner-focus/unlock ranking applies only where the card source explicitly permits a choice. |
+| 5 | **Maintenance and hardening** | Items already in the backlog, [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) or `docs/HARDENING_BACKLOG.md`: drift repair, dependency triage, label and branch hygiene, contract parity re-check, friction burn-down. |
+| 6 | **Critic-approved idea or polish** | An `idea`-labelled item that has passed [IDEA_PROTOCOL.md](IDEA_PROTOCOL.md) critic review, or a polish item that satisfies the legitimacy test below. |
+
+Bounded state repair is necessary evidence work, but it must not monopolize a night: once its
+focused proof is complete, return to the highest available delivery step.
 
 A false claim in a tracked file outranks new experiment work — step 1 is first for that reason, not
 as ceremony. In a research repository a wrong recorded result is worse than a missing one.
@@ -81,7 +130,8 @@ start a new experiment because no other work is available — see the stop condi
 ## Work while waiting
 
 Post-push aging, hosted CI and connector review windows are **passive observation time**. During
-them the session starts the next disjoint queue item.
+them, another write lane starts only when it is genuinely disjoint and review/merge capacity exists;
+otherwise the session does read-only discovery or continues an existing lane.
 
 - **Do not short-poll.** Review arrival is checked at workflow events — a pull request opened or
   became ready, a review completed, fixes were pushed, a milestone completed, a pull request
