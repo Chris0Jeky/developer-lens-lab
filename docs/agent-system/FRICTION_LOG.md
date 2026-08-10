@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 18 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 19 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -87,10 +87,11 @@ Rules that bind entries:
   reused the confined route for its full gate and package smoke), and 2026-08-09 (the
   diagnostic-state worktree used the installed Python module route for its docs-only gate), and
   2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
-  coordinator), and 2026-08-09 (the wheel-contract test worktree used the confined route for its
-  actual package smoke).
-- **task:** lab issues #29 (release wave) and #5 (dependency triage), which both depend on a
-  runnable locked environment.
+  coordinator), 2026-08-09 (the wheel-contract test worktree used the confined route for its
+  actual package smoke), and 2026-08-10 (the issue #34 factual-doc worktree used the installed
+  Python-module route for locked sync and proof).
+- **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
+  boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
   which now states the confined-bootstrap route rather than declaring the gate unrunnable. Not
   promoted to an executable check: installing a toolchain is an environment action, not a
@@ -181,6 +182,11 @@ gate through the installed host-module route, then its first actual smoke stoppe
 selection before artifact build. A worktree-confined bootstrap installed the pinned `uv 0.12.3`;
 putting that executable on the task process PATH let the unchanged smoke pass. No lockfile, global
 tool, tracked file, protected byte, or generated artifact byte was inspected.
+
+_Note 2026-08-10 (issue #34 factual-doc proof):_ The nineteenth isolated worktree likewise had no
+PATH `uv`. The installed `py -3 -m uv` 0.12.2 route selected project-supported Python 3.12.7,
+created the worktree-local project environment, and completed locked sync without changing
+`uv.lock` or installing a global tool.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -381,10 +387,11 @@ cheap workaround and none of them blocked a lane.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 5 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 6 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
   2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
-  terminated an outer JavaScript command wrapper before PowerShell started).
+  terminated an outer JavaScript command wrapper before PowerShell started), plus 2026-08-10 (an
+  inline GraphQL repository string during the PR #56 factual refresh).
 - **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
   Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
@@ -407,6 +414,11 @@ no repository or remote state changed in the failed attempt.
 _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
 route was not durable enforcement. The status and promotion field now record task debt rather than
 claiming that a fresh session inherits the workaround.
+
+_Note 2026-08-10 (PR #56 factual refresh):_ Two forms of the same static-string GraphQL read lost
+the repository-name quotes and returned a parser error without repository data or mutation. The
+variable-bound query then succeeded and supplied the exact pull-request/thread evidence. The two
+failed forms are one independent recurrence of the same predicate.
 
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
@@ -564,10 +576,17 @@ retains only the bounded action and its authority limits.
 - **impact:** A timestamp probe failed before any repository state changed, briefly interrupting
   the bounded issue #29 release-evidence lane.
 - **workaround:** Use `[DateTime]::UtcNow.ToString('o')` for an equivalent UTC timestamp.
-- **occurrences:** 1 independent occurrence - 2026-08-09 during the issue #29 package-smoke lane.
-- **task:** Lab issue #29 owns the release-evidence boundary.
-- **promotion:** Deliberately NOT promoted after one occurrence. If an independent recurrence
-  appears, consider a compatibility helper at the smallest shared command layer.
+- **occurrences:** 2 independent occurrences - the 2026-08-09 issue #29 package-smoke lane and the
+  2026-08-10 PR #60 delayed-sweep timestamp probe.
+- **task:** Lab issue #29 owns the first release-evidence occurrence; lab issue #34 tracks the
+  checked/shared timestamp convention.
+- **promotion:** At the second occurrence, the selected cheapest layer is a shared PowerShell
+  command convention using `[DateTime]::UtcNow.ToString('o')`; lab issue #34 retains the checked
+  helper or explicit command-guidance implementation task.
+
+_Note 2026-08-10 (PR #60 delayed-sweep timestamp probe):_ Windows PowerShell rejected
+`Get-Date -AsUTC` before any query or mutation. The compatible `[DateTime]::UtcNow.ToString('o')`
+form supplied the UTC timestamp.
 
 ### FR-018 — a live issue checkpoint abbreviated a cross-repository human action
 
@@ -919,13 +938,16 @@ read changed no GitHub object, tracked file, Git ref, ignored output, or protect
 - **workaround:** Treat the new live state as authoritative, verify the merge commit and origin/main,
   reconcile available concurrent-process operation evidence, and make no duplicate merge or ref
   rewrite attempt.
-- **occurrences:** 2 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09.
-- **task:** lab issue #34 tracks the ownership-token or merge-lease preflight; comment `5233753580`
-  supplies the first occurrence's direct merge-operation correction.
+- **occurrences:** 3 independent occurrences — Lab PR #54 and PR #55 on 2026-08-09, plus PR #56's
+  close/reopen/re-close archive-state sequence on 2026-08-10.
+- **task:** lab issue #34 tracks the checked PR-operation preflight; comments `5233753580` and
+  `5234457237` supply the merge-context and close/reopen evidence.
 - **promotion:** The first occurrence was resolved by direct operation evidence: a root governor
   issued the exact-head REST merge and GitHub returned the recorded merge commit. The second
-  occurrence selects an ownership token or merge lease checked by a preflight as the cheapest
-  enforceable layer; issue #34 retains the implementation task.
+  occurrence selected an ownership token or operation lease checked by a preflight. The third
+  extends that cheapest enforceable layer to close/reopen as well as merge: a checked GitHub
+  mutation helper must record operation ownership and re-read events plus final state; issue #34
+  retains the implementation task.
 
 _Note 2026-08-09 (state reconciliation merge):_ The transition occurred only after exact-head run
 `31333721317` succeeded, the final review was clean, all threads were resolved, and the 15-minute
@@ -946,6 +968,14 @@ that records the operation owner before a merge request and requires the final s
 that token; issue #34 retains this task. Until that helper exists, the workaround remains exact
 head/base/check/thread/closing-ref snapshots plus no duplicate merge attempt.
 
+_Note 2026-08-10 (PR #56 archive-state recurrence):_ GitHub's public event stream records PR #56
+closed at 23:41:47Z, reopened at 23:43:22Z, and re-closed at 23:53:04Z after PR #60 merged. The
+final REST state is CLOSED/unmerged at preserved head
+`e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over pre-PR60 base
+`e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, with the branch and dirty worktree preserved. Direct
+coordination evidence reconciled the final supersession action; account metadata alone is not actor
+attribution.
+
 _Note 2026-08-09 (PR #55 delayed sweep):_ The post-merge sweep found no late review, comment,
 thread, or closing-reference debt. The occurrence is safely reconciled, but status remains
 `workaround-documented` until issue #34's ownership-token or merge-lease preflight is implemented.
@@ -960,10 +990,11 @@ thread, or closing-reference debt. The occurrence is safely reconciled, but stat
   plus smaller file-scoped patches.
 - **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
   atomic failure as the guard against partial state updates.
-- **occurrences:** 5 independent occurrences — the stale combined hunk during sdist current-base
+- **occurrences:** 6 independent occurrences — the stale combined hunk during sdist current-base
   state sync, the ambiguous FR-033 status hunk during PR #55 review correction, the unanchored
   FR-033 occurrence and status edits during PR #55 post-merge reconciliation, and the unanchored
-  FR-037 status edit during issue #58 proof reconciliation on 2026-08-09.
+  FR-037 status edit during issue #58 proof reconciliation on 2026-08-09, plus the console-rendered
+  em-dash context mismatch during the issue #34 PR #56 factual follow-up on 2026-08-10.
 - **task:** lab issue #34 tracks external patch-context and command-boundary workflow hardening.
 - **promotion:** At the second occurrence, the selected enforcement layer was an exact section-header
   anchor plus a pre-stage diff assertion. Later occurrences show that an ad-hoc command does not
@@ -997,6 +1028,11 @@ _Note 2026-08-09 (issue #58 proof reconciliation):_ An unanchored FR-037 status 
 FR-004. The immediate diff inspection caught and restored FR-004 before staging, then an exact
 FR-037 section-header patch applied the intended status. No commit, push, GitHub object,
 ignored-output access, or protected-byte access contained the transient edit.
+
+_Note 2026-08-10 (PR #56 factual follow-up):_ A combined three-file patch used the console-rendered
+mojibake form of an em dash in repeated friction-log context. The patch failed atomically before
+changing any file. UTF-8 reads plus smaller section-anchored patches then applied the intended
+changes; the checked state-sync helper remains the selected enforcement layer.
 
 ### FR-035 — an unannounced post-merge state worktree appeared at live main
 
@@ -1047,6 +1083,14 @@ _Correction 2026-08-10 (PR #56 P2 triage):_ The original entry recorded the wron
 `pyproject.toml` exists and was read successfully; `Makefile` and the optional
 `docs/agent-system/CURRENT_STATE.md` path are absent. Ripgrep returns exit 2 for an explicit missing
 path even when another named path matches. This correction supersedes only the exit-status claim.
+
+_Correction 2026-08-10 (post-PR #60 factual follow-up):_ The prior sentence's `only` is superseded:
+the correction governs both the original path-presence claim (`pyproject.toml` exists; the other two
+named optional paths do not) and the original native exit-status claim (`rg` returns 2 when an
+explicitly named path is missing, even if another path matches). Mechanical comparison of tracked
+PR #56 heads `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0` and
+`e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` confirmed that the late head rewrote immutable prose;
+this follow-up does not transplant that rewrite or change the existing symptom/workaround history.
 
 _Note 2026-08-09 (wheel-contract proof lookup):_ A combined lookup named absent
 `MAINTENANCE_PROTOCOL.md` alongside tracked paths. Ripgrep printed the path error and returned exit 2;
@@ -1109,8 +1153,9 @@ no repository mutation, ignored-output access, protected-byte access, or GitHub 
   mistaken for a repository documentation failure.
 - **workaround:** Keep the declared MkDocs/Material version bounds, record the warning separately,
   and use the process exit status plus the generated documentation result for pass/fail.
-- **occurrences:** 3 independent occurrences — PR #55 correction/finalization proof, PR #55
-  post-merge reconciliation, and issue #58 current-base full-gate proof on 2026-08-09.
+- **occurrences:** 4 independent occurrences — PR #55 correction/finalization proof, PR #55
+  post-merge reconciliation, issue #58 current-base full-gate proof on 2026-08-09, and issue #34
+  factual-doc proof on 2026-08-10.
 - **task:** lab issue #34 tracks reusable proof-command and tooling-boundary hardening.
 - **promotion:** At the second occurrence this remains task debt rather than a suppression rule:
   the warning is emitted upstream while the pinned build succeeds, and hiding it would remove useful
@@ -1120,6 +1165,10 @@ no repository mutation, ignored-output access, protected-byte access, or GitHub 
 _Note 2026-08-09 (issue #58 current-base proof):_ The strict build passed again with the same
 upstream warning after the PyYAML lock refresh. No MkDocs/Material bound, generated documentation
 content, release evidence, or publication state was changed or inspected.
+
+_Note 2026-08-10 (issue #34 factual-doc proof):_ The strict build passed with the same upstream
+warning. Its process status remained green; dependency bounds and generated documentation were not
+changed or inspected.
 
 ### FR-040 — focused Ruff format check found new line wrapping
 
@@ -1229,14 +1278,22 @@ change before the focused lint, type, and test proofs; no protected or ignored c
   friction log.
 - **workaround:** Compare the parent-main and final-head blocks mechanically before staging, restore
   every parent record, and retain only explicitly appended corrections.
-- **occurrences:** 1 independent occurrence — PR #56 final blocker-fix review on 2026-08-10.
+- **occurrences:** 2 independent occurrences — the PR #56 refresh merge-resolution loss and the
+  late PR #56 FR-036 immutable-history rewrite on 2026-08-10.
 - **task:** lab issue #34 tracks checked merge/state reconciliation helpers.
-- **promotion:** Deliberately not promoted after one occurrence; exact parent-range comparison is the
-  current guard until a checked state-sync helper exists.
+- **promotion:** At the second occurrence, promote the exact parent-range comparison to a checked
+  state-sync helper on issue #34; every reconciliation must prove append-only history before staging.
 
 _Note 2026-08-10 (PR #56 final blocker-fix):_ Exact range review caught the loss before merge; all
 parent FR-031, FR-034, and FR-037 records were restored. No protected content, GitHub mutation,
 ignored output, or capability boundary was crossed.
+
+_Note 2026-08-10 (late PR #56 tracked-object comparison):_ The
+`ccf6d9e465c5fd8629de27b0762f5c43fc588fc0..e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0`
+range changed FR-036 immutable symptom/correction prose and appended a PR #57 milestone already
+present on main through PR #60. Neither change was transplanted. Only the sound second
+history-loss occurrence and checked parent-range promotion are retained here; no dirty-worktree or
+protected bytes were read.
 
 ### FR-047 — thread-fetch helper inherited a Windows console decoding failure
 
@@ -1256,3 +1313,19 @@ ignored output, or capability boundary was crossed.
 _Note 2026-08-10 (PR #60 thread refresh):_ The helper failure occurred before any GitHub mutation,
 repository mutation, ignored-output access, or protected-byte access. The direct query returned all
 four unresolved PR #60 threads.
+
+### FR-048 — an unquoted revision-peel preflight did not validate tracked objects
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** The first `git cat-file -e <oid>^{commit}` probe returned command usage and an
+  unknown-switch error under PowerShell instead of validating either named tracked commit.
+- **impact:** The tracked-object comparison paused for one probe; no object content was treated as
+  evidence from the failed command.
+- **workaround:** Quote the complete peeled revision and use
+  `git rev-parse --verify "<oid>^{commit}"`, then require the exact returned object IDs before diffing.
+- **occurrences:** 1 independent occurrence — issue #34 PR #56 tracked-object comparison on
+  2026-08-10.
+- **task:** lab issue #34 tracks checked command-boundary and state-reconciliation helpers.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, place the quoted
+  object verification in the checked parent-range comparison helper selected by FR-046.

@@ -999,11 +999,11 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - Live `origin/main` is `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`. PR #55 reached final head
   `c122868e976ee7f5acce8c6aac20608873c0fa43`, passed hosted run `31335915850` / job
   `93301598278`, exact-head review, and the 15-minute age, then merged as
-  `02dcfb261f7216f01aa5696888715ac42f0e3830`; its delayed 22:22:38Z sweep then found no late
+  `02dcfb261f7216f01aa5696888715ac42f0e3830`; its delayed 22:22:38 BST sweep then found no late
   review, comment, or thread debt. Its sdist-to-wheel lineage is delivered.
 - PR #57 reached final head `bd4d244f079b46c0425e0618043c37b48abb29c7`, passed hosted run
   `31337621819` / job `93305956992`, exact-head review, and the 15-minute age, then merged as
-  `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`; its delayed 23:10:19Z sweep then found no late
+  `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`; its delayed 23:10:19 BST sweep then found no late
   review, comment, or thread debt. Its zero/multiple-wheel and full-call-sequence test seam is
   complete; production package-smoke behavior was unchanged.
 - PR #59 reached final head `df87407bb74d78277d96aa383148da7211735a6a`, passed hosted run
