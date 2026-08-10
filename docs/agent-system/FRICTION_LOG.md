@@ -1464,3 +1464,18 @@ scaffolding is needed.
   normalization/comparison helper using `Resolve-Path` or `[IO.Path]::GetFullPath` plus literal
   `String.Replace` for separators, never regex replacement. Keep the helper as issue #34 task debt;
   do not detour in this slice.
+
+### FR-054 — a narrowed append patch briefly introduced a leading-space diff
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** The first append patch did not match the exact tail context; a narrowed patch then
+  briefly added one leading space to an existing friction-log line.
+- **impact:** No committed collateral change occurred. The exact diff exposed the whitespace drift,
+  and a follow-up patch restored the existing line before commit.
+- **workaround:** Inspect the exact one-file diff and run `git diff --check` before committing.
+- **occurrences:** 1 independent occurrence — FR-053 append on 2026-08-10.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked append and command-boundary helpers.
+- **promotion:** Deliberately not promoted after one occurrence; the exact-diff and whitespace
+  checks are sufficient for this bounded documentation slice.
