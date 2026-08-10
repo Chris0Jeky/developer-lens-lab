@@ -1384,7 +1384,8 @@ four unresolved PR #60 threads.
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
 - **occurrences:** 1 independent occurrence - DL-P01 / DL-P03 flagship delivery governor slice on
   2026-08-10.
-- **task:** DL-P01 / DL-P03 prompt-governor slice; use the installed module invocation for future
-  proving passes without changing the project toolchain.
+- **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
+  any recurrence/promotion decision; use the installed module invocation for future proving passes
+  without changing the project toolchain.
 - **promotion:** Deliberately not promoted after one occurrence; restore a standalone PATH route
   only if it materially improves the supported workflow.

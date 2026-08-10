@@ -11,7 +11,7 @@ from developer_lens_lab.context.verify import (
     COMMON_PROMPT_IDS,
     CONTINUOUS_PROMPT_ID,
     LAB_EXTENSION_PROMPT_IDS,
-    P03_DELIVERY_TOKENS,
+    P03_DELIVERY_CONTRACT_CLAUSES,
     REQUIRED_CLAUDE_CLAUSE,
     REQUIRED_CODEX_CLAUSE,
     REQUIRED_SETTINGS_READ_DENY,
@@ -698,7 +698,7 @@ _CODEX_LINE = (
     "developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing."
 )
 _GATE_LINE = "GATE: Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 stays open."
-_P03_DELIVERY_LINE = " ".join(P03_DELIVERY_TOKENS)
+_P03_DELIVERY_CONTRACT = "\n\n".join(P03_DELIVERY_CONTRACT_CLAUSES)
 
 
 def _real_blocks() -> dict[str, str]:
@@ -722,7 +722,7 @@ def _body(
     gate: str = _GATE_LINE,
 ) -> str:
     parts = ["You do one bounded thing.", *(blocks[bid] for bid in SHARED_BLOCK_IDS)]
-    parts.extend(part for part in (claude, codex, gate, _P03_DELIVERY_LINE) if part)
+    parts.extend(part for part in (claude, codex, gate, _P03_DELIVERY_CONTRACT) if part)
     return "\n\n".join(parts)
 
 
@@ -1052,13 +1052,70 @@ def test_continuous_protocol_missing_impact_pair_fails() -> None:
     assert any("continuous-impact" in failure and "exactly one" in failure for failure in failures)
 
 
-def test_prompt_library_p03_requires_delivery_semantics() -> None:
+def test_continuous_protocol_reversed_impact_markers_fail() -> None:
+    text = _continuous(
+        f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}",
+        f"{_IMPACT[1]}\nImpact.\n{_IMPACT[0]}",
+        f"{_STOP[0]}\nStops.\n{_STOP[1]}",
+    )
+    failures = verify_continuous_protocol(text)
+    assert any("continuous-impact" in failure and "out of order" in failure for failure in failures)
+
+
+def test_continuous_protocol_duplicate_impact_markers_fail() -> None:
+    duplicated = f"{_IMPACT[0]}\nImpact.\n{_IMPACT[1]}\n\n{_IMPACT[0]}\nAgain.\n{_IMPACT[1]}"
+    text = _continuous(
+        f"{_EXEC[0]}\nExecution.\n{_EXEC[1]}",
+        duplicated,
+        f"{_STOP[0]}\nStops.\n{_STOP[1]}",
+    )
+    failures = verify_continuous_protocol(text)
+    assert any("continuous-impact" in failure and "exactly one" in failure for failure in failures)
+
+
+def test_prompt_library_p03_requires_each_delivery_contract_clause() -> None:
     blocks = _real_blocks()
-    body = _body(blocks).replace(_P03_DELIVERY_LINE, "")
+    for clause in P03_DELIVERY_CONTRACT_CLAUSES:
+        body = _body(blocks).replace(clause, "")
+        failures = verify_prompt_library(
+            _library(blocks, bodies={CONTINUOUS_PROMPT_ID: body}), _real_digests()
+        )
+        assert any(
+            "delivery contract clause" in failure and repr(clause) in failure
+            for failure in failures
+        ), (
+            clause,
+            failures,
+        )
+
+
+def test_prompt_library_p03_rejects_duplicated_delivery_contract_clauses() -> None:
+    blocks = _real_blocks()
+    for clause in P03_DELIVERY_CONTRACT_CLAUSES:
+        body = _body(blocks).replace(clause, f"{clause}\n\n{clause}")
+        failures = verify_prompt_library(
+            _library(blocks, bodies={CONTINUOUS_PROMPT_ID: body}), _real_digests()
+        )
+        assert any(
+            "delivery contract clause" in failure and repr(clause) in failure
+            for failure in failures
+        ), (
+            clause,
+            failures,
+        )
+
+
+def test_prompt_library_p03_rejects_reversed_delivery_contract_clauses() -> None:
+    blocks = _real_blocks()
+    clauses = list(P03_DELIVERY_CONTRACT_CLAUSES)
+    clauses[2], clauses[3] = clauses[3], clauses[2]
+    body = _body(blocks).replace(_P03_DELIVERY_CONTRACT, "\n\n".join(clauses))
     failures = verify_prompt_library(
         _library(blocks, bodies={CONTINUOUS_PROMPT_ID: body}), _real_digests()
     )
-    assert any("flagship delivery token" in failure for failure in failures), failures
+    assert any(
+        "delivery contract clauses must be in declared order" in failure for failure in failures
+    ), failures
 
 
 def test_prompt_classifications_pass_on_the_real_repo() -> None:

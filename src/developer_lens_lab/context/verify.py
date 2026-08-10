@@ -812,17 +812,36 @@ CONTINUOUS_MARKER_PAIRS = (
     ("<!-- continuous-stop-begin -->", "<!-- continuous-stop-end -->"),
 )
 # The overnight launcher is the flagship delivery governor, not a documentation-maintenance
-# default. These literal clauses make that role mechanically reviewable without altering the
-# product-shared prompt spine or its parity manifest.
-P03_DELIVERY_TOKENS = (
-    "FLAGSHIP DELIVERY GOVERNOR",
-    "IMPACT CONTRACT",
-    "MISSION DELIVERY",
-    "FINISH-BEFORE-EXPAND",
-    "coordinator does not write research implementation code",
-    "C0 invented data only",
-    "EXPERIMENT_LEDGER",
-    "FAILURE_ARCHIVE",
+# default. The clauses are human-readable, repo-specific operating rules rather than loose
+# keywords, so each must appear once and in this order outside the product-shared prompt spine.
+P03_DELIVERY_CONTRACT_CLAUSES = (
+    "FLAGSHIP OWNERSHIP: In Chris0Jeky/developer-lens-lab, the coordinator owns authority "
+    "interpretation, methodology architecture, experiment-programme selection, cross-repository "
+    "coordination, sequencing, and final merge judgment; the coordinator does not write research "
+    "implementation code.",
+    "SLICE IMPACT: Every selected slice records its consumer or research question, tangible "
+    "artifact/behavior/decision, owned paths/non-goals, acceptance behavior/focused proof, "
+    "data/capability/owner-gate state, evidence/docs update, and rollback/stop condition.",
+    "MISSION DELIVERY BEFORE MAINTENANCE: MISSION DELIVERY chooses the FIRST dependency-safe "
+    "ACTIVE card from tools/cards.py; only when no such card exists may it consider a tracked "
+    "issue, and "
+    "owner-focus/unlock ranking applies only where the card source explicitly permits a choice.",
+    "METRIC-ONLY REJECTION: Reject metric-only research work; a research slice must name an "
+    "actionable question or decision plus preregistration and holdout state.",
+    "FINISH-BEFORE-EXPAND: Drive existing pull requests and lanes to merge, archive, or park "
+    "before creating another write lane; no fixed numeric fleet cap applies.",
+    "REVIEW EVENTS ONLY: While CI or review ages, start another write lane only when it is "
+    "genuinely "
+    "disjoint and review/merge capacity exists; otherwise do read-only discovery or continue the "
+    "existing lane, and inspect review arrival only at workflow events.",
+    "C0/HOLDOUT AUTHORITY: Unattended experiments use C0 invented data only, give the "
+    "deterministic baseline the same selection budget, fit transforms on training data with "
+    "grouped splits, and "
+    "never open a final holdout without explicit custody instruction.",
+    "CONDITIONAL EVIDENCE CLOSEOUT: Update EXPERIMENT_LEDGER only when a run or holdout "
+    "decision occurred, FAILURE_ARCHIVE only when an approach was actually killed, and "
+    "IMPLEMENTATION_LEDGER "
+    "for code milestones; never fabricate entries.",
 )
 ALLOWED_PROMPT_CLASSIFICATIONS = ("redirect", "historical")
 
@@ -1055,11 +1074,22 @@ def _verify_active_body(prompt_id: str, body: str, blocks: dict[str, str]) -> li
             "<owner>/<repo>::HUMAN_TODO.md::q-N, because product q-8 and lab q-8 differ"
         )
     if prompt_id == CONTINUOUS_PROMPT_ID:
-        for token in P03_DELIVERY_TOKENS:
-            if token not in outside:
+        previous_position = -1
+        for clause in P03_DELIVERY_CONTRACT_CLAUSES:
+            count = outside.count(clause)
+            if count != 1:
                 failures.append(
-                    f"{PROMPT_LIBRARY}: {prompt_id} is missing flagship delivery token {token!r}"
+                    f"{PROMPT_LIBRARY}: {prompt_id} must carry exactly one delivery contract "
+                    f"clause {clause!r}, found {count}"
                 )
+                continue
+            position = outside.find(clause)
+            if position <= previous_position:
+                failures.append(
+                    f"{PROMPT_LIBRARY}: {prompt_id} delivery contract clauses must be in declared "
+                    "order"
+                )
+            previous_position = position
     return failures
 
 

@@ -1076,3 +1076,18 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - P03 and its impact protocol now require actionable research questions rather than metric-only
   work, declare capability and owner gates, and apply finish-before-expand review-capacity
   backpressure without a fixed fleet cap. No active-wave schema or capability implementation changed.
+
+## 2026-08-10 - P03 structured delivery-contract review fix (PR #63)
+
+- Replaced loose P03 delivery tokens with eight exact, ordered, single-copy Lab delivery clauses:
+  flagship ownership, slice impact, first-card mission delivery, metric-only rejection,
+  finish-before-expand, review-events-only, C0/holdout authority, and conditional evidence closeout.
+  Focused mutation coverage removes and duplicates every clause, reverses an adjacent clause pair,
+  and retains missing, duplicate, and reversed continuous-impact marker cases.
+- Corrected execution rules from connector feedback: `tools/cards.py` remains authoritative for the
+  first dependency-safe ACTIVE card; a tracked issue is considered only when no such card exists.
+  Evidence ledgers are conditional on their real events, and FR-050 now links durable Lab #34 comment
+  `5235339754` while retaining the verified `py -3 -m uv` workaround.
+- The full locked gate on this final pre-push tree passed through `py -3 -m uv`: sync, doctor,
+  context, Ruff format/check, Pyright, 193 pytest passes with 3 declared Windows symlink skips,
+  strict MkDocs, hygiene, and diff check. No shared prompt block or parity manifest changed.
