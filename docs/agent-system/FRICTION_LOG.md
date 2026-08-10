@@ -1443,7 +1443,7 @@ adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/develope
 Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
 scaffolding is needed.
 
-### FR-053 — a post-removal PowerShell regex check raised an invalid pattern error
+### FR-055 — a post-removal PowerShell regex check raised an invalid pattern error
 
 - **first-seen:** 2026-08-10
 - **status:** `workaround-verified`
@@ -1465,7 +1465,7 @@ scaffolding is needed.
   `String.Replace` for separators, never regex replacement. Keep the helper as issue #34 task debt;
   do not detour in this slice.
 
-### FR-054 — a narrowed append patch briefly introduced a leading-space diff
+### FR-056 — a narrowed append patch briefly introduced a leading-space diff
 
 - **first-seen:** 2026-08-10
 - **status:** `workaround-verified`
@@ -1474,7 +1474,7 @@ scaffolding is needed.
 - **impact:** No committed collateral change occurred. The exact diff exposed the whitespace drift,
   and a follow-up patch restored the existing line before commit.
 - **workaround:** Inspect the exact one-file diff and run `git diff --check` before committing.
-- **occurrences:** 1 independent occurrence — FR-053 append on 2026-08-10.
+- **occurrences:** 1 independent occurrence — FR-055 append on 2026-08-10.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked append and command-boundary helpers.
 - **promotion:** Deliberately not promoted after one occurrence; the exact-diff and whitespace
