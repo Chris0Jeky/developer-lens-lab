@@ -21,6 +21,11 @@ active_wave:
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
+      PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
+      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; GitHub reports DIRTY / CONFLICTING. Preserve its
+      coordinator-owned PR #56 refresh worktree, branch `docs/lab55-postmerge-refresh-20260810`, at
+      that same head: it has no nonignored changes, but ignored generated/cache outputs whose contents
+      were not inspected. Do not remove it until their ignored-output disposition is resolved.
     state: >-
       PARKED, not merge-sound, after two review rounds. The final local locked gate on the parked head
       was green: 198 passed, 3 declared Windows symlink skips, focused package-metadata proof 35
@@ -149,15 +154,15 @@ delivered:
       `31351467716`, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`, and had 3 resolved / 0
       unresolved review threads; its post-merge audit was clean.
 next_safe_slice: >-
-  From parked PR #65 head `91cf991b96b242680ab6839decb110422ab9755d`, keep production code unchanged;
-  replace the synthetic `SYSTEMROOT` literals at `tests/test_package_metadata.py` lines 414, 462,
-  and 542 with the one-backslash literal `r"C:\Windows"`, derive the expected executable at the current assertion
-  with `str(Path(synthetic_root) / "System32" / "taskkill.exe")`, run the focused taskkill/package
-  tests and the full locked gate, push, then require exact-head hosted green and fresh live
-  gate/review reconciliation before any merge judgment. This resume point is recorded in issue #29
-  comment `5243827843` and PR #65 final comment `5243827873`. Keep remaining hardening, asset, release,
-  publication, and tag work separate; no data, model, telemetry, contract, credential, or release
-  activation occurred.
+  SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests;
+  the current live inventory selected no other implementation seam in this hop. Then select a
+  different dependency-safe tracked LAB-REL-01 seam; if none exists, stop rather than manufacture
+  work. PR #65's portable patch is a PARKED REFERENCE only, not a next push: its exact resume reference
+  remains issue #29 comment `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
+  r"C:\Windows"` and `expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")`.
+  Reopen that reference only after a genuinely new unlocking event or explicit fresh authority. Keep
+  remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
+  contract, credential, or release activation occurred.
 release_and_owner_gates: >-
   Live `HUMAN_TODO.md` remains the owner-gate source: joint release remains reaffirmed, but no tag is
   authorized. The closed product
@@ -216,15 +221,16 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume from PR #65 exact parked head `91cf991b96b242680ab6839decb110422ab9755d` over base
-  `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Keep production code unchanged until the synthetic
-  `SYSTEMROOT` and host-`Path` assertion repair described in `next_safe_slice` is made on that PR
-  branch. Then rerun focused taskkill/package tests and the full locked gate, push, and require
-  exact-head hosted green plus fresh live gate/review reconciliation. The last landed main anchor
-  remains PR #64 at `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Preserve the parked short-redaction
-  lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
+  Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
+  push. The current live inventory selected no other implementation seam in this hop; select a
+  different dependency-safe tracked LAB-REL-01 seam or stop if none exists. PR #65 remains parked at
+  exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
+  `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
+  only and require a genuinely new unlocking event or explicit fresh authority before reopening.
+  The last landed main anchor remains PR #64 at `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Preserve
+  the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
   `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
-  uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not
-  the selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all
-  owner gates closed.
+  uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the
+  selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all owner
+  gates closed.
 ```
