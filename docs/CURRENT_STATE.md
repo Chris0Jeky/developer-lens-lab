@@ -217,8 +217,9 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume from live `origin/main` at `4519e193ff6601c3d1971bae2ef8444b16bf5d0d` after PR #63 merged
-  there. PR #63 final head `d48e09cf149d75aee92665e62f3893741cd98104` passed Check run
+  Resume from live `origin/main` after refreshing it with Git. The latest delivered anchor recorded
+  here is PR #63, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`. PR #63 final head
+  `d48e09cf149d75aee92665e62f3893741cd98104` passed Check run
   `31351467716`, had 3 resolved / 0 unresolved review threads, and its post-merge audit was clean;
   PR #62 immediately before it merged as `73a5b9653cccbb470c6bf9f0f5a4a7cd8d3cac45` from final
   head `e833c68314f874d89523e4c97f5a3293548465cd` after Check run `31346126369` and a clean
