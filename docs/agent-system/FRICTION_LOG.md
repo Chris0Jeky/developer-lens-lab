@@ -1442,3 +1442,25 @@ passed, but hosted pytest enforced the exact stable lane scalar and failed run `
 adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/developer-lens-lab/pull/66#issuecomment-5244014884).
 Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
 scaffolding is needed.
+
+### FR-053 — a post-removal PowerShell regex check raised an invalid pattern error
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** Protected plain removal of `developer-lens-lab-pr65-parked-state-20260810` completed
+  after target, registration, nonignored, and ignored-output checks, but the post-removal
+  verification used PowerShell regex replacement with a lone backslash and raised an invalid-regex
+  error.
+- **impact:** The cleanup operation itself succeeded, but that verification expression could not
+  establish absence. Direct literal `Test-Path` and `git worktree list` checks then confirmed the
+  target was absent and unregistered.
+- **workaround:** Use direct literal path checks for the removal result; do not use regex replacement
+  for separator normalization in the cleanup verification.
+- **occurrences:** 2 independent path-normalization/regex occurrences — this post-removal check and
+  the earlier state-worktree guard recorded at [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
+- **task:** [Lab #34 comment 5244433491](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5244433491)
+  tracks the recurrence and the reusable path helper task.
+- **promotion:** Select the cheapest enforcing layer: a reusable PowerShell path
+  normalization/comparison helper using `Resolve-Path` or `[IO.Path]::GetFullPath` plus literal
+  `String.Replace` for separators, never regex replacement. Keep the helper as issue #34 task debt;
+  do not detour in this slice.
