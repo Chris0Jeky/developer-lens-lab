@@ -92,6 +92,30 @@ them the session starts the next disjoint queue item.
   seam.** That is manufactured work wearing a rigour costume. A full benchmark run does not make a
   documentation review more thorough.
 
+## Lab merge decision seam
+
+Before a Lab pull request is merged, the coordinator produces one structured, invented-state
+snapshot and evaluates it with the report-only helper:
+
+```powershell
+uv run python tools/merge_eligibility.py .dllab/merge-eligibility/<snapshot>.json --now <utc-now>
+```
+
+The snapshot binds `expected` and `current` 40-character head/base SHAs, `pushed_head_sha` and
+`pushed_at`, and the exact required hosted check name (`Prove the lab`). Its complete,
+non-paginated, non-stale surfaces are
+`checks`, `formal_reviews`, `top_level_comments`, `closing_refs`, and `review_threads`; every
+surface and item carries the same head/base pair. The check must be completed and successful, a
+formal approval must exist with no `CHANGES_REQUESTED` review, and every review thread must be
+resolved. The evaluator enforces the governor's 15-minute `review_gates.aging_minutes_after_push`
+floor: a green snapshot younger than the floor, a moved head/base, or any missing, paginated,
+stale, malformed, or unresolved surface is ineligible. The result is a report only; it never
+calls a hosted service or performs a merge.
+
+Only one coherent snapshot may support the decision. Recollect the full snapshot after any head or
+base movement, new review, comment, check transition, or elapsed-age boundary; do not combine
+surfaces from different observations.
+
 ## Parking, not nursing
 
 One blocked lane is parked and the session continues. Parking records, in the lane's entry in
