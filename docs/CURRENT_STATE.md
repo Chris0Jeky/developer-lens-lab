@@ -151,7 +151,7 @@ delivered:
 next_safe_slice: >-
   From parked PR #65 head `91cf991b96b242680ab6839decb110422ab9755d`, keep production code unchanged;
   replace the synthetic `SYSTEMROOT` literals at `tests/test_package_metadata.py` lines 414, 462,
-  and 542 with one-backslash `rC:\Windows`, derive the expected executable at the current assertion
+  and 542 with the one-backslash literal `r"C:\Windows"`, derive the expected executable at the current assertion
   with `str(Path(synthetic_root) / "System32" / "taskkill.exe")`, run the focused taskkill/package
   tests and the full locked gate, push, then require exact-head hosted green and fresh live
   gate/review reconciliation before any merge judgment. This resume point is recorded in issue #29
@@ -219,8 +219,12 @@ exact_resume_point: >-
   Resume from PR #65 exact parked head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Keep production code unchanged until the synthetic
   `SYSTEMROOT` and host-`Path` assertion repair described in `next_safe_slice` is made on that PR
-  branch. Then rerun focused taskkill/package tests and the full locked gate, push, and require exact-
-  head hosted green plus fresh live gate/review reconciliation. The last landed main anchor remains
-  PR #64 at `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; preserve parked short-redaction facts above and
-  keep release/publication, tag, credentials, data, model, telemetry, and all owner gates closed.
+  branch. Then rerun focused taskkill/package tests and the full locked gate, push, and require
+  exact-head hosted green plus fresh live gate/review reconciliation. The last landed main anchor
+  remains PR #64 at `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Preserve the parked short-redaction
+  lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
+  `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
+  uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not
+  the selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all
+  owner gates closed.
 ```
