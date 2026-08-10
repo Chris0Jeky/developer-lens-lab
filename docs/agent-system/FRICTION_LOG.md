@@ -562,10 +562,17 @@ retains only the bounded action and its authority limits.
   its exact head, base, draft state, and hosted-check state unverified if the URL is not retained.
 - **workaround:** Capture the number printed by `gh pr create` and pass that exact number to every
   `gh pr view --repo` verification read.
-- **occurrences:** 1 independent occurrence — 2026-08-09 while opening the community-files PR.
+- **occurrences:** 2 independent occurrences — 2026-08-09 while opening the community-files PR and
+  2026-08-10 while verifying PR #61 after connector creation.
 - **task:** lab issue #34 tracks the external Windows/GitHub CLI workflow boundary.
-- **promotion:** Deliberately NOT promoted after one occurrence. If it recurs, add a checked wrapper
-  that captures the created PR URL/number and performs the exact numbered re-read.
+- **promotion:** At the second occurrence, the selected layer is a checked create-and-reread wrapper
+  that requires the connector result's PR number or an explicit head branch, then performs the exact
+  numbered/branched read before reporting success; issue #34 retains implementation.
+
+_Note 2026-08-10 (PR #61 creation):_ Connector creation returned no rendered PR number to this
+session, and the first `gh pr view --repo` verification failed without state. The explicit head
+branch retry identified ready PR #61 at the pushed head and confirmed its base, empty closing-issue
+set, and in-progress hosted check. No PR or repository mutation occurred in the failed read.
 
 ### FR-017 - PowerShell lacks `Get-Date -AsUTC`
 
