@@ -1419,3 +1419,19 @@ four unresolved PR #60 threads.
 - **task:** Lab #34 comment `5242537913` tracks the checked create/update-and-reread helper.
 - **promotion:** Deliberately not promoted after one occurrence; promote on a second independent
   occurrence.
+
+_Note 2026-08-10 (PR #65 and state-sync worktree guard):_ PR #65's bundled
+`inspect_pr_checks.py` failed at the Windows cp1252 boundary after reaching the completed check,
+and a later PR-body em-dash-to-`?` mutation was detected and repaired by numbered-PR reread. These
+are the second and third independent Windows text-boundary occurrences in the FR-047 lineage; see
+[Lab #34 comment 5243638848](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243638848)
+and [Lab #34 comment 5243837462](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243837462).
+The cheapest enforcing layer is explicit end-to-end UTF-8/error handling plus numbered-PR reread;
+the remaining enforcement task debt is outside this repository in the plugin cache. The related
+FR-053/FR-054 records remain only on the parked, unmerged PR #65 branch and are not claims about
+main.
+
+The first state worktree guard stopped safely because Git forward slashes and PowerShell backslashes
+compared literally; no worktree or branch was created. `Resolve-Path` normalization fixed the guard
+on the next attempt. This is occurrence 1; see [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
+Promote this guard only if the path-normalization failure recurs.
