@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tomllib
 from pathlib import Path
+from typing import Protocol, cast
 
 import pytest
 
@@ -31,8 +32,15 @@ def _stub_uv_command(*, cwd: Path, environment: dict[str, str]) -> list[str]:
     return ["uv"]
 
 
+class _WindowsByteLocker(Protocol):
+    LK_NBLCK: int
+    LK_UNLCK: int
+
+    def locking(self, file_descriptor: int, mode: int, length: int) -> None: ...
+
+
 class _CompletedPopen:
-    def __init__(self, returncode: int, stdout: str = "", stderr: str = "") -> None:
+    def __init__(self, returncode: int | None, stdout: str = "", stderr: str = "") -> None:
         self.pid = 4312
         self.returncode: int | None = returncode
         self._stdout = stdout
@@ -380,17 +388,22 @@ def test_package_smoke_run_reports_timeout_without_environment(
 ) -> None:
     class TimeoutPopen(_CompletedPopen):
         def __init__(self) -> None:
-            super().__init__(0)
-            self._attempts = 0
+            super().__init__(None)
+            self.timeouts: list[float | None] = []
 
         def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
-            self._attempts += 1
-            if self._attempts == 1:
+            self.timeouts.append(timeout)
+            if len(self.timeouts) == 1:
                 raise subprocess.TimeoutExpired(["uv"], timeout or 0)
+            self.returncode = -9
             return super().communicate(timeout=timeout)
 
+    processes: list[TimeoutPopen] = []
+
     def timeout_popen(*_args: object, **_kwargs: object) -> TimeoutPopen:
-        return TimeoutPopen()
+        process = TimeoutPopen()
+        processes.append(process)
+        return process
 
     def successful_taskkill(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess([], 0)
@@ -412,6 +425,8 @@ def test_package_smoke_run_reports_timeout_without_environment(
         message == "package smoke command timed out after 300 seconds: uv pip install package.whl"
     )
     assert "must-not-appear" not in message
+    assert processes[0].timeouts == [300, PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS]
+    assert processes[0].returncode == -9
 
 
 def test_package_smoke_timeout_uses_taskkill_and_reaps_direct_child(
@@ -419,23 +434,27 @@ def test_package_smoke_timeout_uses_taskkill_and_reaps_direct_child(
 ) -> None:
     class TimeoutPopen(_CompletedPopen):
         def __init__(self) -> None:
-            super().__init__(0)
-            self._attempts = 0
+            super().__init__(None)
+            self.timeouts: list[float | None] = []
 
         def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
-            self._attempts += 1
-            if self._attempts == 1:
+            self.timeouts.append(timeout)
+            if len(self.timeouts) == 1:
                 raise subprocess.TimeoutExpired(["synthetic-tool"], timeout or 0)
+            self.returncode = -9
             return super().communicate(timeout=timeout)
 
     taskkill_calls: list[tuple[list[str], dict[str, object]]] = []
+    processes: list[TimeoutPopen] = []
 
     def taskkill(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         taskkill_calls.append((command, kwargs))
         return subprocess.CompletedProcess(command, 0)
 
     def timeout_popen(*_args: object, **_kwargs: object) -> TimeoutPopen:
-        return TimeoutPopen()
+        process = TimeoutPopen()
+        processes.append(process)
+        return process
 
     monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
@@ -446,6 +465,8 @@ def test_package_smoke_timeout_uses_taskkill_and_reaps_direct_child(
         _run(["synthetic-tool"], cwd=tmp_path, environment={"SAFE": "yes"})
 
     assert exc_info.value.__cause__ is None
+    assert processes[0].timeouts == [300, PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS]
+    assert processes[0].returncode == -9
     assert taskkill_calls == [
         (
             [r"C:\Windows\System32\taskkill.exe", "/PID", "4312", "/T", "/F"],
@@ -472,7 +493,7 @@ def test_package_smoke_timeout_fails_closed_without_raw_cleanup_details(
     raw_taskkill_output = "invented-taskkill-output"
 
     def timeout_popen(*_args: object, **_kwargs: object) -> TimeoutPopen:
-        return TimeoutPopen(0)
+        return TimeoutPopen(None)
 
     def failed_taskkill(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess([], 1, stderr=raw_taskkill_output)
@@ -493,24 +514,64 @@ def test_package_smoke_timeout_fails_closed_without_raw_cleanup_details(
     assert raw_taskkill_output not in message
 
 
+def test_package_smoke_timeout_fails_closed_when_bounded_reap_times_out(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    class TimeoutPopen(_CompletedPopen):
+        def __init__(self) -> None:
+            super().__init__(None)
+            self.timeouts: list[float | None] = []
+
+        def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
+            self.timeouts.append(timeout)
+            raise subprocess.TimeoutExpired(["synthetic-tool"], timeout or 0)
+
+    processes: list[TimeoutPopen] = []
+
+    def timeout_popen(*_args: object, **_kwargs: object) -> TimeoutPopen:
+        process = TimeoutPopen()
+        processes.append(process)
+        return process
+
+    def successful_taskkill(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess([], 0)
+
+    monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", successful_taskkill)
+    monkeypatch.setenv("SYSTEMROOT", r"C:\\Windows")
+
+    with pytest.raises(
+        RuntimeError, match=r"^package smoke process-tree cleanup could not be confirmed$"
+    ):
+        _run(["synthetic-tool"], cwd=tmp_path, environment={})
+
+    assert processes[0].timeouts == [300, PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS]
+    assert processes[0].returncode is None
+
+
 def test_package_smoke_posix_timeout_kills_its_new_process_group(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     class TimeoutPopen(_CompletedPopen):
         def __init__(self) -> None:
-            super().__init__(0)
-            self._attempts = 0
+            super().__init__(None)
+            self.timeouts: list[float | None] = []
 
         def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
-            self._attempts += 1
-            if self._attempts == 1:
+            self.timeouts.append(timeout)
+            if len(self.timeouts) == 1:
                 raise subprocess.TimeoutExpired(["synthetic-tool"], timeout or 0)
+            self.returncode = -9
             return super().communicate(timeout=timeout)
 
     calls: list[tuple[int, int]] = []
+    processes: list[TimeoutPopen] = []
 
     def timeout_popen(*_args: object, **_kwargs: object) -> TimeoutPopen:
-        return TimeoutPopen()
+        process = TimeoutPopen()
+        processes.append(process)
+        return process
 
     def record_killpg(pid: int, received_signal: int) -> None:
         calls.append((pid, received_signal))
@@ -528,17 +589,18 @@ def test_package_smoke_posix_timeout_kills_its_new_process_group(
         _run(["synthetic-tool"], cwd=tmp_path, environment={})
 
     assert calls == [(4312, 9)]
+    assert processes[0].timeouts == [300, PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS]
+    assert processes[0].returncode == -9
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows taskkill proof")
 def test_package_smoke_timeout_removes_invented_child_grandchild_lock(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    import msvcrt
-
     helper = ROOT / "tests" / "helpers" / "package_smoke_process_tree.py"
     lock_path = tmp_path / "invented.lock"
     ready_path = tmp_path / "ready"
+    locker = cast(_WindowsByteLocker, __import__("msvcrt"))
     monkeypatch.setattr("scripts.verify_package_smoke.PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS", 2)
 
     with pytest.raises(RuntimeError, match="timed out after 2 seconds"):
@@ -550,8 +612,9 @@ def test_package_smoke_timeout_removes_invented_child_grandchild_lock(
 
     assert ready_path.exists()
     with lock_path.open("r+b") as lock_file:
-        msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
-        msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+        lock_file.seek(0)
+        locker.locking(lock_file.fileno(), locker.LK_NBLCK, 1)
+        locker.locking(lock_file.fileno(), locker.LK_UNLCK, 1)
 
 
 def test_package_smoke_run_reports_bounded_redacted_diagnostics(

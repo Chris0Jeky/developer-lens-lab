@@ -1435,3 +1435,20 @@ four unresolved PR #60 threads.
 - **task:** Lab #34 tracks durable governor/delegation reliability follow-up.
 - **promotion:** Deliberately not promoted after one occurrence; do not infer a cause from the
   missing handoff.
+
+### FR-054 — bundled GitHub helper hit Windows subprocess-decoding failure again
+
+- **first-seen:** 2026-08-10
+- **status:** `tracked-task-debt`
+- **symptom:** PR #65's bundled `inspect_pr_checks.py` completed authentication and run fetch,
+  then Windows cp1252 decoding failed on byte `0x81`; its later `log_text` use was `None`.
+- **impact:** The helper could not provide CI-log evidence for the completed run.
+- **workaround:** Use the separately retrieved completed-run metadata and do not treat the failed
+  helper output as evidence.
+- **occurrences:** 2 independent occurrences including FR-047 — a GitHub subprocess response
+  crossed an unhandled Windows text-decoding boundary.
+- **task:** Lab #34 comment `5243638848` tracks explicit encoding/error handling at the bundled
+  helper subprocess boundary.
+- **promotion:** The cheapest enforcing layer is explicit encoding/error handling in that helper,
+  but it remains task debt because the plugin cache is outside this repository; capture is not
+  permission to detour.

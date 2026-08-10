@@ -13,6 +13,7 @@ def _lock_one_byte(path: Path, ready_path: Path) -> None:
     with path.open("w+b") as lock_file:
         lock_file.write(b"x")
         lock_file.flush()
+        lock_file.seek(0)
         if os.name == "nt":
             import msvcrt
 

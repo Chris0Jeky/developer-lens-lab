@@ -1105,5 +1105,5 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   the lock resource became available after `taskkill /T`; focused
   `py -3 -m uv run pytest tests/test_package_metadata.py -q` passed (34 tests).
 - The full locked code/config gate passed from this worktree: locked sync, doctor, context, Ruff
-  format/check, Pyright, 197 tests with 3 declared unavailable-symlink skips, strict MkDocs, and
+  format/check, Pyright, 198 tests with 3 declared unavailable-symlink skips, strict MkDocs, and
   hygiene. The generated documentation directory remains ignored.
