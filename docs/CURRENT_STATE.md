@@ -134,6 +134,15 @@ delivered:
       delayed proof; the paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean but does
       not retroactively repair the age miss. FR-028 and issue #29 comment `5234553210` plus issue
       #34 comment `5234553289` preserve the correction.
+  - pr61_history_reconciliation: >-
+      DONE — PR #61 final head `9ad495e587f74f9ed0b74bf28917935dd4bbe1d1` over base
+      `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7` passed hosted run `31344915046`, exact-head Codex
+      review, complete thread triage, zero closing refs, and 17m04s age, then merged at
+      2026-08-10T00:53:07Z as `25567559c649b676f18a7809151d6095a80b271e`. The merge was first
+      observed after a concurrent read-only snapshot and was not issued by this coordinator;
+      FR-033 records the third missing-operation-context occurrence without inferring an actor. The
+      all-surface 2026-08-10T01:03:39Z sweep was clean: no post-merge review/comment/thread activity,
+      zero unresolved threads, and zero closing refs.
 next_safe_slice: >-
   Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
   `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
@@ -200,8 +209,12 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume from live `origin/main` after refreshing it with Git; this follow-up observed PR #60 merged
-  there as `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7` after merged PR #55
+  Resume from live `origin/main` after refreshing it with Git; PR #61 is merged there as
+  `25567559c649b676f18a7809151d6095a80b271e` after exact head
+  `9ad495e587f74f9ed0b74bf28917935dd4bbe1d1` satisfied hosted proof, review/thread, closing-ref, and
+  15-minute age gates. This follow-up did not issue the merge; FR-033 records the concurrent
+  operation-context recurrence. PR #60 previously merged as
+  `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7` after merged PR #55
   (`02dcfb261f7216f01aa5696888715ac42f0e3830`), PR #57
   (`64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`), and PR #59
   (`e5a85b20a130518a8307ebdb4cb48c3dbbb85052`, closing issue #58). PR #57 completes the

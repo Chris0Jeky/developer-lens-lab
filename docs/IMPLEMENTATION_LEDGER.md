@@ -1038,3 +1038,22 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   2026-08-10T00:06:40.440807Z was clean, but it does not retroactively satisfy the pre-merge age
   gate. FR-028 records the third occurrence; issue #29 comment `5234553210` and issue #34 comment
   `5234553289` retain the live reconciliation evidence.
+
+## 2026-08-10 — PR #61 history reconciliation merge (issues #29/#34)
+
+- PR #61 final head `9ad495e587f74f9ed0b74bf28917935dd4bbe1d1` over base
+  `ebc8626d6ebd808ecec0a665bf8be5d69fdb67d7` corrected PR #60's 11m33s age miss and delayed-sweep
+  history, while preserving PR #56 as closed, unmerged, superseded, and worktree-preserved.
+- Hosted run `31344915046` / job `93324950033` succeeded on the exact head. The exact-head Codex
+  review was triaged, all 3 review threads were resolved, closing refs were zero, and the head was
+  17m04s old at merge. GitHub records merge commit
+  `25567559c649b676f18a7809151d6095a80b271e` at 2026-08-10T00:53:07Z.
+- A read-only observer reported the PR open and gate-eligible at 00:52:07Z; the next coordinator
+  snapshot found it merged before this coordinator issued any merge request. GitHub identifies the
+  account but not the issuing process, so no human/session attribution is inferred and no duplicate
+  merge was attempted. FR-033 records this third concurrent operation-context occurrence; issue
+  #34 retains the already-selected ownership-token or merge-lease preflight.
+- The all-surface 2026-08-10T01:03:39Z delayed sweep was past the measured 10-minute connector
+  window and clean: 1 top-level comment, 6 reviews, 3 resolved threads, zero unresolved threads,
+  zero closing refs, and no activity after the 00:53:07Z merge. No release, tag, publication, asset
+  review, credential, data, model, telemetry, or protected-data action occurred.
