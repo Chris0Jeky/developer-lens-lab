@@ -15,7 +15,7 @@ branch: main
 head: refresh with git rev-parse origin/main
 active_wave:
   - lane: >-
-      LAB-REL-01 v0.1.0 release wave (issue #29), with process-tree follow-up PR #65 parked
+      LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
       Main's last landed change remains PR #64, merged at
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. PR #65 is open and ready (not draft), based on

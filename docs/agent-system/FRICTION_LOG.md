@@ -1435,3 +1435,10 @@ The first state worktree guard stopped safely because Git forward slashes and Po
 compared literally; no worktree or branch was created. `Resolve-Path` normalization fixed the guard
 on the next attempt. This is occurrence 1; see [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
 Promote this guard only if the path-normalization failure recurs.
+
+_Note 2026-08-10 (PR #66 divergence):_ Focused context verification, strict MkDocs, and hygiene
+passed, but hosted pytest enforced the exact stable lane scalar and failed run `31416319955`
+(195 passed / 1 failed). The direct fix is to restore that scalar and keep PR #65 parked status prose
+adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/developer-lens-lab/pull/66#issuecomment-5244014884).
+Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
+scaffolding is needed.
