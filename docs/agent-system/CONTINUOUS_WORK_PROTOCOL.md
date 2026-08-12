@@ -213,6 +213,16 @@ snapshot must quote the identifier exactly as the surface records it. Booleans a
 identifiers on either side, since `bool` is an `int` in Python and `true` would otherwise match
 `1`.
 
+An attested **top-level comment** must additionally cite the expected head SHA in its own text. The
+snapshot carries the comment's `body`, and the full 40-hex `expected.head_sha` must appear in it;
+otherwise the snapshot is `unanchored_accepted_review`. GitHub binds a formal review to a commit
+natively, so a `formal_reviews` attestation needs no `body` — its per-item head binding is
+collectable from the review's own `commit_id`. A top-level comment has no such anchor, so without
+this check a stale review comment written about an older head could carry the gate for a new one.
+This estate's fresh-context reviews always cite the exact head SHA they reviewed, so the check makes
+an existing convention mechanical rather than adding a new obligation. Only the attested item needs
+a `body`; the other `top_level_comments` items are unaffected.
+
 ### Closing references
 
 Any item in the `closing_refs` surface makes the snapshot ineligible — a closing keyword once
