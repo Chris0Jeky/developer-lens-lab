@@ -28,6 +28,9 @@ _ATTESTABLE_SURFACES: dict[str, str] = {
     "formal_reviews": "review_id",
     "top_level_comments": "comment_id",
 }
+# A closed vocabulary: an absent, non-string or unrecognised review state must never read as
+# "not CHANGES_REQUESTED", which is the one way missing evidence could otherwise become a pass.
+_REVIEW_STATES = frozenset({"APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED", "PENDING"})
 
 
 @dataclass(frozen=True)
@@ -37,6 +40,7 @@ class MergeEligibilityReport:
     eligible: bool
     reasons: tuple[str, ...]
     age_minutes: float | None
+    snapshot_age_minutes: float | None
     required_age_minutes: int
     expected_head_sha: str | None
     expected_base_sha: str | None
@@ -48,6 +52,7 @@ class MergeEligibilityReport:
             "eligible": self.eligible,
             "reasons": list(self.reasons),
             "age_minutes": self.age_minutes,
+            "snapshot_age_minutes": self.snapshot_age_minutes,
             "required_age_minutes": self.required_age_minutes,
             "expected_head_sha": self.expected_head_sha,
             "expected_base_sha": self.expected_base_sha,
@@ -226,11 +231,28 @@ def evaluate_merge_eligibility(
         reasons.append("naive_observation_time")
         observed_at = observed_at.replace(tzinfo=UTC)
     observed_at = observed_at.astimezone(UTC)
+
+    # Aging is a property of when the snapshot was COLLECTED, not of when it is evaluated: a
+    # snapshot collected minutes after the push cannot mature by being read later.  The same
+    # constant bounds how long a collected snapshot stays usable, because the validity window and
+    # the aging floor are the same observation quantum.
+    collected_at = _parse_timestamp(snapshot.get("collected_at"))
+    snapshot_age_minutes: float | None = None
+    if collected_at is None:
+        reasons.append("invalid_collected_at")
+    else:
+        snapshot_age = observed_at - collected_at
+        snapshot_age_minutes = snapshot_age.total_seconds() / 60
+        if snapshot_age < timedelta(0):
+            reasons.append("future_collected_at")
+        elif snapshot_age_minutes > AGING_MINUTES_AFTER_PUSH:
+            reasons.append("stale_snapshot")
+
     age_minutes: float | None = None
     if pushed_at is None:
         reasons.append("invalid_pushed_at")
-    else:
-        age = observed_at - pushed_at
+    elif collected_at is not None:
+        age = collected_at - pushed_at
         age_minutes = age.total_seconds() / 60
         if age < timedelta(0):
             reasons.append("future_pushed_at")
@@ -290,10 +312,17 @@ def evaluate_merge_eligibility(
         if _string(check.get("conclusion")) != "success":
             reasons.append("required_check_not_green")
 
-    reviews = surface_items["formal_reviews"]
-    review_states = {
-        _string(record.get("state")) for item in reviews if (record := _mapping(item)) is not None
-    }
+    review_states: set[str] = set()
+    for index, item in enumerate(surface_items["formal_reviews"]):
+        record = _mapping(item)
+        state = _string(record.get("state")) if record is not None else None
+        if state is None or state not in _REVIEW_STATES:
+            reasons.append(f"invalid_review_state:{index}")
+            continue
+        if state == "PENDING":
+            # An in-flight review is an incomplete record, not an absent objection.
+            reasons.append(f"pending_formal_review:{index}")
+        review_states.add(state)
     if "CHANGES_REQUESTED" in review_states:
         reasons.append("changes_requested")
 
@@ -316,6 +345,7 @@ def evaluate_merge_eligibility(
         eligible=not unique_reasons,
         reasons=unique_reasons,
         age_minutes=age_minutes,
+        snapshot_age_minutes=snapshot_age_minutes,
         required_age_minutes=AGING_MINUTES_AFTER_PUSH,
         expected_head_sha=expected_head,
         expected_base_sha=expected_base,
@@ -347,8 +377,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (ValueError, json.JSONDecodeError):
         print(json.dumps({"eligible": False, "reasons": ["invalid_snapshot"]}))
         return 1
-    observation = _parse_timestamp(args.now) if args.now else None
-    if args.now and observation is None:
+    # An empty ``--now`` is a supplied-but-unusable value, not an omitted one; falling back to the
+    # wall clock there would silently relax the observation time the caller asked for.
+    observation = _parse_timestamp(args.now) if args.now is not None else None
+    if args.now is not None and observation is None:
         print(json.dumps({"eligible": False, "reasons": ["invalid_now"]}))
         return 1
     report = evaluate_merge_eligibility(snapshot, now=observation)
