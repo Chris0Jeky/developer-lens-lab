@@ -151,16 +151,37 @@ snapshot and evaluates it with the report-only helper:
 uv run python tools/merge_eligibility.py .dllab/merge-eligibility/<snapshot>.json --now <utc-now>
 ```
 
-The snapshot binds `expected` and `current` 40-character head/base SHAs, `pushed_head_sha` and
-`pushed_at`, and the exact required hosted check name (`Prove the lab`). Its complete,
-non-paginated, non-stale surfaces are
+The snapshot names the `repository` as `Chris0Jeky/developer-lens-lab` — the field is mandatory and
+any other value is refused — and binds `expected` and `current` 40-character head/base SHAs,
+`pushed_head_sha`, `pushed_at`, `collected_at`, and the exact required hosted check name
+(`Prove the lab`). Its complete, non-paginated, non-stale surfaces are
 `checks`, `formal_reviews`, `top_level_comments`, `closing_refs`, and `review_threads`; every
-surface and item carries the same head/base pair. The check must be completed and successful, no
-review may be in `CHANGES_REQUESTED`, and every review thread must be resolved. The evaluator
-enforces the governor's 15-minute `review_gates.aging_minutes_after_push` floor: a green snapshot
-younger than the floor, a moved head/base, or any missing, paginated, stale, malformed, or
-unresolved surface is ineligible. The result is a report only; it never calls a hosted service or
-performs a merge.
+surface and item carries the same head/base pair. The check must be completed and successful and
+every review thread must be resolved. A moved head/base, or any missing, paginated, stale,
+malformed, or unresolved surface, is ineligible. The result is a report only; it never calls a
+hosted service or performs a merge.
+
+### Aging binds to collection, not evaluation
+
+`pushed_at` and `collected_at` are RFC3339 `Z` timestamps, and the exact-head age the governor's
+15-minute `review_gates.aging_minutes_after_push` floor tests is **`collected_at − pushed_at`**. A
+snapshot gathered three minutes after a push does not mature by being evaluated an hour later; only
+a fresh collection can satisfy the floor. The same constant bounds the other direction: when the
+observation time is more than 15 minutes after `collected_at` the snapshot is `stale_snapshot` and
+must be recollected, because the validity window and the aging floor are the same observation
+quantum. A missing or malformed `collected_at` is `invalid_collected_at`, a `collected_at` after
+the observation time is `future_collected_at`, and a `pushed_at` after `collected_at` is
+`future_pushed_at`. The report carries both `age_minutes` and `snapshot_age_minutes` so the
+coordinator can see which of the two bounds is binding.
+
+### Formal review states
+
+Every `formal_reviews` item must carry a `state` string drawn from the closed vocabulary
+`APPROVED`, `CHANGES_REQUESTED`, `COMMENTED`, `DISMISSED`, `PENDING`. An absent, non-string, or
+unrecognised state is `invalid_review_state:<index>` rather than an implicit "no objection" — that
+was the one place where missing evidence could have become a pass. A `PENDING` review is
+`pending_formal_review:<index>`, because an in-flight review is an incomplete record. Any
+`CHANGES_REQUESTED` review is `changes_requested`.
 
 ### The accepted-review attestation
 
@@ -186,6 +207,11 @@ that surface, and both the attestation and the matched item must carry the expec
 attestable like any other item and gets no special treatment. Naming nothing, naming an
 unattestable surface or identifier, naming an item that is not there, or naming one bound to a
 different head/base is ineligible.
+
+Identifier matching is **type-strict**: the string `"501"` never matches the integer `501`, so the
+snapshot must quote the identifier exactly as the surface records it. Booleans are never valid
+identifiers on either side, since `bool` is an `int` in Python and `true` would otherwise match
+`1`.
 
 ### Closing references
 
