@@ -17,9 +17,11 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      Main's last landed change is PR #68, merged at
-      `07929a41fa8c80f05794db9a58fa0bf014b4f961` on 2026-08-12T16:14:34Z after a 17m51s exact-head
-      age, so the binding 15-minute floor held. PR #65 is open and ready (not draft), based on
+      Main's last landed change is PR #69, merged at
+      `c978783efe028aeb8c545f05fbe8cbc1862c5fa3` on 2026-08-12T16:50:37Z (the collision-salvage
+      friction record), on top of the PR #68 delivery merge
+      `07929a41fa8c80f05794db9a58fa0bf014b4f961` of 2026-08-12T16:14:34Z, whose 17m51s exact-head
+      age held the binding 15-minute floor. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
@@ -180,8 +182,9 @@ delivered:
       closed, plus a CLEAN micro-verification of round 2; and three Codex review rounds triaged with
       dispositions recorded on the thread. Lane coordination during the pipeline: a second
       coordinator posted a stale-read adoption comment at 15:41:29Z citing the superseded head and
-      formally stood down at 16:11:29Z after the ownership clarification; one writer held throughout
-      and no ref was raced. Post-ceiling P1/P2 findings are tracked on issue #29 comments
+      formally stood down at 16:11:29Z after the ownership clarification; FR-061 records that the
+      adopting session had run a full duplicate implementation round whose push was rejected
+      non-fast-forward, so no ref moved and one writer held the branch throughout. Post-ceiling P1/P2 findings are tracked on issue #29 comments
       `5269020473` and `5269401432`: PR-identity binding, a dismissed-review state allowlist, and
       identifier validation. Worktree disposition: removal of the merged helper worktree was
       interrupted mid-operation, so its stale registration was pruned, but an unregistered leftover
@@ -201,7 +204,11 @@ next_safe_slice: >-
   already-selected frozen exhibit**, run under `DL-P09-RELEASE-CURATOR` in
   `docs/agent-system/PROMPT_LIBRARY.md`: stage the C0 asset set with its provenance checksums,
   record the release-review result, and hand the publication decision back. No publication and no
-  tag are authorized by that slice. After it come the final changelog sync and the screenshot/video
+  tag are authorized by that slice. FR-062 dependency: while the agent floor blocks the GraphQL
+  thread-state read route, a merge-eligibility snapshot cannot carry a complete `review_threads`
+  surface and the helper correctly refuses eligibility — Lane-P slices that end in a merge must
+  therefore run in a session with a collectible thread-state route, or land the Lab #34 read-route
+  work first. After it come the final changelog sync and the screenshot/video
   package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together with
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The three tracked helper-hardening
   follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
