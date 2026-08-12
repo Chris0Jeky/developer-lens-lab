@@ -20,6 +20,14 @@ REQUIRED_CHECK_NAME = "Prove the lab"
 AGING_MINUTES_AFTER_PUSH = 15
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _SURFACES = ("checks", "formal_reviews", "top_level_comments", "closing_refs", "review_threads")
+# GitHub forbids approving your own pull request and every Lab pull request is authored by the
+# single owner account, so a formal APPROVED state can never appear here.  The practiced gate is
+# instead an accepted, exact-head review: a fresh-context review posted as a top-level comment, or
+# a connector review.  The snapshot must therefore name which bound item carries that acceptance.
+_ATTESTABLE_SURFACES: dict[str, str] = {
+    "formal_reviews": "review_id",
+    "top_level_comments": "comment_id",
+}
 
 
 @dataclass(frozen=True)
@@ -89,6 +97,79 @@ def _parse_timestamp(value: object) -> datetime | None:
     if parsed.tzinfo is None:
         return None
     return parsed.astimezone(UTC)
+
+
+def _identifier(value: object) -> int | str | None:
+    # ``bool`` is an ``int`` subclass; a boolean is never a GitHub identifier.
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value:
+        return value
+    return None
+
+
+def _same_identifier(left: int | str, right: object) -> bool:
+    candidate = _identifier(right)
+    if candidate is None:
+        return False
+    return type(candidate) is type(left) and candidate == left
+
+
+def _bound_to_expected(
+    record: Mapping[str, object],
+    expected_head: str | None,
+    expected_base: str | None,
+) -> bool:
+    head = _sha(record.get("head_sha"))
+    base = _sha(record.get("base_sha"))
+    if head is None or expected_head is None or head != expected_head:
+        return False
+    return base is not None and expected_base is not None and base == expected_base
+
+
+def _evaluate_accepted_review(
+    snapshot: Mapping[str, object],
+    surface_items: Mapping[str, list[object]],
+    expected_head: str | None,
+    expected_base: str | None,
+    reasons: list[str],
+) -> None:
+    """Require one named, exact-head review item to carry the acceptance."""
+
+    attestation = _mapping(snapshot.get("accepted_review"))
+    if attestation is None:
+        reasons.append("missing_accepted_review")
+        return
+
+    surface_name = _string(attestation.get("surface"))
+    identifier_field = _ATTESTABLE_SURFACES.get(surface_name) if surface_name is not None else None
+    if identifier_field is None:
+        reasons.append("invalid_accepted_review_surface")
+
+    identifier = _identifier(attestation.get("id"))
+    if identifier is None:
+        reasons.append("invalid_accepted_review_id")
+
+    if not _bound_to_expected(attestation, expected_head, expected_base):
+        reasons.append("stale_accepted_review")
+
+    if identifier_field is None or identifier is None or surface_name is None:
+        return
+
+    matches = [
+        record
+        for item in surface_items.get(surface_name, [])
+        if (record := _mapping(item)) is not None
+        and _same_identifier(identifier, record.get(identifier_field))
+    ]
+    if not matches:
+        reasons.append("unknown_accepted_review")
+        return
+    for record in matches:
+        if not _bound_to_expected(record, expected_head, expected_base):
+            reasons.append("stale_accepted_review")
 
 
 def evaluate_merge_eligibility(
@@ -213,10 +294,16 @@ def evaluate_merge_eligibility(
     review_states = {
         _string(record.get("state")) for item in reviews if (record := _mapping(item)) is not None
     }
-    if "APPROVED" not in review_states:
-        reasons.append("formal_approval_missing")
     if "CHANGES_REQUESTED" in review_states:
         reasons.append("changes_requested")
+
+    _evaluate_accepted_review(snapshot, surface_items, expected_head, expected_base, reasons)
+
+    # A closing keyword once auto-closed a live programme issue from an unrelated merge, so any
+    # closing reference is refused here; an intentional issue-completing merge needs a coordinator
+    # override recorded outside this report-only tool.
+    for index in range(len(surface_items["closing_refs"])):
+        reasons.append(f"closing_reference_present:{index}")
 
     for index, item in enumerate(surface_items["review_threads"]):
         record = _mapping(item)
