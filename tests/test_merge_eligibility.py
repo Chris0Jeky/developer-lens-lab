@@ -1,18 +1,26 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import cast
 
-from tools.merge_eligibility import evaluate_merge_eligibility
+from tools.merge_eligibility import AGING_MINUTES_AFTER_PUSH, evaluate_merge_eligibility
 
 HEAD = "a" * 40
 BASE = "b" * 40
 OTHER = "c" * 40
 PUSHED_AT = "2026-08-10T12:00:00Z"
+COLLECTED_AT = "2026-08-10T12:15:00Z"
 NOW = datetime(2026, 8, 10, 12, 15, tzinfo=UTC)
+PULL_REQUEST_NUMBER = 68
 REVIEW_ID = 501
 COMMENT_ID = 101
+
+
+def _bound() -> dict[str, object]:
+    return {"head_sha": HEAD, "base_sha": BASE}
 
 
 def _surface(items: list[dict[str, object]]) -> dict[str, object]:
@@ -22,18 +30,21 @@ def _surface(items: list[dict[str, object]]) -> dict[str, object]:
         "stale": False,
         "head_sha": HEAD,
         "base_sha": BASE,
+        "pull_request_number": PULL_REQUEST_NUMBER,
         "items": items,
     }
 
 
 def _snapshot() -> dict[str, object]:
-    bound = {"head_sha": HEAD, "base_sha": BASE}
+    bound = _bound()
     return {
         "repository": "Chris0Jeky/developer-lens-lab",
+        "pull_request_number": PULL_REQUEST_NUMBER,
         "expected": {"head_sha": HEAD, "base_sha": BASE},
         "current": {"head_sha": HEAD, "base_sha": BASE},
         "pushed_head_sha": HEAD,
         "pushed_at": PUSHED_AT,
+        "collected_at": COLLECTED_AT,
         "required_check_name": "Prove the lab",
         "accepted_review": {
             **bound,
@@ -106,13 +117,87 @@ def test_one_coherent_snapshot_passes_after_aging_floor() -> None:
     assert report.required_age_minutes == 15
 
 
-def test_green_proof_before_fifteen_minutes_is_rejected() -> None:
-    early = datetime(2026, 8, 10, 12, 14, 59, tzinfo=UTC)
+def test_green_proof_collected_before_fifteen_minutes_is_rejected() -> None:
+    snapshot = _snapshot()
+    snapshot["collected_at"] = "2026-08-10T12:14:59Z"
 
-    report = evaluate_merge_eligibility(_snapshot(), now=early)
+    report = evaluate_merge_eligibility(snapshot, now=NOW)
 
     assert not report.eligible
     assert "aging_floor_not_met" in report.reasons
+
+
+def test_an_early_snapshot_cannot_ripen_by_being_evaluated_later() -> None:
+    snapshot = _snapshot()
+    snapshot["collected_at"] = "2026-08-10T12:05:00Z"
+    later = datetime(2026, 8, 10, 12, 20, tzinfo=UTC)
+
+    report = evaluate_merge_eligibility(snapshot, now=later)
+
+    assert not report.eligible
+    assert "aging_floor_not_met" in report.reasons
+    assert report.age_minutes == 5
+
+
+def test_missing_or_malformed_collected_at_fails_closed() -> None:
+    missing = _snapshot()
+    del missing["collected_at"]
+    malformed = _snapshot()
+    malformed["collected_at"] = "2026-08-10T12:15:00+00:00"
+
+    assert "invalid_collected_at" in _reasons(missing)
+    assert "invalid_collected_at" in _reasons(malformed)
+
+
+def test_collection_after_the_observation_instant_is_refused() -> None:
+    snapshot = _snapshot()
+    snapshot["collected_at"] = "2026-08-10T12:16:00Z"
+
+    assert _reasons(snapshot) == ("future_collected_at",)
+
+
+def test_collection_before_the_push_is_refused() -> None:
+    snapshot = _snapshot()
+    snapshot["pushed_at"] = "2026-08-10T12:30:00Z"
+
+    assert "future_pushed_at" in _reasons(snapshot)
+
+
+def test_missing_pull_request_number_fails_closed() -> None:
+    snapshot = _snapshot()
+    del snapshot["pull_request_number"]
+
+    reasons = _reasons(snapshot)
+
+    assert "invalid_pull_request_number" in reasons
+    assert "stale_surface_pull_request:checks" in reasons
+
+
+def test_boolean_pull_request_number_is_not_an_identifier() -> None:
+    snapshot = _snapshot()
+    snapshot["pull_request_number"] = True
+
+    assert "invalid_pull_request_number" in _reasons(snapshot)
+
+
+def test_surface_from_another_pull_request_is_refused() -> None:
+    snapshot = _snapshot()
+    surfaces = cast(dict[str, object], snapshot["surfaces"])
+    reviews = cast(dict[str, object], surfaces["formal_reviews"])
+    reviews["pull_request_number"] = PULL_REQUEST_NUMBER + 1
+
+    assert _reasons(snapshot) == ("stale_surface_pull_request:formal_reviews",)
+
+
+def test_aging_floor_matches_the_governor_policy() -> None:
+    # The only I/O in this module: tracked, invented-safe governor config, read so the duplicated
+    # floor cannot drift away from the policy it claims to enforce.
+    governor = Path(__file__).resolve().parents[1] / ".agent-harness" / "governor.json"
+    with governor.open(encoding="utf-8") as handle:
+        payload: object = json.load(handle)
+    gates = cast(dict[str, object], cast(dict[str, object], payload)["review_gates"])
+
+    assert AGING_MINUTES_AFTER_PUSH == gates["aging_minutes_after_push"]
 
 
 def test_moved_head_is_rejected_even_when_surfaces_are_green() -> None:
@@ -169,6 +254,19 @@ def test_changes_requested_is_refused_despite_a_valid_attestation() -> None:
     _items(snapshot, "formal_reviews")[0]["state"] = "CHANGES_REQUESTED"
 
     assert _reasons(snapshot) == ("changes_requested",)
+
+
+def test_unrecognised_formal_review_states_fail_closed() -> None:
+    snapshot = _snapshot()
+    reviews = _items(snapshot, "formal_reviews")
+    del reviews[0]["state"]
+    reviews.append({**_bound(), "review_id": REVIEW_ID + 1, "state": "PENDING"})
+
+    reasons = _reasons(snapshot)
+
+    assert "invalid_review_state:0" in reasons
+    assert "invalid_review_state:1" in reasons
+    assert "changes_requested" not in reasons
 
 
 def test_missing_attestation_is_refused() -> None:

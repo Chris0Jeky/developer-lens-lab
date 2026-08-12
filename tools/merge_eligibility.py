@@ -1,8 +1,8 @@
 """Report-only merge eligibility evaluation for a single hosted-state snapshot.
 
 The evaluator deliberately has no GitHub or Git side effects.  Callers must provide one
-coherent, head/base-bound snapshot; missing, paginated, stale, or malformed surfaces fail
-closed.
+coherent snapshot bound to a single pull request number and head/base pair, and stamped with
+its own collection time; missing, paginated, stale, or malformed surfaces fail closed.
 """
 
 from __future__ import annotations
@@ -20,6 +20,10 @@ REQUIRED_CHECK_NAME = "Prove the lab"
 AGING_MINUTES_AFTER_PUSH = 15
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _SURFACES = ("checks", "formal_reviews", "top_level_comments", "closing_refs", "review_threads")
+# States GitHub reports for a *submitted* review.  Anything else — absent, null, ``PENDING``, or a
+# state this evaluator does not know — is unreadable evidence and must fail closed rather than
+# silently contribute nothing to the refusal set.
+_SUBMITTED_REVIEW_STATES = frozenset({"APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED"})
 # GitHub forbids approving your own pull request and every Lab pull request is authored by the
 # single owner account, so a formal APPROVED state can never appear here.  The practiced gate is
 # instead an accepted, exact-head review: a fresh-context review posted as a top-level comment, or
@@ -97,6 +101,14 @@ def _parse_timestamp(value: object) -> datetime | None:
     if parsed.tzinfo is None:
         return None
     return parsed.astimezone(UTC)
+
+
+def _pull_request_number(value: object) -> int | None:
+    # ``bool`` is an ``int`` subclass; a boolean is never a pull request number, and GitHub numbers
+    # pull requests from one.
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        return None
+    return value
 
 
 def _identifier(value: object) -> int | str | None:
@@ -179,8 +191,9 @@ def evaluate_merge_eligibility(
 ) -> MergeEligibilityReport:
     """Evaluate a structured snapshot without mutating or contacting any service.
 
-    ``now`` is injectable so synthetic tests and offline reports remain deterministic.  The
-    snapshot shape is documented by ``CONTINUOUS_WORK_PROTOCOL.md``.
+    ``now`` is the injectable observation instant, so synthetic tests and offline reports remain
+    deterministic; it bounds ``collected_at`` but never drives the age, which is measured from
+    collection.  The snapshot shape is documented by ``CONTINUOUS_WORK_PROTOCOL.md``.
     """
 
     reasons: list[str] = []
@@ -189,6 +202,12 @@ def evaluate_merge_eligibility(
 
     if _string(snapshot.get("repository")) != REPOSITORY:
         reasons.append("wrong_repository")
+
+    # Head/base alone do not identify a pull request: two pull requests can share the pair, so a
+    # surface collected for one could otherwise be substituted into the other's snapshot.
+    pull_request_number = _pull_request_number(snapshot.get("pull_request_number"))
+    if pull_request_number is None:
+        reasons.append("invalid_pull_request_number")
 
     expected = _mapping(snapshot.get("expected"))
     current = _mapping(snapshot.get("current"))
@@ -216,6 +235,7 @@ def evaluate_merge_eligibility(
             reasons.append("moved_base")
 
     pushed_at = _parse_timestamp(snapshot.get("pushed_at"))
+    collected_at = _parse_timestamp(snapshot.get("collected_at"))
     pushed_head = _sha(snapshot.get("pushed_head_sha"))
     if pushed_head is None:
         reasons.append("invalid_pushed_head_sha")
@@ -229,8 +249,14 @@ def evaluate_merge_eligibility(
     age_minutes: float | None = None
     if pushed_at is None:
         reasons.append("invalid_pushed_at")
-    else:
-        age = observed_at - pushed_at
+    if collected_at is None:
+        reasons.append("invalid_collected_at")
+    elif collected_at > observed_at:
+        reasons.append("future_collected_at")
+    if pushed_at is not None and collected_at is not None:
+        # The floor binds *collection* time, not evaluation time: a snapshot taken too early cannot
+        # ripen by being evaluated later, because it cannot show any surface transition since.
+        age = collected_at - pushed_at
         age_minutes = age.total_seconds() / 60
         if age < timedelta(0):
             reasons.append("future_pushed_at")
@@ -260,6 +286,13 @@ def evaluate_merge_eligibility(
             reasons.append(f"stale_surface_head:{name}")
         if surface_base is None or expected_base is None or surface_base != expected_base:
             reasons.append(f"stale_surface_base:{name}")
+        surface_number = _pull_request_number(surface.get("pull_request_number"))
+        if (
+            surface_number is None
+            or pull_request_number is None
+            or surface_number != pull_request_number
+        ):
+            reasons.append(f"stale_surface_pull_request:{name}")
         surface_items[name] = _surface_items(surface, name, reasons)
 
     for name, items in surface_items.items():
@@ -291,9 +324,14 @@ def evaluate_merge_eligibility(
             reasons.append("required_check_not_green")
 
     reviews = surface_items["formal_reviews"]
-    review_states = {
-        _string(record.get("state")) for item in reviews if (record := _mapping(item)) is not None
-    }
+    review_states: set[str] = set()
+    for index, item in enumerate(reviews):
+        record = _mapping(item)
+        state = _string(record.get("state")) if record is not None else None
+        if state is None or state not in _SUBMITTED_REVIEW_STATES:
+            reasons.append(f"invalid_review_state:{index}")
+            continue
+        review_states.add(state)
     if "CHANGES_REQUESTED" in review_states:
         reasons.append("changes_requested")
 
