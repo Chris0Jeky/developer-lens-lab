@@ -1158,3 +1158,18 @@ _Addendum 2026-08-12 (PR #68 fix round 1):_ Codex and one independent fresh-cont
   Pyright 0 errors, 226 pytest passes with the same 3 declared Windows symlink skips, strict
   MkDocs, hygiene, clean `git diff --check`. Codex P2 PR-identity binding was declined here and is
   tracked separately by the coordinator. FR-058 and FR-059 record this round's review-lane friction.
+
+_Addendum 2026-08-12 (PR #68 fix round 2, ceiling):_ Codex's re-review of the fix head found one
+accepted gap. An attested `top_level_comments` item must now cite the full 40-hex
+`expected.head_sha` in a string `body`, or the snapshot is `unanchored_accepted_review`. GitHub
+binds a formal review to a commit natively, so a `formal_reviews` attestation still needs no `body`;
+a top-level comment has no such anchor, and without the check a stale review comment about an older
+head could carry the gate for a new one. The estate's fresh-context reviews already cite the exact
+head reviewed, so this makes a practiced convention mechanical; only the attested item is affected.
+Codex's second re-review finding — refusing top-level comments newer than the accepted review — was
+declined as coordinator-owned semantic triage, because a recency proxy would false-refuse nearly
+every real snapshot: dispositions and lane-claim comments legitimately post after a review. Focused
+proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 36 passed (was 33). Full locked
+gate on the final tree: doctor, context verify, Ruff format (92 files) and check, Pyright 0 errors,
+229 pytest passes with the same 3 declared Windows symlink skips, strict MkDocs, hygiene, and a
+clean `git diff --check`. Two review rounds is the ceiling; no further round is opened.
