@@ -1560,3 +1560,23 @@ scaffolding is needed.
   lineage.
 - **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
   rather than a repository invariant, and the transcript resume route already recovers the work.
+
+### FR-060 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** Every `gh api graphql` invocation was refused by the agent floor in this repository
+  class, read-only queries included. Review-thread resolution flags live only behind GraphQL, so
+  during the PR #68 pipeline they could be neither read nor set.
+- **impact:** A merge decision that wants a thread-resolution count cannot obtain one, and a session
+  that reads the refusal as "no unresolved threads" would record a false operational claim about its
+  own review debt.
+- **workaround:** Carry finding disposition through thread comments and body-file dispositions
+  instead, using the dedicated `gh` subcommands with `--body-file`, and state resolution status as
+  unmeasured rather than inferring it from a blocked query.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the PR #68 pipeline.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and tool-boundary hardening.
+- **promotion:** Deliberately not promoted after one occurrence. This is agent-floor behaviour
+  rather than a repository invariant, and the dedicated-subcommand route covers the disposition
+  need; revisit only if a merge decision genuinely requires the resolution flags themselves.
