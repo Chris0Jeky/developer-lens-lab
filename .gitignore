@@ -2,6 +2,7 @@
 .package-smoke/
 .uv-cache/
 /.dllab/scopes
+/.dllab/merge-eligibility/
 .pytest_cache/
 .ruff_cache/
 .pyright/
