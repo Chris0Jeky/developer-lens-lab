@@ -1140,6 +1140,10 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   claims to enforce. Every other test stays I/O-free and invented C0.
 - Focused proof on the fix round: `tests/test_merge_eligibility.py` — 24 passed, including the
   ripening attack (collected at push+5m, evaluated at push+20m, refused with `aging_floor_not_met`).
-  The full locked gate is NOT verified in this round: `uv` is absent from the worktree host, so
-  `py -3 -m uv sync`/`run` fail with `No module named uv` and the focused run used the host
-  interpreter's pytest. The coordinator must run the full gate before merge.
+- Full locked gate on the fix-round tree: doctor, context verify, Ruff format (92 files) and check,
+  Pyright 0 errors, 220 pytest passes with no skips, strict MkDocs, hygiene, and a clean
+  `git diff --check`. The three previously declared Windows symlink skips executed and passed on
+  this host. No shared prompt block or parity manifest changed. The gate ran through a `uv` confined
+  outside the repository because the host had no `uv` on PATH; its cache must stay outside the
+  worktree, since the context verifier's markdown walk descends into a worktree-local `.uv-cache`
+  and fails on cached package READMEs.
