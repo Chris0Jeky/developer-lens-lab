@@ -151,16 +151,35 @@ snapshot and evaluates it with the report-only helper:
 uv run python tools/merge_eligibility.py .dllab/merge-eligibility/<snapshot>.json --now <utc-now>
 ```
 
-The snapshot binds `expected` and `current` 40-character head/base SHAs, `pushed_head_sha` and
-`pushed_at`, and the exact required hosted check name (`Prove the lab`). Its complete,
-non-paginated, non-stale surfaces are
+Snapshots live in the `/.dllab/merge-eligibility/` sink, which is gitignored by design: they are
+runtime observation state, never tracked repository content.
+
+The snapshot binds `pull_request_number`, `expected` and `current` 40-character head/base SHAs,
+`pushed_head_sha`, `pushed_at`, `collected_at`, and the exact required hosted check name
+(`Prove the lab`):
+
+```json
+"pull_request_number": 68,
+"pushed_at": "2026-08-10T12:00:00Z",
+"collected_at": "2026-08-10T12:15:00Z"
+```
+
+Its complete, non-paginated, non-stale surfaces are
 `checks`, `formal_reviews`, `top_level_comments`, `closing_refs`, and `review_threads`; every
-surface and item carries the same head/base pair. The check must be completed and successful, no
-review may be in `CHANGES_REQUESTED`, and every review thread must be resolved. The evaluator
-enforces the governor's 15-minute `review_gates.aging_minutes_after_push` floor: a green snapshot
-younger than the floor, a moved head/base, or any missing, paginated, stale, malformed, or
-unresolved surface is ineligible. The result is a report only; it never calls a hosted service or
-performs a merge.
+surface and item carries the same head/base pair, and every surface repeats the same
+`pull_request_number`, because a head/base pair alone does not identify a pull request and two
+pull requests can share one. The check must be completed and successful, every formal review must
+carry a recognised submitted state — `APPROVED`, `CHANGES_REQUESTED`, `COMMENTED`, or `DISMISSED`;
+an absent, null, `PENDING`, or unknown state is unreadable evidence and refuses — no review may be
+in `CHANGES_REQUESTED`, and every review thread must be resolved.
+
+The evaluator enforces the governor's 15-minute `review_gates.aging_minutes_after_push` floor **at
+collection time**: the age is `collected_at` minus `pushed_at`, never the moment of evaluation, so a
+snapshot collected before the floor cannot ripen by being evaluated later — it would show no surface
+transition from the elapsed window, so recollect it instead. `--now` is only the observation instant
+and merely refuses a `collected_at` in the future. A snapshot collected younger than the floor, a
+moved head/base, or any missing, paginated, stale, malformed, or unresolved surface is ineligible.
+The result is a report only; it never calls a hosted service or performs a merge.
 
 ### The accepted-review attestation
 

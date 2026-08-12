@@ -1120,3 +1120,26 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   format (92 files) and check, Pyright 0 errors, 208 pytest passes with 3 declared Windows symlink
   skips, strict MkDocs, hygiene, and a clean `git diff --check`. No shared prompt block or parity
   manifest changed.
+- Fix round (2026-08-12): the connector review's five findings were all verified against the tree,
+  accepted, and closed here. The aging floor now binds a required `collected_at` collection stamp
+  (`collected_at` minus `pushed_at`) instead of evaluation time, so a snapshot collected before the
+  floor can no longer ripen by being evaluated later; `--now` remains the observation instant and
+  only bounds `collected_at`. A required positive-integer `pull_request_number`, repeated on every
+  surface, binds the snapshot to one pull request, because a head/base pair alone does not identify
+  one. Every `formal_reviews` item must now carry a recognised submitted state.
+- New deterministic reason codes: `invalid_collected_at`, `future_collected_at`,
+  `invalid_review_state:<index>`, `invalid_pull_request_number`, and
+  `stale_surface_pull_request:<surface>`. `future_pushed_at` is retained for a negative
+  collection-relative age, and `changes_requested` is unchanged.
+- `.gitignore` now ignores `/.dllab/merge-eligibility/`; the documented snapshot sink would
+  otherwise fail `scripts/verify_hygiene.py`, which denies untracked `.dllab` content. No directory
+  was created and nothing was written into `.dllab`.
+- `tests/test_merge_eligibility.py` adds a deliberate, minimal read-only load of tracked
+  `.agent-harness/governor.json` asserting `AGING_MINUTES_AFTER_PUSH ==
+  review_gates.aging_minutes_after_push`, so the duplicated constant cannot drift from the policy it
+  claims to enforce. Every other test stays I/O-free and invented C0.
+- Focused proof on the fix round: `tests/test_merge_eligibility.py` — 24 passed, including the
+  ripening attack (collected at push+5m, evaluated at push+20m, refused with `aging_floor_not_met`).
+  The full locked gate is NOT verified in this round: `uv` is absent from the worktree host, so
+  `py -3 -m uv sync`/`run` fail with `No module named uv` and the focused run used the host
+  interpreter's pytest. The coordinator must run the full gate before merge.
