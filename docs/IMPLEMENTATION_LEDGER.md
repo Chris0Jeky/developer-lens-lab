@@ -1120,3 +1120,41 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   format (92 files) and check, Pyright 0 errors, 208 pytest passes with 3 declared Windows symlink
   skips, strict MkDocs, hygiene, and a clean `git diff --check`. No shared prompt block or parity
   manifest changed.
+
+_Addendum 2026-08-12 (PR #68 fix round 1):_ Codex and one independent fresh-context review of head
+`3efc1f4` produced four accepted findings, all now implemented.
+
+- HIGH, both reviews: a `formal_reviews` item with a missing, non-string or unknown `state` passed
+  the `CHANGES_REQUESTED` test silently — the single place where absent evidence became a pass.
+  Every item must now carry a state from the closed vocabulary `APPROVED`, `CHANGES_REQUESTED`,
+  `COMMENTED`, `DISMISSED`, `PENDING`; anything else is `invalid_review_state:<index>` and an
+  in-flight review is `pending_formal_review:<index>`.
+- Codex P1: aging was measured from evaluation time, so a snapshot collected minutes after a push
+  matured merely by being read later. A required `collected_at` now binds the floor to
+  `collected_at − pushed_at`, with `invalid_collected_at`, `future_collected_at`, and a
+  `stale_snapshot` refusal once the observation is more than `AGING_MINUTES_AFTER_PUSH` past
+  collection — the same constant, because the validity window and the aging floor are one
+  observation quantum. The report gained `snapshot_age_minutes` for observability.
+- MEDIUM: an empty `--now` was falsy and fell back to the wall clock; both CLI branches now test
+  `is not None`, so an empty string yields `invalid_now`.
+- Codex P1: the documented sink `.dllab/merge-eligibility/<snapshot>.json` was untracked but not
+  ignored, while `scripts/verify_hygiene.py` denies `.dllab` as a top-level directory. Resolved by
+  ignoring the directory: the script lists paths with
+  `git ls-files --cached --others --exclude-standard` (line 22), so `--exclude-standard` keeps
+  ignored content out of the scan entirely and `is_denied_generated_path` (line 12) only ever sees
+  tracked or unignored paths. `.gitignore`'s narrow `/.dllab/scopes` became `/.dllab/`, matching the
+  canon that `.dllab` is never tracked at all. No tracked file exists under `.dllab`.
+- Protocol seam updated for coherence: the mandatory `repository` field is now in the snapshot
+  spec, identifier matching is documented as type-strict with booleans excluded, and the
+  collection-bound aging, stale-snapshot bound and review-state vocabulary are described.
+- Coverage added: the exact aging-defeat scenario, the stale and window-edge cases, missing /
+  non-string / unknown / `PENDING` review states, `"5"`-versus-`5` and boolean identifiers, a
+  governor-parity test asserting `review_gates.aging_minutes_after_push` in the tracked
+  `.agent-harness/governor.json` equals `AGING_MINUTES_AFTER_PUSH`, and offline `main()` CLI tests
+  over `tmp_path` covering exit codes 0 and 1, `snapshot_read_failed` (asserting the report does not
+  echo the path), `invalid_snapshot`, and `invalid_now` for empty and malformed values.
+- Focused proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 33 passed (was 15).
+  Full locked gate on the final tree: doctor, context verify, Ruff format (92 files) and check,
+  Pyright 0 errors, 226 pytest passes with the same 3 declared Windows symlink skips, strict
+  MkDocs, hygiene, clean `git diff --check`. Codex P2 PR-identity binding was declined here and is
+  tracked separately by the coordinator. FR-058 and FR-059 record this round's review-lane friction.
