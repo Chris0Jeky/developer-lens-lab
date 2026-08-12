@@ -155,12 +155,45 @@ The snapshot binds `expected` and `current` 40-character head/base SHAs, `pushed
 `pushed_at`, and the exact required hosted check name (`Prove the lab`). Its complete,
 non-paginated, non-stale surfaces are
 `checks`, `formal_reviews`, `top_level_comments`, `closing_refs`, and `review_threads`; every
-surface and item carries the same head/base pair. The check must be completed and successful, a
-formal approval must exist with no `CHANGES_REQUESTED` review, and every review thread must be
-resolved. The evaluator enforces the governor's 15-minute `review_gates.aging_minutes_after_push`
-floor: a green snapshot younger than the floor, a moved head/base, or any missing, paginated,
-stale, malformed, or unresolved surface is ineligible. The result is a report only; it never
-calls a hosted service or performs a merge.
+surface and item carries the same head/base pair. The check must be completed and successful, no
+review may be in `CHANGES_REQUESTED`, and every review thread must be resolved. The evaluator
+enforces the governor's 15-minute `review_gates.aging_minutes_after_push` floor: a green snapshot
+younger than the floor, a moved head/base, or any missing, paginated, stale, malformed, or
+unresolved surface is ineligible. The result is a report only; it never calls a hosted service or
+performs a merge.
+
+### The accepted-review attestation
+
+GitHub forbids approving your own pull request and every Lab pull request is authored by the single
+owner account, so a formal `APPROVED` state can never appear. The gate the repository actually
+practises is **accepted exact-head review evidence**: a fresh-context adversarial review posted as a
+top-level comment, or a connector review. The snapshot therefore names exactly which bound review
+item carries the gate, in a required `accepted_review` field:
+
+```json
+"accepted_review": {
+  "surface": "top_level_comments",
+  "id": 101,
+  "head_sha": "<expected head>",
+  "base_sha": "<expected base>"
+}
+```
+
+`surface` is `formal_reviews` or `top_level_comments`; `id` is the item's integer or string
+identifier, matched against `review_id` or `comment_id` respectively. The named item must exist in
+that surface, and both the attestation and the matched item must carry the expected head/base pair
+— a review that predates the current head does not carry it forward. A formal `APPROVED` review is
+attestable like any other item and gets no special treatment. Naming nothing, naming an
+unattestable surface or identifier, naming an item that is not there, or naming one bound to a
+different head/base is ineligible.
+
+### Closing references
+
+Any item in the `closing_refs` surface makes the snapshot ineligible — a closing keyword once
+auto-closed the live release-programme issue from an unrelated merge. For an intentionally
+issue-completing pull request the coordinator records the override rationale on the pull request
+thread, naming the issue it is meant to close, **before** merging; the helper stays report-only and
+never grants the override itself.
 
 Only one coherent snapshot may support the decision. Recollect the full snapshot after any head or
 base movement, new review, comment, check transition, or elapsed-age boundary; do not combine
