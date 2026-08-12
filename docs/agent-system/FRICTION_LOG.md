@@ -1522,3 +1522,41 @@ scaffolding is needed.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
   is a delegation-prompt rule that every cross-repository read mission names its checkout root in
   each search call.
+
+### FR-058 — a read-only review agent's search call failed transiently with an unknown spawn error
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** During the fresh-context review of the merge-eligibility helper, a read-only agent's
+  Grep invocation returned an unknown spawn error instead of results. The identical search
+  succeeded on one retry once the search path was narrowed to a single directory.
+- **impact:** One lost round-trip in a review lane, plus the risk that a session reads a transient
+  spawn failure as "no matches" and reviews a narrower surface than it believes it has covered.
+- **workaround:** Retry the failed search once with a narrowed explicit path before drawing any
+  conclusion from an empty or failed result; never treat a tool error as a zero-result finding.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 helper review.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and tool-boundary hardening; this is adjacent to the FR-021 transient-resource
+  lineage.
+- **promotion:** Deliberately not promoted after one occurrence. If transient spawn failures recur,
+  the cheapest layer is a review-prompt rule that a failed search is retried with a narrowed path
+  and its outcome stated, rather than any structural change.
+
+### FR-059 — a review agent was terminated mid-task by a host process exit and resumed from transcript
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** A fresh-context review agent working on the merge-eligibility helper was terminated
+  before returning its findings when the host process exited. The work was not lost: the agent was
+  resumed from its saved transcript and completed the review.
+- **impact:** A wave can lose an in-flight review lane to an event that has nothing to do with the
+  work, and a session that does not know the resume route will re-run the whole review.
+- **workaround:** Resume the terminated agent from its saved transcript rather than restarting the
+  review from a cold context, and verify the branch and HEAD before trusting the resumed findings,
+  since the tree may have moved during the interruption.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 helper review.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  session-boundary and orchestration hardening; this is adjacent to the FR-006 host-termination
+  lineage.
+- **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
+  rather than a repository invariant, and the transcript resume route already recovers the work.
