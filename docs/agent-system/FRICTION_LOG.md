@@ -292,7 +292,8 @@ alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 - **workaround:** Write the throwaway script to a file under the gitignored bootstrap directory and
   run the interpreter against that path; delete generated paths with an explicitly resolvable target
   or leave gitignored build output in place. Both are cheap and leave the tracked tree clean.
-- **occurrences:** 1 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session).
+- **occurrences:** 3 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), plus two
+  independent 2026-08-12 events noted below.
 - **task:** lab issue #33 records it; no repository change is required.
 - **promotion:** Deliberately NOT promoted. This is agent-harness behaviour, not a repository
   invariant: the cheapest layer is session memory, which is outside this repository's enforcement
@@ -303,6 +304,13 @@ path in a shell variable and invoking it (`$UV run …`) is refused as a dynamic
 workaround is identical: invoke the literal interpreter or executable path. This strengthens the
 `occurrences` picture but does not change the promotion decision, since all three forms share one
 cheap workaround and none of them blocked a lane.
+
+_Note 2026-08-12 (FR-028 helper delivery):_ two independent same-class refusals in one session:
+a heredoc append into a tracked ledger file (`… >> … <<'EOF'`) during the helper milestone entry,
+worked around with the file-edit tool; and a heredoc piped into a GitHub CLI comment body
+(`… <<'EOF' | gh … --body-file -`) during the lane claim, worked around by writing the body to a
+scratch file and passing `--body-file <path>`. Both cost one retry each and blocked no lane; the
+promotion decision is unchanged.
 
 ### FR-006 — orchestration wall-clock timeout terminated a session after its work was complete
 
@@ -1492,3 +1500,25 @@ scaffolding is needed.
   checked append and command-boundary helpers.
 - **promotion:** Deliberately not promoted after one occurrence; the exact-diff and whitespace
   checks are sufficient for this bounded documentation slice.
+
+### FR-057 — an unqualified Glob in a cross-repository read mission resolved against the wrong repository
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** During a two-repository session coordinated from the product checkout, a read-only
+  discovery agent's first unqualified Glob resolved against the coordinator's product working
+  directory rather than the named sibling Lab checkout, enumerating hundreds of vendored dependency
+  licence files before any Lab repository fact was gathered.
+- **impact:** A cross-repository read mission burns its opening effort on the wrong repository and
+  can mistake product-side files for Lab evidence; the immediate behaviour was safe because the
+  agent noticed and re-anchored.
+- **workaround:** Pass the sibling checkout root explicitly to every Glob/Grep call in a
+  cross-repository read-only mission; treat an unqualified pattern as resolving to the
+  coordinator's own working directory.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 pre-tag inventory.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and path-boundary hardening; this is adjacent to the FR-036 explicit-path,
+  inventory-first lineage.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
+  is a delegation-prompt rule that every cross-repository read mission names its checkout root in
+  each search call.
