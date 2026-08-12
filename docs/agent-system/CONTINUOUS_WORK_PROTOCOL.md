@@ -142,6 +142,99 @@ otherwise the session does read-only discovery or continues an existing lane.
   seam.** That is manufactured work wearing a rigour costume. A full benchmark run does not make a
   documentation review more thorough.
 
+## Lab merge decision seam
+
+Before a Lab pull request is merged, the coordinator produces one structured, invented-state
+snapshot and evaluates it with the report-only helper:
+
+```powershell
+uv run python tools/merge_eligibility.py .dllab/merge-eligibility/<snapshot>.json --now <utc-now>
+```
+
+The snapshot names the `repository` as `Chris0Jeky/developer-lens-lab` — the field is mandatory and
+any other value is refused — and binds `expected` and `current` 40-character head/base SHAs,
+`pushed_head_sha`, `pushed_at`, `collected_at`, and the exact required hosted check name
+(`Prove the lab`). Its complete, non-paginated, non-stale surfaces are
+`checks`, `formal_reviews`, `top_level_comments`, `closing_refs`, and `review_threads`; every
+surface and item carries the same head/base pair. The check must be completed and successful and
+every review thread must be resolved. A moved head/base, or any missing, paginated, stale,
+malformed, or unresolved surface, is ineligible. The result is a report only; it never calls a
+hosted service or performs a merge.
+
+### Aging binds to collection, not evaluation
+
+`pushed_at` and `collected_at` are RFC3339 `Z` timestamps, and the exact-head age the governor's
+15-minute `review_gates.aging_minutes_after_push` floor tests is **`collected_at − pushed_at`**. A
+snapshot gathered three minutes after a push does not mature by being evaluated an hour later; only
+a fresh collection can satisfy the floor. The same constant bounds the other direction: when the
+observation time is more than 15 minutes after `collected_at` the snapshot is `stale_snapshot` and
+must be recollected, because the validity window and the aging floor are the same observation
+quantum. A missing or malformed `collected_at` is `invalid_collected_at`, a `collected_at` after
+the observation time is `future_collected_at`, and a `pushed_at` after `collected_at` is
+`future_pushed_at`. The report carries both `age_minutes` and `snapshot_age_minutes` so the
+coordinator can see which of the two bounds is binding.
+
+### Formal review states
+
+Every `formal_reviews` item must carry a `state` string drawn from the closed vocabulary
+`APPROVED`, `CHANGES_REQUESTED`, `COMMENTED`, `DISMISSED`, `PENDING`. An absent, non-string, or
+unrecognised state is `invalid_review_state:<index>` rather than an implicit "no objection" — that
+was the one place where missing evidence could have become a pass. A `PENDING` review is
+`pending_formal_review:<index>`, because an in-flight review is an incomplete record. Any
+`CHANGES_REQUESTED` review is `changes_requested`.
+
+### The accepted-review attestation
+
+GitHub forbids approving your own pull request and every Lab pull request is authored by the single
+owner account, so a formal `APPROVED` state can never appear. The gate the repository actually
+practises is **accepted exact-head review evidence**: a fresh-context adversarial review posted as a
+top-level comment, or a connector review. The snapshot therefore names exactly which bound review
+item carries the gate, in a required `accepted_review` field:
+
+```json
+"accepted_review": {
+  "surface": "top_level_comments",
+  "id": 101,
+  "head_sha": "<expected head>",
+  "base_sha": "<expected base>"
+}
+```
+
+`surface` is `formal_reviews` or `top_level_comments`; `id` is the item's integer or string
+identifier, matched against `review_id` or `comment_id` respectively. The named item must exist in
+that surface, and both the attestation and the matched item must carry the expected head/base pair
+— a review that predates the current head does not carry it forward. A formal `APPROVED` review is
+attestable like any other item and gets no special treatment. Naming nothing, naming an
+unattestable surface or identifier, naming an item that is not there, or naming one bound to a
+different head/base is ineligible.
+
+Identifier matching is **type-strict**: the string `"501"` never matches the integer `501`, so the
+snapshot must quote the identifier exactly as the surface records it. Booleans are never valid
+identifiers on either side, since `bool` is an `int` in Python and `true` would otherwise match
+`1`.
+
+An attested **top-level comment** must additionally cite the expected head SHA in its own text. The
+snapshot carries the comment's `body`, and the full 40-hex `expected.head_sha` must appear in it;
+otherwise the snapshot is `unanchored_accepted_review`. GitHub binds a formal review to a commit
+natively, so a `formal_reviews` attestation needs no `body` — its per-item head binding is
+collectable from the review's own `commit_id`. A top-level comment has no such anchor, so without
+this check a stale review comment written about an older head could carry the gate for a new one.
+This estate's fresh-context reviews always cite the exact head SHA they reviewed, so the check makes
+an existing convention mechanical rather than adding a new obligation. Only the attested item needs
+a `body`; the other `top_level_comments` items are unaffected.
+
+### Closing references
+
+Any item in the `closing_refs` surface makes the snapshot ineligible — a closing keyword once
+auto-closed the live release-programme issue from an unrelated merge. For an intentionally
+issue-completing pull request the coordinator records the override rationale on the pull request
+thread, naming the issue it is meant to close, **before** merging; the helper stays report-only and
+never grants the override itself.
+
+Only one coherent snapshot may support the decision. Recollect the full snapshot after any head or
+base movement, new review, comment, check transition, or elapsed-age boundary; do not combine
+surfaces from different observations.
+
 ## Parking, not nursing
 
 One blocked lane is parked and the session continues. Parking records, in the lane's entry in

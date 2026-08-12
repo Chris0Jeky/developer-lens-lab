@@ -292,7 +292,8 @@ alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 - **workaround:** Write the throwaway script to a file under the gitignored bootstrap directory and
   run the interpreter against that path; delete generated paths with an explicitly resolvable target
   or leave gitignored build output in place. Both are cheap and leave the tracked tree clean.
-- **occurrences:** 1 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session).
+- **occurrences:** 3 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), plus two
+  independent 2026-08-12 events noted below.
 - **task:** lab issue #33 records it; no repository change is required.
 - **promotion:** Deliberately NOT promoted. This is agent-harness behaviour, not a repository
   invariant: the cheapest layer is session memory, which is outside this repository's enforcement
@@ -303,6 +304,13 @@ path in a shell variable and invoking it (`$UV run …`) is refused as a dynamic
 workaround is identical: invoke the literal interpreter or executable path. This strengthens the
 `occurrences` picture but does not change the promotion decision, since all three forms share one
 cheap workaround and none of them blocked a lane.
+
+_Note 2026-08-12 (FR-028 helper delivery):_ two independent same-class refusals in one session:
+a heredoc append into a tracked ledger file (`… >> … <<'EOF'`) during the helper milestone entry,
+worked around with the file-edit tool; and a heredoc piped into a GitHub CLI comment body
+(`… <<'EOF' | gh … --body-file -`) during the lane claim, worked around by writing the body to a
+scratch file and passing `--body-file <path>`. Both cost one retry each and blocked no lane; the
+promotion decision is unchanged.
 
 ### FR-006 — orchestration wall-clock timeout terminated a session after its work was complete
 
@@ -801,7 +809,7 @@ command-table evidence.
 ### FR-028 — the merge path again failed to enforce 15-minute exact-head aging
 
 - **first-seen:** 2026-08-09
-- **status:** `open`
+- **status:** `promoted`
 - **symptom:** PR #51 merged after at most 8m59s at its exact head, and PR #52 merged 4m18s after
   its final docs-head push. Both were below the owner constitution's 15-minute exact-head aging
   rule even though their hosted proof and accepted exact-head review evidence were green.
@@ -831,6 +839,19 @@ finished with 6 resolved review threads / 20 inline comments, and merged as
 failed the binding 15-minute floor. Its T+3m19 sweep was preliminary and invalid as delayed proof;
 the genuine paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean. The later sweep does
 not retroactively satisfy the pre-merge gate.
+
+_Note 2026-08-12 (selected enforcement layer implemented):_ The enforcement layer named in
+`promotion` now exists as the report-only `tools/merge_eligibility.py`, its focused tests in
+`tests/test_merge_eligibility.py`, and the "Lab merge decision seam" section of
+[CONTINUOUS_WORK_PROTOCOL.md](CONTINUOUS_WORK_PROTOCOL.md). It refuses one coherent snapshot below
+the 15-minute exact-head floor and returns head, base, hosted checks, accepted review evidence,
+top-level comments, closing refs, and review threads together. Two semantics were aligned to the
+practiced gate at delivery: the unsatisfiable formal-approval predicate was replaced by an explicit
+`accepted_review` attestation naming one exact-head review item, because a single-account
+repository cannot produce a formal `APPROVED` state; and any closing reference now makes a snapshot
+ineligible, with an intentional issue-completing merge requiring a coordinator override recorded on
+the pull request thread. The entry stays short of `resolved` because the helper enforces nothing on
+its own — it binds only through the protocol's use of it before a merge.
 
 ### FR-029 — a concurrent closeout PR remained open after its state claims diverged
 
@@ -1479,3 +1500,63 @@ scaffolding is needed.
   checked append and command-boundary helpers.
 - **promotion:** Deliberately not promoted after one occurrence; the exact-diff and whitespace
   checks are sufficient for this bounded documentation slice.
+
+### FR-057 — an unqualified Glob in a cross-repository read mission resolved against the wrong repository
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** During a two-repository session coordinated from the product checkout, a read-only
+  discovery agent's first unqualified Glob resolved against the coordinator's product working
+  directory rather than the named sibling Lab checkout, enumerating hundreds of vendored dependency
+  licence files before any Lab repository fact was gathered.
+- **impact:** A cross-repository read mission burns its opening effort on the wrong repository and
+  can mistake product-side files for Lab evidence; the immediate behaviour was safe because the
+  agent noticed and re-anchored.
+- **workaround:** Pass the sibling checkout root explicitly to every Glob/Grep call in a
+  cross-repository read-only mission; treat an unqualified pattern as resolving to the
+  coordinator's own working directory.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 pre-tag inventory.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and path-boundary hardening; this is adjacent to the FR-036 explicit-path,
+  inventory-first lineage.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
+  is a delegation-prompt rule that every cross-repository read mission names its checkout root in
+  each search call.
+
+### FR-058 — a read-only review agent's search call failed transiently with an unknown spawn error
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** During the fresh-context review of the merge-eligibility helper, a read-only agent's
+  Grep invocation returned an unknown spawn error instead of results. The identical search
+  succeeded on one retry once the search path was narrowed to a single directory.
+- **impact:** One lost round-trip in a review lane, plus the risk that a session reads a transient
+  spawn failure as "no matches" and reviews a narrower surface than it believes it has covered.
+- **workaround:** Retry the failed search once with a narrowed explicit path before drawing any
+  conclusion from an empty or failed result; never treat a tool error as a zero-result finding.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 helper review.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and tool-boundary hardening; this is adjacent to the FR-021 transient-resource
+  lineage.
+- **promotion:** Deliberately not promoted after one occurrence. If transient spawn failures recur,
+  the cheapest layer is a review-prompt rule that a failed search is retried with a narrowed path
+  and its outcome stated, rather than any structural change.
+
+### FR-059 — a review agent was terminated mid-task by a host process exit and resumed from transcript
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** A fresh-context review agent working on the merge-eligibility helper was terminated
+  before returning its findings when the host process exited. The work was not lost: the agent was
+  resumed from its saved transcript and completed the review.
+- **impact:** A wave can lose an in-flight review lane to an event that has nothing to do with the
+  work, and a session that does not know the resume route will re-run the whole review.
+- **workaround:** Resume the terminated agent from its saved transcript rather than restarting the
+  review from a cold context, and verify the branch and HEAD before trusting the resumed findings,
+  since the tree may have moved during the interruption.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 helper review.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  session-boundary and orchestration hardening; this is adjacent to the FR-006 host-termination
+  lineage.
+- **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
+  rather than a repository invariant, and the transcript resume route already recovers the work.

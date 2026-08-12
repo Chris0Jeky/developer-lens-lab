@@ -1091,3 +1091,85 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The full locked gate on this final pre-push tree passed through `py -3 -m uv`: sync, doctor,
   context, Ruff format/check, Pyright, 193 pytest passes with 3 declared Windows symlink skips,
   strict MkDocs, hygiene, and diff check. No shared prompt block or parity manifest changed.
+
+## 2026-08-12 - Report-only Lab merge-eligibility helper (FR-028 / issue #29)
+
+- Delivered the enforcement layer FR-028's `promotion` field had selected:
+  `tools/merge_eligibility.py` evaluates one coherent, head/base-bound snapshot and refuses
+  eligibility below the governor's 15-minute exact-head floor, returning head, base, hosted checks,
+  formal reviews, top-level comments, closing refs, and review threads together. It has no GitHub
+  or Git side effects and performs no merge; every surface, item, and identifier failure is a
+  deterministic reason code.
+- Aligned two predicates to the practiced gate. The unsatisfiable `formal_approval_missing`
+  requirement was removed — GitHub forbids self-approval and every Lab pull request is
+  single-account, so a formal `APPROVED` state can never appear — and replaced by a required
+  `accepted_review` attestation naming one exact-head item by `surface` plus `review_id` or
+  `comment_id`, with `missing_accepted_review`, `invalid_accepted_review_surface`,
+  `invalid_accepted_review_id`, `stale_accepted_review` and `unknown_accepted_review` failing
+  closed. `changes_requested` still refuses any `CHANGES_REQUESTED` review. Any `closing_refs` item
+  now yields `closing_reference_present:<index>`, because a closing keyword once auto-closed the
+  live release-programme issue; an intentional issue-completing merge needs a coordinator override
+  recorded on the pull request thread, outside the tool.
+- `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md` documents the attestation shape, the
+  closing-reference refusal and its override, and keeps the one-coherent-snapshot and
+  recollect-after-movement rules. FR-028 moved to `promoted` with a dated 2026-08-12 note; it stays
+  short of `resolved` because the helper binds only through the protocol's use of it.
+- Focused proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 15 passed. Fixtures
+  are invented C0; no test performs file, network or GitHub I/O.
+- Full locked gate through `py -3 -m uv` on the final tree: sync, doctor, context verify, Ruff
+  format (92 files) and check, Pyright 0 errors, 208 pytest passes with 3 declared Windows symlink
+  skips, strict MkDocs, hygiene, and a clean `git diff --check`. No shared prompt block or parity
+  manifest changed.
+
+_Addendum 2026-08-12 (PR #68 fix round 1):_ Codex and one independent fresh-context review of head
+`3efc1f4` produced four accepted findings, all now implemented.
+
+- HIGH, both reviews: a `formal_reviews` item with a missing, non-string or unknown `state` passed
+  the `CHANGES_REQUESTED` test silently — the single place where absent evidence became a pass.
+  Every item must now carry a state from the closed vocabulary `APPROVED`, `CHANGES_REQUESTED`,
+  `COMMENTED`, `DISMISSED`, `PENDING`; anything else is `invalid_review_state:<index>` and an
+  in-flight review is `pending_formal_review:<index>`.
+- Codex P1: aging was measured from evaluation time, so a snapshot collected minutes after a push
+  matured merely by being read later. A required `collected_at` now binds the floor to
+  `collected_at − pushed_at`, with `invalid_collected_at`, `future_collected_at`, and a
+  `stale_snapshot` refusal once the observation is more than `AGING_MINUTES_AFTER_PUSH` past
+  collection — the same constant, because the validity window and the aging floor are one
+  observation quantum. The report gained `snapshot_age_minutes` for observability.
+- MEDIUM: an empty `--now` was falsy and fell back to the wall clock; both CLI branches now test
+  `is not None`, so an empty string yields `invalid_now`.
+- Codex P1: the documented sink `.dllab/merge-eligibility/<snapshot>.json` was untracked but not
+  ignored, while `scripts/verify_hygiene.py` denies `.dllab` as a top-level directory. Resolved by
+  ignoring the directory: the script lists paths with
+  `git ls-files --cached --others --exclude-standard` (line 22), so `--exclude-standard` keeps
+  ignored content out of the scan entirely and `is_denied_generated_path` (line 12) only ever sees
+  tracked or unignored paths. `.gitignore`'s narrow `/.dllab/scopes` became `/.dllab/`, matching the
+  canon that `.dllab` is never tracked at all. No tracked file exists under `.dllab`.
+- Protocol seam updated for coherence: the mandatory `repository` field is now in the snapshot
+  spec, identifier matching is documented as type-strict with booleans excluded, and the
+  collection-bound aging, stale-snapshot bound and review-state vocabulary are described.
+- Coverage added: the exact aging-defeat scenario, the stale and window-edge cases, missing /
+  non-string / unknown / `PENDING` review states, `"5"`-versus-`5` and boolean identifiers, a
+  governor-parity test asserting `review_gates.aging_minutes_after_push` in the tracked
+  `.agent-harness/governor.json` equals `AGING_MINUTES_AFTER_PUSH`, and offline `main()` CLI tests
+  over `tmp_path` covering exit codes 0 and 1, `snapshot_read_failed` (asserting the report does not
+  echo the path), `invalid_snapshot`, and `invalid_now` for empty and malformed values.
+- Focused proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 33 passed (was 15).
+  Full locked gate on the final tree: doctor, context verify, Ruff format (92 files) and check,
+  Pyright 0 errors, 226 pytest passes with the same 3 declared Windows symlink skips, strict
+  MkDocs, hygiene, clean `git diff --check`. Codex P2 PR-identity binding was declined here and is
+  tracked separately by the coordinator. FR-058 and FR-059 record this round's review-lane friction.
+
+_Addendum 2026-08-12 (PR #68 fix round 2, ceiling):_ Codex's re-review of the fix head found one
+accepted gap. An attested `top_level_comments` item must now cite the full 40-hex
+`expected.head_sha` in a string `body`, or the snapshot is `unanchored_accepted_review`. GitHub
+binds a formal review to a commit natively, so a `formal_reviews` attestation still needs no `body`;
+a top-level comment has no such anchor, and without the check a stale review comment about an older
+head could carry the gate for a new one. The estate's fresh-context reviews already cite the exact
+head reviewed, so this makes a practiced convention mechanical; only the attested item is affected.
+Codex's second re-review finding — refusing top-level comments newer than the accepted review — was
+declined as coordinator-owned semantic triage, because a recency proxy would false-refuse nearly
+every real snapshot: dispositions and lane-claim comments legitimately post after a review. Focused
+proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 36 passed (was 33). Full locked
+gate on the final tree: doctor, context verify, Ruff format (92 files) and check, Pyright 0 errors,
+229 pytest passes with the same 3 declared Windows symlink skips, strict MkDocs, hygiene, and a
+clean `git diff --check`. Two review rounds is the ceiling; no further round is opened.
