@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-10
+updated: 2026-08-12
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -17,8 +17,11 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      Main's last landed change remains PR #64, merged at
-      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. PR #65 is open and ready (not draft), based on
+      Main's last landed change is PR #69, merged at
+      `c978783efe028aeb8c545f05fbe8cbc1862c5fa3` on 2026-08-12T16:50:37Z (the collision-salvage
+      friction record), on top of the PR #68 delivery merge
+      `07929a41fa8c80f05794db9a58fa0bf014b4f961` of 2026-08-12T16:14:34Z, whose 17m51s exact-head
+      age held the binding 15-minute floor. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
@@ -27,15 +30,18 @@ active_wave:
       that same head: it has no nonignored changes, but ignored generated/cache outputs whose contents
       were not inspected. Do not remove it until their ignored-output disposition is resolved.
     state: >-
-      PARKED, not merge-sound, after two review rounds. The final local locked gate on the parked head
-      was green: 198 passed, 3 declared Windows symlink skips, focused package-metadata proof 35
-      passed, and Pyright was clean. Hosted run `31413655609` failed Pyright on the original head
+      The merge-eligibility enforcement lane is DELIVERED and landed on main; see
+      `delivered.merge_eligibility_enforcement` for its full record. PR #65 remains PARKED, not
+      merge-sound, after two review rounds, and no implementation from it is landed on main. The
+      final local locked gate on the parked head was green: 198 passed, 3 declared Windows symlink
+      skips, focused package-metadata proof 35 passed, and Pyright was clean. Hosted run
+      `31413655609` failed Pyright on the original head
       `8cf95d50440047c9e9cb56d9718038600c04dee9`; hosted run `31414895754` on the parked head passed
       package smoke, lint, type, context, and generated-contract checks, then failed pytest at the
       taskkill-path assertion. The first exact-head review found three HIGH proof defects; the fix
       commit closed those, and the second/final review found the remaining HIGH host-portability
-      assertion. The loop is parked under the two-review-round ceiling; no implementation from PR #65
-      is landed on main.
+      assertion. The loop is parked under the two-review-round ceiling; its exact resume reference
+      remains issue #29 comment `5243827843` and PR #65 comment `5243827873`.
 delivered:
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
@@ -153,12 +159,61 @@ delivered:
       DONE — PR #63 final head `d48e09cf149d75aee92665e62f3893741cd98104` passed Check run
       `31351467716`, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`, and had 3 resolved / 0
       unresolved review threads; its post-merge audit was clean.
+  - pr64_state_reconciliation: >-
+      DONE — PR #64 (governor current-state reconciliation) merged 2026-08-10T16:02:41Z; recorded
+      belatedly: this list previously omitted it (ledger correction note 2026-08-12).
+  - merge_eligibility_enforcement: >-
+      DONE — FR-028's selected enforcement layer is delivered. It was prepared overnight on
+      2026-08-10 on branch `ci/lab-merge-eligibility-20260810`, a branch this file had never
+      recorded — that omission is recorded here explicitly — then audited and delivered on
+      2026-08-12 as PR #68, merged at `07929a41fa8c80f05794db9a58fa0bf014b4f961`. It ships the
+      report-only `tools/merge_eligibility.py`, 36 invented-fixture tests, and the "Lab merge
+      decision seam" section of `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md`. Round 1 replaced
+      the unsatisfiable formal-APPROVED predicate with an `accepted_review` attestation, because
+      GitHub forbids self-approval and every pull request here is single-account, so that state can
+      never appear; it also added the closing-reference refusal, bound aging to `collected_at` with
+      a `stale_snapshot` bound at the same governor constant, refused an empty-string `--now`,
+      ignored `/.dllab/` wholesale (verified against `scripts/verify_hygiene.py`'s
+      `--exclude-standard` semantics), and added a governor parity test plus CLI tests including the
+      no-path-echo assertion. Round 2, at the two-round ceiling, added `unanchored_accepted_review`:
+      an attested top-level comment must cite the exact 40-hex head in its body. Proof: hosted run
+      `31615108943` green at final head `8facd3fe79777bd524ea201714b519d24f8a159d`; an independent
+      fresh-context review whose initial verdict was NOT MERGE-SOUND with its HIGH finding verified
+      closed, plus a CLEAN micro-verification of round 2; and three Codex review rounds triaged with
+      dispositions recorded on the thread. Lane coordination during the pipeline: a second
+      coordinator posted a stale-read adoption comment at 15:41:29Z citing the superseded head and
+      formally stood down at 16:11:29Z after the ownership clarification; FR-061 records that the
+      adopting session had run a full duplicate implementation round whose push was rejected
+      non-fast-forward, so no ref moved and one writer held the branch throughout. Post-ceiling P1/P2 findings are tracked on issue #29 comments
+      `5269020473` and `5269401432`: PR-identity binding, a dismissed-review state allowlist, and
+      identifier validation. Worktree disposition: removal of the merged helper worktree was
+      interrupted mid-operation, so its stale registration was pruned, but an unregistered leftover
+      directory of regenerable caches and merged tracked copies remains for manual deletion — the
+      agent floor correctly refuses out-of-project recursive deletion, the same class as the
+      recorded value01 precedent. The delayed post-merge sweep was clean twice — at 16:24:23Z (T+9m49s)
+      and again at 16:28:43Z (T+14m09s), beyond the measured connector delay — with zero post-merge
+      reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
-  SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests;
-  the current live inventory selected no other implementation seam in this hop. Then select a
-  different dependency-safe tracked LAB-REL-01 seam; if none exists, stop rather than manufacture
-  work. PR #65's portable patch is a PARKED REFERENCE only, not a next push: its exact resume reference
-  remains issue #29 comment `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
+  SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
+  The FR-028 merge-eligibility helper is DELIVERED and is no longer part of the pre-tag remainder.
+  Provenance selection is ALREADY MADE, not a pending seam: the binding constitution and issue #29
+  select the frozen Method Trial v1 exhibit at producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` under owner decision U3=FREEZE, and the implementation
+  ledger records the detached frozen replay verifying its export, Markdown, and HTML hashes exactly.
+  The next dependency-safe LAB-REL-01 seam is therefore the **Lane-P release review of that
+  already-selected frozen exhibit**, run under `DL-P09-RELEASE-CURATOR` in
+  `docs/agent-system/PROMPT_LIBRARY.md`: stage the C0 asset set with its provenance checksums,
+  record the release-review result, and hand the publication decision back. No publication and no
+  tag are authorized by that slice. FR-062 dependency: while the agent floor blocks the GraphQL
+  thread-state read route, a merge-eligibility snapshot cannot carry a complete `review_threads`
+  surface and the helper correctly refuses eligibility — Lane-P slices that end in a merge must
+  therefore run in a session with a collectible thread-state route, or land the Lab #34 read-route
+  work first. After it come the final changelog sync and the screenshot/video
+  package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together with
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The three tracked helper-hardening
+  follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
+  PARKED REFERENCE only, not a next push: its exact resume reference remains issue #29 comment
+  `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
   r"C:\Windows"` and `expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")`.
   Reopen that reference only after a genuinely new unlocking event or explicit fresh authority. Keep
   remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
@@ -198,8 +253,11 @@ canonical_evidence:
     markdown=f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8;
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
   current_head_replay: >-
-    deterministic at lab_commit=2e6a7c2b7ff906cb771bb4e904dd18d2717fa536; candidate hashes differ
-    because lab_commit is embedded; release candidate NOT approved
+    deterministic at lab_commit=2e6a7c2b7ff906cb771bb4e904dd18d2717fa536, but that lab_commit is a
+    historical anchor many merges old and is NOT current main; it was not re-measured at
+    07929a41fa8c80f05794db9a58fa0bf014b4f961. The candidate hashes differ because lab_commit is
+    embedded, so the current-head release candidate remains NOT approved a fortiori — a newer head
+    can only change the embedded value again. frozen_producer_replay stays the verified exhibit path
   frozen_producer_replay: >-
     verified at producer_commit=0ef193070a9b80b81cef5a1710a1d65e0b271c15; context/contracts/invented
     wbc1_demo/reproduce/export/report/hygiene all passed; printed export/markdown/html hashes exactly
@@ -211,8 +269,11 @@ canonical_evidence:
     was not rerun because that merge did not touch the proved seam
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
-  The joint tag remains blocked on issue #29's tracked P2 hardening and unfinished pre-tag deliverables
-  plus Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
+  The FR-028 merge-eligibility helper is DELIVERED and no longer blocks. Provenance selection is
+  already made, so the pre-tag remainder is the Lane-P release review of the frozen exhibit (stage
+  only), the final changelog sync, and the screenshot/video package; the three tracked
+  helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on that remainder plus
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
   preparation slices.
@@ -222,12 +283,16 @@ late_review_debt: >-
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. The current live inventory selected no other implementation seam in this hop; select a
-  different dependency-safe tracked LAB-REL-01 seam or stop if none exists. PR #65 remains parked at
+  push. The selected next seam is the Lane-P release review of the already-selected frozen Method
+  Trial v1 exhibit at producer `0ef193070a9b80b81cef5a1710a1d65e0b271c15` (owner decision U3=FREEZE;
+  selection recorded in the constitution and issue #29, frozen replay verified in the implementation
+  ledger; FR-019 records why a current-head replay cannot match). Stage the C0 asset set with
+  checksums, record the review result, and hand the publication decision back; do not select a
+  producer again, publish, or tag. PR #65 remains parked at
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
-  The last landed main anchor remains PR #64 at `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. Preserve
+  The last landed main anchor is PR #68 at `07929a41fa8c80f05794db9a58fa0bf014b4f961`. Preserve
   the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
   `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
   uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the

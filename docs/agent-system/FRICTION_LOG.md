@@ -1641,3 +1641,30 @@ scaffolding is needed.
   cheapest layer is a lane-adoption rule in `CONTINUOUS_WORK_PROTOCOL.md`: an adopting session
   re-polls the claimed surfaces AFTER posting its claim and BEFORE delegating any writer, and
   treats a claim younger than one hour as live absent an explicit stand-down.
+
+### FR-062 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** Every `gh api graphql` invocation was refused by the agent floor in this repository
+  class, read-only queries included. Review-thread resolution flags live only behind GraphQL, so
+  during the PR #68 pipeline they could be neither read nor set.
+- **impact:** A merge decision that wants a thread-resolution count cannot obtain one, and a session
+  that reads the refusal as "no unresolved threads" would record a false operational claim about its
+  own review debt.
+- **workaround:** Carry finding disposition through thread comments and body-file dispositions
+  instead, using the dedicated `gh` subcommands with `--body-file`, and state resolution status as
+  unmeasured rather than inferring it from a blocked query. **This is a documentation route, not a
+  merge-gate bypass.** Under the delivered merge-decision seam an uncollectible `review_threads`
+  surface is a missing or incomplete surface, so the snapshot is INELIGIBLE and the helper fails
+  closed exactly as designed; comment-based disposition documents finding triage but never
+  substitutes for the surface the helper requires. The PR #68 merge itself predated the helper's
+  operational binding, because that merge is what delivered the helper.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the PR #68 pipeline.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and tool-boundary hardening; the durable fix is a collectible thread-state read
+  route, carried there as debt.
+- **promotion:** Deliberately not promoted after one occurrence. This is agent-floor behaviour
+  rather than a repository invariant, and the dedicated-subcommand route covers the disposition
+  need. Note the standing consequence: until a collectible thread-state read route exists, any
+  snapshot needing `review_threads` is ineligible rather than merged on comment evidence.

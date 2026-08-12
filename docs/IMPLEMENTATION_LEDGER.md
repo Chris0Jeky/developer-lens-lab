@@ -1173,3 +1173,17 @@ proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 36 passed
 gate on the final tree: doctor, context verify, Ruff format (92 files) and check, Pyright 0 errors,
 229 pytest passes with the same 3 declared Windows symlink skips, strict MkDocs, hygiene, and a
 clean `git diff --check`. Two review rounds is the ceiling; no further round is opened.
+
+_Correction note 2026-08-12:_ two records above are superseded or missing, and are corrected here
+rather than rewritten in place.
+
+- The present-tense sentence "PR #56 is open at live head `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0`
+  on current base `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`" describes a snapshot that no longer
+  holds. Per `docs/CURRENT_STATE.md`, PR #56 is CLOSED and unmerged at head
+  `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over that same base, with GitHub reporting
+  DIRTY / CONFLICTING. The original entry is preserved as the historical observation it was; the
+  live state file outranks it.
+- PR #64 (governor current-state reconciliation) merged 2026-08-10T16:02:41Z and never received a
+  milestone entry here. Recording it belatedly: the reconciliation landed on main, and
+  `docs/CURRENT_STATE.md` now carries it as `delivered.pr64_state_reconciliation` with the same
+  belated-record note.
