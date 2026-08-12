@@ -197,7 +197,7 @@ def test_aging_floor_matches_the_governor_policy() -> None:
         payload: object = json.load(handle)
     gates = cast(dict[str, object], cast(dict[str, object], payload)["review_gates"])
 
-    assert AGING_MINUTES_AFTER_PUSH == gates["aging_minutes_after_push"]
+    assert gates["aging_minutes_after_push"] == AGING_MINUTES_AFTER_PUSH
 
 
 def test_moved_head_is_rejected_even_when_surfaces_are_green() -> None:
