@@ -1654,10 +1654,17 @@ scaffolding is needed.
   own review debt.
 - **workaround:** Carry finding disposition through thread comments and body-file dispositions
   instead, using the dedicated `gh` subcommands with `--body-file`, and state resolution status as
-  unmeasured rather than inferring it from a blocked query.
+  unmeasured rather than inferring it from a blocked query. **This is a documentation route, not a
+  merge-gate bypass.** Under the delivered merge-decision seam an uncollectible `review_threads`
+  surface is a missing or incomplete surface, so the snapshot is INELIGIBLE and the helper fails
+  closed exactly as designed; comment-based disposition documents finding triage but never
+  substitutes for the surface the helper requires. The PR #68 merge itself predated the helper's
+  operational binding, because that merge is what delivered the helper.
 - **occurrences:** 1 independent occurrence — 2026-08-12, during the PR #68 pipeline.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
-  external command and tool-boundary hardening.
+  external command and tool-boundary hardening; the durable fix is a collectible thread-state read
+  route, carried there as debt.
 - **promotion:** Deliberately not promoted after one occurrence. This is agent-floor behaviour
   rather than a repository invariant, and the dedicated-subcommand route covers the disposition
-  need; revisit only if a merge decision genuinely requires the resolution flags themselves.
+  need. Note the standing consequence: until a collectible thread-state read route exists, any
+  snapshot needing `review_threads` is ineligible rather than merged on comment evidence.
