@@ -801,7 +801,7 @@ command-table evidence.
 ### FR-028 — the merge path again failed to enforce 15-minute exact-head aging
 
 - **first-seen:** 2026-08-09
-- **status:** `open`
+- **status:** `promoted`
 - **symptom:** PR #51 merged after at most 8m59s at its exact head, and PR #52 merged 4m18s after
   its final docs-head push. Both were below the owner constitution's 15-minute exact-head aging
   rule even though their hosted proof and accepted exact-head review evidence were green.
@@ -831,6 +831,19 @@ finished with 6 resolved review threads / 20 inline comments, and merged as
 failed the binding 15-minute floor. Its T+3m19 sweep was preliminary and invalid as delayed proof;
 the genuine paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean. The later sweep does
 not retroactively satisfy the pre-merge gate.
+
+_Note 2026-08-12 (selected enforcement layer implemented):_ The enforcement layer named in
+`promotion` now exists as the report-only `tools/merge_eligibility.py`, its focused tests in
+`tests/test_merge_eligibility.py`, and the "Lab merge decision seam" section of
+[CONTINUOUS_WORK_PROTOCOL.md](CONTINUOUS_WORK_PROTOCOL.md). It refuses one coherent snapshot below
+the 15-minute exact-head floor and returns head, base, hosted checks, accepted review evidence,
+top-level comments, closing refs, and review threads together. Two semantics were aligned to the
+practiced gate at delivery: the unsatisfiable formal-approval predicate was replaced by an explicit
+`accepted_review` attestation naming one exact-head review item, because a single-account
+repository cannot produce a formal `APPROVED` state; and any closing reference now makes a snapshot
+ineligible, with an intentional issue-completing merge requiring a coordinator override recorded on
+the pull request thread. The entry stays short of `resolved` because the helper enforces nothing on
+its own — it binds only through the protocol's use of it before a merge.
 
 ### FR-029 — a concurrent closeout PR remained open after its state claims diverged
 
