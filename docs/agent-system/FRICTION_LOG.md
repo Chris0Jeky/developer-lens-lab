@@ -29,7 +29,7 @@ Each entry carries exactly these fields:
 |---|---|
 | `id` | `FR-NNN`, assigned in order, never reused. |
 | `first-seen` | ISO date of the first recorded occurrence. |
-| `status` | `open` · `workaround-documented` · `promoted` · `owner-gated` · `resolved`. |
+| `status` | `open` · `workaround-documented` · `workaround-verified` · `promoted` · `owner-gated` · `resolved`. |
 | `symptom` | What was observed, factually, without inference. |
 | `impact` | What it costs a session when it happens. |
 | `workaround` | What was actually done instead, or `none`. |
@@ -91,8 +91,8 @@ Rules that bind entries:
   actual package smoke), and 2026-08-10 (the issue #34 factual-doc worktree used the installed
   Python-module route for locked sync and proof), and 2026-08-12 (the PR #68 duplicate fix round
   found no PATH `uv`, no host-interpreter `uv` module, and no main-checkout environment; a fresh
-  repository-external bootstrap then ran the full locked gate — see FR-060 for why the cache must
-  stay outside the worktree).
+  repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
+  cache directory breaks the verifier walk).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
   boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -191,6 +191,15 @@ PATH `uv`. The installed `py -3 -m uv` 0.12.2 route selected project-supported P
 created the worktree-local project environment, and completed locked sync without changing
 `uv.lock` or installing a global tool.
 
+_Note 2026-08-12 (PR #68 duplicate fix round):_ The twentieth occurrence found no PATH `uv`, no
+host-interpreter `uv` module, and no main-checkout environment — the first time the installed
+module route was also absent. A fresh bootstrap ran the full locked gate, hosted outside the
+repository (with its cache and managed-Python directory) purely as the session-scoped FR-060
+workaround; those directories live in the disposable session scratch area and hold no repository
+state. `MAINTENANCE_PROTOCOL.md`'s promoted worktree-confined wording is deliberately unchanged:
+the confined route remains canon, and reconciling it with the FR-060 verifier interaction (for
+example by pruning `.uv-cache` in the verifier walk) stays issue #34 task debt.
+
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
 - **first-seen:** 2026-08-09
@@ -235,7 +244,9 @@ created the worktree-local project environment, and completed locked sync withou
   test identities and a stated platform condition.
 - **promotion:** Deliberately NOT promoted yet. Promotion needs the second independent occurrence
   and, more importantly, a narrowed cause: an executable assertion about a skip whose reason is
-  unproved would pin the symptom rather than enforce the property.
+  unproved would pin the symptom rather than enforce the property. The second independent
+  occurrence is now recorded (2026-08-12); promotion stays deferred for the remaining reason
+  alone — the enabling condition is still unnarrowed, which is issue #33 task debt.
 
 _Note 2026-08-09 (LAB-GOV-02):_ the full gate run for this card names the three skips exactly, so
 they are no longer anonymous: `tests/test_contract_sync.py` skips with "directory symlinks are
@@ -252,7 +263,10 @@ with the familiar 3 declared skips. The guard is therefore environment-sensitive
 platform-constant: at least one interpreter on this host can create both symlink kinds. A skip that
 silently becomes a pass changes what the recorded gate history proves, in the benign direction
 here. The exact enabling condition (interpreter install, privilege, or developer-mode state)
-remains unproved, so the entry stays `open` and narrowing remains issue #33 task debt.
+remains unproved, so the entry stays `open` and narrowing remains issue #33 task debt. The
+zero-skip figures come from a session-local, unpushed duplicate tree and are durably recorded in
+[PR #68 comment 5269372792](https://github.com/Chris0Jeky/developer-lens-lab/pull/68#issuecomment-5269372792);
+the 226/229 figures are in the tracked implementation ledger.
 
 ### FR-004 — concurrent-writer hazard in the lab checkout (cross-repository, owner-gated)
 
@@ -1585,8 +1599,10 @@ scaffolding is needed.
   `SKIPPED_MARKDOWN_PARTS` prunes `.venv`, `.package-smoke`, and peers, but not `.uv-cache`, even
   though `.gitignore` names that directory as expected toolchain cache.
 - **impact:** A full-gate run fails at its first step until the cache moves; the cost was one
-  bootstrap rebuild. No tracked file, ref, or GitHub object changed, and no generated, ignored,
-  protected, credential, or private bytes were inspected.
+  bootstrap rebuild. No tracked file, ref, or GitHub object changed. The verifier's automated walk
+  did read the ignored cached README — that read is the failure mechanism itself — but the bytes
+  were public package documentation; no manual inspection occurred and no protected, credential,
+  or private bytes were involved.
 - **workaround:** Host the bootstrap environment, `uv` cache, and managed-Python directory outside
   the repository entirely, keeping only the pruned `.venv` project environment inside the worktree.
   Verified: the identical gate sequence then passed end to end.
@@ -1594,8 +1610,10 @@ scaffolding is needed.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   proof and path-boundary hardening.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
-  is adding `.uv-cache` to `SKIPPED_MARKDOWN_PARTS` in `src/developer_lens_lab/context/verify.py`,
-  so the verifier prunes every directory `.gitignore` already declares as toolchain cache.
+  is adding `.uv-cache` to `SKIPPED_MARKDOWN_PARTS` in `src/developer_lens_lab/context/verify.py`.
+  That closes this observed cache only: `.gitignore` names other unpruned directories
+  (`.pyright/`, `__pycache__/`, `.ipynb_checkpoints/`), so a complete ignore-aligned pruning
+  policy is a separate, deliberately unclaimed design decision.
 
 ### FR-061 — a lane adoption raced an active prior claimant by seconds
 
