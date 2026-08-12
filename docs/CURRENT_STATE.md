@@ -183,7 +183,9 @@ delivered:
       formally stood down at 16:11:29Z after the ownership clarification; one writer held throughout
       and no ref was raced. Post-ceiling P1/P2 findings are tracked on issue #29 comments
       `5269020473` and `5269401432`: PR-identity binding, a dismissed-review state allowlist, and
-      identifier validation.
+      identifier validation. The delayed post-merge sweep was clean twice — at 16:24:23Z (T+9m49s)
+      and again at 16:28:43Z (T+14m09s), beyond the measured connector delay — with zero post-merge
+      reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
   SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
   The FR-028 merge-eligibility helper is DELIVERED and is no longer part of the pre-tag remainder.
