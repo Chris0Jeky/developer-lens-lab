@@ -183,18 +183,27 @@ delivered:
       formally stood down at 16:11:29Z after the ownership clarification; one writer held throughout
       and no ref was raced. Post-ceiling P1/P2 findings are tracked on issue #29 comments
       `5269020473` and `5269401432`: PR-identity binding, a dismissed-review state allowlist, and
-      identifier validation. The delayed post-merge sweep was clean twice — at 16:24:23Z (T+9m49s)
+      identifier validation. Worktree disposition: removal of the merged helper worktree was
+      interrupted mid-operation, so its stale registration was pruned, but an unregistered leftover
+      directory of regenerable caches and merged tracked copies remains for manual deletion — the
+      agent floor correctly refuses out-of-project recursive deletion, the same class as the
+      recorded value01 precedent. The delayed post-merge sweep was clean twice — at 16:24:23Z (T+9m49s)
       and again at 16:28:43Z (T+14m09s), beyond the measured connector delay — with zero post-merge
       reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
   SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
   The FR-028 merge-eligibility helper is DELIVERED and is no longer part of the pre-tag remainder.
-  The next dependency-safe LAB-REL-01 seam is Lane-P provenance selection: explicitly select the
-  frozen producer `0ef193070a9b80b81cef5a1710a1d65e0b271c15` as the release exhibit, per owner
-  decision U3=FREEZE and FR-019's recorded unlocking condition. After it comes the Lane-P release
-  review — staging only, with the publication decision handed back — then the final changelog sync,
-  and the screenshot/video package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together
-  with `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The three tracked helper-hardening
+  Provenance selection is ALREADY MADE, not a pending seam: the binding constitution and issue #29
+  select the frozen Method Trial v1 exhibit at producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` under owner decision U3=FREEZE, and the implementation
+  ledger records the detached frozen replay verifying its export, Markdown, and HTML hashes exactly.
+  The next dependency-safe LAB-REL-01 seam is therefore the **Lane-P release review of that
+  already-selected frozen exhibit**, run under `DL-P09-RELEASE-CURATOR` in
+  `docs/agent-system/PROMPT_LIBRARY.md`: stage the C0 asset set with its provenance checksums,
+  record the release-review result, and hand the publication decision back. No publication and no
+  tag are authorized by that slice. After it come the final changelog sync and the screenshot/video
+  package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together with
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The three tracked helper-hardening
   follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
   PARKED REFERENCE only, not a next push: its exact resume reference remains issue #29 comment
   `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
@@ -253,10 +262,10 @@ canonical_evidence:
     was not rerun because that merge did not touch the proved seam
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
-  The FR-028 merge-eligibility helper is DELIVERED and no longer blocks. The pre-tag remainder is
-  Lane-P provenance selection, the Lane-P release review (stage only), the final changelog sync, and
-  the screenshot/video package; the three tracked helper-hardening follow-ups on issue #29 are later
-  work. The joint tag remains blocked on that remainder plus
+  The FR-028 merge-eligibility helper is DELIVERED and no longer blocks. Provenance selection is
+  already made, so the pre-tag remainder is the Lane-P release review of the frozen exhibit (stage
+  only), the final changelog sync, and the screenshot/video package; the three tracked
+  helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on that remainder plus
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
@@ -267,9 +276,12 @@ late_review_debt: >-
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. The selected next seam is Lane-P provenance selection of the frozen producer
-  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` as the release exhibit, under owner decision U3=FREEZE
-  and FR-019's recorded unlocking condition. PR #65 remains parked at
+  push. The selected next seam is the Lane-P release review of the already-selected frozen Method
+  Trial v1 exhibit at producer `0ef193070a9b80b81cef5a1710a1d65e0b271c15` (owner decision U3=FREEZE;
+  selection recorded in the constitution and issue #29, frozen replay verified in the implementation
+  ledger; FR-019 records why a current-head replay cannot match). Stage the C0 asset set with
+  checksums, record the review result, and hand the publication decision back; do not select a
+  producer again, publish, or tag. PR #65 remains parked at
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
