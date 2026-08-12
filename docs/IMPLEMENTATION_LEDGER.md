@@ -1091,3 +1091,32 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The full locked gate on this final pre-push tree passed through `py -3 -m uv`: sync, doctor,
   context, Ruff format/check, Pyright, 193 pytest passes with 3 declared Windows symlink skips,
   strict MkDocs, hygiene, and diff check. No shared prompt block or parity manifest changed.
+
+## 2026-08-12 - Report-only Lab merge-eligibility helper (FR-028 / issue #29)
+
+- Delivered the enforcement layer FR-028's `promotion` field had selected:
+  `tools/merge_eligibility.py` evaluates one coherent, head/base-bound snapshot and refuses
+  eligibility below the governor's 15-minute exact-head floor, returning head, base, hosted checks,
+  formal reviews, top-level comments, closing refs, and review threads together. It has no GitHub
+  or Git side effects and performs no merge; every surface, item, and identifier failure is a
+  deterministic reason code.
+- Aligned two predicates to the practiced gate. The unsatisfiable `formal_approval_missing`
+  requirement was removed — GitHub forbids self-approval and every Lab pull request is
+  single-account, so a formal `APPROVED` state can never appear — and replaced by a required
+  `accepted_review` attestation naming one exact-head item by `surface` plus `review_id` or
+  `comment_id`, with `missing_accepted_review`, `invalid_accepted_review_surface`,
+  `invalid_accepted_review_id`, `stale_accepted_review` and `unknown_accepted_review` failing
+  closed. `changes_requested` still refuses any `CHANGES_REQUESTED` review. Any `closing_refs` item
+  now yields `closing_reference_present:<index>`, because a closing keyword once auto-closed the
+  live release-programme issue; an intentional issue-completing merge needs a coordinator override
+  recorded on the pull request thread, outside the tool.
+- `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md` documents the attestation shape, the
+  closing-reference refusal and its override, and keeps the one-coherent-snapshot and
+  recollect-after-movement rules. FR-028 moved to `promoted` with a dated 2026-08-12 note; it stays
+  short of `resolved` because the helper binds only through the protocol's use of it.
+- Focused proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 15 passed. Fixtures
+  are invented C0; no test performs file, network or GitHub I/O.
+- Full locked gate through `py -3 -m uv` on the final tree: sync, doctor, context verify, Ruff
+  format (92 files) and check, Pyright 0 errors, 208 pytest passes with 3 declared Windows symlink
+  skips, strict MkDocs, hygiene, and a clean `git diff --check`. No shared prompt block or parity
+  manifest changed.
