@@ -1369,3 +1369,113 @@ four unresolved PR #60 threads.
 - **task:** lab issue #34 tracks checked state-reconciliation and Windows command-boundary helpers.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, make explicit UTF-8
   decoding and line-ending normalization part of the checked parent-range helper selected by FR-046.
+
+### FR-050 - the standalone uv proving command was absent from the Windows PATH
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** `uv run pytest tests/test_context.py` could not start because `uv` was absent from
+  this worktree's PowerShell PATH.
+- **impact:** The standalone command could not start, but the installed `uv` module remained
+  available through Python.
+- **workaround:** Run `py -3 -m uv` for the declared locked route. The coordinator used that
+  invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
+  189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
+  `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
+- **occurrences:** 1 independent occurrence - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10.
+- **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
+  any recurrence/promotion decision; use the installed module invocation for future proving passes
+  without changing the project toolchain.
+- **promotion:** Deliberately not promoted after one occurrence; restore a standalone PATH route
+  only if it materially improves the supported workflow.
+
+### FR-051 — estate registry no-match stopped a batched orientation read
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** The estate registry returned no Developer Lens Lab entry; a fail-fast batched
+  orientation read stopped on that no-match before the individual binding reads.
+- **impact:** The registry lookup could not supply an estate row for orientation, so the repository
+  authority had to be established independently before continuing.
+- **workaround:** Treat the no-match as data and read repository authority separately; take no
+  registry detour.
+- **occurrences:** 1 independent occurrence — flagship governor orientation on 2026-08-10.
+- **task:** Lab #34 comment `5242537913` tracks the checked orientation path.
+- **promotion:** Deliberately not promoted after one occurrence; promote only on recurrence through
+  the canonical estate owner.
+
+### FR-052 — connector mutation response lagged remote and numbered PR state
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** After the PR #64 final wording push, the connector update response reported previous
+  head `40d7df4e` while the remote ref and numbered PR API reported `815b4170`.
+- **impact:** Trusting the connector mutation response could produce stale exact-head judgment for
+  the PR.
+- **workaround:** Re-read the remote ref and numbered PR API after mutation; Lab #34 comment
+  `5242537913` tracks a checked create/update-and-reread helper.
+- **occurrences:** 1 independent occurrence — PR #64 final wording push on 2026-08-10.
+- **task:** Lab #34 comment `5242537913` tracks the checked create/update-and-reread helper.
+- **promotion:** Deliberately not promoted after one occurrence; promote on a second independent
+  occurrence.
+
+_Note 2026-08-10 (PR #65 and state-sync worktree guard):_ PR #65's bundled
+`inspect_pr_checks.py` failed at the Windows cp1252 boundary after reaching the completed check,
+and a later PR-body em-dash-to-`?` mutation was detected and repaired by numbered-PR reread. These
+are the second and third independent Windows text-boundary occurrences in the FR-047 lineage; see
+[Lab #34 comment 5243638848](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243638848)
+and [Lab #34 comment 5243837462](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243837462).
+The cheapest enforcing layer is explicit end-to-end UTF-8/error handling plus numbered-PR reread;
+the remaining enforcement task debt is outside this repository in the plugin cache. The related
+FR-053/FR-054 records remain only on the parked, unmerged PR #65 branch and are not claims about
+main.
+
+The first state worktree guard stopped safely because Git forward slashes and PowerShell backslashes
+compared literally; no worktree or branch was created. `Resolve-Path` normalization fixed the guard
+on the next attempt. This is occurrence 1; see [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
+Promote this guard only if the path-normalization failure recurs.
+
+_Note 2026-08-10 (PR #66 divergence):_ Focused context verification, strict MkDocs, and hygiene
+passed, but hosted pytest enforced the exact stable lane scalar and failed run `31416319955`
+(195 passed / 1 failed). The direct fix is to restore that scalar and keep PR #65 parked status prose
+adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/developer-lens-lab/pull/66#issuecomment-5244014884).
+Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
+scaffolding is needed.
+
+### FR-055 — a post-removal PowerShell regex check raised an invalid pattern error
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** Protected plain removal of `developer-lens-lab-pr65-parked-state-20260810` completed
+  after target, registration, nonignored, and ignored-output checks, but the post-removal
+  verification used PowerShell regex replacement with a lone backslash and raised an invalid-regex
+  error.
+- **impact:** The cleanup operation itself succeeded, but that verification expression could not
+  establish absence. Direct literal `Test-Path` and `git worktree list` checks then confirmed the
+  target was absent and unregistered.
+- **workaround:** Use direct literal path checks for the removal result; do not use regex replacement
+  for separator normalization in the cleanup verification.
+- **occurrences:** 2 independent path-normalization/regex occurrences — this post-removal check and
+  the earlier state-worktree guard recorded at [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
+- **task:** [Lab #34 comment 5244433491](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5244433491)
+  tracks the recurrence and the reusable path helper task.
+- **promotion:** Select the cheapest enforcing layer: a reusable PowerShell path
+  normalization/comparison helper using `Resolve-Path` or `[IO.Path]::GetFullPath` plus literal
+  `String.Replace` for separators, never regex replacement. Keep the helper as issue #34 task debt;
+  do not detour in this slice.
+
+### FR-056 — a narrowed append patch briefly introduced a leading-space diff
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** The first append patch did not match the exact tail context; a narrowed patch then
+  briefly added one leading space to an existing friction-log line.
+- **impact:** No committed collateral change occurred. The exact diff exposed the whitespace drift,
+  and a follow-up patch restored the existing line before commit.
+- **workaround:** Inspect the exact one-file diff and run `git diff --check` before committing.
+- **occurrences:** 1 independent occurrence — FR-055 append on 2026-08-10.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked append and command-boundary helpers.
+- **promotion:** Deliberately not promoted after one occurrence; the exact-diff and whitespace
+  checks are sufficient for this bounded documentation slice.
