@@ -134,6 +134,15 @@ def _bound_to_expected(
     return base is not None and expected_base is not None and base == expected_base
 
 
+def _cites_head(record: Mapping[str, object], expected_head: str | None) -> bool:
+    """Report whether the item's text anchors itself to the expected head SHA."""
+
+    body = _string(record.get("body"))
+    if body is None or expected_head is None:
+        return False
+    return expected_head in body
+
+
 def _evaluate_accepted_review(
     snapshot: Mapping[str, object],
     surface_items: Mapping[str, list[object]],
@@ -175,6 +184,10 @@ def _evaluate_accepted_review(
     for record in matches:
         if not _bound_to_expected(record, expected_head, expected_base):
             reasons.append("stale_accepted_review")
+        # A top-level comment has no native commit anchor; CONTINUOUS_WORK_PROTOCOL.md records why
+        # the attested one must cite the expected head in its own text.
+        if surface_name == "top_level_comments" and not _cites_head(record, expected_head):
+            reasons.append("unanchored_accepted_review")
 
 
 def evaluate_merge_eligibility(

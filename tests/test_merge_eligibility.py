@@ -76,6 +76,7 @@ def _snapshot() -> dict[str, object]:
                     {
                         **bound,
                         "comment_id": COMMENT_ID,
+                        "body": f"Fresh-context review of {HEAD}: no blocking findings.",
                     }
                 ]
             ),
@@ -231,14 +232,13 @@ def test_unattestable_surface_and_identifier_are_refused() -> None:
 
 def test_top_level_comment_review_satisfies_the_gate() -> None:
     snapshot = _snapshot()
-    attestation = _attestation(snapshot)
-    attestation["surface"] = "top_level_comments"
-    attestation["id"] = COMMENT_ID
+    comment = _attest_the_comment(snapshot)
     # No formal review exists at all: the single-account repository cannot produce one.
     _items(snapshot, "formal_reviews").clear()
 
     report = evaluate_merge_eligibility(snapshot, now=NOW)
 
+    assert HEAD in cast(str, comment["body"])
     assert report.eligible
     assert report.reasons == ()
 
@@ -248,6 +248,40 @@ def test_closing_reference_is_refused() -> None:
     _items(snapshot, "closing_refs").append({"head_sha": HEAD, "base_sha": BASE, "ref": "issue-29"})
 
     assert _reasons(snapshot) == ("closing_reference_present:0",)
+
+
+def _attest_the_comment(snapshot: dict[str, object]) -> dict[str, object]:
+    attestation = _attestation(snapshot)
+    attestation["surface"] = "top_level_comments"
+    attestation["id"] = COMMENT_ID
+    return _items(snapshot, "top_level_comments")[0]
+
+
+def test_an_attested_comment_without_a_body_is_unanchored() -> None:
+    snapshot = _snapshot()
+    comment = _attest_the_comment(snapshot)
+    del comment["body"]
+
+    assert _reasons(snapshot) == ("unanchored_accepted_review",)
+
+
+def test_an_attested_comment_citing_another_head_is_unanchored() -> None:
+    snapshot = _snapshot()
+    comment = _attest_the_comment(snapshot)
+    comment["body"] = f"Fresh-context review of {OTHER}: no blocking findings."
+
+    assert _reasons(snapshot) == ("unanchored_accepted_review",)
+
+
+def test_a_formal_review_attestation_needs_no_body() -> None:
+    snapshot = _snapshot()
+    review = _items(snapshot, "formal_reviews")[0]
+
+    report = evaluate_merge_eligibility(snapshot, now=NOW)
+
+    assert "body" not in review
+    assert report.eligible
+    assert report.reasons == ()
 
 
 def test_missing_review_state_never_reads_as_no_objection() -> None:
