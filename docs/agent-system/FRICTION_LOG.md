@@ -29,7 +29,7 @@ Each entry carries exactly these fields:
 |---|---|
 | `id` | `FR-NNN`, assigned in order, never reused. |
 | `first-seen` | ISO date of the first recorded occurrence. |
-| `status` | `open` · `workaround-documented` · `promoted` · `owner-gated` · `resolved`. |
+| `status` | `open` · `workaround-documented` · `workaround-verified` · `promoted` · `owner-gated` · `resolved`. |
 | `symptom` | What was observed, factually, without inference. |
 | `impact` | What it costs a session when it happens. |
 | `workaround` | What was actually done instead, or `none`. |
@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 19 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 20 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -89,7 +89,10 @@ Rules that bind entries:
   2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
   coordinator), 2026-08-09 (the wheel-contract test worktree used the confined route for its
   actual package smoke), and 2026-08-10 (the issue #34 factual-doc worktree used the installed
-  Python-module route for locked sync and proof).
+  Python-module route for locked sync and proof), and 2026-08-12 (the PR #68 duplicate fix round
+  found no PATH `uv`, no host-interpreter `uv` module, and no main-checkout environment; a fresh
+  repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
+  cache directory breaks the verifier walk).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
   boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -188,6 +191,15 @@ PATH `uv`. The installed `py -3 -m uv` 0.12.2 route selected project-supported P
 created the worktree-local project environment, and completed locked sync without changing
 `uv.lock` or installing a global tool.
 
+_Note 2026-08-12 (PR #68 duplicate fix round):_ The twentieth occurrence found no PATH `uv`, no
+host-interpreter `uv` module, and no main-checkout environment — the first time the installed
+module route was also absent. A fresh bootstrap ran the full locked gate, hosted outside the
+repository (with its cache and managed-Python directory) purely as the session-scoped FR-060
+workaround; those directories live in the disposable session scratch area and hold no repository
+state. `MAINTENANCE_PROTOCOL.md`'s promoted worktree-confined wording is deliberately unchanged:
+the confined route remains canon, and reconciling it with the FR-060 verifier interaction (for
+example by pruning `.uv-cache` in the verifier walk) stays issue #34 task debt.
+
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
 - **first-seen:** 2026-08-09
@@ -225,13 +237,16 @@ created the worktree-local project environment, and completed locked sync withou
   on the platform the repository is actually developed on.
 - **workaround:** none — the skips are reported honestly in each proving pass, which is why they are
   visible enough to log here. Reporting is not the same as understanding.
-- **occurrences:** 1 recorded as friction — 2026-08-09 (LAB-GOV-02), though the underlying skips
-  appear in many recorded proving passes.
+- **occurrences:** 2 recorded as friction — 2026-08-09 (LAB-GOV-02), though the underlying skips
+  appear in many recorded proving passes, and 2026-08-12 (the same three tests executed and passed
+  under a repository-external toolchain; note below).
 - **task:** lab issue #33 records it; it stays task debt until a bounded slice narrows it to exact
   test identities and a stated platform condition.
 - **promotion:** Deliberately NOT promoted yet. Promotion needs the second independent occurrence
   and, more importantly, a narrowed cause: an executable assertion about a skip whose reason is
-  unproved would pin the symptom rather than enforce the property.
+  unproved would pin the symptom rather than enforce the property. The second independent
+  occurrence is now recorded (2026-08-12); promotion stays deferred for the remaining reason
+  alone — the enabling condition is still unnarrowed, which is issue #33 task debt.
 
 _Note 2026-08-09 (LAB-GOV-02):_ the full gate run for this card names the three skips exactly, so
 they are no longer anonymous: `tests/test_contract_sync.py` skips with "directory symlinks are
@@ -239,6 +254,19 @@ unavailable on this host", and `tests/test_method_trial_export.py` and `tests/te
 each skip with "file symlinks are unavailable on this host". Two distinct conditions, not one. Still
 unproved is *why* the host cannot create them and whether the skipped behaviour is genuinely
 untestable here or merely unexercised; the entry stays `open` for that reason.
+
+_Note 2026-08-12 (PR #68 duplicate fix round):_ the inverse surprise: under the FR-001
+repository-external `uv` route, whose locked sync selected a host-installed CPython 3.12.6, the
+same three tests executed and PASSED — that full gate reported 220 passed with zero skips, while
+the owning PR #68 lane's gates at sibling heads on the same repository reported 226 and 229 passed
+with the familiar 3 declared skips. The guard is therefore environment-sensitive, not
+platform-constant: at least one interpreter on this host can create both symlink kinds. A skip that
+silently becomes a pass changes what the recorded gate history proves, in the benign direction
+here. The exact enabling condition (interpreter install, privilege, or developer-mode state)
+remains unproved, so the entry stays `open` and narrowing remains issue #33 task debt. The
+zero-skip figures come from a session-local, unpushed duplicate tree and are durably recorded in
+[PR #68 comment 5269372792](https://github.com/Chris0Jeky/developer-lens-lab/pull/68#issuecomment-5269372792);
+the 226/229 figures are in the tracked implementation ledger.
 
 ### FR-004 — concurrent-writer hazard in the lab checkout (cross-repository, owner-gated)
 
@@ -1561,7 +1589,60 @@ scaffolding is needed.
 - **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
   rather than a repository invariant, and the transcript resume route already recovers the work.
 
-### FR-060 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
+### FR-060 — the context verifier's markdown walk descended into an in-worktree uv cache
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-verified`
+- **symptom:** Hosting the FR-001 confined `uv` bootstrap with its cache at the gitignored
+  `.uv-cache/` inside a worktree made `dllab doctor` and `dllab context verify` fail on a broken
+  relative link inside a cached package README (`pyright`'s bundled typeshed): the markdown walk's
+  `SKIPPED_MARKDOWN_PARTS` prunes `.venv`, `.package-smoke`, and peers, but not `.uv-cache`, even
+  though `.gitignore` names that directory as expected toolchain cache.
+- **impact:** A full-gate run fails at its first step until the cache moves; the cost was one
+  bootstrap rebuild. No tracked file, ref, or GitHub object changed. The verifier's automated walk
+  did read the ignored cached README — that read is the failure mechanism itself — but the bytes
+  were public package documentation; no manual inspection occurred and no protected, credential,
+  or private bytes were involved.
+- **workaround:** Host the bootstrap environment, `uv` cache, and managed-Python directory outside
+  the repository entirely, keeping only the pruned `.venv` project environment inside the worktree.
+  Verified: the identical gate sequence then passed end to end.
+- **occurrences:** 1 independent occurrence — 2026-08-12, PR #68 duplicate fix round.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  proof and path-boundary hardening.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
+  is adding `.uv-cache` to `SKIPPED_MARKDOWN_PARTS` in `src/developer_lens_lab/context/verify.py`.
+  That closes this observed cache only: `.gitignore` names other unpruned directories
+  (`.pyright/`, `__pycache__/`, `.ipynb_checkpoints/`), so a complete ignore-aligned pruning
+  policy is a separate, deliberately unclaimed design decision.
+
+### FR-061 — a lane adoption raced an active prior claimant by seconds
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** Two flagship coordinator sessions raced one PR #68 lane. The adopting session read
+  the PR state eleven seconds after the owning session's unobserved round-1 push, posted an
+  adoption claim over a 49-minute-old prior claim after seeing 33 minutes of surface silence, and
+  delegated a full duplicate fix round without re-polling; the owning session's clarification,
+  posted two and a half minutes after the adoption comment, went unread until the duplicate's push
+  was rejected as non-fast-forward.
+- **impact:** One fully duplicated bounded implementation round (five findings, full locked gate)
+  that never landed. The remote branch was never corrupted: the non-fast-forward rejection
+  contained the race, and the duplicate served as an independent cross-check that found no defect
+  at the owning head.
+- **workaround:** Prior claim wins. The adopting session stood down on both surfaces, archived the
+  duplicate on a local-only branch name (deleting its local copy of the shared branch name so no
+  accidental push remains possible), and recorded the cross-check result before yielding the lane.
+- **occurrences:** 1 independent occurrence of this adopt-race mode — 2026-08-12, PR #68
+  review-response lane; the broader concurrency lineage is FR-004, FR-029, and FR-033.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  protocol hardening; the stand-down and cross-check record is
+  [PR #68 comment 5269372792](https://github.com/Chris0Jeky/developer-lens-lab/pull/68#issuecomment-5269372792).
+- **promotion:** Deliberately not promoted after one occurrence of this mode. If it recurs, the
+  cheapest layer is a lane-adoption rule in `CONTINUOUS_WORK_PROTOCOL.md`: an adopting session
+  re-polls the claimed surfaces AFTER posting its claim and BEFORE delegating any writer, and
+  treats a claim younger than one hour as live absent an explicit stand-down.
+
+### FR-062 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
 
 - **first-seen:** 2026-08-12
 - **status:** `workaround-documented`
