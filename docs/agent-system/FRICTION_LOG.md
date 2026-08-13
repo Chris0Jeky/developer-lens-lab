@@ -319,7 +319,7 @@ alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 ### FR-005 — agent floor rejects heredoc stdin and unresolvable recursive-delete targets
 
 - **first-seen:** 2026-08-09
-- **status:** `promotion-proposed`
+- **status:** `workaround-documented`
 - **symptom:** Two shell forms were refused by the agent floor during ordinary work in this
   repository: a heredoc redirected into an interpreter's stdin (`… <<'EOF'`), refused as a dynamic
   redirect target that cannot be inspected safely; and a recursive delete whose target the floor
@@ -1606,43 +1606,28 @@ scaffolding is needed.
 - **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
   rather than a repository invariant, and the transcript resume route already recovers the work.
 
-### FR-060 — the context verifier's markdown walk descended into an in-worktree uv cache
+### FR-060 — the context verifier's markdown walk traversed ignored runtime environments
 
 - **first-seen:** 2026-08-12
-- **status:** `workaround-verified`
-- **symptom:** Hosting the FR-001 confined `uv` bootstrap with its cache at the gitignored
-  `.uv-cache/` inside a worktree made `dllab doctor` and `dllab context verify` fail on a broken
-  relative link inside a cached package README (`pyright`'s bundled typeshed): the markdown walk's
-  `SKIPPED_MARKDOWN_PARTS` prunes `.venv`, `.package-smoke`, and peers, but not `.uv-cache`, even
-  though `.gitignore` names that directory as expected toolchain cache.
-- **impact:** A full-gate run fails at its first step until the cache moves; the cost was one
-  bootstrap rebuild. No tracked file, ref, or GitHub object changed. The verifier's automated walk
-  did read the ignored cached README — that read is the failure mechanism itself — but the bytes
-  were public package documentation; no manual inspection occurred and no protected, credential,
-  or private bytes were involved.
-- **workaround:** Host the bootstrap environment, `uv` cache, and managed-Python directory outside
-  the repository entirely, keeping only the pruned `.venv` project environment inside the worktree.
-  Verified: the identical gate sequence then passed end to end.
-- **occurrences:** 4 independent occurrences — 2026-08-12, PR #68 duplicate fix round, and three
-  2026-08-13 Lane-P gate contexts.
-- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
-  proof and path-boundary hardening.
-- **promotion:** At the second occurrence, propose the cheapest layer on Lab #34: exclude ignored
-  runtime trees from the markdown walk. Do not detour into that verifier change during this slice;
-  a complete ignore-aligned pruning policy remains a separate, deliberately unclaimed design decision.
-
-_Note 2026-08-13 (Lane-P full gate):_ The declared gate reached `dllab doctor` after a locked sync,
-then failed because pre-existing ignored runtime directories contained package README links the
-markdown walk followed. No ignored bytes were manually inspected or altered; the independent focused
-integrity proof remains available while the full doctor/context steps stay blocked.
-
-_Note 2026-08-13 (Lane-P full pytest):_ The same pre-existing markdown-walk failure caused the
-doctor and repository-context tests to fail while all remaining collected tests, including the new
-release-asset integrity test, passed. No ignored bytes were manually inspected or altered.
-
-_Note 2026-08-13 (Lane-P context verify):_ A direct context-verifier invocation reported the same
-pre-existing ignored-runtime markdown-link failures. The release-asset files and ignored runtime
-directories were not altered.
+- **status:** `enforcement-selected`
+- **symptom:** Pre-existing ignored runtime environments were traversed by the markdown walk. In
+  the 2026-08-13 Lane-P adopted worktree, `dllab doctor` and `dllab context verify` failed on the
+  resulting context-link checks; direct context verification and the full pytest run were separate
+  manifestations of that same worktree occurrence.
+- **impact:** The declared full gate cannot use that adopted worktree as clean proof. Its full
+  pytest run had 231 passes and 2 context-related failures. No tracked file, ref, or GitHub object
+  changed, and no ignored bytes were manually inspected or altered.
+- **workaround:** Use a fresh detached exact-head verification clone with bootstrap and cache
+  outside the clone. The coordinator proved doctor and context there at candidate tree
+  `3b3607075ec62a4038d2bff7dea70a98f0ff9dd9`; the final exact-head full gate remains a merge
+  precondition.
+- **occurrences:** 2 independent occurrences — 2026-08-12 during PR #68 and one 2026-08-13
+  Lane-P adopted-worktree occurrence.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns the
+  future ignore-aware markdown-walk fix.
+- **promotion:** At the second occurrence, select the fresh detached exact-head verification clone
+  as the workaround and retain the future ignore-aware markdown-walk fix on Lab #34 as the
+  enforcement path. Do not detour into that verifier change during this slice.
 
 ### FR-061 — a lane adoption raced an active prior claimant by seconds
 
@@ -1847,18 +1832,19 @@ entirely stale PR response.
   for UTC timestamps and UTF-8 output, used by reviewed repo scripts instead of host-version-specific
   aliases. This slice records the proposal only and does not alter runtime or harness code.
 
-### FR-070 — a second concurrent writer changed the isolated worktree mid-handoff
+### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
 
 - **first-seen:** 2026-08-13
 - **status:** `enforcement-selected`
-- **symptom:** After a clean Lane-P proof, another writer's release-test, provenance, state, ledger,
-  and friction patch appeared in this supposedly sole-writer worktree before final pinning.
-- **impact:** The coordinator had to stop the lane, establish ownership, and explicitly adopt the
-  coherent patch before any additional staging or commit. The worktree was not reset, cleaned, or
-  overwritten.
-- **workaround:** Preserve the patch untouched, re-pin branch/base/rebase state, and let the
-  coordinator assign a single writer before adoption.
-- **occurrences:** 2 independent concurrent-writer/worktree collisions — 2026-08-12 and 2026-08-13.
+- **symptom:** The shared branch/worktree advanced at the commit boundary while the delegated writer
+  was completing handoff. A subsequent sibling amend was caught by the next writer's preflight before
+  edit. Git author metadata does not establish runtime actor.
+- **impact:** The writer stopped. The coordinator pinned and audited the parent, diff, clean status,
+  and frozen asset hashes before adoption; the worktree was not reset, cleaned, or overwritten.
+- **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
+  next writer to preflight before edit.
+- **occurrences:** 2 independent branch/worktree collision episodes — 2026-08-12 and 2026-08-13;
+  the 2026-08-13 episode included two tip movements.
 - **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
   ignored per-worktree writer lease/guard.
 - **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as

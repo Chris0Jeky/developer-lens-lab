@@ -17,10 +17,10 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      Main's last landed change is PR #72, merged as
-      `db104ca1f2bae2de214024e69fddff8cf9822373`. That is the live main anchor. The Lane-P candidate
-      is based on it and stages the completed C0 asset/review slice, but is not a landed main change
-      until separately reviewed and merged. PR #65 is open and ready (not draft), based on
+      Lane-P began from PR #72 merge base
+      `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+      Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only;
+      neither state authorizes publication, release, or a tag. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
@@ -43,12 +43,14 @@ active_wave:
       remains issue #29 comment `5243827843` and PR #65 comment `5243827873`.
 delivered:
   - lane_p_release_review: >-
-      STAGED ON THIS CANDIDATE — the already-recorded 2026-08-09 frozen replay remains the evidence
-      for the owner-selected Method Trial v1 C0 exhibit at producer
+      STAGED FOR RELEASE REVIEW — Lane-P began from PR #72 merge base
+      `db104ca1f2bae2de214024e69fddff8cf9822373`; before ordinary merge it is a candidate, and after
+      ordinary merge it is tracked staging only. Neither state authorizes publication, release, or a tag.
+      The already-recorded 2026-08-09 frozen replay remains the evidence for the owner-selected Method Trial v1 C0 exhibit at producer
       `0ef193070a9b80b81cef5a1710a1d65e0b271c15`. This candidate validates the immutable fixture's
       canonical-LF and semantic form, then reviews the derived renderer hash/content with a compact
       provenance/checksum/licence manifest. No new run, custody decision, experiment, holdout decision,
-      or Experiment Ledger update occurred. It is not yet a mainline, publication, release, or tag event.
+      or Experiment Ledger update occurred.
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
       This records the merged result only; it does not attribute the GitHub operation to an actor.
@@ -208,8 +210,8 @@ next_safe_slice: >-
   ledger records the detached frozen replay verifying its export, Markdown, and HTML hashes exactly.
   The Lane-P release review of that already-selected frozen exhibit is complete on the rebased
   candidate branch: JSON and HTML assets plus the provenance/checksum/licence manifest are staged,
-  reviewed, and await ordinary merge review. It neither publishes nor tags. The exact next
-  dependency-safe pre-tag seam after this candidate lands is final changelog/release-note
+  reviewed, and await ordinary merge review. It neither publishes nor tags. After ordinary merge,
+  the exact next dependency-safe pre-tag seam is final changelog/release-note
   synchronisation, then the screenshot/video package for
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`, before the distinct product release gate
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. FR-062 remains true for shell `gh api graphql`, but a
@@ -278,7 +280,7 @@ canonical_evidence:
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
   The FR-028 merge-eligibility helper is DELIVERED and no longer blocks. Provenance selection is
-  already made, and this candidate completes the Lane-P release review/staging. The pre-tag
+  already made, and Lane-P completes the release review/staging. The pre-tag
   remainder is final changelog/release-note synchronisation and the screenshot/video package; the three tracked
   helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on that remainder plus
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
@@ -293,14 +295,14 @@ late_review_debt: >-
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. The rebased candidate branch completes the Lane-P frozen Method Trial v1 C0 staging/review;
-  after it lands, synchronise final changelog/release notes and then prepare the screenshot/video
+  push. Lane-P completes the frozen Method Trial v1 C0 staging/review; after ordinary merge,
+  synchronise final changelog/release notes and then prepare the screenshot/video
   package for the distinct Lab and product owner gates. Do not publish or tag. PR #65 remains parked at
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
-  The last landed main anchor is PR #72 at `db104ca1f2bae2de214024e69fddff8cf9822373`; the Lane-P
-  candidate branch is rebased on that anchor and remains unmerged. Where the GitHub connector exposes the thread-aware route, collect its
+  Lane-P began from PR #72 merge base `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR
+  supplies the current landing state. Where the GitHub connector exposes the thread-aware route, collect its
   `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
   ineligible rather than treating the shell GraphQL restriction as clear debt. The 2026-08-13 read
   found all five PR #70 threads and the one PR #65 thread; the stale-main-anchor P2 is now resolved,

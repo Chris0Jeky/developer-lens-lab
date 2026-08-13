@@ -1206,14 +1206,19 @@ rather than rewritten in place.
 - No new run, custody decision, experiment, holdout decision, or Experiment Ledger update occurred.
   This remains staged C0 review only, not publication, a release, a tag, a real-data transformation
   approval, model activation, telemetry activation, or either owner sign-off.
-- Live truth sync: PR #72 anchors main at `db104ca1f2bae2de214024e69fddff8cf9822373`. The next
-  separate pre-tag work is final changelog/release-note synchronisation followed by screenshot/video preparation for
+- Live truth sync: Lane-P began from PR #72 merge base
+  `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+  Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only; neither
+  state authorizes publication, release, or a tag. The next separate pre-tag work is final
+  changelog/release-note synchronisation followed by screenshot/video preparation for
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`; no tag is authorised.
 
-_Rebase correction 2026-08-13:_ PR #72 is the live main anchor. The Lane-P asset/review candidate
-is based on it as an unmerged candidate, not a replacement mainline claim. FR-068 and
-FR-069 record the separate connector-identifier and repeated Windows PowerShell compatibility
-friction observed during this slice. The next pre-tag work remains final changelog/release-note
-synchronisation, then the screenshot/video package and its distinct owner gates; publication and
-tagging remain unperformed and unauthorised.
+_Rebase correction 2026-08-13:_ Lane-P began from PR #72 merge base
+`db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only; neither
+state authorizes publication, release, or a tag. FR-068 and FR-069 record the separate
+connector-identifier and repeated Windows PowerShell compatibility friction observed during this
+slice. The next pre-tag work remains final changelog/release-note synchronisation, then the
+screenshot/video package and its distinct owner gates; publication and tagging remain unperformed
+and unauthorised.
