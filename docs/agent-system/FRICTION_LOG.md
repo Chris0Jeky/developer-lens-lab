@@ -1762,15 +1762,22 @@ or a merge-gate bypass.
 - **symptom:** The 14:36Z fast-forward push of PR #71's second commit was rejected by GitHub with a
   remote Internal Server Error.
 - **impact:** The remote ref was not advanced by that attempt.
-- **workaround:** After remote-head verification, make one bounded retry; at recurrence, use one
-  transport-diverse SSH push only after read-only SSH/ref verification.
-- **occurrences:** 2 independent occurrences — 2026-08-13 at 14:36Z and 14:37Z.
+- **workaround:** After remote-head verification, make one bounded retry; after the SSH route is
+  unavailable, use the authenticated GitHub Git-data API once to create a commit from the exact final
+  two-file tree and advance the PR #71 ref with `force=false` only after verifying the expected head.
+- **occurrences:** 3 independent occurrences — 2026-08-13 at 14:36Z and 14:37Z, then the verified
+  SSH-authentication unavailability.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
   tool-boundary friction.
-- **promotion:** At the second occurrence, the cheapest immediate workaround is one transport-diverse
-  SSH push after read-only SSH/ref verification. If SSH is unavailable or fails, park PR #71 with
-  commits preserved and retain Lab #34 as task debt.
+- **promotion:** At the third occurrence, the final genuinely different attempt is the authenticated
+  GitHub Git-data API route described above. Check exact tree equality because its commit SHA
+  necessarily differs; if that route fails, park PR #71 with local commit lineage preserved and
+  retain Lab #34 as task debt.
 
 _Note 2026-08-13 (occurrence 2):_ Remote-head verification showed the expected old head. The single
 bounded HTTPS retry at 14:37Z was again rejected with a GitHub Internal Server Error, and the remote
 ref remained unchanged.
+
+_Note 2026-08-13 (occurrence 3):_ Temporary GitHub host keys were verified against authenticated
+GitHub metadata, but read-only SSH access failed because public-key authentication was unavailable.
+No user SSH configuration changed.
