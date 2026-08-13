@@ -1879,3 +1879,24 @@ entirely stale PR response.
   tracks the cross-repository command-wrapper follow-up.
 - **promotion:** Deliberately not promoted after one occurrence; retain the read-only metadata/text
   route unless the temporary-file false positive recurs.
+
+### FR-072 — repository-wide context verification traversed ignored runtime toolchain trees
+
+- **first-seen:** 2026-08-13
+- **status:** `enforcement-selected`
+- **symptom:** During fresh exact-head review, `tests/test_context.py -q` was selected mistakenly.
+  Its repository-wide verifier traversed the ignored `.agent-harness/runtime` virtual environment and
+  cache, then failed one of 98 tests on broken package-documentation links.
+- **impact:** No tracked state changed, and the targeted release-assets test still passed, so this is
+  not a Lane-P candidate regression. However, automatic cache traversal crossed the protected
+  ignored-runtime boundary; no credentials, real/private/public data, `dist/`, or `.dllab` content
+  was inspected.
+- **workaround:** Stop traversal, do not rerun the repository-wide verifier in the lane worktree,
+  and use the exact-diff disposable proof route whose runtime roots are outside the verifier tree.
+- **occurrences:** 2 independent occurrences of FR-060's ignored-toolchain markdown traversal —
+  2026-08-12 and 2026-08-13.
+- **task:** [Chris0Jeky/developer-lens-lab#34 comment 5282757963](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5282757963)
+  tracks the selected enforcement work.
+- **promotion:** At the second occurrence, select a centrally tested verifier ignore set covering
+  declared regenerable `.agent-harness/runtime` and `.uv-cache` trees, with synthetic broken-link
+  fixtures. This slice records the enforcement decision only; it does not change the verifier.
