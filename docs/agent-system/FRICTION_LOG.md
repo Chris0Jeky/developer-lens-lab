@@ -1787,3 +1787,40 @@ with `force=false`, and the remote tree was mechanically identical to the preser
 Repeated REST and ref reads then showed the branch ref at its new commit while PR #71 still reported
 its old head. The PR `updated_at` changed when review replies were posted, so this was not merely an
 entirely stale PR response.
+
+### FR-068 — review-thread connector identifiers did not bridge GraphQL and REST routes
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The thread payload exposed a GraphQL comment-node identifier beginning `PRRC_`, while
+  the inline-reply route required a numeric REST parent identifier and returned HTTP 404 when given
+  the GraphQL value.
+- **impact:** The attempted inline disposition could not be attached through that route. Treating
+  the 404 as evidence that the review thread did not exist or was already resolved would have made
+  review state less truthful.
+- **workaround:** Resolve the review thread through the available thread-state route and preserve its
+  disposition in [Lab PR #70 comment 5281737113](https://github.com/Chris0Jeky/developer-lens-lab/pull/70#issuecomment-5281737113).
+  The thread-resolution operation succeeded; all PR #70 threads are now resolved.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during PR #70 truth reconciliation.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns
+  connector and review-route hardening.
+- **promotion:** Deliberately not promoted after one occurrence. A stable connector identifier
+  bridge needs repeated evidence before changing the reviewed route or protocol.
+
+### FR-069 — Windows PowerShell parameter aliases diverged across host versions
+
+- **first-seen:** 2026-08-13
+- **status:** `promotion-proposed`
+- **symptom:** The host rejected the `utf8NoBOM` encoding name before a focused Lane-P verifier ran.
+  Independently, the coordinator's Windows PowerShell 5.1 rejected `Get-Date -AsUTC`; both are newer
+  parameter or encoding aliases that cannot be assumed on the installed host.
+- **impact:** Each command stopped before its intended verification or timestamping action. Neither
+  failure changed tracked release bytes, a ref, or a remote object.
+- **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
+  UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
+- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  tooling-boundary follow-up.
+- **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
+  for UTC timestamps and UTF-8 output, used by reviewed repo scripts instead of host-version-specific
+  aliases. This slice records the proposal only and does not alter runtime or harness code.
