@@ -1668,3 +1668,40 @@ scaffolding is needed.
   rather than a repository invariant, and the dedicated-subcommand route covers the disposition
   need. Note the standing consequence: until a collectible thread-state read route exists, any
   snapshot needing `review_threads` is ineligible rather than merged on comment evidence.
+
+### FR-066 — review-thread connector identifiers did not bridge GraphQL and REST routes
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The thread payload exposed a GraphQL comment-node identifier beginning `PRRC_`, while
+  the inline-reply route required a numeric REST parent identifier and returned HTTP 404 when given
+  the GraphQL value.
+- **impact:** The attempted inline disposition could not be attached through that route. Treating
+  the 404 as evidence that the review thread did not exist or was already resolved would have made
+  review state less truthful.
+- **workaround:** Resolve the review thread through the available thread-state route and preserve its
+  disposition in [Lab PR #70 comment 5281737113](https://github.com/Chris0Jeky/developer-lens-lab/pull/70#issuecomment-5281737113).
+  The thread-resolution operation succeeded; all PR #70 threads are now resolved.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during PR #70 truth reconciliation.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns
+  connector and review-route hardening.
+- **promotion:** Deliberately not promoted after one occurrence. A stable connector identifier
+  bridge needs repeated evidence before changing the reviewed route or protocol.
+
+### FR-067 — the host PowerShell did not support the requested UTF-8-without-BOM encoding name
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** A focused verifier helper requested PowerShell's `utf8NoBOM` encoding name, but the
+  installed Windows PowerShell accepted only its older encoding vocabulary and rejected the command
+  before the verifier executed.
+- **impact:** The first focused staged-asset verification attempt did not run. No tracked byte, ref,
+  release asset, or remote object changed before the failure.
+- **workaround:** Create the disposable verifier helper in the ignored worktree runtime using the
+  repository's patch path, then execute the same focused checks. The helper remains untracked and
+  was not used to alter release bytes.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during LAB-REL-01 Lane-P proof.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  tooling-boundary hardening.
+- **promotion:** Deliberately not promoted after one occurrence. The workaround is safe and local;
+  a repeated host-version mismatch would justify the cheapest compatibility wrapper.

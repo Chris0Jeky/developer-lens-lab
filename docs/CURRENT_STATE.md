@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-12
+updated: 2026-08-13
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -17,11 +17,10 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      Main's last landed change is PR #69, merged at
-      `c978783efe028aeb8c545f05fbe8cbc1862c5fa3` on 2026-08-12T16:50:37Z (the collision-salvage
-      friction record), on top of the PR #68 delivery merge
-      `07929a41fa8c80f05794db9a58fa0bf014b4f961` of 2026-08-12T16:14:34Z, whose 17m51s exact-head
-      age held the binding 15-minute floor. PR #65 is open and ready (not draft), based on
+      Main's last landed change is PR #70, merged at
+      `d54653587cf1b6785505be60a903732b1797cb7a`; its truth-repair disposition is preserved in
+      top-level comment `5281737113` and all of its review threads are resolved. PR #65 is open
+      and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
@@ -162,6 +161,12 @@ delivered:
   - pr64_state_reconciliation: >-
       DONE — PR #64 (governor current-state reconciliation) merged 2026-08-10T16:02:41Z; recorded
       belatedly: this list previously omitted it (ledger correction note 2026-08-12).
+  - lane_p_release_review: >-
+      STAGED — the already selected frozen Method Trial v1 C0 exhibit at producer
+      `0ef193070a9b80b81cef5a1710a1d65e0b271c15` is staged as JSON and HTML release assets with a
+      compact provenance, checksum, and licence manifest. The exact replay, product-view schema
+      validation, and bounded C0/privacy/HTML review passed. This is staging only: no publication,
+      release, tag, real-data activation, model call, telemetry, or owner sign-off is inferred.
   - merge_eligibility_enforcement: >-
       DONE — FR-028's selected enforcement layer is delivered. It was prepared overnight on
       2026-08-10 on branch `ci/lab-merge-eligibility-20260810`, a branch this file had never
@@ -200,17 +205,15 @@ next_safe_slice: >-
   select the frozen Method Trial v1 exhibit at producer
   `0ef193070a9b80b81cef5a1710a1d65e0b271c15` under owner decision U3=FREEZE, and the implementation
   ledger records the detached frozen replay verifying its export, Markdown, and HTML hashes exactly.
-  The next dependency-safe LAB-REL-01 seam is therefore the **Lane-P release review of that
-  already-selected frozen exhibit**, run under `DL-P09-RELEASE-CURATOR` in
-  `docs/agent-system/PROMPT_LIBRARY.md`: stage the C0 asset set with its provenance checksums,
-  record the release-review result, and hand the publication decision back. No publication and no
-  tag are authorized by that slice. FR-062 dependency: while the agent floor blocks the GraphQL
+   The Lane-P release review of that already-selected frozen exhibit is now staged in this change;
+   it neither publishes nor tags. The exact next dependency-safe work is separate final changelog
+   and release-note synchronisation, then the screenshot/video package for
+   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`, before the distinct product release gate
+   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. FR-062 dependency: while the agent floor blocks the GraphQL
   thread-state read route, a merge-eligibility snapshot cannot carry a complete `review_threads`
   surface and the helper correctly refuses eligibility — Lane-P slices that end in a merge must
-  therefore run in a session with a collectible thread-state route, or land the Lab #34 read-route
-  work first. After it come the final changelog sync and the screenshot/video
-  package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together with
-  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The three tracked helper-hardening
+   therefore run in a session with a collectible thread-state route, or land the Lab #34 read-route
+   work first. The three tracked helper-hardening
   follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
   PARKED REFERENCE only, not a next push: its exact resume reference remains issue #29 comment
   `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
@@ -282,20 +285,17 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. The selected next seam is the Lane-P release review of the already-selected frozen Method
-  Trial v1 exhibit at producer `0ef193070a9b80b81cef5a1710a1d65e0b271c15` (owner decision U3=FREEZE;
-  selection recorded in the constitution and issue #29, frozen replay verified in the implementation
-  ledger; FR-019 records why a current-head replay cannot match). Stage the C0 asset set with
-  checksums, record the review result, and hand the publication decision back; do not select a
-  producer again, publish, or tag. PR #65 remains parked at
-  exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
-  `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
-  only and require a genuinely new unlocking event or explicit fresh authority before reopening.
-  The last landed main anchor is PR #68 at `07929a41fa8c80f05794db9a58fa0bf014b4f961`. Preserve
-  the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
-  `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
-  uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the
-  selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all owner
-  gates closed.
+   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
+   push. After this staged Lane-P C0 asset set merges, synchronise final changelog and release notes,
+   then prepare the screenshot/video package for the distinct Lab and product owner gates. Do not
+   publish or tag. PR #65 remains parked at
+   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
+   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
+   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
+   The last landed main anchor is PR #68 at `07929a41fa8c80f05794db9a58fa0bf014b4f961`. Preserve
+   the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
+   `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
+   uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the
+   selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all owner
+   gates closed.
 ```
