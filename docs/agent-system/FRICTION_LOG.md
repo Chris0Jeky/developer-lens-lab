@@ -1900,3 +1900,20 @@ entirely stale PR response.
 - **promotion:** At the second occurrence, select a centrally tested verifier ignore set covering
   declared regenerable `.agent-harness/runtime` and `.uv-cache` trees, with synthetic broken-link
   fixtures. This slice records the enforcement decision only; it does not change the verifier.
+
+### FR-073 — the named merge-eligibility snapshot sink conflicts with the protected-data boundary
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The protocol canon names `.dllab/merge-eligibility/<snapshot>.json`, while the active
+  absolute protected-data boundary forbids reading or writing `.dllab`. The helper itself accepts an
+  arbitrary readable JSON path and its tests use temporary paths.
+- **impact:** Merge proof cannot use the named sink without violating the protected-data boundary.
+- **workaround:** For PR #74, use a new external operating-system temporary directory containing only
+  invented/public GitHub metadata, run the helper there, and remove it afterwards; never enter
+  `.dllab`.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during PR #74 merge-proof preparation.
+- **task:** [Chris0Jeky/developer-lens-lab#34 comment 5282877440](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5282877440)
+  tracks the protocol/helper sink follow-up.
+- **promotion:** If this recurs, the cheapest enforcement layer is a protocol update naming an
+  external protected-safe temporary sink, or helper stdin support with synthetic tests.
