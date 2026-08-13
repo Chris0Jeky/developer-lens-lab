@@ -1762,9 +1762,15 @@ or a merge-gate bypass.
 - **symptom:** The 14:36Z fast-forward push of PR #71's second commit was rejected by GitHub with a
   remote Internal Server Error.
 - **impact:** The remote ref was not advanced by that attempt.
-- **workaround:** The coordinator will verify the remote head and make one bounded retry.
-- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **workaround:** After remote-head verification, make one bounded retry; at recurrence, use one
+  transport-diverse SSH push only after read-only SSH/ref verification.
+- **occurrences:** 2 independent occurrences — 2026-08-13 at 14:36Z and 14:37Z.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
   tool-boundary friction.
-- **promotion:** Deliberately not promoted after one occurrence; establish recurrence before
-  selecting an enforcing layer.
+- **promotion:** At the second occurrence, the cheapest immediate workaround is one transport-diverse
+  SSH push after read-only SSH/ref verification. If SSH is unavailable or fails, park PR #71 with
+  commits preserved and retain Lab #34 as task debt.
+
+_Note 2026-08-13 (occurrence 2):_ Remote-head verification showed the expected old head. The single
+bounded HTTPS retry at 14:37Z was again rejected with a GitHub Internal Server Error, and the remote
+ref remained unchanged.
