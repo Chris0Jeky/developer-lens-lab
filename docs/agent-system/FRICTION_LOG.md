@@ -1684,8 +1684,8 @@ scaffolding is needed.
 
 _Note 2026-08-13 (verified connector workaround):_ The GitHub connector thread-aware route returned
 all five PR #70 threads and the one PR #65 thread with `is_resolved` / `is_outdated`. Four PR #70
-threads were resolved after disposition; the stale-main-anchor P2 remains unresolved pending this
-follow-up. This is an in-scope alternate read/resolve route for
+threads were resolved after disposition. The stale-main-anchor P2 is now resolved, with a follow-up
+reply linking PR #71 posted at 2026-08-13T14:33:54Z. This is an in-scope alternate read/resolve route for
 connector-equipped sessions despite the shell GraphQL block, not a claim that every runtime has it
 or a merge-gate bypass.
 
@@ -1739,3 +1739,45 @@ or a merge-gate bypass.
   durable friction trail; no cause is inferred from one occurrence.
 - **promotion:** Deliberately not promoted after one occurrence; establish why the named test was
   unavailable before selecting an enforcing layer.
+
+### FR-066 — connector inline-reply write timed out once; bounded REST reply succeeded
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-verified`
+- **symptom:** One connector inline-reply write timed out while responding to the stale-main-anchor
+  P2.
+- **impact:** The reply could not be confirmed through that connector mutation response alone.
+- **workaround:** A bounded REST reply route posted the follow-up linking PR #71, and subsequent live
+  collection verified the reply and resolved thread state.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  tool-boundary hardening; this entry does not claim a general connector failure.
+- **promotion:** Deliberately not promoted after one occurrence; retain the bounded alternate reply
+  route as the verified workaround and establish recurrence before selecting an enforcing layer.
+
+### FR-067 — a fast-forward push was rejected by a remote internal error
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The 14:36Z fast-forward push of PR #71's second commit was rejected by GitHub with a
+  remote Internal Server Error.
+- **impact:** The remote ref was not advanced by that attempt.
+- **workaround:** After remote-head verification, make one bounded retry; after the SSH route is
+  unavailable, use the authenticated GitHub Git-data API once to create a commit from the exact final
+  two-file tree and advance the PR #71 ref with `force=false` only after verifying the expected head.
+- **occurrences:** 3 independent occurrences — 2026-08-13 at 14:36Z and 14:37Z, then the verified
+  SSH-authentication unavailability.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  tool-boundary friction.
+- **promotion:** At the third occurrence, the final genuinely different attempt is the authenticated
+  GitHub Git-data API route described above. Check exact tree equality because its commit SHA
+  necessarily differs; if that route fails, park PR #71 with local commit lineage preserved and
+  retain Lab #34 as task debt.
+
+_Note 2026-08-13 (occurrence 2):_ Remote-head verification showed the expected old head. The single
+bounded HTTPS retry at 14:37Z was again rejected with a GitHub Internal Server Error, and the remote
+ref remained unchanged.
+
+_Note 2026-08-13 (occurrence 3):_ Temporary GitHub host keys were verified against authenticated
+GitHub metadata, but read-only SSH access failed because public-key authentication was unavailable.
+No user SSH configuration changed.
