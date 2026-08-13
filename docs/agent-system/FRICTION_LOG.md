@@ -1765,14 +1765,14 @@ or a merge-gate bypass.
 - **workaround:** After remote-head verification, make one bounded retry; after the SSH route is
   unavailable, use the authenticated GitHub Git-data API once to create a commit from the exact final
   two-file tree and advance the PR #71 ref with `force=false` only after verifying the expected head.
-- **occurrences:** 3 independent occurrences — 2026-08-13 at 14:36Z and 14:37Z, then the verified
-  SSH-authentication unavailability.
+- **occurrences:** 4 independent occurrences — the two rejected HTTPS pushes, the verified
+  SSH-authentication unavailability, and the PR-head divergence after the force-free Git-data update.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
   tool-boundary friction.
-- **promotion:** At the third occurrence, the final genuinely different attempt is the authenticated
-  GitHub Git-data API route described above. Check exact tree equality because its commit SHA
-  necessarily differs; if that route fails, park PR #71 with local commit lineage preserved and
-  retain Lab #34 as task debt.
+- **promotion:** At the fourth occurrence, the cheapest workaround is a fresh branch at the exact
+  final remote commit. After PR #71's four P2 threads are triaged and resolved, close or supersede
+  it, open one ready PR from the fresh branch, and require exact-head CI, review, and aging anew.
+  Retain Lab #34 as task debt.
 
 _Note 2026-08-13 (occurrence 2):_ Remote-head verification showed the expected old head. The single
 bounded HTTPS retry at 14:37Z was again rejected with a GitHub Internal Server Error, and the remote
@@ -1781,3 +1781,9 @@ ref remained unchanged.
 _Note 2026-08-13 (occurrence 3):_ Temporary GitHub host keys were verified against authenticated
 GitHub metadata, but read-only SSH access failed because public-key authentication was unavailable.
 No user SSH configuration changed.
+
+_Note 2026-08-13 (occurrence 4):_ The authenticated Git-data API advanced the remote PR #71 branch
+with `force=false`, and the remote tree was mechanically identical to the preserved local tree.
+Repeated REST and ref reads then showed the branch ref at its new commit while PR #71 still reported
+its old head. The PR `updated_at` changed when review replies were posted, so this was not merely an
+entirely stale PR response.
