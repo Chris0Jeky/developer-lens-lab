@@ -1684,8 +1684,8 @@ scaffolding is needed.
 
 _Note 2026-08-13 (verified connector workaround):_ The GitHub connector thread-aware route returned
 all five PR #70 threads and the one PR #65 thread with `is_resolved` / `is_outdated`. Four PR #70
-threads were resolved after disposition; the stale-main-anchor P2 remains unresolved pending this
-follow-up. This is an in-scope alternate read/resolve route for
+threads were resolved after disposition. The stale-main-anchor P2 is now resolved, with a follow-up
+reply linking PR #71 posted at 2026-08-13T14:33:54Z. This is an in-scope alternate read/resolve route for
 connector-equipped sessions despite the shell GraphQL block, not a claim that every runtime has it
 or a merge-gate bypass.
 
@@ -1739,3 +1739,18 @@ or a merge-gate bypass.
   durable friction trail; no cause is inferred from one occurrence.
 - **promotion:** Deliberately not promoted after one occurrence; establish why the named test was
   unavailable before selecting an enforcing layer.
+
+### FR-066 — connector inline-reply write timed out once; bounded REST reply succeeded
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-verified`
+- **symptom:** One connector inline-reply write timed out while responding to the stale-main-anchor
+  P2.
+- **impact:** The reply could not be confirmed through that connector mutation response alone.
+- **workaround:** A bounded REST reply route posted the follow-up linking PR #71, and subsequent live
+  collection verified the reply and resolved thread state.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  tool-boundary hardening; this entry does not claim a general connector failure.
+- **promotion:** Deliberately not promoted after one occurrence; retain the bounded alternate reply
+  route as the verified workaround and establish recurrence before selecting an enforcing layer.

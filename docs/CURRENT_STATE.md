@@ -206,8 +206,8 @@ next_safe_slice: >-
   tag are authorized by that slice. FR-062 remains true for shell `gh api graphql`, but a
   connector-equipped session may use its thread-aware route to collect `review_threads`; on
   2026-08-13 it returned all five PR #70 threads and the one PR #65 thread with `is_resolved` and
-  `is_outdated`. Four PR #70 threads were resolved after disposition; the stale-main-anchor P2
-  remains unresolved pending this follow-up. Do not infer that every runtime
+  `is_outdated`. The stale-main-anchor P2 is now resolved; a follow-up reply linking PR #71 was
+  posted at 2026-08-13T14:33:54Z. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
   and this read/resolve route does not authorize a merge. After it come the final changelog sync and the screenshot/video
   package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together with
@@ -300,8 +300,8 @@ exact_resume_point: >-
   not a new main anchor. Where the GitHub connector exposes the thread-aware route, collect its
   `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
   ineligible rather than treating the shell GraphQL restriction as clear debt. The 2026-08-13 read
-  found all five PR #70 threads and the one PR #65 thread, with four PR #70 threads resolved and the
-  stale-main-anchor P2 still unresolved pending this follow-up. This grants
+  found all five PR #70 threads and the one PR #65 thread; the stale-main-anchor P2 is now resolved,
+  with a follow-up reply linking PR #71 posted at 2026-08-13T14:33:54Z. This grants
   neither a merge nor a tag. Preserve
   the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
   `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
