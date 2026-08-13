@@ -1754,3 +1754,17 @@ or a merge-gate bypass.
   tool-boundary hardening; this entry does not claim a general connector failure.
 - **promotion:** Deliberately not promoted after one occurrence; retain the bounded alternate reply
   route as the verified workaround and establish recurrence before selecting an enforcing layer.
+
+### FR-067 — a fast-forward push was rejected by a remote internal error
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The 14:36Z fast-forward push of PR #71's second commit was rejected by GitHub with a
+  remote Internal Server Error.
+- **impact:** The remote ref was not advanced by that attempt.
+- **workaround:** The coordinator will verify the remote head and make one bounded retry.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  tool-boundary friction.
+- **promotion:** Deliberately not promoted after one occurrence; establish recurrence before
+  selecting an enforcing layer.
