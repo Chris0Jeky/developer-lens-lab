@@ -1606,28 +1606,37 @@ scaffolding is needed.
 - **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
   rather than a repository invariant, and the transcript resume route already recovers the work.
 
-### FR-060 — the context verifier's markdown walk traversed ignored runtime environments
+### FR-060 — the context verifier's markdown walk descended into an in-worktree uv cache
 
 - **first-seen:** 2026-08-12
-- **status:** `enforcement-selected`
-- **symptom:** Pre-existing ignored runtime environments were traversed by the markdown walk. In
-  the 2026-08-13 Lane-P adopted worktree, `dllab doctor` and `dllab context verify` failed on the
-  resulting context-link checks; direct context verification and the full pytest run were separate
-  manifestations of that same worktree occurrence.
-- **impact:** The declared full gate cannot use that adopted worktree as clean proof. Its full
-  pytest run had 231 passes and 2 context-related failures. No tracked file, ref, or GitHub object
-  changed, and no ignored bytes were manually inspected or altered.
-- **workaround:** Use a fresh detached exact-head verification clone with bootstrap and cache
-  outside the clone. The coordinator proved doctor and context there at candidate tree
-  `3b3607075ec62a4038d2bff7dea70a98f0ff9dd9`; the final exact-head full gate remains a merge
-  precondition.
+- **status:** `workaround-verified`
+- **symptom:** Hosting the FR-001 confined `uv` bootstrap with its cache at the gitignored
+  `.uv-cache/` inside a worktree made `dllab doctor` and `dllab context verify` fail on a broken
+  relative link inside a cached package README (`pyright`'s bundled typeshed): the markdown walk's
+  `SKIPPED_MARKDOWN_PARTS` prunes `.venv`, `.package-smoke`, and peers, but not `.uv-cache`, even
+  though `.gitignore` names that directory as expected toolchain cache.
+- **impact:** A full-gate run fails at its first step until the cache moves; the cost was one
+  bootstrap rebuild. No tracked file, ref, or GitHub object changed. The verifier's automated walk
+  did read the ignored cached README — that read is the failure mechanism itself — but the bytes
+  were public package documentation; no manual inspection occurred and no protected, credential,
+  or private bytes were involved.
+- **workaround:** Host the bootstrap environment, `uv` cache, and managed-Python directory outside
+  the repository entirely, keeping only the pruned `.venv` project environment inside the worktree.
+  Verified: the identical gate sequence then passed end to end.
 - **occurrences:** 2 independent occurrences — 2026-08-12 during PR #68 and one 2026-08-13
   Lane-P adopted-worktree occurrence.
-- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns the
-  future ignore-aware markdown-walk fix.
-- **promotion:** At the second occurrence, select the fresh detached exact-head verification clone
-  as the workaround and retain the future ignore-aware markdown-walk fix on Lab #34 as the
-  enforcement path. Do not detour into that verifier change during this slice.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  proof and path-boundary hardening.
+- **promotion:** At the second occurrence, the clean detached exact-head clone with bootstrap and
+  cache outside is the verified workaround; future ignore-aware markdown-walk pruning on Lab #34 is
+  selected enforcement debt, not implemented.
+
+_Note 2026-08-13 (Lane-P adopted-worktree occurrence):_ Pre-existing ignored runtime environments
+caused doctor/context failures and 2 context-related full-pytest failures (231 passed); no ignored
+bytes were manually inspected or altered. A clean detached clone at exact candidate
+`c0273bc1969b5ff7555a82f3c3ff4914b1f44d39` with bootstrap/cache outside then passed locked sync,
+doctor, context, Ruff, Pyright, the focused asset test, 233 tests, strict MkDocs, hygiene, cards,
+and diff check. This docs-only correction's final head will be re-proved separately.
 
 ### FR-061 — a lane adoption raced an active prior claimant by seconds
 
@@ -1817,7 +1826,7 @@ entirely stale PR response.
 ### FR-069 — Windows PowerShell parameter aliases diverged across host versions
 
 - **first-seen:** 2026-08-13
-- **status:** `promotion-proposed`
+- **status:** `workaround-documented`
 - **symptom:** The host rejected the `utf8NoBOM` encoding name before a focused Lane-P verifier ran.
   Independently, the coordinator's Windows PowerShell 5.1 rejected `Get-Date -AsUTC`; both are newer
   parameter or encoding aliases that cannot be assumed on the installed host.
@@ -1832,10 +1841,13 @@ entirely stale PR response.
   for UTC timestamps and UTF-8 output, used by reviewed repo scripts instead of host-version-specific
   aliases. This slice records the proposal only and does not alter runtime or harness code.
 
+_Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
+helper remains a promotion proposal only.
+
 ### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
 
 - **first-seen:** 2026-08-13
-- **status:** `enforcement-selected`
+- **status:** `workaround-verified`
 - **symptom:** The shared branch/worktree advanced at the commit boundary while the delegated writer
   was completing handoff. A subsequent sibling amend was caught by the next writer's preflight before
   edit. Git author metadata does not establish runtime actor.
@@ -1849,6 +1861,10 @@ entirely stale PR response.
   ignored per-worktree writer lease/guard.
 - **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
   the cheapest enforcement layer. This slice records and tests no guard implementation.
+
+_Note 2026-08-13 (schema correction):_ The re-pin/preflight/unique isolated-lane workaround caught
+the second tip movement and this isolated branch stayed stable. The ignored writer lease/guard
+remains selected enforcement debt on Lab #73 and is not implemented.
 
 ### FR-071 — a read-only Git object comparison produced a false-positive block
 
@@ -1865,3 +1881,17 @@ entirely stale PR response.
   tracks the cross-repository command-wrapper follow-up.
 - **promotion:** Deliberately not promoted after one occurrence; retain the read-only metadata/text
   route unless the temporary-file false positive recurs.
+
+### FR-072 — friction statuses escaped the closed vocabulary without verifier rejection
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** One unmerged candidate used `promotion-proposed` and `enforcement-selected` even
+  though the schema allows only its six named states, and context verification did not reject them.
+- **impact:** The operational log became nonconformant and its promotion state was misleading.
+- **workaround:** Apply an exact heading-scoped correction and run a manual closed-vocabulary scan.
+- **occurrences:** 1 independent candidate patch — the three invalid fields are one event.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  friction-log verifier follow-up.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest
+  enforcement is context-verifier validation and tests for every friction status.
