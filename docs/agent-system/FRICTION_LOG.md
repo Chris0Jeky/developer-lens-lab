@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 20 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 21 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -92,7 +92,9 @@ Rules that bind entries:
   Python-module route for locked sync and proof), and 2026-08-12 (the PR #68 duplicate fix round
   found no PATH `uv`, no host-interpreter `uv` module, and no main-checkout environment; a fresh
   repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
-  cache directory breaks the verifier walk).
+  cache directory breaks the verifier walk), and 2026-08-13 (no PATH `uv` and no host-interpreter
+  `uv` module; the already-promoted repository-external confined bootstrap restored `uv 0.12.3` and
+  `uv sync --locked --all-groups` succeeded).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
   boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -199,6 +201,10 @@ workaround; those directories live in the disposable session scratch area and ho
 state. `MAINTENANCE_PROTOCOL.md`'s promoted worktree-confined wording is deliberately unchanged:
 the confined route remains canon, and reconciling it with the FR-060 verifier interaction (for
 example by pruning `.uv-cache` in the verifier walk) stays issue #34 task debt.
+
+_Note 2026-08-13 (occurrence 21):_ With neither PATH `uv` nor a host-interpreter `uv` module, the
+external temporary `uv` bootstrap fallback restored `uv 0.12.3`, and `uv sync --locked --all-groups`
+succeeded.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -1442,17 +1448,24 @@ four unresolved PR #60 threads.
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
 - **first-seen:** 2026-08-10
-- **status:** `workaround-documented`
+- **status:** `workaround-verified`
 - **symptom:** The estate registry returned no Developer Lens Lab entry; a fail-fast batched
   orientation read stopped on that no-match before the individual binding reads.
 - **impact:** The registry lookup could not supply an estate row for orientation, so the repository
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 1 independent occurrence — flagship governor orientation on 2026-08-10.
-- **task:** Lab #34 comment `5242537913` tracks the checked orientation path.
-- **promotion:** Deliberately not promoted after one occurrence; promote only on recurrence through
-  the canonical estate owner.
+- **occurrences:** 2 independent occurrences — flagship governor orientation on 2026-08-10 and
+  truth-repair orientation on 2026-08-13.
+- **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
+  Lab registry entry; that owner surface is outside this repository.
+- **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
+  owner adds or restores a Developer Lens Lab registry entry. It remains task debt on Lab #34 because
+  this repository cannot alter that owner surface.
+
+_Note 2026-08-13 (truth-repair orientation):_ The canonical estate file was unavailable and the
+Codex repository-map fallback had no Lab match. Repository-local tier and canon plus live Git and
+GitHub state established authority; no replacement path was invented.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
@@ -1645,7 +1658,7 @@ scaffolding is needed.
 ### FR-062 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
 
 - **first-seen:** 2026-08-12
-- **status:** `workaround-documented`
+- **status:** `workaround-verified`
 - **symptom:** Every `gh api graphql` invocation was refused by the agent floor in this repository
   class, read-only queries included. Review-thread resolution flags live only behind GraphQL, so
   during the PR #68 pipeline they could be neither read nor set.
@@ -1660,11 +1673,69 @@ scaffolding is needed.
   closed exactly as designed; comment-based disposition documents finding triage but never
   substitutes for the surface the helper requires. The PR #68 merge itself predated the helper's
   operational binding, because that merge is what delivered the helper.
-- **occurrences:** 1 independent occurrence — 2026-08-12, during the PR #68 pipeline.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the PR #68 pipeline shell block.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
-  external command and tool-boundary hardening; the durable fix is a collectible thread-state read
-  route, carried there as debt.
-- **promotion:** Deliberately not promoted after one occurrence. This is agent-floor behaviour
-  rather than a repository invariant, and the dedicated-subcommand route covers the disposition
-  need. Note the standing consequence: until a collectible thread-state read route exists, any
-  snapshot needing `review_threads` is ineligible rather than merged on comment evidence.
+  external command and tool-boundary hardening, including the runtime-qualified collectible
+  thread-state route.
+- **promotion:** The 2026-08-13 connector success verifies a runtime-qualified workaround, not a
+  second occurrence of the shell refusal: connector-equipped sessions use the thread-aware collector,
+  while sessions without it leave the surface ineligible. Keep that routing debt on Lab #34; it is
+  not universal availability and never a merge-gate bypass.
+
+_Note 2026-08-13 (verified connector workaround):_ The GitHub connector thread-aware route returned
+all five PR #70 threads and the one PR #65 thread with `is_resolved` / `is_outdated`. Four PR #70
+threads were resolved after disposition; the stale-main-anchor P2 remains unresolved pending this
+follow-up. This is an in-scope alternate read/resolve route for
+connector-equipped sessions despite the shell GraphQL block, not a claim that every runtime has it
+or a merge-gate bypass.
+
+### FR-063 — requested Luna inventory routing was unavailable in the collaboration runtime
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The collaboration runtime rejected a requested `gpt-5.6-luna` read-only inventory
+  delegation as an unknown model and listed only Sol/Terra.
+- **impact:** The intended Luna mechanical-inventory lane could not start; no task state or file
+  changed in that attempt.
+- **workaround:** The coordinator performs the read-only inventory inline with Sol and reserves
+  Terra for writer/reviewer work.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** LAB-REL-01 and [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)
+  track the runtime-routing debt.
+- **promotion:** Deliberately not promoted after one occurrence; if it recurs, the cheapest layer is
+  runtime/model-routing configuration or skill wording.
+
+### FR-064 — user-owned IDE metadata changed during a docs-only closeout
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The final Git-status check showed an additional modification in user-owned IDE
+  metadata beyond the pre-existing untracked profile directory. Its content and provenance were not
+  inspected.
+- **impact:** The checkout can no longer be described as having only the originally visible IDE
+  change, and that metadata must not be included in this documentation commit.
+- **workaround:** Preserve the metadata untouched, do not diff or stage it, and report the exact
+  status in the handoff.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) records the
+  durable friction trail; no cause is inferred from one uninspected occurrence.
+- **promotion:** Deliberately not promoted after one occurrence; establish a cause before selecting
+  an enforcing layer.
+
+### FR-065 — the named current-state test was unavailable during re-check
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The literal named current-state test path executed and produced 98 passes, then was
+  absent at the later re-check. Git status, `git ls-files`, and the base-tree check established no
+  tracked or untracked status for that path, so no removal or cause is inferred. The current narrow
+  test was located by repository search instead.
+- **impact:** Repeating a literal test path can fail before exercising the docs seam even though a
+  relevant focused test remains available.
+- **workaround:** When the named path is unavailable, locate and run the narrow current-state test
+  with repository search, as the task contract directs.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) records the
+  durable friction trail; no cause is inferred from one occurrence.
+- **promotion:** Deliberately not promoted after one occurrence; establish why the named test was
+  unavailable before selecting an enforcing layer.

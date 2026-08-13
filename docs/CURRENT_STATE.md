@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-12
+updated: 2026-08-13
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -17,11 +17,10 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      Main's last landed change is PR #69, merged at
-      `c978783efe028aeb8c545f05fbe8cbc1862c5fa3` on 2026-08-12T16:50:37Z (the collision-salvage
-      friction record), on top of the PR #68 delivery merge
-      `07929a41fa8c80f05794db9a58fa0bf014b4f961` of 2026-08-12T16:14:34Z, whose 17m51s exact-head
-      age held the binding 15-minute floor. PR #65 is open and ready (not draft), based on
+      Main's last landed change is PR #70, merged as
+      `d54653587cf1b6785505be60a903732b1797cb7a`, on top of PR #69
+      `c978783efe028aeb8c545f05fbe8cbc1862c5fa3`. That is the live main anchor; a follow-up branch
+      based on it is not a landed main change until it is reviewed and merged. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
@@ -204,11 +203,13 @@ next_safe_slice: >-
   already-selected frozen exhibit**, run under `DL-P09-RELEASE-CURATOR` in
   `docs/agent-system/PROMPT_LIBRARY.md`: stage the C0 asset set with its provenance checksums,
   record the release-review result, and hand the publication decision back. No publication and no
-  tag are authorized by that slice. FR-062 dependency: while the agent floor blocks the GraphQL
-  thread-state read route, a merge-eligibility snapshot cannot carry a complete `review_threads`
-  surface and the helper correctly refuses eligibility — Lane-P slices that end in a merge must
-  therefore run in a session with a collectible thread-state route, or land the Lab #34 read-route
-  work first. After it come the final changelog sync and the screenshot/video
+  tag are authorized by that slice. FR-062 remains true for shell `gh api graphql`, but a
+  connector-equipped session may use its thread-aware route to collect `review_threads`; on
+  2026-08-13 it returned all five PR #70 threads and the one PR #65 thread with `is_resolved` and
+  `is_outdated`. Four PR #70 threads were resolved after disposition; the stale-main-anchor P2
+  remains unresolved pending this follow-up. Do not infer that every runtime
+  has that connector route: without a collectible surface the helper still refuses eligibility,
+  and this read/resolve route does not authorize a merge. After it come the final changelog sync and the screenshot/video
   package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` together with
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The three tracked helper-hardening
   follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
@@ -276,7 +277,9 @@ blockers: >-
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
-  preparation slices.
+  preparation slices. FR-062's shell GraphQL restriction remains, but connector-equipped sessions
+  may collect thread state through the verified thread-aware route; sessions without it keep the
+  complete-surface requirement and do not gain a merge-gate bypass.
 late_review_debt: >-
   Issue #31 tracks the four non-blocking PR #24 review follow-ups; product #189 remains a product-side
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
@@ -292,7 +295,14 @@ exact_resume_point: >-
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
-  The last landed main anchor is PR #68 at `07929a41fa8c80f05794db9a58fa0bf014b4f961`. Preserve
+  The last landed main anchor is PR #70 at `d54653587cf1b6785505be60a903732b1797cb7a`, on top of
+  PR #69 `c978783efe028aeb8c545f05fbe8cbc1862c5fa3`; this follow-up branch is based on that anchor,
+  not a new main anchor. Where the GitHub connector exposes the thread-aware route, collect its
+  `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
+  ineligible rather than treating the shell GraphQL restriction as clear debt. The 2026-08-13 read
+  found all five PR #70 threads and the one PR #65 thread, with four PR #70 threads resolved and the
+  stale-main-anchor P2 still unresolved pending this follow-up. This grants
+  neither a merge nor a tag. Preserve
   the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
   `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
   uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the
