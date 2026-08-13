@@ -1190,41 +1190,29 @@ rather than rewritten in place.
 
 ## 2026-08-13 - Lane-P frozen Method Trial v1 exhibit staging (LAB-REL-01 / issue #29)
 
-- Replayed the owner-selected frozen producer `0ef193070a9b80b81cef5a1710a1d65e0b271c15` with
-  invented run `wbc1_demo`, rather than the rejected current-head candidate. Locked sync, context
-  verification, smoke benchmark, deterministic reproduction, explicit MethodTrialView export, and
-  deterministic report build all succeeded. The replay reproduced the frozen JSON
-  `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`, Markdown proof
-  `f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and HTML
-  `22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29` exactly.
-- Staged only the selected invented-C0 JSON and HTML under
-  `release-assets/v0.1.0/method-trial-v1/`, with a compact machine-readable provenance/checksum/
-  licence manifest. The manifest records the frozen Lab producer, run identifier, frozen Product
-  contract commit `b48fea579936671397a0486ae7a0342197ee6e4b`, product schema checksum
+- The already-recorded 2026-08-09 frozen replay at producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and invented run `wbc1_demo` remains the evidence for
+  the selected exhibit, including frozen JSON `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`,
+  Markdown `f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and HTML
+  `22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29` hashes.
+- This staging fix performs no benchmark, reproduction, export, or report build. It validates the
+  immutable Product C0 fixture in canonical-LF and semantic form, verifies the exact derived renderer
+  bytes and static content, and stages the existing JSON/HTML beneath
+  `release-assets/v0.1.0/method-trial-v1/` as the chosen release-upload location. The provenance
+  records the immutable fixture source, frozen producer/run, contract commit
+  `b48fea579936671397a0486ae7a0342197ee6e4b`, schema checksum
   `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`, AGPL-3.0-only, and
-  copyright Cristian Tcaci. No Markdown report, run artifact, local path, provider identifier,
-  seed-family identifier, credential, or private input is staged.
-- Bounded release review passed: the JSON validates against the current vendored
-  `DeveloperLensMethodTrialView.v1` schema; the exact outputs carry invented-C0, coverage, and
-  missingness semantics; focused scans found no private identity, provider identifier, local path,
-  or credential pattern; and the HTML has no executable, embedded, external-resource, or local-path
-  construct. This is a staged C0 review result only, not publication, a release, a tag, a real-data
-  transformation approval, a model activation, telemetry activation, or either owner sign-off.
-- The required `py -3 -m uv` entry point was absent in the base interpreter, so an ignored,
-  worktree-confined module bootstrap was used to preserve that exact command form. Its cache,
-  historical clone, managed environment, replay outputs, and review helper remain ignored runtime
-  material and are not tracked.
-- Live truth sync: Lab PR #70 now anchors main at
-  `d54653587cf1b6785505be60a903732b1797cb7a`; all its threads are resolved and top-level comment
-  `5281737113` preserves the disposition. The next separate pre-tag work is final changelog/release
-  note sync followed by screenshot/video preparation for
+  copyright Cristian Tcaci.
+- No new run, custody decision, experiment, holdout decision, or Experiment Ledger update occurred.
+  This remains staged C0 review only, not publication, a release, a tag, a real-data transformation
+  approval, model activation, telemetry activation, or either owner sign-off.
+- Live truth sync: PR #72 anchors main at `db104ca1f2bae2de214024e69fddff8cf9822373`. The next
+  separate pre-tag work is final changelog/release-note synchronisation followed by screenshot/video preparation for
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`; no tag is authorised.
 
-_Rebase correction 2026-08-13:_ PR #72 subsequently merged as
-`db104ca1f2bae2de214024e69fddff8cf9822373`; that is the live main anchor. The Lane-P asset/review
-commit `407d749d4e9abe7d639a3bc3296ed72c18376a34` is rebased on it as an unmerged candidate, not a
-replacement mainline claim. FR-068 and
+_Rebase correction 2026-08-13:_ PR #72 is the live main anchor. The Lane-P asset/review candidate
+is based on it as an unmerged candidate, not a replacement mainline claim. FR-068 and
 FR-069 record the separate connector-identifier and repeated Windows PowerShell compatibility
 friction observed during this slice. The next pre-tag work remains final changelog/release-note
 synchronisation, then the screenshot/video package and its distinct owner gates; publication and

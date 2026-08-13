@@ -18,10 +18,9 @@ active_wave:
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
       Main's last landed change is PR #72, merged as
-      `db104ca1f2bae2de214024e69fddff8cf9822373`. That is the live main anchor. This candidate
-      branch's Lane-P staging commit is `407d749d4e9abe7d639a3bc3296ed72c18376a34`, rebased on it;
-      it stages the completed C0 asset/review slice but is not a landed main change until separately
-      reviewed and merged. PR #65 is open and ready (not draft), based on
+      `db104ca1f2bae2de214024e69fddff8cf9822373`. That is the live main anchor. The Lane-P candidate
+      is based on it and stages the completed C0 asset/review slice, but is not a landed main change
+      until separately reviewed and merged. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
@@ -44,10 +43,12 @@ active_wave:
       remains issue #29 comment `5243827843` and PR #65 comment `5243827873`.
 delivered:
   - lane_p_release_review: >-
-      STAGED ON THIS CANDIDATE — the owner-selected frozen Method Trial v1 C0 exhibit at producer
-      `0ef193070a9b80b81cef5a1710a1d65e0b271c15` has exact JSON/HTML replay evidence, a compact
-      provenance/checksum/licence manifest, current vendored-schema validation, and bounded
-      C0/privacy/static-HTML review. It is not yet a mainline, publication, release, or tag event.
+      STAGED ON THIS CANDIDATE — the already-recorded 2026-08-09 frozen replay remains the evidence
+      for the owner-selected Method Trial v1 C0 exhibit at producer
+      `0ef193070a9b80b81cef5a1710a1d65e0b271c15`. This candidate validates the immutable fixture's
+      canonical-LF and semantic form, then reviews the derived renderer hash/content with a compact
+      provenance/checksum/licence manifest. No new run, custody decision, experiment, holdout decision,
+      or Experiment Ledger update occurred. It is not yet a mainline, publication, release, or tag event.
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
       This records the merged result only; it does not attribute the GitHub operation to an actor.
