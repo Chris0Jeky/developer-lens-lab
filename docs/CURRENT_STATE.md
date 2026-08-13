@@ -19,8 +19,9 @@ active_wave:
     writer: >-
       Main's last landed change is PR #72, merged as
       `db104ca1f2bae2de214024e69fddff8cf9822373`. That is the live main anchor. This candidate
-      branch is rebased on it and stages the completed Lane-P C0 asset/review slice, but it is not
-      a landed main change until separately reviewed and merged. PR #65 is open and ready (not draft), based on
+      branch's Lane-P staging commit is `407d749d4e9abe7d639a3bc3296ed72c18376a34`, rebased on it;
+      it stages the completed C0 asset/review slice but is not a landed main change until separately
+      reviewed and merged. PR #65 is open and ready (not draft), based on
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
       `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
       PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base

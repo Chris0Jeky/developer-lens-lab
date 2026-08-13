@@ -1223,7 +1223,8 @@ rather than rewritten in place.
 
 _Rebase correction 2026-08-13:_ PR #72 subsequently merged as
 `db104ca1f2bae2de214024e69fddff8cf9822373`; that is the live main anchor. The Lane-P asset/review
-commit is rebased on it as an unmerged candidate, not a replacement mainline claim. FR-068 and
+commit `407d749d4e9abe7d639a3bc3296ed72c18376a34` is rebased on it as an unmerged candidate, not a
+replacement mainline claim. FR-068 and
 FR-069 record the separate connector-identifier and repeated Windows PowerShell compatibility
 friction observed during this slice. The next pre-tag work remains final changelog/release-note
 synchronisation, then the screenshot/video package and its distinct owner gates; publication and
