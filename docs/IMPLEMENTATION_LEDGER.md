@@ -1107,3 +1107,222 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
 - The full locked code/config gate passed from this worktree: locked sync, doctor, context, Ruff
   format/check, Pyright, 198 tests with 3 declared unavailable-symlink skips, strict MkDocs, and
   hygiene. The generated documentation directory remains ignored.
+- Written on the parked PR #65 branch and re-placed unchanged at its chronological position during
+  the 2026-08-14 base refresh; the 2026-08-14 continuation at the end of this ledger carries the
+  refreshed base, the friction renumbering, the cross-platform test repair, and the re-proved gate.
+
+## 2026-08-12 - Report-only Lab merge-eligibility helper (FR-028 / issue #29)
+
+- Delivered the enforcement layer FR-028's `promotion` field had selected:
+  `tools/merge_eligibility.py` evaluates one coherent, head/base-bound snapshot and refuses
+  eligibility below the governor's 15-minute exact-head floor, returning head, base, hosted checks,
+  formal reviews, top-level comments, closing refs, and review threads together. It has no GitHub
+  or Git side effects and performs no merge; every surface, item, and identifier failure is a
+  deterministic reason code.
+- Aligned two predicates to the practiced gate. The unsatisfiable `formal_approval_missing`
+  requirement was removed — GitHub forbids self-approval and every Lab pull request is
+  single-account, so a formal `APPROVED` state can never appear — and replaced by a required
+  `accepted_review` attestation naming one exact-head item by `surface` plus `review_id` or
+  `comment_id`, with `missing_accepted_review`, `invalid_accepted_review_surface`,
+  `invalid_accepted_review_id`, `stale_accepted_review` and `unknown_accepted_review` failing
+  closed. `changes_requested` still refuses any `CHANGES_REQUESTED` review. Any `closing_refs` item
+  now yields `closing_reference_present:<index>`, because a closing keyword once auto-closed the
+  live release-programme issue; an intentional issue-completing merge needs a coordinator override
+  recorded on the pull request thread, outside the tool.
+- `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md` documents the attestation shape, the
+  closing-reference refusal and its override, and keeps the one-coherent-snapshot and
+  recollect-after-movement rules. FR-028 moved to `promoted` with a dated 2026-08-12 note; it stays
+  short of `resolved` because the helper binds only through the protocol's use of it.
+- Focused proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 15 passed. Fixtures
+  are invented C0; no test performs file, network or GitHub I/O.
+- Full locked gate through `py -3 -m uv` on the final tree: sync, doctor, context verify, Ruff
+  format (92 files) and check, Pyright 0 errors, 208 pytest passes with 3 declared Windows symlink
+  skips, strict MkDocs, hygiene, and a clean `git diff --check`. No shared prompt block or parity
+  manifest changed.
+
+_Addendum 2026-08-12 (PR #68 fix round 1):_ Codex and one independent fresh-context review of head
+`3efc1f4` produced four accepted findings, all now implemented.
+
+- HIGH, both reviews: a `formal_reviews` item with a missing, non-string or unknown `state` passed
+  the `CHANGES_REQUESTED` test silently — the single place where absent evidence became a pass.
+  Every item must now carry a state from the closed vocabulary `APPROVED`, `CHANGES_REQUESTED`,
+  `COMMENTED`, `DISMISSED`, `PENDING`; anything else is `invalid_review_state:<index>` and an
+  in-flight review is `pending_formal_review:<index>`.
+- Codex P1: aging was measured from evaluation time, so a snapshot collected minutes after a push
+  matured merely by being read later. A required `collected_at` now binds the floor to
+  `collected_at − pushed_at`, with `invalid_collected_at`, `future_collected_at`, and a
+  `stale_snapshot` refusal once the observation is more than `AGING_MINUTES_AFTER_PUSH` past
+  collection — the same constant, because the validity window and the aging floor are one
+  observation quantum. The report gained `snapshot_age_minutes` for observability.
+- MEDIUM: an empty `--now` was falsy and fell back to the wall clock; both CLI branches now test
+  `is not None`, so an empty string yields `invalid_now`.
+- Codex P1: the documented sink `.dllab/merge-eligibility/<snapshot>.json` was untracked but not
+  ignored, while `scripts/verify_hygiene.py` denies `.dllab` as a top-level directory. Resolved by
+  ignoring the directory: the script lists paths with
+  `git ls-files --cached --others --exclude-standard` (line 22), so `--exclude-standard` keeps
+  ignored content out of the scan entirely and `is_denied_generated_path` (line 12) only ever sees
+  tracked or unignored paths. `.gitignore`'s narrow `/.dllab/scopes` became `/.dllab/`, matching the
+  canon that `.dllab` is never tracked at all. No tracked file exists under `.dllab`.
+- Protocol seam updated for coherence: the mandatory `repository` field is now in the snapshot
+  spec, identifier matching is documented as type-strict with booleans excluded, and the
+  collection-bound aging, stale-snapshot bound and review-state vocabulary are described.
+- Coverage added: the exact aging-defeat scenario, the stale and window-edge cases, missing /
+  non-string / unknown / `PENDING` review states, `"5"`-versus-`5` and boolean identifiers, a
+  governor-parity test asserting `review_gates.aging_minutes_after_push` in the tracked
+  `.agent-harness/governor.json` equals `AGING_MINUTES_AFTER_PUSH`, and offline `main()` CLI tests
+  over `tmp_path` covering exit codes 0 and 1, `snapshot_read_failed` (asserting the report does not
+  echo the path), `invalid_snapshot`, and `invalid_now` for empty and malformed values.
+- Focused proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 33 passed (was 15).
+  Full locked gate on the final tree: doctor, context verify, Ruff format (92 files) and check,
+  Pyright 0 errors, 226 pytest passes with the same 3 declared Windows symlink skips, strict
+  MkDocs, hygiene, clean `git diff --check`. Codex P2 PR-identity binding was declined here and is
+  tracked separately by the coordinator. FR-058 and FR-059 record this round's review-lane friction.
+
+_Addendum 2026-08-12 (PR #68 fix round 2, ceiling):_ Codex's re-review of the fix head found one
+accepted gap. An attested `top_level_comments` item must now cite the full 40-hex
+`expected.head_sha` in a string `body`, or the snapshot is `unanchored_accepted_review`. GitHub
+binds a formal review to a commit natively, so a `formal_reviews` attestation still needs no `body`;
+a top-level comment has no such anchor, and without the check a stale review comment about an older
+head could carry the gate for a new one. The estate's fresh-context reviews already cite the exact
+head reviewed, so this makes a practiced convention mechanical; only the attested item is affected.
+Codex's second re-review finding — refusing top-level comments newer than the accepted review — was
+declined as coordinator-owned semantic triage, because a recency proxy would false-refuse nearly
+every real snapshot: dispositions and lane-claim comments legitimately post after a review. Focused
+proof: `py -3 -m uv run pytest tests/test_merge_eligibility.py -q` — 36 passed (was 33). Full locked
+gate on the final tree: doctor, context verify, Ruff format (92 files) and check, Pyright 0 errors,
+229 pytest passes with the same 3 declared Windows symlink skips, strict MkDocs, hygiene, and a
+clean `git diff --check`. Two review rounds is the ceiling; no further round is opened.
+
+_Correction note 2026-08-12:_ two records above are superseded or missing, and are corrected here
+rather than rewritten in place.
+
+- The present-tense sentence "PR #56 is open at live head `ccf6d9e465c5fd8629de27b0762f5c43fc588fc0`
+  on current base `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`" describes a snapshot that no longer
+  holds. Per `docs/CURRENT_STATE.md`, PR #56 is CLOSED and unmerged at head
+  `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over that same base, with GitHub reporting
+  DIRTY / CONFLICTING. The original entry is preserved as the historical observation it was; the
+  live state file outranks it.
+- PR #64 (governor current-state reconciliation) merged 2026-08-10T16:02:41Z and never received a
+  milestone entry here. Recording it belatedly: the reconciliation landed on main, and
+  `docs/CURRENT_STATE.md` now carries it as `delivered.pr64_state_reconciliation` with the same
+  belated-record note.
+
+## 2026-08-13 - Lane-P frozen Method Trial v1 exhibit staging (LAB-REL-01 / issue #29)
+
+- The already-recorded 2026-08-09 frozen replay at producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and invented run `wbc1_demo` remains the evidence for
+  the selected exhibit, including frozen JSON `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`,
+  Markdown `f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and HTML
+  `22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29` hashes.
+- This staging fix performs no benchmark, reproduction, export, or report build. It validates the
+  immutable Product C0 fixture in canonical-LF and semantic form, verifies the exact derived renderer
+  bytes and static content, and stages the existing JSON/HTML beneath
+  `release-assets/v0.1.0/method-trial-v1/` as the chosen release-upload location. The provenance
+  records the immutable fixture source, frozen producer/run, contract commit
+  `b48fea579936671397a0486ae7a0342197ee6e4b`, schema checksum
+  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`, AGPL-3.0-only, and
+  copyright Cristian Tcaci.
+- No new run, custody decision, experiment, holdout decision, or Experiment Ledger update occurred.
+  This remains staged C0 review only, not publication, a release, a tag, a real-data transformation
+  approval, model activation, telemetry activation, or either owner sign-off.
+- Live truth sync: Lane-P began from PR #72 merge base
+  `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+  Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only; neither
+  state authorizes publication, release, or a tag. The next separate pre-tag work is final
+  changelog/release-note synchronisation followed by screenshot/video preparation for
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`; no tag is authorised.
+
+_Rebase correction 2026-08-13:_ Lane-P began from PR #72 merge base
+`db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only; neither
+state authorizes publication, release, or a tag. FR-068 and FR-069 record the separate
+connector-identifier and repeated Windows PowerShell compatibility friction observed during this
+slice. The next pre-tag work remains final changelog/release-note synchronisation, then the
+screenshot/video package and its distinct owner gates; publication and tagging remain unperformed
+and unauthorised.
+
+## 2026-08-14 - Changelog synchronisation and q-11 media package (LAB-REL-01 / issue #29)
+
+- Changelog/release-note synchronisation is DONE: PR #78 merged as
+  `05090e7f3840265759a37a1587aee176f5461fe4` after the full gate, hosted proof at each of its
+  three heads, a MERGE-SOUND/CLEAN/CONFIRMED fresh-context review sequence, Codex P2 triage, and
+  an `eligible: true` merge-eligibility report on a fresh snapshot. The initial agent merge was
+  denied by the runtime permission layer and proceeded on explicit owner authorization (FR-074).
+- The q-11 screenshot/video package v1 was then produced locally from that merged head and
+  delivered to the owner in-session for the
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic review. It is NOT tracked,
+  staged, published, or attached to any release. Contents and SHA-256 digests:
+  `report-full.png` `a9834cfd2adff46a2646105add0acffd5a6fc0630fdc6f5d0e876122dfda38c1` (full-page
+  headless-Chrome capture of the staged HTML asset served on `127.0.0.1`; the bottom trim removed
+  only blank canvas below the last rendered row, detected by background-color scan plus a 60px
+  margin, so no report content was cropped),
+  `report-viewport.png` `a79d7c412ca643d65b67a5b2b12109e693cd88ab173ac1c174d60e6cc284a63c`
+  (1280×900 above-the-fold capture), `report-scroll.gif`
+  `e265fc80c612c248289dfaafefb2783bb83164f0210c124facbf2922bcee4057` (programmatic 14-step pan of
+  the full-page capture, disclosed as a scripted pan rather than a screen recording),
+  `cli-demo.png` `d3e991f358ff0412dbe8870113c1bcade643fe91e0d515abd47cd9608aaf2612` and
+  `cli-demo.html` `d64153dde65e241b1c6ece2b95e0d4fb4a97f970c66b591bc18b5861d0d74e7a` (rendered
+  transcript of a real deterministic demo run with local paths elided), and `MANIFEST.md`
+  `ead2bf8afc7952ad01e8ffc40035c7f8e97cffb98793b8ea7c49c75414f76c11` — the provenance manifest
+  disclosing every transformation and the review-only posture, hashed here so the exact reviewed
+  disclosures are durably identifiable.
+- Media provenance: the page captures render the staged
+  `release-assets/v0.1.0/method-trial-v1/method-trial-report.v1.html`
+  (`22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`) without modifying any asset
+  byte. The transcript records a real `wbc1_smoke` run in a clean detached worktree at the merged
+  head (report `markdown=aae1e2ce42c8e0d9e16a0a05ef2cde76380df550546277056569bca6509495b9`,
+  `html=c2a4f6df4ef08a3396a3416470b0d5ae9995964bc687201f5df6c5094ae74feb`; MethodTrialView export
+  `104f007189765ce06870b1321d3f555ccfce22396f8e52cb03424de027c8c18b`); the worktree was removed
+  after capture. FR-075 records the headless-capture substitution for the unavailable
+  browser-automation extension.
+- Custody honesty: like every execution of the standing smoke path (hosted CI runs it on each
+  pull request), the `wbc1_smoke` run mechanically wrote its single-use `final_holdout_custody`
+  receipt before opening the freshly generated invented dataset's final holdout — benchmark
+  mechanics on invented C0 data inside an ephemeral worktree that was then removed. This is not a
+  research holdout decision on a preregistered experiment, no finding was drawn from it, and the
+  Experiment Ledger convention (only named decision runs are ledgered) is unchanged; the frozen
+  `wbc1_demo` exhibit's recorded custody is untouched. No new experiment or Experiment Ledger
+  update occurred. No publication, release, tag, data,
+  model, telemetry, credential, or owner-gate action occurred; q-11 sign-off remains open and
+  owner-only, distinct from product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`.
+
+## 2026-08-14 - PR #65 base refresh and cross-platform taskkill test repair (issue #29)
+
+- Resumed the parked package-smoke process-tree branch by merging the current default branch into
+  it as an ordinary merge commit. Every code path merged cleanly; the only conflicts were the two
+  append-only documents, which both sides had extended at the same former end of file. Both files
+  were restored to the incoming default-branch content and confirmed identical to that branch's
+  blob by object hash before this branch's own additions were re-placed, so the resolution removes
+  no landed line from either document. FR-078 records the merge shape and the verified procedure.
+- The default branch advanced mid-slice, past the base this resume was planned against, and the
+  newly landed tail had itself taken `FR-074` and `FR-075`. The refresh was therefore retargeted at
+  the live default branch rather than the planned base, since merging the superseded base would
+  have landed colliding identifiers. FR-080 records the divergence; FR-070 is its lineage.
+- Renumbered this branch's two friction entries to the log's next free identifiers at the tail:
+  `FR-053` became `FR-076` and `FR-054` became `FR-077`. The default branch had already recorded,
+  in its dated PR #65 note, that these records lived only on the parked branch; `FR-053` and
+  `FR-054` therefore stay permanently unassigned, and that note's reference is resolved by the
+  dated reconciliation note under the renumbered pair. No entry that exists on the default branch
+  was renumbered or edited. `FR-077`'s original `tracked-task-debt` status was outside the schema's
+  six named states and is now `workaround-documented`; FR-072 records why that is a defect.
+- Repaired the hosted Ubuntu failure in the mocked Windows timeout tests. Three sites set
+  `SYSTEMROOT` from a raw literal that encoded a doubled backslash, and one assertion hard-coded
+  native separators, so the expectation could only match on a Windows host. Each site now sets
+  `SYSTEMROOT` from a `synthetic_root` literal, and the assertion compares against
+  `expected_taskkill`, built as `str(Path(synthetic_root) / "System32" / "taskkill.exe")` — the same
+  expression production uses — so the expectation renders through host `Path` semantics on either
+  platform. Production code in `scripts/verify_package_smoke.py` was not changed.
+- The full declared gate passed from this worktree through the FR-050 user-level `uv 0.12.4` module
+  route, with the cache and managed-Python directories held outside the repository per FR-060:
+  locked sync with `uv.lock` unmodified, doctor, context verification, Ruff format and check, strict
+  Pyright, the full pytest suite, strict MkDocs, hygiene, the card programme check, and
+  `git diff --check`. The focused
+  `pytest tests/test_package_metadata.py -k "taskkill or timeout"` selection passed 8 tests.
+- The package smoke needed a separate route and passed only through a repository-external
+  standard-library bootstrap holding `uv` in its own site directory. The smoke deliberately sets
+  `PYTHONNOUSERSITE`, which makes its current-interpreter module probe unable to see a
+  user-installed `uv`; FR-079 records that interaction and why it is environment debt rather than a
+  production defect.
+- Scope stayed C0 code, tests, and docs. No capability, authority, release, or tag state changed,
+  no real or private input was inspected, and nothing was pushed.

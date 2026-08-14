@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-10
+updated: 2026-08-14
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -17,24 +17,65 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      no merged PR remains in review; PR #55 and PR #57 are merged on main. The prepared local branch
-      `fix/package-smoke-short-env-redaction-20260809` is parked at
-      `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after its full gate (194 passed / 3 skips) and two
-      package-smoke attempts timed out during uv pip install; issue #29 comment `5234405496` is the
-      unlocking source.
+      Lane-P landed: PR #75 merged 2026-08-14T07:19Z as
+      `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed commits over base
+      `db104ca1f2bae2de214024e69fddff8cf9822373` with hosted proof, an exact-head MERGE-SOUND
+      review, and clean post-merge sweeps recorded on issue #29. The staged assets are tracked
+      staging only; neither the merge nor this record authorizes publication, release, or a tag.
+      PR #65 remains open, PARKED, and CONFLICTING at exact head
+      `91cf991b96b242680ab6839decb110422ab9755d` over base
+      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. The previously preserved PR #56 refresh worktree
+      and its branch no longer exist locally, and the parked short-redaction branch/commit is no
+      longer a local ref or object (FR-073). Live observation 2026-08-14: a new locally registered
+      worktree on branch `resume/package-smoke-pr65-20260814` appeared at exactly the parked
+      PR #65 head `91cf991b…` (identified here by branch and head only; the local directory name
+      is machine state and deliberately not recorded), with no new
+      commits; no runtime actor is inferred, this coordinator does not write into it, and PR #65's
+      parked authority (a genuinely new unlocking event or explicit fresh authority) is unchanged
+      by the worktree's existence. Unregistered leftover directories from earlier removed
+      worktrees remain for manual disposition without content inspection.
     state: >-
-      READY_FOR_OTHER_TRACKED_SLICE after PR #55 sdist-to-wheel lineage merged as
-      `02dcfb261f7216f01aa5696888715ac42f0e3830`, PR #57 package-smoke contract tests merged as
-      `64c725c61ab3ccf106c0a0b0fb6ea2489821e9ad`, and PR #59 current-state YAML enforcement merged as
-      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052` closing issue #58. PR #56 is CLOSED and unmerged as
-      the exhausted, superseded duplicate at preserved head
-      `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over the stale pre-PR60 base
-      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; GitHub records it DIRTY/conflicting, while its branch
-      and dirty worktree remain preserved. The short-redaction lane is parked pending its issue #29
-      unlocking source; other actually tracked issue #29 work may proceed. Keep remaining hardening,
-      asset, release, publication, and tag work separate, with no data, model, credential, or
-      telemetry activation.
+      The merge-eligibility enforcement lane is DELIVERED (see
+      `delivered.merge_eligibility_enforcement`), Lane-P's release review/staging is DELIVERED
+      through merged PR #75 (see `delivered.lane_p_release_review`), and the changelog/release-note
+      synchronisation is DELIVERED through merged PR #78 (see `delivered.changelog_sync`). The
+      q-11 screenshot/video package v1 is produced and delivered to the owner (see
+      `delivered.q11_media_package`); its sign-off is owner-only. PR #65 remains PARKED and not
+      merge-sound after two review rounds; its exact resume reference remains issue #29 comment
+      `5243827843` and PR #65 comment `5243827873`. The in-flight slice is this documentation
+      reconciliation on branch `docs/q11-package-20260814`.
 delivered:
+  - changelog_sync: >-
+      DONE — PR #78 merged 2026-08-14T09:36:18Z as
+      `05090e7f3840265759a37a1587aee176f5461fe4` over base
+      `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`: the 0.1.0 changelog records the staged C0
+      release assets, this artifact was reconciled to merged PR #75, and the friction log gained
+      FR-050's pinned second-occurrence promotion, FR-001 occurrence 23, and FR-073. Proof: full
+      local gate, hosted `Prove the lab` green at all three heads and at the merge commit, a
+      MERGE-SOUND/CLEAN/CONFIRMED review sequence, Codex P2 triage with a resolved thread, and an
+      `eligible: true` merge-eligibility report. The initially denied agent merge proceeded on
+      explicit owner authorization (FR-074). Immediate and delayed post-merge sweeps were clean.
+  - q11_media_package: >-
+      PRODUCED AND DELIVERED, AWAITING OWNER SIGN-OFF — the q-11 screenshot/video package v1 was
+      generated from merged main `05090e7f3840265759a37a1587aee176f5461fe4` and handed to the
+      owner in-session for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`. It is local-only:
+      nothing was tracked, staged, published, or attached to a release. The implementation ledger's
+      2026-08-14 entry records the exact contents, SHA-256 digests, and transformation
+      disclosures; FR-075 records the headless-capture substitution. Sign-off records aesthetic
+      acceptance only and authorizes no release, publication, or tag.
+  - lane_p_release_review: >-
+      DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
+      2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
+      commits over base `db104ca1f2bae2de214024e69fddff8cf9822373` and landing four staged
+      surfaces: the byte-preserving fixture JSON, the deterministic derived HTML, the
+      provenance/checksum/licence manifest declaring
+      `staged_for_release_review_only`, and `tests/test_release_assets.py`. Hosted `Prove the lab`
+      passed at exact head `7e17e15f828cfc302d27bbbce0feeef115a11e64`; the independent exact-head
+      review was MERGE-SOUND; the post-merge sweeps on issue #29 were clean. The staged hashes match
+      the already-recorded 2026-08-09 frozen replay at producer
+      `0ef193070a9b80b81cef5a1710a1d65e0b271c15`. Tracked staging authorizes no publication,
+      release, or tag. No new run, custody decision, experiment, holdout decision, or Experiment
+      Ledger update occurred.
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
       This records the merged result only; it does not attribute the GitHub operation to an actor.
@@ -151,17 +192,62 @@ delivered:
       DONE — PR #63 final head `d48e09cf149d75aee92665e62f3893741cd98104` passed Check run
       `31351467716`, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`, and had 3 resolved / 0
       unresolved review threads; its post-merge audit was clean.
+  - pr64_state_reconciliation: >-
+      DONE — PR #64 (governor current-state reconciliation) merged 2026-08-10T16:02:41Z; recorded
+      belatedly: this list previously omitted it (ledger correction note 2026-08-12).
+  - merge_eligibility_enforcement: >-
+      DONE — FR-028's selected enforcement layer is delivered. It was prepared overnight on
+      2026-08-10 on branch `ci/lab-merge-eligibility-20260810`, a branch this file had never
+      recorded — that omission is recorded here explicitly — then audited and delivered on
+      2026-08-12 as PR #68, merged at `07929a41fa8c80f05794db9a58fa0bf014b4f961`. It ships the
+      report-only `tools/merge_eligibility.py`, 36 invented-fixture tests, and the "Lab merge
+      decision seam" section of `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md`. Round 1 replaced
+      the unsatisfiable formal-APPROVED predicate with an `accepted_review` attestation, because
+      GitHub forbids self-approval and every pull request here is single-account, so that state can
+      never appear; it also added the closing-reference refusal, bound aging to `collected_at` with
+      a `stale_snapshot` bound at the same governor constant, refused an empty-string `--now`,
+      ignored `/.dllab/` wholesale (verified against `scripts/verify_hygiene.py`'s
+      `--exclude-standard` semantics), and added a governor parity test plus CLI tests including the
+      no-path-echo assertion. Round 2, at the two-round ceiling, added `unanchored_accepted_review`:
+      an attested top-level comment must cite the exact 40-hex head in its body. Proof: hosted run
+      `31615108943` green at final head `8facd3fe79777bd524ea201714b519d24f8a159d`; an independent
+      fresh-context review whose initial verdict was NOT MERGE-SOUND with its HIGH finding verified
+      closed, plus a CLEAN micro-verification of round 2; and three Codex review rounds triaged with
+      dispositions recorded on the thread. Lane coordination during the pipeline: a second
+      coordinator posted a stale-read adoption comment at 15:41:29Z citing the superseded head and
+      formally stood down at 16:11:29Z after the ownership clarification; FR-061 records that the
+      adopting session had run a full duplicate implementation round whose push was rejected
+      non-fast-forward, so no ref moved and one writer held the branch throughout. Post-ceiling P1/P2 findings are tracked on issue #29 comments
+      `5269020473` and `5269401432`: PR-identity binding, a dismissed-review state allowlist, and
+      identifier validation. Worktree disposition: removal of the merged helper worktree was
+      interrupted mid-operation, so its stale registration was pruned, but an unregistered leftover
+      directory of regenerable caches and merged tracked copies remains for manual deletion — the
+      agent floor correctly refuses out-of-project recursive deletion, the same class as the
+      recorded value01 precedent. The delayed post-merge sweep was clean twice — at 16:24:23Z (T+9m49s)
+      and again at 16:28:43Z (T+14m09s), beyond the measured connector delay — with zero post-merge
+      reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
-  Continue issue #29 with one other actually tracked unfinished pre-tag seam; the prepared
-  `fix/package-smoke-short-env-redaction-20260809` branch is PARKED at
-  `e673102348e8ee7d8c7d45b6ed4e1530cd775972` after 194 passed / 3 skips and two package-smoke
-  timeouts during uv pip install, pending issue #29 comment `5234405496`. Lane-P candidate-content
-  review remains unauthorized and closed; no asset review, publication, tag, or release action is authorized. Pre-cap diagnostic-memory hardening remains task
-  debt until a design avoids both unbounded capture and a raw unredacted disk sink; process-tree
-  cleanup stays separate. No tag, release/publication, asset review, credential, data, model, or
-  telemetry action is authorized here.
+  SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
+  The pre-tag agent remainder is COMPLETE: the merge-eligibility helper, Lane-P staging, the
+  changelog/release-note synchronisation, and the q-11 media package are all delivered. What
+  remains before a joint tag is owner-only: `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`
+  aesthetic sign-off on the delivered package and the distinct product release gate
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The natural next agent slice is the three
+  tracked helper-hardening follow-ups on issue #29 comments `5269020473` and `5269401432`
+  (PR-identity binding, dismissed-review state allowlist, identifier validation). FR-062 remains
+  true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
+  to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
+  has that connector route: without a collectible surface the helper still refuses eligibility,
+  and this read/resolve route does not authorize a merge. PR #65's portable patch is a
+  PARKED REFERENCE only, not a next push: its exact resume reference remains issue #29 comment
+  `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
+  r"C:\Windows"` and `expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")`.
+  Reopen that reference only after a genuinely new unlocking event or explicit fresh authority. Keep
+  remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
+  contract, credential, or release activation occurred.
 release_and_owner_gates: >-
-  joint release remains reaffirmed, but no tag is authorized. The closed product
+  Live `HUMAN_TODO.md` remains the owner-gate source: joint release remains reaffirmed, but no tag is
+  authorized. The closed product
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` gate does not close the distinct open Lab
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` real-study public-transformation gate.
   Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and Lab
@@ -194,8 +280,11 @@ canonical_evidence:
     markdown=f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8;
     html=22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29
   current_head_replay: >-
-    deterministic at lab_commit=2e6a7c2b7ff906cb771bb4e904dd18d2717fa536; candidate hashes differ
-    because lab_commit is embedded; release candidate NOT approved
+    deterministic at lab_commit=2e6a7c2b7ff906cb771bb4e904dd18d2717fa536, but that lab_commit is a
+    historical anchor many merges old and is NOT current main; it was not re-measured at
+    07929a41fa8c80f05794db9a58fa0bf014b4f961. The candidate hashes differ because lab_commit is
+    embedded, so the current-head release candidate remains NOT approved a fortiori — a newer head
+    can only change the embedded value again. frozen_producer_replay stays the verified exhibit path
   frozen_producer_replay: >-
     verified at producer_commit=0ef193070a9b80b81cef5a1710a1d65e0b271c15; context/contracts/invented
     wbc1_demo/reproduce/export/report/hygiene all passed; printed export/markdown/html hashes exactly
@@ -207,23 +296,39 @@ canonical_evidence:
     was not rerun because that merge did not touch the proved seam
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
-  The joint tag remains blocked on issue #29's tracked P2 hardening and unfinished pre-tag deliverables
-  plus Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
+  The merge-eligibility helper, Lane-P staging, changelog synchronisation, and q-11 media package
+  are all DELIVERED and no longer block. The three tracked
+  helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
-  preparation slices.
+  preparation slices. FR-062's shell GraphQL restriction remains, but connector-equipped sessions
+  may collect thread state through the verified thread-aware route; sessions without it keep the
+  complete-surface requirement and do not gain a merge-gate bypass.
 late_review_debt: >-
   Issue #31 tracks the four non-blocking PR #24 review follow-ups; product #189 remains a product-side
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume from live `origin/main` after refreshing it with Git. The latest delivered anchor recorded
-  here is PR #63, merged as `4519e193ff6601c3d1971bae2ef8444b16bf5d0d`. PR #63 final head
-  `d48e09cf149d75aee92665e62f3893741cd98104` passed Check run
-  `31351467716`, had 3 resolved / 0 unresolved review threads, and its post-merge audit was clean;
-  PR #62 immediately before it merged as `73a5b9653cccbb470c6bf9f0f5a4a7cd8d3cac45` from final
-  head `e833c68314f874d89523e4c97f5a3293548465cd` after Check run `31346126369` and a clean
-  post-merge audit. Preserve the existing PR #56 history and parked short-redaction facts above;
-  keep Lane-P review, release/publication, tag, credentials, data, models, telemetry, and all owner
-  gates closed.
+  Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
+  push. The in-flight slice is branch `docs/q11-package-20260814` (ledger/state/friction record of
+  the delivered q-11 media package); land it through the ordinary PR gate. The pre-tag agent
+  remainder is complete; what remains is owner-only sign-off on
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` (package delivered 2026-08-14) and product
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which the joint tag decision is
+  handed back, never agent-executed. Do not publish or tag. Observed but untouched: a locally
+  registered worktree on branch `resume/package-smoke-pr65-20260814` at the parked PR #65 head
+  with no new commits; PR #65 remains parked at
+  exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
+  `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
+  only and require a genuinely new unlocking event or explicit fresh authority before reopening.
+  Where the GitHub connector exposes the thread-aware route, collect its
+  `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
+  ineligible rather than treating the shell GraphQL restriction as clear debt. This grants
+  neither a merge nor a tag. The previously preserved short-redaction branch/commit
+  (`fix/package-smoke-short-env-redaction-20260809` at
+  `e673102348e8ee7d8c7d45b6ed4e1530cd775972`) and the PR #56 refresh worktree/branch no longer
+  exist locally (FR-073); issue #29 comment `5234405496` remains the recorded unlocking source, and
+  no reconstruction is attempted. Keep release/publication, tag, credentials, data, model,
+  telemetry, and all owner gates closed.
 ```

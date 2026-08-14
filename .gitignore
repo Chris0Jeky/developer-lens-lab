@@ -1,7 +1,7 @@
 .venv/
 .package-smoke/
 .uv-cache/
-/.dllab/scopes
+/.dllab/
 .pytest_cache/
 .ruff_cache/
 .pyright/

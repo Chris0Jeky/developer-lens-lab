@@ -29,7 +29,7 @@ Each entry carries exactly these fields:
 |---|---|
 | `id` | `FR-NNN`, assigned in order, never reused. |
 | `first-seen` | ISO date of the first recorded occurrence. |
-| `status` | `open` · `workaround-documented` · `promoted` · `owner-gated` · `resolved`. |
+| `status` | `open` · `workaround-documented` · `workaround-verified` · `promoted` · `owner-gated` · `resolved`. |
 | `symptom` | What was observed, factually, without inference. |
 | `impact` | What it costs a session when it happens. |
 | `workaround` | What was actually done instead, or `none`. |
@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 19 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 23 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -89,7 +89,15 @@ Rules that bind entries:
   2026-08-09 (the sdist-lineage builder again found no PATH uv and left full-gate proof to the
   coordinator), 2026-08-09 (the wheel-contract test worktree used the confined route for its
   actual package smoke), and 2026-08-10 (the issue #34 factual-doc worktree used the installed
-  Python-module route for locked sync and proof).
+  Python-module route for locked sync and proof), and 2026-08-12 (the PR #68 duplicate fix round
+  found no PATH `uv`, no host-interpreter `uv` module, and no main-checkout environment; a fresh
+  repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
+  cache directory breaks the verifier walk), and 2026-08-13 (no PATH `uv` and no host-interpreter
+  `uv` module; the already-promoted repository-external confined bootstrap restored `uv 0.12.3` and
+  `uv sync --locked --all-groups` succeeded), and 2026-08-14 (no PATH `uv` and no host-interpreter
+  `uv` module during the changelog-synchronisation slice; the FR-050-selected reversible
+  user-level module route restored `uv 0.12.4` inside the proved range; the locked sync and the
+  full declared gate ran green through it — see the dated occurrence-23 note below).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
   boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -188,6 +196,29 @@ PATH `uv`. The installed `py -3 -m uv` 0.12.2 route selected project-supported P
 created the worktree-local project environment, and completed locked sync without changing
 `uv.lock` or installing a global tool.
 
+_Note 2026-08-12 (PR #68 duplicate fix round):_ The twentieth occurrence found no PATH `uv`, no
+host-interpreter `uv` module, and no main-checkout environment — the first time the installed
+module route was also absent. A fresh bootstrap ran the full locked gate, hosted outside the
+repository (with its cache and managed-Python directory) purely as the session-scoped FR-060
+workaround; those directories live in the disposable session scratch area and hold no repository
+state. `MAINTENANCE_PROTOCOL.md`'s promoted worktree-confined wording is deliberately unchanged:
+the confined route remains canon, and reconciling it with the FR-060 verifier interaction (for
+example by pruning `.uv-cache` in the verifier walk) stays issue #34 task debt.
+
+_Note 2026-08-13 (occurrence 21):_ With neither PATH `uv` nor a host-interpreter `uv` module, the
+external temporary `uv` bootstrap fallback restored `uv 0.12.3`, and `uv sync --locked --all-groups`
+succeeded.
+
+_Note 2026-08-13 (Lane-P occurrence 22):_ The dedicated worktree had neither a project interpreter
+nor a host-interpreter `uv` module. The external temporary bootstrap restored `uv 0.12.3` for the
+focused integrity proof and declared gate without changing tracked dependency state.
+
+_Note 2026-08-14 (occurrence 23, changelog-synchronisation slice):_ Neither PATH `uv` nor a
+host-interpreter `uv` module was present; see FR-050 for the selected reversible user-level module
+route, which restored `uv 0.12.4` inside the proved range. The locked sync and the full declared
+gate then ran green through that route on the slice's first commit, with focused checks on its fix
+commit.
+
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
 - **first-seen:** 2026-08-09
@@ -225,13 +256,16 @@ created the worktree-local project environment, and completed locked sync withou
   on the platform the repository is actually developed on.
 - **workaround:** none — the skips are reported honestly in each proving pass, which is why they are
   visible enough to log here. Reporting is not the same as understanding.
-- **occurrences:** 1 recorded as friction — 2026-08-09 (LAB-GOV-02), though the underlying skips
-  appear in many recorded proving passes.
+- **occurrences:** 2 recorded as friction — 2026-08-09 (LAB-GOV-02), though the underlying skips
+  appear in many recorded proving passes, and 2026-08-12 (the same three tests executed and passed
+  under a repository-external toolchain; note below).
 - **task:** lab issue #33 records it; it stays task debt until a bounded slice narrows it to exact
   test identities and a stated platform condition.
 - **promotion:** Deliberately NOT promoted yet. Promotion needs the second independent occurrence
   and, more importantly, a narrowed cause: an executable assertion about a skip whose reason is
-  unproved would pin the symptom rather than enforce the property.
+  unproved would pin the symptom rather than enforce the property. The second independent
+  occurrence is now recorded (2026-08-12); promotion stays deferred for the remaining reason
+  alone — the enabling condition is still unnarrowed, which is issue #33 task debt.
 
 _Note 2026-08-09 (LAB-GOV-02):_ the full gate run for this card names the three skips exactly, so
 they are no longer anonymous: `tests/test_contract_sync.py` skips with "directory symlinks are
@@ -239,6 +273,19 @@ unavailable on this host", and `tests/test_method_trial_export.py` and `tests/te
 each skip with "file symlinks are unavailable on this host". Two distinct conditions, not one. Still
 unproved is *why* the host cannot create them and whether the skipped behaviour is genuinely
 untestable here or merely unexercised; the entry stays `open` for that reason.
+
+_Note 2026-08-12 (PR #68 duplicate fix round):_ the inverse surprise: under the FR-001
+repository-external `uv` route, whose locked sync selected a host-installed CPython 3.12.6, the
+same three tests executed and PASSED — that full gate reported 220 passed with zero skips, while
+the owning PR #68 lane's gates at sibling heads on the same repository reported 226 and 229 passed
+with the familiar 3 declared skips. The guard is therefore environment-sensitive, not
+platform-constant: at least one interpreter on this host can create both symlink kinds. A skip that
+silently becomes a pass changes what the recorded gate history proves, in the benign direction
+here. The exact enabling condition (interpreter install, privilege, or developer-mode state)
+remains unproved, so the entry stays `open` and narrowing remains issue #33 task debt. The
+zero-skip figures come from a session-local, unpushed duplicate tree and are durably recorded in
+[PR #68 comment 5269372792](https://github.com/Chris0Jeky/developer-lens-lab/pull/68#issuecomment-5269372792);
+the 226/229 figures are in the tracked implementation ledger.
 
 ### FR-004 — concurrent-writer hazard in the lab checkout (cross-repository, owner-gated)
 
@@ -292,7 +339,8 @@ alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 - **workaround:** Write the throwaway script to a file under the gitignored bootstrap directory and
   run the interpreter against that path; delete generated paths with an explicitly resolvable target
   or leave gitignored build output in place. Both are cheap and leave the tracked tree clean.
-- **occurrences:** 1 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session).
+- **occurrences:** 3 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), plus two
+  independent 2026-08-12 events noted below.
 - **task:** lab issue #33 records it; no repository change is required.
 - **promotion:** Deliberately NOT promoted. This is agent-harness behaviour, not a repository
   invariant: the cheapest layer is session memory, which is outside this repository's enforcement
@@ -303,6 +351,13 @@ path in a shell variable and invoking it (`$UV run …`) is refused as a dynamic
 workaround is identical: invoke the literal interpreter or executable path. This strengthens the
 `occurrences` picture but does not change the promotion decision, since all three forms share one
 cheap workaround and none of them blocked a lane.
+
+_Note 2026-08-12 (FR-028 helper delivery):_ two independent same-class refusals in one session:
+a heredoc append into a tracked ledger file (`… >> … <<'EOF'`) during the helper milestone entry,
+worked around with the file-edit tool; and a heredoc piped into a GitHub CLI comment body
+(`… <<'EOF' | gh … --body-file -`) during the lane claim, worked around by writing the body to a
+scratch file and passing `--body-file <path>`. Both cost one retry each and blocked no lane; the
+promotion decision is unchanged.
 
 ### FR-006 — orchestration wall-clock timeout terminated a session after its work was complete
 
@@ -801,7 +856,7 @@ command-table evidence.
 ### FR-028 — the merge path again failed to enforce 15-minute exact-head aging
 
 - **first-seen:** 2026-08-09
-- **status:** `open`
+- **status:** `promoted`
 - **symptom:** PR #51 merged after at most 8m59s at its exact head, and PR #52 merged 4m18s after
   its final docs-head push. Both were below the owner constitution's 15-minute exact-head aging
   rule even though their hosted proof and accepted exact-head review evidence were green.
@@ -831,6 +886,19 @@ finished with 6 resolved review threads / 20 inline comments, and merged as
 failed the binding 15-minute floor. Its T+3m19 sweep was preliminary and invalid as delayed proof;
 the genuine paginated T+19m32 sweep at 2026-08-10T00:06:40.440807Z was clean. The later sweep does
 not retroactively satisfy the pre-merge gate.
+
+_Note 2026-08-12 (selected enforcement layer implemented):_ The enforcement layer named in
+`promotion` now exists as the report-only `tools/merge_eligibility.py`, its focused tests in
+`tests/test_merge_eligibility.py`, and the "Lab merge decision seam" section of
+[CONTINUOUS_WORK_PROTOCOL.md](CONTINUOUS_WORK_PROTOCOL.md). It refuses one coherent snapshot below
+the 15-minute exact-head floor and returns head, base, hosted checks, accepted review evidence,
+top-level comments, closing refs, and review threads together. Two semantics were aligned to the
+practiced gate at delivery: the unsatisfiable formal-approval predicate was replaced by an explicit
+`accepted_review` attestation naming one exact-head review item, because a single-account
+repository cannot produce a formal `APPROVED` state; and any closing reference now makes a snapshot
+ineligible, with an intentional issue-completing merge requiring a coordinator override recorded on
+the pull request thread. The entry stays short of `resolved` because the helper enforces nothing on
+its own — it binds only through the protocol's use of it before a merge.
 
 ### FR-029 — a concurrent closeout PR remained open after its state claims diverged
 
@@ -1382,28 +1450,47 @@ four unresolved PR #60 threads.
   invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
   189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
-- **occurrences:** 1 independent occurrence - DL-P01 / DL-P03 flagship delivery governor slice on
-  2026-08-10.
+- **occurrences:** 2 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10, and the flagship changelog-synchronisation slice on 2026-08-14.
 - **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
-- **promotion:** Deliberately not promoted after one occurrence; restore a standalone PATH route
-  only if it materially improves the supported workflow.
+- **promotion:** At the second occurrence, select the cheapest enforcing layer: restore the module
+  route with a reversible user-level `pip install "uv>=0.12.2,<0.13"`, the same pinned range the
+  promoted FR-001 confined bootstrap proves. This supplements, and does not replace, the promoted
+  [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) confined-bootstrap canon; host provisioning
+  stays outside this repository, so recurrence tracking remains on the Lab #34 comment thread.
+
+_Note 2026-08-14 (second occurrence, changelog-synchronisation slice):_ Both the standalone PATH
+route and the previously verified `py -3 -m uv` module route were absent; the repository venv's own
+tool executables were the only surviving local proving route. The predicate also matches FR-001
+(no PATH `uv`, no host-interpreter `uv` module), recorded there as its 2026-08-14 occurrence. The
+user-level install resolved `uv 0.12.4`, inside the proved `>=0.12.2,<0.13` range, and now answers
+through `py -3 -m uv`, which re-enabled the declared locked gate
+(`py -3 -m uv sync --locked --all-groups` succeeded, and the full declared gate then ran green
+through the same route on the slice's first commit).
 
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
 - **first-seen:** 2026-08-10
-- **status:** `workaround-documented`
+- **status:** `workaround-verified`
 - **symptom:** The estate registry returned no Developer Lens Lab entry; a fail-fast batched
   orientation read stopped on that no-match before the individual binding reads.
 - **impact:** The registry lookup could not supply an estate row for orientation, so the repository
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 1 independent occurrence — flagship governor orientation on 2026-08-10.
-- **task:** Lab #34 comment `5242537913` tracks the checked orientation path.
-- **promotion:** Deliberately not promoted after one occurrence; promote only on recurrence through
-  the canonical estate owner.
+- **occurrences:** 2 independent occurrences — flagship governor orientation on 2026-08-10 and
+  truth-repair orientation on 2026-08-13.
+- **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
+  Lab registry entry; that owner surface is outside this repository.
+- **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
+  owner adds or restores a Developer Lens Lab registry entry. It remains task debt on Lab #34 because
+  this repository cannot alter that owner surface.
+
+_Note 2026-08-13 (truth-repair orientation):_ The canonical estate file was unavailable and the
+Codex repository-map fallback had no Lab match. Repository-local tier and canon plus live Git and
+GitHub state established authority; no replacement path was invented.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
@@ -1420,7 +1507,495 @@ four unresolved PR #60 threads.
 - **promotion:** Deliberately not promoted after one occurrence; promote on a second independent
   occurrence.
 
-### FR-053 — bounded writer delegation ended before a handoff
+_Note 2026-08-10 (PR #65 and state-sync worktree guard):_ PR #65's bundled
+`inspect_pr_checks.py` failed at the Windows cp1252 boundary after reaching the completed check,
+and a later PR-body em-dash-to-`?` mutation was detected and repaired by numbered-PR reread. These
+are the second and third independent Windows text-boundary occurrences in the FR-047 lineage; see
+[Lab #34 comment 5243638848](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243638848)
+and [Lab #34 comment 5243837462](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243837462).
+The cheapest enforcing layer is explicit end-to-end UTF-8/error handling plus numbered-PR reread;
+the remaining enforcement task debt is outside this repository in the plugin cache. The related
+FR-053/FR-054 records remain only on the parked, unmerged PR #65 branch and are not claims about
+main.
+
+The first state worktree guard stopped safely because Git forward slashes and PowerShell backslashes
+compared literally; no worktree or branch was created. `Resolve-Path` normalization fixed the guard
+on the next attempt. This is occurrence 1; see [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
+Promote this guard only if the path-normalization failure recurs.
+
+_Note 2026-08-10 (PR #66 divergence):_ Focused context verification, strict MkDocs, and hygiene
+passed, but hosted pytest enforced the exact stable lane scalar and failed run `31416319955`
+(195 passed / 1 failed). The direct fix is to restore that scalar and keep PR #65 parked status prose
+adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/developer-lens-lab/pull/66#issuecomment-5244014884).
+Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
+scaffolding is needed.
+
+### FR-055 — a post-removal PowerShell regex check raised an invalid pattern error
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** Protected plain removal of `developer-lens-lab-pr65-parked-state-20260810` completed
+  after target, registration, nonignored, and ignored-output checks, but the post-removal
+  verification used PowerShell regex replacement with a lone backslash and raised an invalid-regex
+  error.
+- **impact:** The cleanup operation itself succeeded, but that verification expression could not
+  establish absence. Direct literal `Test-Path` and `git worktree list` checks then confirmed the
+  target was absent and unregistered.
+- **workaround:** Use direct literal path checks for the removal result; do not use regex replacement
+  for separator normalization in the cleanup verification.
+- **occurrences:** 2 independent path-normalization/regex occurrences — this post-removal check and
+  the earlier state-worktree guard recorded at [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
+- **task:** [Lab #34 comment 5244433491](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5244433491)
+  tracks the recurrence and the reusable path helper task.
+- **promotion:** Select the cheapest enforcing layer: a reusable PowerShell path
+  normalization/comparison helper using `Resolve-Path` or `[IO.Path]::GetFullPath` plus literal
+  `String.Replace` for separators, never regex replacement. Keep the helper as issue #34 task debt;
+  do not detour in this slice.
+
+### FR-056 — a narrowed append patch briefly introduced a leading-space diff
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-verified`
+- **symptom:** The first append patch did not match the exact tail context; a narrowed patch then
+  briefly added one leading space to an existing friction-log line.
+- **impact:** No committed collateral change occurred. The exact diff exposed the whitespace drift,
+  and a follow-up patch restored the existing line before commit.
+- **workaround:** Inspect the exact one-file diff and run `git diff --check` before committing.
+- **occurrences:** 1 independent occurrence — FR-055 append on 2026-08-10.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked append and command-boundary helpers.
+- **promotion:** Deliberately not promoted after one occurrence; the exact-diff and whitespace
+  checks are sufficient for this bounded documentation slice.
+
+### FR-057 — an unqualified Glob in a cross-repository read mission resolved against the wrong repository
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** During a two-repository session coordinated from the product checkout, a read-only
+  discovery agent's first unqualified Glob resolved against the coordinator's product working
+  directory rather than the named sibling Lab checkout, enumerating hundreds of vendored dependency
+  licence files before any Lab repository fact was gathered.
+- **impact:** A cross-repository read mission burns its opening effort on the wrong repository and
+  can mistake product-side files for Lab evidence; the immediate behaviour was safe because the
+  agent noticed and re-anchored.
+- **workaround:** Pass the sibling checkout root explicitly to every Glob/Grep call in a
+  cross-repository read-only mission; treat an unqualified pattern as resolving to the
+  coordinator's own working directory.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 pre-tag inventory.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and path-boundary hardening; this is adjacent to the FR-036 explicit-path,
+  inventory-first lineage.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
+  is a delegation-prompt rule that every cross-repository read mission names its checkout root in
+  each search call.
+
+### FR-058 — a read-only review agent's search call failed transiently with an unknown spawn error
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** During the fresh-context review of the merge-eligibility helper, a read-only agent's
+  Grep invocation returned an unknown spawn error instead of results. The identical search
+  succeeded on one retry once the search path was narrowed to a single directory.
+- **impact:** One lost round-trip in a review lane, plus the risk that a session reads a transient
+  spawn failure as "no matches" and reviews a narrower surface than it believes it has covered.
+- **workaround:** Retry the failed search once with a narrowed explicit path before drawing any
+  conclusion from an empty or failed result; never treat a tool error as a zero-result finding.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 helper review.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and tool-boundary hardening; this is adjacent to the FR-021 transient-resource
+  lineage.
+- **promotion:** Deliberately not promoted after one occurrence. If transient spawn failures recur,
+  the cheapest layer is a review-prompt rule that a failed search is retried with a narrowed path
+  and its outcome stated, rather than any structural change.
+
+### FR-059 — a review agent was terminated mid-task by a host process exit and resumed from transcript
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** A fresh-context review agent working on the merge-eligibility helper was terminated
+  before returning its findings when the host process exited. The work was not lost: the agent was
+  resumed from its saved transcript and completed the review.
+- **impact:** A wave can lose an in-flight review lane to an event that has nothing to do with the
+  work, and a session that does not know the resume route will re-run the whole review.
+- **workaround:** Resume the terminated agent from its saved transcript rather than restarting the
+  review from a cold context, and verify the branch and HEAD before trusting the resumed findings,
+  since the tree may have moved during the interruption.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the Lab #29 helper review.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  session-boundary and orchestration hardening; this is adjacent to the FR-006 host-termination
+  lineage.
+- **promotion:** Deliberately not promoted after one occurrence. This is agent-harness behaviour
+  rather than a repository invariant, and the transcript resume route already recovers the work.
+
+### FR-060 — the context verifier's markdown walk descended into an in-worktree uv cache
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-verified`
+- **symptom:** Hosting the FR-001 confined `uv` bootstrap with its cache at the gitignored
+  `.uv-cache/` inside a worktree made `dllab doctor` and `dllab context verify` fail on a broken
+  relative link inside a cached package README (`pyright`'s bundled typeshed): the markdown walk's
+  `SKIPPED_MARKDOWN_PARTS` prunes `.venv`, `.package-smoke`, and peers, but not `.uv-cache`, even
+  though `.gitignore` names that directory as expected toolchain cache.
+- **impact:** A full-gate run fails at its first step until the cache moves; the cost was one
+  bootstrap rebuild. No tracked file, ref, or GitHub object changed. The verifier's automated walk
+  did read the ignored cached README — that read is the failure mechanism itself — but the bytes
+  were public package documentation; no manual inspection occurred and no protected, credential,
+  or private bytes were involved.
+- **workaround:** Host the bootstrap environment, `uv` cache, and managed-Python directory outside
+  the repository entirely, keeping only the pruned `.venv` project environment inside the worktree.
+  Verified: the identical gate sequence then passed end to end.
+- **occurrences:** 2 independent occurrences — 2026-08-12 during PR #68 and one 2026-08-13
+  Lane-P adopted-worktree occurrence.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  proof and path-boundary hardening.
+- **promotion:** At the second occurrence, the clean detached exact-head clone with bootstrap and
+  cache outside is the verified workaround; future ignore-aware markdown-walk pruning on Lab #34 is
+  selected enforcement debt, not implemented.
+
+_Note 2026-08-13 (Lane-P adopted-worktree occurrence):_ Pre-existing ignored runtime environments
+caused doctor/context failures and 2 context-related full-pytest failures (231 passed); no ignored
+bytes were manually inspected or altered. A clean detached clone at exact candidate
+`c0273bc1969b5ff7555a82f3c3ff4914b1f44d39` with bootstrap/cache outside then passed locked sync,
+doctor, context, Ruff, Pyright, the focused asset test, 233 tests, strict MkDocs, hygiene, cards,
+and diff check. This docs-only correction's final head will be re-proved separately.
+
+### FR-061 — a lane adoption raced an active prior claimant by seconds
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-documented`
+- **symptom:** Two flagship coordinator sessions raced one PR #68 lane. The adopting session read
+  the PR state eleven seconds after the owning session's unobserved round-1 push, posted an
+  adoption claim over a 49-minute-old prior claim after seeing 33 minutes of surface silence, and
+  delegated a full duplicate fix round without re-polling; the owning session's clarification,
+  posted two and a half minutes after the adoption comment, went unread until the duplicate's push
+  was rejected as non-fast-forward.
+- **impact:** One fully duplicated bounded implementation round (five findings, full locked gate)
+  that never landed. The remote branch was never corrupted: the non-fast-forward rejection
+  contained the race, and the duplicate served as an independent cross-check that found no defect
+  at the owning head.
+- **workaround:** Prior claim wins. The adopting session stood down on both surfaces, archived the
+  duplicate on a local-only branch name (deleting its local copy of the shared branch name so no
+  accidental push remains possible), and recorded the cross-check result before yielding the lane.
+- **occurrences:** 2 independent occurrences of this adopt-race mode — 2026-08-12, PR #68
+  review-response lane, and 2026-08-13, Lane-P staging reconciliation; the broader concurrency
+  lineage is FR-004, FR-029, and FR-033.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  protocol hardening; the stand-down and cross-check record is
+  [PR #68 comment 5269372792](https://github.com/Chris0Jeky/developer-lens-lab/pull/68#issuecomment-5269372792).
+- **promotion:** At the second occurrence, select the already-recorded cheapest layer: after an
+  adoption claim, re-poll the issue and branch before delegating a writer. Retain implementation
+  debt on Lab #34; do not detour into a protocol edit during this slice.
+
+_Note 2026-08-13 (Lane-P adoption):_ A second coordinator overlap was detected before duplicate
+writing. The prior claimant advanced and returned a clean worktree while this coordinator reconciled;
+the result was archived and adopted, and only its exact fixture/renderer-validated bytes were
+independently accepted. Claimant-reported historical replay was not used as staging authority; no
+actor identity is inferred.
+
+### FR-062 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
+
+- **first-seen:** 2026-08-12
+- **status:** `workaround-verified`
+- **symptom:** Every `gh api graphql` invocation was refused by the agent floor in this repository
+  class, read-only queries included. Review-thread resolution flags live only behind GraphQL, so
+  during the PR #68 pipeline they could be neither read nor set.
+- **impact:** A merge decision that wants a thread-resolution count cannot obtain one, and a session
+  that reads the refusal as "no unresolved threads" would record a false operational claim about its
+  own review debt.
+- **workaround:** Carry finding disposition through thread comments and body-file dispositions
+  instead, using the dedicated `gh` subcommands with `--body-file`, and state resolution status as
+  unmeasured rather than inferring it from a blocked query. **This is a documentation route, not a
+  merge-gate bypass.** Under the delivered merge-decision seam an uncollectible `review_threads`
+  surface is a missing or incomplete surface, so the snapshot is INELIGIBLE and the helper fails
+  closed exactly as designed; comment-based disposition documents finding triage but never
+  substitutes for the surface the helper requires. The PR #68 merge itself predated the helper's
+  operational binding, because that merge is what delivered the helper.
+- **occurrences:** 1 independent occurrence — 2026-08-12, during the PR #68 pipeline shell block.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external command and tool-boundary hardening, including the runtime-qualified collectible
+  thread-state route.
+- **promotion:** The 2026-08-13 connector success verifies a runtime-qualified workaround, not a
+  second occurrence of the shell refusal: connector-equipped sessions use the thread-aware collector,
+  while sessions without it leave the surface ineligible. Keep that routing debt on Lab #34; it is
+  not universal availability and never a merge-gate bypass.
+
+_Note 2026-08-13 (verified connector workaround):_ The GitHub connector thread-aware route returned
+all five PR #70 threads and the one PR #65 thread with `is_resolved` / `is_outdated`. Four PR #70
+threads were resolved after disposition. The stale-main-anchor P2 is now resolved, with a follow-up
+reply linking PR #71 posted at 2026-08-13T14:33:54Z. This is an in-scope alternate read/resolve route for
+connector-equipped sessions despite the shell GraphQL block, not a claim that every runtime has it
+or a merge-gate bypass.
+
+### FR-063 — requested Luna inventory routing was unavailable in the collaboration runtime
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The collaboration runtime rejected a requested `gpt-5.6-luna` read-only inventory
+  delegation as an unknown model and listed only Sol/Terra.
+- **impact:** The intended Luna mechanical-inventory lane could not start; no task state or file
+  changed in that attempt.
+- **workaround:** The coordinator performs the read-only inventory inline with Sol and reserves
+  Terra for writer/reviewer work.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** LAB-REL-01 and [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)
+  track the runtime-routing debt.
+- **promotion:** Deliberately not promoted after one occurrence; if it recurs, the cheapest layer is
+  runtime/model-routing configuration or skill wording.
+
+### FR-064 — user-owned IDE metadata changed during a docs-only closeout
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The final Git-status check showed an additional modification in user-owned IDE
+  metadata beyond the pre-existing untracked profile directory. Its content and provenance were not
+  inspected.
+- **impact:** The checkout can no longer be described as having only the originally visible IDE
+  change, and that metadata must not be included in this documentation commit.
+- **workaround:** Preserve the metadata untouched, do not diff or stage it, and report the exact
+  status in the handoff.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) records the
+  durable friction trail; no cause is inferred from one uninspected occurrence.
+- **promotion:** Deliberately not promoted after one occurrence; establish a cause before selecting
+  an enforcing layer.
+
+### FR-065 — the named current-state test was unavailable during re-check
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The literal named current-state test path executed and produced 98 passes, then was
+  absent at the later re-check. Git status, `git ls-files`, and the base-tree check established no
+  tracked or untracked status for that path, so no removal or cause is inferred. The current narrow
+  test was located by repository search instead.
+- **impact:** Repeating a literal test path can fail before exercising the docs seam even though a
+  relevant focused test remains available.
+- **workaround:** When the named path is unavailable, locate and run the narrow current-state test
+  with repository search, as the task contract directs.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) records the
+  durable friction trail; no cause is inferred from one occurrence.
+- **promotion:** Deliberately not promoted after one occurrence; establish why the named test was
+  unavailable before selecting an enforcing layer.
+
+### FR-066 — connector inline-reply write timed out once; bounded REST reply succeeded
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-verified`
+- **symptom:** One connector inline-reply write timed out while responding to the stale-main-anchor
+  P2.
+- **impact:** The reply could not be confirmed through that connector mutation response alone.
+- **workaround:** A bounded REST reply route posted the follow-up linking PR #71, and subsequent live
+  collection verified the reply and resolved thread state.
+- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  tool-boundary hardening; this entry does not claim a general connector failure.
+- **promotion:** Deliberately not promoted after one occurrence; retain the bounded alternate reply
+  route as the verified workaround and establish recurrence before selecting an enforcing layer.
+
+### FR-067 — a fast-forward push was rejected by a remote internal error
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The 14:36Z fast-forward push of PR #71's second commit was rejected by GitHub with a
+  remote Internal Server Error.
+- **impact:** The remote ref was not advanced by that attempt.
+- **workaround:** After remote-head verification, make one bounded retry; after the SSH route is
+  unavailable, use the authenticated GitHub Git-data API once to create a commit from the exact final
+  two-file tree and advance the PR #71 ref with `force=false` only after verifying the expected head.
+- **occurrences:** 4 independent occurrences — the two rejected HTTPS pushes, the verified
+  SSH-authentication unavailability, and the PR-head divergence after the force-free Git-data update.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  tool-boundary friction.
+- **promotion:** At the fourth occurrence, the cheapest workaround is a fresh branch at the exact
+  final remote commit. After PR #71's four P2 threads are triaged and resolved, close or supersede
+  it, open one ready PR from the fresh branch, and require exact-head CI, review, and aging anew.
+  Retain Lab #34 as task debt.
+
+_Note 2026-08-13 (occurrence 2):_ Remote-head verification showed the expected old head. The single
+bounded HTTPS retry at 14:37Z was again rejected with a GitHub Internal Server Error, and the remote
+ref remained unchanged.
+
+_Note 2026-08-13 (occurrence 3):_ Temporary GitHub host keys were verified against authenticated
+GitHub metadata, but read-only SSH access failed because public-key authentication was unavailable.
+No user SSH configuration changed.
+
+_Note 2026-08-13 (occurrence 4):_ The authenticated Git-data API advanced the remote PR #71 branch
+with `force=false`, and the remote tree was mechanically identical to the preserved local tree.
+Repeated REST and ref reads then showed the branch ref at its new commit while PR #71 still reported
+its old head. The PR `updated_at` changed when review replies were posted, so this was not merely an
+entirely stale PR response.
+
+### FR-068 — review-thread connector identifiers did not bridge GraphQL and REST routes
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The thread payload exposed an incompatible opaque comment identifier, while the
+  inline-reply route required a numeric REST parent identifier and returned HTTP 404 when given the
+  opaque value.
+- **impact:** The attempted inline disposition could not be attached through that route. Treating
+  the 404 as evidence that the review thread did not exist or was already resolved would have made
+  review state less truthful.
+- **workaround:** Resolve the review thread through the available thread-state route and preserve its
+  disposition in [Lab PR #70 comment 5281737113](https://github.com/Chris0Jeky/developer-lens-lab/pull/70#issuecomment-5281737113).
+  The thread-resolution operation succeeded; all PR #70 threads are now resolved.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during PR #70 truth reconciliation.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns
+  connector and review-route hardening.
+- **promotion:** Deliberately not promoted after one occurrence. A stable connector identifier
+  bridge needs repeated evidence before changing the reviewed route or protocol.
+
+### FR-069 — Windows PowerShell parameter aliases diverged across host versions
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The host rejected the `utf8NoBOM` encoding name before a focused Lane-P verifier ran.
+  Independently, the coordinator's Windows PowerShell 5.1 rejected `Get-Date -AsUTC`; both are newer
+  parameter or encoding aliases that cannot be assumed on the installed host.
+- **impact:** Each command stopped before its intended verification or timestamping action. Neither
+  failure changed tracked release bytes, a ref, or a remote object.
+- **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
+  UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
+- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
+  tracks the cross-repository Windows compatibility follow-up.
+- **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
+  for UTC timestamps and UTF-8 output, used by reviewed repo scripts instead of host-version-specific
+  aliases. This slice records the proposal only and does not alter runtime or harness code.
+
+_Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
+helper remains a promotion proposal only.
+
+### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-verified`
+- **symptom:** The shared branch/worktree advanced at the commit boundary while the delegated writer
+  was completing handoff. A subsequent sibling amend was caught by the next writer's preflight before
+  edit. Git author metadata does not establish runtime actor.
+- **impact:** The writer stopped. The coordinator pinned and audited the parent, diff, clean status,
+  and frozen asset hashes before adoption; the worktree was not reset, cleaned, or overwritten.
+- **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
+  next writer to preflight before edit.
+- **occurrences:** 2 independent branch/worktree collision episodes — 2026-08-12 and 2026-08-13;
+  the 2026-08-13 episode included two tip movements.
+- **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
+  ignored per-worktree writer lease/guard.
+- **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
+  the cheapest enforcement layer. This slice records and tests no guard implementation.
+
+_Note 2026-08-13 (schema correction):_ The re-pin/preflight/unique isolated-lane workaround caught
+the second tip movement and this isolated branch stayed stable. The ignored writer lease/guard
+remains selected enforcement debt on Lab #73 and is not implemented.
+
+_Note 2026-08-14 (related sighting, counted for this pattern without a collision):_ A new
+registered worktree appeared beside the primary checkout on branch
+`resume/package-smoke-pr65-20260814` at exactly the parked PR #65 head, with no tip movement and
+no new commits; no runtime actor is inferred and the observing coordinator did not write into it.
+No workaround was needed, so the occurrence count above is unchanged, but the sighting is recorded
+here so the Lab #73 lease/guard decision sees the full unexplained-worktree pattern; the
+observational record lives in `docs/CURRENT_STATE.md`.
+
+### FR-071 — a read-only Git object comparison produced a false-positive block
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** A read-only Git object comparison was blocked after its temporary comparison file had
+  already been redirected and removed, leaving the wrapper unable to reopen the expected path.
+- **impact:** The comparison could not produce its planned result, though no ref, tracked release
+  byte, or protected input was changed.
+- **workaround:** Recover the comparison through object metadata and text checks against the exact
+  known object, then continue only after the identity result was clear.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during Lane-P reconciliation.
+- **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
+  tracks the cross-repository command-wrapper follow-up.
+- **promotion:** Deliberately not promoted after one occurrence; retain the read-only metadata/text
+  route unless the temporary-file false positive recurs.
+
+### FR-072 — friction statuses escaped the closed vocabulary without verifier rejection
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** One unmerged candidate used `promotion-proposed` and `enforcement-selected` even
+  though the schema allows only its six named states, and context verification did not reject them.
+- **impact:** The operational log became nonconformant and its promotion state was misleading.
+- **workaround:** Apply an exact heading-scoped correction and run a manual closed-vocabulary scan.
+- **occurrences:** 1 independent candidate patch — the three invalid fields are one event.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  friction-log verifier follow-up.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest
+  enforcement is context-verifier validation and tests for every friction status.
+
+### FR-073 — recorded parked-lane anchors vanished from the local checkout
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** Two recorded preservation targets were absent at SENSE: the parked short-redaction
+  branch and its never-pushed commit no longer exist as a local ref or object, and the preserved
+  PR #56 refresh worktree registration and its branch are gone from `git worktree list` and the
+  branch list.
+- **impact:** The current-state preserve instructions became unsatisfiable; the short-redaction
+  anchor now survives only as its recorded issue references, not as a recoverable local object.
+- **workaround:** Treat live Git as authoritative, reconcile the current-state artifact to the
+  observed absence in the same slice, and keep the recorded issue #29 references as the surviving
+  evidence; attempt no reconstruction and no recursive inspection of leftover directories.
+- **occurrences:** 1 independent occurrence — 2026-08-14 flagship changelog-synchronisation SENSE.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
+  release-wave record; issue #29 comment `5234405496` remains the recorded parked-lane unlocking
+  source.
+- **promotion:** Deliberately not promoted after one occurrence; if a second preserved anchor is
+  lost, select an enforcement layer that pins parked anchors to pushed refs rather than local-only
+  state.
+
+### FR-074 — the runtime permission layer denied gated action classes mid-session
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** The agent runtime's permission classifier denied a prepared pull-request merge and
+  one issue-comment write in one hop, then denied writes into the repository's gitignored
+  generated-artifact directories in the next hop, while otherwise identical comment writes and
+  tracked-file edits succeeded.
+- **impact:** A fully gated merge-ready pull request could not be agent-merged until the owner
+  explicitly authorized it, and the review media package could not live in an in-repository
+  ignored directory.
+- **workaround:** Park the merge-ready state with its full evidence and hand the decision to the
+  owner (the merge then proceeded on explicit authorization with a fresh eligibility snapshot);
+  retry the denied comment after that authorization; and relocate generated review media to the
+  session scratchpad, delivering it to the owner directly rather than through an ignored
+  repository path.
+- **occurrences:** 2 independent hops — the PR #78 merge/comment denials and the q-11 media
+  sink-write denials, both 2026-08-14.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
+  release-wave record; the parked-then-authorized merge is recorded in its PR #78 checkpoint
+  comments.
+- **promotion:** At the second occurrence, the cheapest honest layer is procedural, not
+  repository-executable: treat operator authorization as the standing route for classifier-denied
+  merges, and the session scratchpad plus direct delivery as the standing route for generated
+  review media. Runtime permission configuration is owner-side state this repository cannot
+  enforce.
+
+### FR-075 — browser-extension automation was unavailable; headless capture substituted
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** The browser-automation extension reported not connected when the q-11 media slice
+  needed rendered-page captures.
+- **impact:** Interactive browser screenshots and recorded-scroll capture were unavailable to the
+  session.
+- **workaround:** Serve the staged C0 HTML asset on `127.0.0.1`, capture it with the installed
+  headless Chrome (`--headless=new --screenshot`, fixed widths, scrollbars hidden), trim and
+  compose the scroll-through GIF programmatically, and render the CLI transcript to a styled page
+  captured the same way. The pipeline is scripted end-to-end and leaks no URL bar or local path,
+  and the package manifest discloses each transformation; byte-level reproducibility across hosts
+  is not claimed, since rasterization depends on unpinned browser, font, and encoder versions —
+  the recorded digests identify the exact reviewed bytes rather than a regenerable output.
+- **occurrences:** 1 independent occurrence — 2026-08-14 q-11 media slice.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
+  release-wave media record; reconnecting the extension is owner-side machine state.
+- **promotion:** Deliberately not promoted after one occurrence; the headless route is arguably the
+  better default for reproducible review media, so a recurrence should weigh promoting it as the
+  canonical capture route rather than restoring the extension.
+
+### FR-076 — bounded writer delegation ended before a handoff
 
 - **first-seen:** 2026-08-10
 - **status:** `workaround-documented`
@@ -1432,23 +2007,113 @@ four unresolved PR #60 threads.
   takeover, and complete the normal focused/full proving route without expanding scope.
 - **occurrences:** 1 independent occurrence — issue #29 package-smoke process-tree slice on
   2026-08-10.
-- **task:** Lab #34 tracks durable governor/delegation reliability follow-up.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  durable governor/delegation reliability follow-up.
 - **promotion:** Deliberately not promoted after one occurrence; do not infer a cause from the
   missing handoff.
 
-### FR-054 — bundled GitHub helper hit Windows subprocess-decoding failure again
+### FR-077 — bundled GitHub helper hit a Windows subprocess-decoding failure again
 
 - **first-seen:** 2026-08-10
-- **status:** `tracked-task-debt`
+- **status:** `workaround-documented`
 - **symptom:** PR #65's bundled `inspect_pr_checks.py` completed authentication and run fetch,
   then Windows cp1252 decoding failed on byte `0x81`; its later `log_text` use was `None`.
 - **impact:** The helper could not provide CI-log evidence for the completed run.
 - **workaround:** Use the separately retrieved completed-run metadata and do not treat the failed
   helper output as evidence.
 - **occurrences:** 2 independent occurrences including FR-047 — a GitHub subprocess response
-  crossed an unhandled Windows text-decoding boundary.
-- **task:** Lab #34 comment `5243638848` tracks explicit encoding/error handling at the bundled
-  helper subprocess boundary.
+  crossed an unhandled Windows text-decoding boundary. The same event is already summarised in the
+  dated PR #65 note above the FR-055 heading as occurrence 2 of the FR-047 lineage; this entry is
+  that occurrence's detailed record, not an additional occurrence.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) comment
+  `5243638848` tracks explicit encoding/error handling at the bundled helper subprocess boundary.
 - **promotion:** The cheapest enforcing layer is explicit encoding/error handling in that helper,
-  but it remains task debt because the plugin cache is outside this repository; capture is not
+  but it stays task debt because the plugin cache is outside this repository; capture is not
   permission to detour.
+
+_Note 2026-08-14 (PR #65 base refresh renumbering):_ The two entries above were written on the
+parked PR #65 branch as `FR-053` and `FR-054` while the default branch's tail was `FR-052`. The
+default branch then advanced past those numbers without assigning them, recording in the dated PR
+#65 note above the FR-055 heading that the records lived only on the parked branch. This log's
+schema requires new entries at the end with the next free `FR-NNN`, so on merge they were re-placed
+at the tail as `FR-076` and `FR-077`; `FR-053` and `FR-054` stay permanently unassigned and that
+earlier note resolves here. No entry that exists on the default branch was renumbered or edited.
+`FR-077`'s original `tracked-task-debt` status was outside the schema's six named states and was
+corrected to `workaround-documented`; FR-072 records why an out-of-vocabulary status is a defect.
+No other field content changed.
+
+### FR-078 — merging an advanced default branch into a long-parked branch collided only in append-only ledgers
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** Merging the advanced default branch into the four-day-parked PR #65 branch conflicted
+  in exactly the two append-only documents — this log and the implementation ledger — because both
+  sides had appended at the same former end of file, while every code path merged cleanly.
+- **impact:** A textual conflict resolution can silently drop landed entries from either side, which
+  is the FR-046 failure mode, and it forces an identifier reconciliation before the slice continues.
+- **workaround:** Restore both files to the incoming default-branch content verbatim, confirm each
+  restored file hashes identically to that branch's blob, then re-place only the parked branch's own
+  additions at their schema-correct positions — the tail for this log, the chronological position
+  for the ledger. Verified: both files matched the incoming blob hashes before re-placement, and the
+  diff against the default branch afterwards contained only additions.
+- **occurrences:** 2 independent occurrences including FR-046 — an append-only history was at risk
+  of reduction during a merge resolution.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked parent-range and history-preservation helpers.
+- **promotion:** At the second occurrence the selected cheapest enforcing layer is the recorded
+  restore-verbatim-then-re-place procedure with its blob-hash check, together with the FR-046
+  parent-range comparison. An automated append-only merge driver stays task debt because it would
+  need per-file schema knowledge that only these two documents currently justify.
+
+### FR-079 — the package smoke's own hardening hides a user-installed `uv` from its resolver
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** With no PATH `uv`, the package smoke failed to resolve any compatible `uv` on a host
+  where the FR-050 user-level module route reports a version inside the required range. The smoke
+  builds a deliberately hardened child environment that sets `PYTHONNOUSERSITE`, so its
+  current-interpreter module probe cannot see a `uv` installed into the user site directory.
+  Invoking the smoke through the project environment fails for the separate reason that the synced
+  project interpreter carries no `uv` module at all.
+- **impact:** The final step of the declared gate looks unrunnable on a host where every other step
+  passes through the module route, which invites either skipping the smoke or weakening the child
+  environment the smoke exists to prove.
+- **workaround:** Run the smoke from the FR-001 repository-external standard-library bootstrap that
+  holds `uv` in its own environment's site directory rather than the user site directory, leaving
+  the rest of the gate on whichever route FR-001 selected. Verified: the smoke then completed
+  successfully on the refreshed PR #65 tree while the hardened child environment stayed unchanged.
+- **occurrences:** 1 independent occurrence — the 2026-08-14 PR #65 base-refresh gate.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked proof-boundary helpers; the underlying environment cost belongs to the FR-001 lineage.
+- **promotion:** Deliberately not promoted after one occurrence, and explicitly not by relaxing
+  `PYTHONNOUSERSITE`, which is part of what the smoke asserts. If it recurs, the cheapest honest
+  layer is a maintenance-protocol sentence naming the bootstrap interpreter as the smoke's
+  invocation route on a host without a PATH `uv`.
+
+### FR-080 — the default branch advanced mid-slice and consumed the identifiers a parked branch was about to use
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** During a base refresh of the parked PR #65 branch, the default branch advanced by a
+  merge while the resolution was in progress. The newly landed tail assigned `FR-074` and `FR-075`,
+  the exact next-free identifiers the refresh had already allocated to the parked branch's two
+  renumbered entries, and a second merge into the same worktree was needed to observe it.
+- **impact:** A resolution completed against the superseded base would have committed duplicate
+  friction identifiers and a stale ledger position, forcing a second reconciliation pass after the
+  work had already been proved.
+- **workaround:** Re-read the remote ref immediately before committing the resolution, retarget the
+  merge at the live default branch when it has advanced, and reallocate identifiers from the live
+  tail rather than the planned one. Verified: the retargeted merge produced no duplicate identifier,
+  and the pinned base remained an ancestor of the live tip, so nothing was skipped.
+- **occurrences:** 2 independent occurrences including FR-070 — shared branch state advanced under
+  an in-flight slice.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked proof-boundary and state-reconciliation helpers; FR-070 carries the earlier occurrence and
+  its own occurrence count is not adjusted here, because this slice may not edit entries that exist
+  on the default branch.
+- **promotion:** At the second occurrence the selected cheapest enforcing layer is the re-read of
+  the remote ref immediately before a merge resolution is committed, which the existing
+  merge-eligibility helper's exact-head floor already expresses for merges. Extending that helper to
+  cover in-progress conflict resolution stays task debt; a sequential identifier is inherently
+  contended, and a structural fix would mean changing this log's identifier scheme, which is not
+  justified by two occurrences.
