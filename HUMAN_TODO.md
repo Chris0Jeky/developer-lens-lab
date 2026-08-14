@@ -48,8 +48,14 @@ actions stay unchecked.
 - [ ] **q-10 — Select a remote telemetry destination if remote telemetry is ever enabled.**
   Local diagnostics ship first; remote stays disabled until the owner picks a provider and
   approves its privacy notice.
-- [ ] **q-11 — Aesthetic sign-off (T3).** When the release wave produces the screenshot/video
-  package, review it briefly; agents cannot self-approve visual quality.
+- [x] **q-11 — Aesthetic sign-off (T3).** Closed 2026-08-14 by explicit in-session owner
+  approval of the delivered screenshot/video package v1 (full-page and above-the-fold report
+  captures, scroll-through GIF, rendered CLI-demo transcript, and provenance manifest; the exact
+  approved bytes are identified by the SHA-256 digests in the implementation ledger's 2026-08-14
+  entry, and durable local copies were verified against those digests at delivery). The approval
+  records aesthetic acceptance of that package only: it authorizes no tag, publication,
+  release-asset attachment, or other owner-gated action, and the joint v0.1.0 tag remains blocked
+  on the distinct product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off.
 - [ ] **q-12 — Later: external umbrella brand and any commercial licence terms.** Keep current
   repository names internally; the external rebrand and commercial terms are deferred owner
   decisions.
