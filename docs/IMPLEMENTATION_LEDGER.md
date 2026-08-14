@@ -1287,6 +1287,12 @@ and unauthorised.
   model, telemetry, credential, or owner-gate action occurred; q-11 sign-off remains open and
   owner-only, distinct from product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`.
 
+_Note 2026-08-14 (owner sign-off):_ Later the same day the owner explicitly approved the
+delivered package v1, closing `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`; the closure
+record and its exact scope live in `HUMAN_TODO.md`. The approval is aesthetic acceptance of the
+hashed package bytes only; the joint tag remains blocked on product
+`Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and stays owner-executed.
+
 ## 2026-08-14 - PR #65 base refresh and cross-platform taskkill test repair (issue #29)
 
 - Resumed the parked package-smoke process-tree branch by merging the current default branch into

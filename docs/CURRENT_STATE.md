@@ -39,11 +39,11 @@ active_wave:
       `delivered.merge_eligibility_enforcement`), Lane-P's release review/staging is DELIVERED
       through merged PR #75 (see `delivered.lane_p_release_review`), and the changelog/release-note
       synchronisation is DELIVERED through merged PR #78 (see `delivered.changelog_sync`). The
-      q-11 screenshot/video package v1 is produced and delivered to the owner (see
-      `delivered.q11_media_package`); its sign-off is owner-only. PR #65 remains PARKED and not
+      q-11 screenshot/video package v1 is delivered and owner-approved (see
+      `delivered.q11_media_package`). PR #65 remains PARKED and not
       merge-sound after two review rounds; its exact resume reference remains issue #29 comment
-      `5243827843` and PR #65 comment `5243827873`. The in-flight slice is this documentation
-      reconciliation on branch `docs/q11-package-20260814`.
+      `5243827843` and PR #65 comment `5243827873`. The in-flight slice is the q-11 sign-off
+      record on branch `docs/q11-signoff-20260814`.
 delivered:
   - changelog_sync: >-
       DONE — PR #78 merged 2026-08-14T09:36:18Z as
@@ -56,13 +56,14 @@ delivered:
       `eligible: true` merge-eligibility report. The initially denied agent merge proceeded on
       explicit owner authorization (FR-074). Immediate and delayed post-merge sweeps were clean.
   - q11_media_package: >-
-      PRODUCED AND DELIVERED, AWAITING OWNER SIGN-OFF — the q-11 screenshot/video package v1 was
-      generated from merged main `05090e7f3840265759a37a1587aee176f5461fe4` and handed to the
-      owner in-session for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`. It is local-only:
-      nothing was tracked, staged, published, or attached to a release. The implementation ledger's
-      2026-08-14 entry records the exact contents, SHA-256 digests, and transformation
-      disclosures; FR-075 records the headless-capture substitution. Sign-off records aesthetic
-      acceptance only and authorizes no release, publication, or tag.
+      DONE AND SIGNED OFF — the q-11 screenshot/video package v1 was generated from merged main
+      `05090e7f3840265759a37a1587aee176f5461fe4`, handed to the owner in-session, and explicitly
+      approved by the owner on 2026-08-14, closing
+      `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`. It is local-only: nothing was tracked,
+      staged, published, or attached to a release. The implementation ledger's 2026-08-14 entry
+      records the exact contents, SHA-256 digests, and transformation disclosures; FR-075 records
+      the headless-capture substitution. The sign-off records aesthetic acceptance only and
+      authorizes no release, publication, or tag.
   - lane_p_release_review: >-
       DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
       2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
@@ -229,10 +230,11 @@ delivered:
 next_safe_slice: >-
   SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
   The pre-tag agent remainder is COMPLETE: the merge-eligibility helper, Lane-P staging, the
-  changelog/release-note synchronisation, and the q-11 media package are all delivered. What
-  remains before a joint tag is owner-only: `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`
-  aesthetic sign-off on the delivered package and the distinct product release gate
-  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The natural next agent slice is the three
+  changelog/release-note synchronisation, and the q-11 media package are all delivered, and the
+  Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off is CLOSED by the
+  2026-08-14 owner approval. The only remaining joint-tag blocker is the distinct product release
+  gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`; when it closes, the tag decision is
+  handed back to the owner, never agent-executed. The natural next agent slice is the three
   tracked helper-hardening follow-ups on issue #29 comments `5269020473` and `5269401432`
   (PR-identity binding, dismissed-review state allowlist, identifier validation). FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
@@ -250,8 +252,9 @@ release_and_owner_gates: >-
   authorized. The closed product
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` gate does not close the distinct open Lab
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` real-study public-transformation gate.
-  Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and Lab
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off still block tags. Lab
+  Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off still blocks tags;
+  Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed by the 2026-08-14 owner
+  approval of the delivered package. Lab
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7` legal review and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` machine hygiene remain open; the separate
   Code of Conduct inbox is pending under `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10`. None authorizes release,
@@ -298,9 +301,9 @@ blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
   The merge-eligibility helper, Lane-P staging, changelog synchronisation, and q-11 media package
   are all DELIVERED and no longer block. The three tracked
-  helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on
-  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
-  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
+  helper-hardening follow-ups on issue #29 are later work. Lab
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 is closed; the joint tag remains blocked on
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) alone, and no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
   preparation slices. FR-062's shell GraphQL restriction remains, but connector-equipped sessions
   may collect thread state through the verified thread-aware route; sessions without it keep the
@@ -311,11 +314,12 @@ late_review_debt: >-
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. The in-flight slice is branch `docs/q11-package-20260814` (ledger/state/friction record of
-  the delivered q-11 media package); land it through the ordinary PR gate. The pre-tag agent
-  remainder is complete; what remains is owner-only sign-off on
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` (package delivered 2026-08-14) and product
-  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which the joint tag decision is
+  push. The in-flight slice is branch `docs/q11-signoff-20260814` (recording the 2026-08-14 owner
+  approval that closes `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`); land it through the
+  ordinary PR gate. The pre-tag agent remainder is complete and
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed; the only remaining
+  joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which
+  the joint tag decision is
   handed back, never agent-executed. Do not publish or tag. Observed but untouched: a locally
   registered worktree on branch `resume/package-smoke-pr65-20260814` at the parked PR #65 head
   with no new commits; PR #65 remains parked at
