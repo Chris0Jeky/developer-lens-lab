@@ -111,9 +111,11 @@ A change that skips a step is not compatible-by-assumption; it is unverified.
   lab PR again; never infer its state from a pull request, a quiet session, or another agent's
   message. `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` remains the unrelated real-data
   public-transformation gate.
-- **Release remains gated.** Joint release is reaffirmed, but no tag is authorized until
-  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off and
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off are complete. No data,
+- **Release remains gated.** Joint release is reaffirmed, but no tag is authorized until the
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off is complete; the lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off closed on 2026-08-14
+  with the owner's approval of the delivered media package, and the tag decision itself stays
+  owner-executed. No data,
   model, telemetry, credential, or publication lane is opened by this reconciliation.
 - **Shared surfaces today:** the `methodTrialView` presentation contract with its C0 fixture parity,
   and the ResearchPack schema. Both are product-owned; the lab consumes them check-only.

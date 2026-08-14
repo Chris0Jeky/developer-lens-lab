@@ -864,8 +864,8 @@ command-table evidence.
   no implementation defect, but the completed merges cannot retroactively satisfy that gate.
 - **workaround:** Reconcile each completed merge without rewriting refs, and treat 15 minutes as an
   unconditional exact-head floor for every later merge in this session.
-- **occurrences:** 3 independent occurrences — Lab PR #51 and Lab PR #52 on 2026-08-09, plus Lab
-  PR #60 on 2026-08-10.
+- **occurrences:** 4 independent occurrences — Lab PR #51 and Lab PR #52 on 2026-08-09, Lab
+  PR #60 on 2026-08-10, and Lab PR #82 on 2026-08-14 (owner-instructed; see the dated note below).
 - **task:** lab issue #29 tracks release-wave merge-eligibility hardening; issue comments
   `5231583712` and `5234553210` record the first and third occurrences, while issue #34 comment
   `5234553289` records the PR #56/#60 convergence correction.
@@ -899,6 +899,20 @@ repository cannot produce a formal `APPROVED` state; and any closing reference n
 ineligible, with an intentional issue-completing merge requiring a coordinator override recorded on
 the pull request thread. The entry stays short of `resolved` because the helper enforces nothing on
 its own — it binds only through the protocol's use of it before a merge.
+
+_Note 2026-08-14 (PR #82 fourth occurrence, owner-instructed sub-floor merge):_ PR #82 final head
+`e57576469f2fa87b76372918fc78a17e776e3cf0` was pushed no earlier than about 21:05:05Z (hosted run
+`31840866416` created 21:05:12Z) and merged at 21:17:34Z as
+`02afd7c37b3c7d0a30551025a1724fb5aa5d064b` on an explicit owner instruction — a demonstrated
+public head age of about 12m22s, about 2m38s below the binding 15-minute exact-head floor. This is
+the first sub-floor merge since the selected enforcement layer landed, and it confirms the layer's
+recorded limit rather than a defect: the helper is report-only, so an explicit owner instruction
+can supersede its floor arm. Every other gate — hosted proof, the accepted exact-head review
+attestation of 21:08:23Z, both Codex threads resolved, zero closing refs, unmoved base — was
+verified at the exact head before merge; whether a helper report was generated for that decision
+is not recorded in the same-hop capture (PR #82 comment `5298266904`, which directed this append).
+The T+22m post-merge sweep was clean. The floor remains binding for agent-initiated merges; no
+agent may cite this occurrence as precedent for a sub-floor merge.
 
 ### FR-029 — a concurrent closeout PR remained open after its state claims diverged
 
@@ -2203,13 +2217,24 @@ the no-structural-fix conclusion is unchanged at four.
 - **workaround:** Treat pre-push prose as provisional and amend it in the same pipeline before the
   branch merges: state the push time, name the exact head and its hosted result, and describe any
   superseding head's proof as pending rather than implying it is green.
-- **occurrences:** 1 independent occurrence — the 2026-08-14 PR #65 base-refresh section.
+- **occurrences:** 2 independent occurrences — the 2026-08-14 PR #65 base-refresh section, and the
+  2026-08-14 PR #84 state prose (dated note below).
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked proof-boundary and evidence-truthfulness helpers.
 - **promotion:** Deliberately not promoted after one occurrence. The general defect — asserting a
   future state as settled fact — is not mechanically checkable, but if it recurs the cheapest honest
   layer is a narrow check that rejects publication-state claims in a ledger section whose own head is
   not yet proved, rather than prose asking authors to remember.
+
+_Note 2026-08-14 (second occurrence, PR #84 state prose):_ The PR #84 fix-round head asserted "no
+lab write lane is in flight" and was pushed at 21:56:50Z, minutes after the same session had
+already opened the Lab #81 hardening lane in a coordinator-owned worktree (branch created about
+21:52Z). The sentence was true when authored and was pushed without re-verifying it against the
+lane state the session itself had just changed. Repaired in the same pipeline before merge by
+naming the in-flight lane. The first occurrence's narrow-check idea was scoped to
+publication-state claims in ledger sections whose own head is unproved; lane-status prose in the
+state artifact has no equivalent mechanical check, so the class stays procedural task debt on the
+Lab #34 thread: re-verify lane-status sentences at push time exactly as pre-push ledger prose.
 
 ### FR-082 — the full pytest gate now brushes the default shell-tool timeout
 

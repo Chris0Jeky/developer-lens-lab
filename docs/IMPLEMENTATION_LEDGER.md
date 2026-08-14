@@ -1449,3 +1449,27 @@ hashed package bytes only; the joint tag remains blocked on product
   attested identifier, not just the first; and a present-but-non-mapping `pull_request` is pinned
   to `invalid_pull_request_number`. Each was confirmed discriminating by temporarily reverting the
   guarded code and observing the failure; no revert was committed.
+
+## 2026-08-14 - Merge-eligibility snapshot hardening merge evidence (PR #82 closeout)
+
+- Merge evidence, recorded here because the state artifact is a resume point rather than an
+  evidence archive: PR #82 merged 2026-08-14T21:17:34Z as
+  `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
+  `e57576469f2fa87b76372918fc78a17e776e3cf0` over base
+  `f0d497d6a371e783fde5f8028a856f4d2544956c` (then-current main after absorbing the concurrent
+  PR #83 state reconciliation). Hosted `Prove the lab` was green at the final head (run
+  `31840866416`) and at the merge commit (run `31841789754`).
+- Review chain: the MERGE-SOUND fresh-context review of the implementation head and its fix-round
+  micro-verification were extended through both base absorptions to the exact final head
+  (accepted attestations of 20:47:54Z at `d021e37c990cd93beb567076a8298d694e07f9a7` and 21:08:23Z
+  at the final head), plus a Codex round whose both findings were accepted, fixed, and resolved.
+- The merge executed on an explicit owner instruction at a demonstrated public head age of about
+  12m22s, below the binding 15-minute exact-head floor; FR-028 records this as its fourth
+  occurrence, and the same-hop capture is PR #82 comment `5298266904` with the delivery
+  checkpoint at issue #29 comment `5298304308`.
+- The 2026-08-14T21:39-21:41Z (T+22m) post-merge sweep was clean and was independently
+  re-confirmed at 21:50Z: zero post-merge reviews, inline comments, or further top-level
+  comments, and main unmoved at the merge commit.
+- Scope: C0 docs closeout only, landed with the PR #84 state reconciliation; no capability,
+  authority, release, publication, or tag state changed, no real or private input was inspected,
+  and `uv.lock` was not modified.
