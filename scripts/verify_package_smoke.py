@@ -270,16 +270,22 @@ def _run(
             "package smoke command timed out after "
             f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}"
         ) from None
-    except BaseException:
+    except BaseException as exc:
         # Any other exit from communicate — notably KeyboardInterrupt — would otherwise
-        # leave the child detached and its pipes open. Reap the tree on a bounded budget,
-        # release the pipes, then re-raise the original exception unchanged. The reap runs
-        # under try/finally so a second interrupt arriving during it cannot skip the
-        # pipe release.
+        # leave the child detached and its pipes open. Reap the tree on a bounded budget
+        # and release the pipes; the reap runs under try/finally so a second interrupt
+        # arriving during it cannot skip the pipe release. The two exit classes then
+        # diverge: an ordinary Exception whose tree was not confirmed reaped must not stay
+        # an OSError/RuntimeError a caller's candidate fallback can swallow, so it is
+        # reported as cleanup-unconfirmed with the original exception as its cause;
+        # interrupt-only exits (KeyboardInterrupt, SystemExit) propagate unchanged rather
+        # than being masked by a cleanup error.
         try:
-            _terminate_process_tree(process)
+            cleanup_confirmed = _terminate_process_tree(process)
         finally:
             _close_process_streams(process)
+        if isinstance(exc, Exception) and not cleanup_confirmed:
+            raise ProcessTreeCleanupUnconfirmedError(_PROCESS_TREE_CLEANUP_UNCONFIRMED) from exc
         raise
     result = subprocess.CompletedProcess(command, process.returncode, stdout=stdout, stderr=stderr)
     if result.returncode:
@@ -311,6 +317,10 @@ def _terminate_process_tree(process: subprocess.Popen[str]) -> bool:
         system_root = os.environ.get("SYSTEMROOT")
         if not system_root:
             return False
+        # A relative system root would resolve taskkill.exe against the current working
+        # directory, so the cleanup binary is only trusted from an absolute root.
+        if not Path(system_root).is_absolute():
+            return False
         taskkill = Path(system_root) / "System32" / "taskkill.exe"
         try:
             cleanup = subprocess.run(
@@ -324,7 +334,11 @@ def _terminate_process_tree(process: subprocess.Popen[str]) -> bool:
             )
         except (OSError, subprocess.TimeoutExpired):
             return False
-        if cleanup.returncode != 0:
+        # taskkill reports 128 when the PID is not found, meaning the direct child already
+        # exited between the communicate timeout and this cleanup. That is the Windows
+        # counterpart of the POSIX ProcessLookupError below, so both fall through to the
+        # confirming reap rather than failing closed on a tree that is already gone.
+        if cleanup.returncode not in {0, 128}:
             return False
     else:
         killpg = cast(Callable[[int, int], None] | None, getattr(os, "killpg", None))
