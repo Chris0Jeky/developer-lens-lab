@@ -1887,6 +1887,14 @@ _Note 2026-08-13 (schema correction):_ The re-pin/preflight/unique isolated-lane
 the second tip movement and this isolated branch stayed stable. The ignored writer lease/guard
 remains selected enforcement debt on Lab #73 and is not implemented.
 
+_Note 2026-08-14 (related sighting, counted for this pattern without a collision):_ A new
+registered worktree appeared beside the primary checkout on branch
+`resume/package-smoke-pr65-20260814` at exactly the parked PR #65 head, with no tip movement and
+no new commits; no runtime actor is inferred and the observing coordinator did not write into it.
+No workaround was needed, so the occurrence count above is unchanged, but the sighting is recorded
+here so the Lab #73 lease/guard decision sees the full unexplained-worktree pattern; the
+observational record lives in `docs/CURRENT_STATE.md`.
+
 ### FR-071 — a read-only Git object comparison produced a false-positive block
 
 - **first-seen:** 2026-08-13
@@ -1937,3 +1945,52 @@ remains selected enforcement debt on Lab #73 and is not implemented.
 - **promotion:** Deliberately not promoted after one occurrence; if a second preserved anchor is
   lost, select an enforcement layer that pins parked anchors to pushed refs rather than local-only
   state.
+
+### FR-074 — the runtime permission layer denied gated action classes mid-session
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** The agent runtime's permission classifier denied a prepared pull-request merge and
+  one issue-comment write in one hop, then denied writes into the repository's gitignored
+  generated-artifact directories in the next hop, while otherwise identical comment writes and
+  tracked-file edits succeeded.
+- **impact:** A fully gated merge-ready pull request could not be agent-merged until the owner
+  explicitly authorized it, and the review media package could not live in an in-repository
+  ignored directory.
+- **workaround:** Park the merge-ready state with its full evidence and hand the decision to the
+  owner (the merge then proceeded on explicit authorization with a fresh eligibility snapshot);
+  retry the denied comment after that authorization; and relocate generated review media to the
+  session scratchpad, delivering it to the owner directly rather than through an ignored
+  repository path.
+- **occurrences:** 2 independent hops — the PR #78 merge/comment denials and the q-11 media
+  sink-write denials, both 2026-08-14.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
+  release-wave record; the parked-then-authorized merge is recorded in its PR #78 checkpoint
+  comments.
+- **promotion:** At the second occurrence, the cheapest honest layer is procedural, not
+  repository-executable: treat operator authorization as the standing route for classifier-denied
+  merges, and the session scratchpad plus direct delivery as the standing route for generated
+  review media. Runtime permission configuration is owner-side state this repository cannot
+  enforce.
+
+### FR-075 — browser-extension automation was unavailable; headless capture substituted
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** The browser-automation extension reported not connected when the q-11 media slice
+  needed rendered-page captures.
+- **impact:** Interactive browser screenshots and recorded-scroll capture were unavailable to the
+  session.
+- **workaround:** Serve the staged C0 HTML asset on `127.0.0.1`, capture it with the installed
+  headless Chrome (`--headless=new --screenshot`, fixed widths, scrollbars hidden), trim and
+  compose the scroll-through GIF programmatically, and render the CLI transcript to a styled page
+  captured the same way. The pipeline is scripted end-to-end and leaks no URL bar or local path,
+  and the package manifest discloses each transformation; byte-level reproducibility across hosts
+  is not claimed, since rasterization depends on unpinned browser, font, and encoder versions —
+  the recorded digests identify the exact reviewed bytes rather than a regenerable output.
+- **occurrences:** 1 independent occurrence — 2026-08-14 q-11 media slice.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
+  release-wave media record; reconnecting the extension is owner-side machine state.
+- **promotion:** Deliberately not promoted after one occurrence; the headless route is arguably the
+  better default for reproducible review media, so a recurrence should weigh promoting it as the
+  canonical capture route rather than restoring the extension.

@@ -24,21 +24,45 @@ active_wave:
       staging only; neither the merge nor this record authorizes publication, release, or a tag.
       PR #65 remains open, PARKED, and CONFLICTING at exact head
       `91cf991b96b242680ab6839decb110422ab9755d` over base
-      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. `git worktree list` now shows only the primary
-      checkout: the previously preserved PR #56 refresh worktree and its branch
-      `docs/lab55-postmerge-refresh-20260810` no longer exist locally, and the parked
-      short-redaction branch/commit `e673102348e8ee7d8c7d45b6ed4e1530cd775972` is no longer a local
-      ref or object (FR-073). Unregistered leftover directories from removed worktrees remain for
-      manual disposition without content inspection.
+      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. The previously preserved PR #56 refresh worktree
+      and its branch no longer exist locally, and the parked short-redaction branch/commit is no
+      longer a local ref or object (FR-073). Live observation 2026-08-14: a new locally registered
+      worktree on branch `resume/package-smoke-pr65-20260814` appeared at exactly the parked
+      PR #65 head `91cf991b…` (identified here by branch and head only; the local directory name
+      is machine state and deliberately not recorded), with no new
+      commits; no runtime actor is inferred, this coordinator does not write into it, and PR #65's
+      parked authority (a genuinely new unlocking event or explicit fresh authority) is unchanged
+      by the worktree's existence. Unregistered leftover directories from earlier removed
+      worktrees remain for manual disposition without content inspection.
     state: >-
       The merge-eligibility enforcement lane is DELIVERED (see
-      `delivered.merge_eligibility_enforcement`), and Lane-P's release review/staging is DELIVERED
-      through merged PR #75 (see `delivered.lane_p_release_review`). PR #65 remains PARKED and not
-      merge-sound after two review rounds; no implementation from it is landed on main, and its
-      exact resume reference remains issue #29 comment `5243827843` and PR #65 comment
-      `5243827873`. The in-flight slice is the final changelog/release-note synchronisation on
-      branch `docs/changelog-sync-post-lane-p-20260814`.
+      `delivered.merge_eligibility_enforcement`), Lane-P's release review/staging is DELIVERED
+      through merged PR #75 (see `delivered.lane_p_release_review`), and the changelog/release-note
+      synchronisation is DELIVERED through merged PR #78 (see `delivered.changelog_sync`). The
+      q-11 screenshot/video package v1 is produced and delivered to the owner (see
+      `delivered.q11_media_package`); its sign-off is owner-only. PR #65 remains PARKED and not
+      merge-sound after two review rounds; its exact resume reference remains issue #29 comment
+      `5243827843` and PR #65 comment `5243827873`. The in-flight slice is this documentation
+      reconciliation on branch `docs/q11-package-20260814`.
 delivered:
+  - changelog_sync: >-
+      DONE — PR #78 merged 2026-08-14T09:36:18Z as
+      `05090e7f3840265759a37a1587aee176f5461fe4` over base
+      `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`: the 0.1.0 changelog records the staged C0
+      release assets, this artifact was reconciled to merged PR #75, and the friction log gained
+      FR-050's pinned second-occurrence promotion, FR-001 occurrence 23, and FR-073. Proof: full
+      local gate, hosted `Prove the lab` green at all three heads and at the merge commit, a
+      MERGE-SOUND/CLEAN/CONFIRMED review sequence, Codex P2 triage with a resolved thread, and an
+      `eligible: true` merge-eligibility report. The initially denied agent merge proceeded on
+      explicit owner authorization (FR-074). Immediate and delayed post-merge sweeps were clean.
+  - q11_media_package: >-
+      PRODUCED AND DELIVERED, AWAITING OWNER SIGN-OFF — the q-11 screenshot/video package v1 was
+      generated from merged main `05090e7f3840265759a37a1587aee176f5461fe4` and handed to the
+      owner in-session for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`. It is local-only:
+      nothing was tracked, staged, published, or attached to a release. The implementation ledger's
+      2026-08-14 entry records the exact contents, SHA-256 digests, and transformation
+      disclosures; FR-075 records the headless-capture substitution. Sign-off records aesthetic
+      acceptance only and authorizes no release, publication, or tag.
   - lane_p_release_review: >-
       DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
       2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
@@ -204,18 +228,17 @@ delivered:
       reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
   SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
-  The FR-028 merge-eligibility helper and the Lane-P release review/staging are both DELIVERED and
-  no longer part of the pre-tag remainder. The in-flight slice is the final changelog/release-note
-  synchronisation: `CHANGELOG.md` records the staged C0 release assets and this artifact is
-  reconciled to the merged PR #75 truth, on branch `docs/changelog-sync-post-lane-p-20260814`. It
-  neither publishes nor tags. After it lands, the exact next dependency-safe pre-tag seam is the
-  screenshot/video package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`, before the
-  distinct product release gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. FR-062 remains
+  The pre-tag agent remainder is COMPLETE: the merge-eligibility helper, Lane-P staging, the
+  changelog/release-note synchronisation, and the q-11 media package are all delivered. What
+  remains before a joint tag is owner-only: `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`
+  aesthetic sign-off on the delivered package and the distinct product release gate
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. The natural next agent slice is the three
+  tracked helper-hardening follow-ups on issue #29 comments `5269020473` and `5269401432`
+  (PR-identity binding, dismissed-review state allowlist, identifier validation). FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
-  and this read/resolve route does not authorize a merge. The three tracked helper-hardening
-  follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
+  and this read/resolve route does not authorize a merge. PR #65's portable patch is a
   PARKED REFERENCE only, not a next push: its exact resume reference remains issue #29 comment
   `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
   r"C:\Windows"` and `expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")`.
@@ -273,10 +296,9 @@ canonical_evidence:
     was not rerun because that merge did not touch the proved seam
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
-  The FR-028 merge-eligibility helper and Lane-P staging are DELIVERED and no longer block. The
-  pre-tag remainder is the in-flight changelog/release-note synchronisation and the
-  screenshot/video package; the three tracked
-  helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on that remainder plus
+  The merge-eligibility helper, Lane-P staging, changelog synchronisation, and q-11 media package
+  are all DELIVERED and no longer block. The three tracked
+  helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
@@ -289,11 +311,14 @@ late_review_debt: >-
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. The in-flight slice is branch `docs/changelog-sync-post-lane-p-20260814`
-  (changelog/release-note synchronisation plus this reconciliation); land it through the ordinary
-  PR gate, then prepare the screenshot/video package for
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` before the distinct product release gate.
-  Do not publish or tag. PR #65 remains parked at
+  push. The in-flight slice is branch `docs/q11-package-20260814` (ledger/state/friction record of
+  the delivered q-11 media package); land it through the ordinary PR gate. The pre-tag agent
+  remainder is complete; what remains is owner-only sign-off on
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` (package delivered 2026-08-14) and product
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which the joint tag decision is
+  handed back, never agent-executed. Do not publish or tag. Observed but untouched: a locally
+  registered worktree on branch `resume/package-smoke-pr65-20260814` at the parked PR #65 head
+  with no new commits; PR #65 remains parked at
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
