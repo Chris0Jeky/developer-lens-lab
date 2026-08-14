@@ -1,7 +1,7 @@
 # Changelog
 
 This file records public, invented-data-only Lab milestones. A listed version is not evidence that a
-tag, package publication, release asset, product promotion, or owner sign-off exists.
+tag, package publication, published release asset, product promotion, or owner sign-off exists.
 
 ## 0.1.0 — release preparation, not tagged
 
@@ -37,8 +37,24 @@ Replay regenerated the recorded benchmark evidence byte-for-byte, and the review
 export the product-owned Method Trial presentation view without installing a model or adding a Lab
 parser to Developer Lens.
 
+### Staged C0 release assets
+
+- Staged the frozen Method Trial v1 exhibit as tracked, review-only release assets under
+  `release-assets/v0.1.0/method-trial-v1/`: a byte-preserving copy of the public tracked C0 product
+  fixture (`method-trial-view.v1.json`,
+  `sha256:afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`) and its deterministic
+  derived report (`method-trial-report.v1.html`,
+  `sha256:22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`), alongside a compact
+  provenance/checksum/licence manifest declaring `staged_for_release_review_only`.
+- The staged bytes trace to the frozen Lab producer commit
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` (run `wbc1_demo`) and the product contract commit
+  `b48fea579936671397a0486ae7a0342197ee6e4b`; `tests/test_release_assets.py` gates the staged
+  bytes, hashes, and manifest coherence.
+- In-repository staging is not publication: no GitHub release, package upload, or tag exists, and
+  attaching these assets to a release remains behind the separate owner release gates.
+
 ### Release boundary
 
-This entry is a draft release note only. It does not authorize a tag, package upload, release asset,
-joint product release, screenshot/video publication, or any owner-gated action. Those gates remain
-separate from the recorded experimental result.
+This entry is a draft release note only. It does not authorize a tag, package upload, published
+release asset, joint product release, screenshot/video publication, or any owner-gated action.
+Those gates remain separate from the recorded experimental result.

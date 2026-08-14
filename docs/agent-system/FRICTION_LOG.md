@@ -1441,13 +1441,21 @@ four unresolved PR #60 threads.
   invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
   189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
-- **occurrences:** 1 independent occurrence - DL-P01 / DL-P03 flagship delivery governor slice on
-  2026-08-10.
+- **occurrences:** 2 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10, and the flagship changelog-synchronisation slice on 2026-08-14.
 - **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
-- **promotion:** Deliberately not promoted after one occurrence; restore a standalone PATH route
-  only if it materially improves the supported workflow.
+- **promotion:** At the second occurrence, select the cheapest enforcing layer: restore the module
+  route with a reversible user-level `pip install uv`, keeping the project toolchain and repository
+  unchanged. Host provisioning stays outside this repository, so recurrence tracking remains on the
+  Lab #34 comment thread.
+
+_Note 2026-08-14 (second occurrence, changelog-synchronisation slice):_ Both the standalone PATH
+route and the previously verified `py -3 -m uv` module route were absent; the repository venv's own
+tool executables were the only surviving local proving route. The selected user-level install was
+performed and `uv 0.12.4` now answers through `py -3 -m uv`, which re-enabled the declared locked
+gate (`py -3 -m uv sync --locked --all-groups` succeeded).
 
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
@@ -1895,3 +1903,24 @@ remains selected enforcement debt on Lab #73 and is not implemented.
   friction-log verifier follow-up.
 - **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest
   enforcement is context-verifier validation and tests for every friction status.
+
+### FR-073 — recorded parked-lane anchors vanished from the local checkout
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** Two recorded preservation targets were absent at SENSE: the parked short-redaction
+  branch and its never-pushed commit no longer exist as a local ref or object, and the preserved
+  PR #56 refresh worktree registration and its branch are gone from `git worktree list` and the
+  branch list.
+- **impact:** The current-state preserve instructions became unsatisfiable; the short-redaction
+  anchor now survives only as its recorded issue references, not as a recoverable local object.
+- **workaround:** Treat live Git as authoritative, reconcile the current-state artifact to the
+  observed absence in the same slice, and keep the recorded issue #29 references as the surviving
+  evidence; attempt no reconstruction and no recursive inspection of leftover directories.
+- **occurrences:** 1 independent occurrence — 2026-08-14 flagship changelog-synchronisation SENSE.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
+  release-wave record; issue #29 comment `5234405496` remains the recorded parked-lane unlocking
+  source.
+- **promotion:** Deliberately not promoted after one occurrence; if a second preserved anchor is
+  lost, select an enforcement layer that pins parked anchors to pushed refs rather than local-only
+  state.
