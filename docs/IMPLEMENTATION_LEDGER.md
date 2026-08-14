@@ -1273,3 +1273,28 @@ delivered package v1, closing `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-1
 record and its exact scope live in `HUMAN_TODO.md`. The approval is aesthetic acceptance of the
 hashed package bytes only; the joint tag remains blocked on product
 `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and stays owner-executed.
+
+## 2026-08-14 - Merge-eligibility snapshot hardening (issue #29 follow-ups)
+
+- Landed the three tracked snapshot-hardening follow-ups from PR #68's Codex triage (issue #29
+  comments `5269020473` and `5269401432`), taken as one slice on the first subsequent touch of
+  `tools/merge_eligibility.py`, exactly as the tracking comments planned.
+- Pull-request identity binding: a snapshot now requires `pull_request.number` as its one
+  immutable identity, cross-checked as `pr_number` at surface and item level on the four
+  pull-request-scoped surfaces and on the `accepted_review` attestation, so surfaces from two
+  pull requests sharing a head/base pair can no longer be substituted. The `checks` surface is
+  deliberately outside the binding in both directions: check runs are commit-scoped, and a
+  collector-stamped number there would be invented evidence rather than hosted state.
+- Attested-review state allowlist: an attested `formal_reviews` item must itself be `APPROVED`
+  or `COMMENTED`; a `DISMISSED`, `CHANGES_REQUESTED`, `PENDING`, or stateless item can no longer
+  carry the gate. The general review-state rules are unchanged.
+- Identifier validation: non-positive integers and empty or whitespace-only strings are refused
+  as identifiers on both the attestation and item sides, closing the sentinel-matches-itself
+  shape where a blank field could attest an equally blank record.
+- Every new rule fails in the refusal direction only; no new path can make an ineligible
+  snapshot eligible. `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md` documents the new snapshot
+  fields, the checks-surface exception, the allowlist, and the degenerate-identifier refusal in
+  the merge-gate section. Proof: focused merge-eligibility suite then the full gate (ruff
+  format/check, pyright, pytest, strict mkdocs, hygiene, context verify) green at the
+  implementation head. Existing snapshot collectors must emit the new fields; the in-session
+  collector is runtime state and was updated in place.
