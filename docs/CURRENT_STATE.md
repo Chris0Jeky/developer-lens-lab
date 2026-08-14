@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-13
+updated: 2026-08-14
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -17,40 +17,41 @@ active_wave:
   - lane: >-
       LAB-REL-01 v0.1.0 release wave (issue #29)
     writer: >-
-      Lane-P began from PR #72 merge base
-      `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
-      Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only;
-      neither state authorizes publication, release, or a tag. PR #65 is open and ready (not draft), based on
-      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`, at parked exact head
-      `91cf991b96b242680ab6839decb110422ab9755d`; it has two commits and no closing-issue link.
-      PR #56 is CLOSED/unmerged at head `e2e2795d7b3ef14c24d30c0a343a8e0fac7983f0` over base
-      `e5a85b20a130518a8307ebdb4cb48c3dbbb85052`; GitHub reports DIRTY / CONFLICTING. Preserve its
-      coordinator-owned PR #56 refresh worktree, branch `docs/lab55-postmerge-refresh-20260810`, at
-      that same head: it has no nonignored changes, but ignored generated/cache outputs whose contents
-      were not inspected. Do not remove it until their ignored-output disposition is resolved.
+      Lane-P landed: PR #75 merged 2026-08-14T07:19Z as
+      `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed commits over base
+      `db104ca1f2bae2de214024e69fddff8cf9822373` with hosted proof, an exact-head MERGE-SOUND
+      review, and clean post-merge sweeps recorded on issue #29. The staged assets are tracked
+      staging only; neither the merge nor this record authorizes publication, release, or a tag.
+      PR #65 remains open, PARKED, and CONFLICTING at exact head
+      `91cf991b96b242680ab6839decb110422ab9755d` over base
+      `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. `git worktree list` now shows only the primary
+      checkout: the previously preserved PR #56 refresh worktree and its branch
+      `docs/lab55-postmerge-refresh-20260810` no longer exist locally, and the parked
+      short-redaction branch/commit `e673102348e8ee7d8c7d45b6ed4e1530cd775972` is no longer a local
+      ref or object (FR-073). Unregistered leftover directories from removed worktrees remain for
+      manual disposition without content inspection.
     state: >-
-      The merge-eligibility enforcement lane is DELIVERED and landed on main; see
-      `delivered.merge_eligibility_enforcement` for its full record. PR #65 remains PARKED, not
-      merge-sound, after two review rounds, and no implementation from it is landed on main. The
-      final local locked gate on the parked head was green: 198 passed, 3 declared Windows symlink
-      skips, focused package-metadata proof 35 passed, and Pyright was clean. Hosted run
-      `31413655609` failed Pyright on the original head
-      `8cf95d50440047c9e9cb56d9718038600c04dee9`; hosted run `31414895754` on the parked head passed
-      package smoke, lint, type, context, and generated-contract checks, then failed pytest at the
-      taskkill-path assertion. The first exact-head review found three HIGH proof defects; the fix
-      commit closed those, and the second/final review found the remaining HIGH host-portability
-      assertion. The loop is parked under the two-review-round ceiling; its exact resume reference
-      remains issue #29 comment `5243827843` and PR #65 comment `5243827873`.
+      The merge-eligibility enforcement lane is DELIVERED (see
+      `delivered.merge_eligibility_enforcement`), and Lane-P's release review/staging is DELIVERED
+      through merged PR #75 (see `delivered.lane_p_release_review`). PR #65 remains PARKED and not
+      merge-sound after two review rounds; no implementation from it is landed on main, and its
+      exact resume reference remains issue #29 comment `5243827843` and PR #65 comment
+      `5243827873`. The in-flight slice is the final changelog/release-note synchronisation on
+      branch `docs/changelog-sync-post-lane-p-20260814`.
 delivered:
   - lane_p_release_review: >-
-      STAGED FOR RELEASE REVIEW — Lane-P began from PR #72 merge base
-      `db104ca1f2bae2de214024e69fddff8cf9822373`; before ordinary merge it is a candidate, and after
-      ordinary merge it is tracked staging only. Neither state authorizes publication, release, or a tag.
-      The already-recorded 2026-08-09 frozen replay remains the evidence for the owner-selected Method Trial v1 C0 exhibit at producer
-      `0ef193070a9b80b81cef5a1710a1d65e0b271c15`. This candidate validates the immutable fixture's
-      canonical-LF and semantic form, then reviews the derived renderer hash/content with a compact
-      provenance/checksum/licence manifest. No new run, custody decision, experiment, holdout decision,
-      or Experiment Ledger update occurred.
+      DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
+      2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
+      commits over base `db104ca1f2bae2de214024e69fddff8cf9822373` and landing four staged
+      surfaces: the byte-preserving fixture JSON, the deterministic derived HTML, the
+      provenance/checksum/licence manifest declaring
+      `staged_for_release_review_only`, and `tests/test_release_assets.py`. Hosted `Prove the lab`
+      passed at exact head `7e17e15f828cfc302d27bbbce0feeef115a11e64`; the independent exact-head
+      review was MERGE-SOUND; the post-merge sweeps on issue #29 were clean. The staged hashes match
+      the already-recorded 2026-08-09 frozen replay at producer
+      `0ef193070a9b80b81cef5a1710a1d65e0b271c15`. Tracked staging authorizes no publication,
+      release, or tag. No new run, custody decision, experiment, holdout decision, or Experiment
+      Ledger update occurred.
   - LAB-GOV-02: >-
       DONE — lab PR #35 merged at bba0c18261c0a2b77332a0408f63b10c774c91f4 and closed issue #33.
       This records the merged result only; it does not attribute the GitHub operation to an actor.
@@ -203,22 +204,15 @@ delivered:
       reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
   SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
-  The FR-028 merge-eligibility helper is DELIVERED and is no longer part of the pre-tag remainder.
-  Provenance selection is ALREADY MADE, not a pending seam: the binding constitution and issue #29
-  select the frozen Method Trial v1 exhibit at producer
-  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` under owner decision U3=FREEZE, and the implementation
-  ledger records the detached frozen replay verifying its export, Markdown, and HTML hashes exactly.
-  The Lane-P release review of that already-selected frozen exhibit is complete on the rebased
-  candidate branch: JSON and HTML assets plus the provenance/checksum/licence manifest are staged,
-  reviewed, and await ordinary merge review. It neither publishes nor tags. After ordinary merge,
-  the exact next dependency-safe pre-tag seam is final changelog/release-note
-  synchronisation, then the screenshot/video package for
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`, before the distinct product release gate
-  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. FR-062 remains true for shell `gh api graphql`, but a
-  connector-equipped session may use its thread-aware route to collect `review_threads`; on
-  2026-08-13 it returned all five PR #70 threads and the one PR #65 thread with `is_resolved` and
-  `is_outdated`. The stale-main-anchor P2 is now resolved; a follow-up reply linking PR #71 was
-  posted at 2026-08-13T14:33:54Z. Do not infer that every runtime
+  The FR-028 merge-eligibility helper and the Lane-P release review/staging are both DELIVERED and
+  no longer part of the pre-tag remainder. The in-flight slice is the final changelog/release-note
+  synchronisation: `CHANGELOG.md` records the staged C0 release assets and this artifact is
+  reconciled to the merged PR #75 truth, on branch `docs/changelog-sync-post-lane-p-20260814`. It
+  neither publishes nor tags. After it lands, the exact next dependency-safe pre-tag seam is the
+  screenshot/video package for `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`, before the
+  distinct product release gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. FR-062 remains
+  true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
+  to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
   and this read/resolve route does not authorize a merge. The three tracked helper-hardening
   follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
@@ -279,9 +273,9 @@ canonical_evidence:
     was not rerun because that merge did not touch the proved seam
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
-  The FR-028 merge-eligibility helper is DELIVERED and no longer blocks. Provenance selection is
-  already made, and Lane-P completes the release review/staging. The pre-tag
-  remainder is final changelog/release-note synchronisation and the screenshot/video package; the three tracked
+  The FR-028 merge-eligibility helper and Lane-P staging are DELIVERED and no longer block. The
+  pre-tag remainder is the in-flight changelog/release-note synchronisation and the
+  screenshot/video package; the three tracked
   helper-hardening follow-ups on issue #29 are later work. The joint tag remains blocked on that remainder plus
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) and
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11; no tag is authorized.
@@ -295,22 +289,21 @@ late_review_debt: >-
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
-  push. Lane-P completes the frozen Method Trial v1 C0 staging/review; after ordinary merge,
-  synchronise final changelog/release notes and then prepare the screenshot/video
-  package for the distinct Lab and product owner gates. Do not publish or tag. PR #65 remains parked at
+  push. The in-flight slice is branch `docs/changelog-sync-post-lane-p-20260814`
+  (changelog/release-note synchronisation plus this reconciliation); land it through the ordinary
+  PR gate, then prepare the screenshot/video package for
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` before the distinct product release gate.
+  Do not publish or tag. PR #65 remains parked at
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.
-  Lane-P began from PR #72 merge base `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR
-  supplies the current landing state. Where the GitHub connector exposes the thread-aware route, collect its
+  Where the GitHub connector exposes the thread-aware route, collect its
   `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
-  ineligible rather than treating the shell GraphQL restriction as clear debt. The 2026-08-13 read
-  found all five PR #70 threads and the one PR #65 thread; the stale-main-anchor P2 is now resolved,
-  with a follow-up reply linking PR #71 posted at 2026-08-13T14:33:54Z. This grants
-  neither a merge nor a tag. Preserve
-  the parked short-redaction lane anchor: branch `fix/package-smoke-short-env-redaction-20260809` at
-  `e673102348e8ee7d8c7d45b6ed4e1530cd775972`, after 194 passed / 3 skips and two package-smoke
-  uv-pip-install timeouts, with issue #29 comment `5234405496` as the unlocking source. It is not the
-  selected slice. Keep release/publication, tag, credentials, data, model, telemetry, and all owner
-  gates closed.
+  ineligible rather than treating the shell GraphQL restriction as clear debt. This grants
+  neither a merge nor a tag. The previously preserved short-redaction branch/commit
+  (`fix/package-smoke-short-env-redaction-20260809` at
+  `e673102348e8ee7d8c7d45b6ed4e1530cd775972`) and the PR #56 refresh worktree/branch no longer
+  exist locally (FR-073); issue #29 comment `5234405496` remains the recorded unlocking source, and
+  no reconstruction is attempted. Keep release/publication, tag, credentials, data, model,
+  telemetry, and all owner gates closed.
 ```
