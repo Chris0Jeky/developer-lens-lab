@@ -161,6 +161,22 @@ every review thread must be resolved. A moved head/base, or any missing, paginat
 malformed, or unresolved surface, is ineligible. The result is a report only; it never calls a
 hosted service or performs a merge.
 
+### Pull-request identity binds every review surface
+
+Head and base SHAs do not identify a pull request: a second pull request opened from the same head
+onto the same base has surfaces that are perfectly head/base-bound yet belong to another review. The
+snapshot therefore also carries a required `"pull_request": {"number": <n>}`, and the number is its
+one immutable identity — branches are reused, heads move, numbers are never reissued. A missing
+mapping, a missing number, a boolean, a non-integer, or a number at or below zero is
+`invalid_pull_request_number`. The four pull-request-scoped surfaces — `formal_reviews`,
+`top_level_comments`, `closing_refs`, `review_threads` — each carry a `pr_number` equal to that
+number at surface level and on every item; a mismatched, degenerate, or absent one is
+`wrong_surface_pr:<name>` or `wrong_item_pr:<name>:<index>`, and when the expected number is itself
+unusable every one of those bindings fails closed. The `checks` surface is deliberately outside this
+binding: GitHub check runs are commit-scoped, not pull-request-scoped, so a `pr_number` stamped
+there would be collector-invented evidence rather than hosted state, and it is ignored in either
+direction.
+
 ### Aging binds to collection, not evaluation
 
 `pushed_at` and `collected_at` are RFC3339 `Z` timestamps, and the exact-head age the governor's
@@ -195,6 +211,7 @@ item carries the gate, in a required `accepted_review` field:
 "accepted_review": {
   "surface": "top_level_comments",
   "id": 101,
+  "pr_number": 4242,
   "head_sha": "<expected head>",
   "base_sha": "<expected base>"
 }
@@ -203,15 +220,27 @@ item carries the gate, in a required `accepted_review` field:
 `surface` is `formal_reviews` or `top_level_comments`; `id` is the item's integer or string
 identifier, matched against `review_id` or `comment_id` respectively. The named item must exist in
 that surface, and both the attestation and the matched item must carry the expected head/base pair
-— a review that predates the current head does not carry it forward. A formal `APPROVED` review is
-attestable like any other item and gets no special treatment. Naming nothing, naming an
-unattestable surface or identifier, naming an item that is not there, or naming one bound to a
-different head/base is ineligible.
+— a review that predates the current head does not carry it forward. The attestation's `pr_number`
+must equal the snapshot's pull-request number too; an absent, degenerate, or mismatched one is
+`wrong_accepted_review_pr`. A formal `APPROVED` review is attestable like any other item and gets no
+special treatment. Naming nothing, naming an unattestable surface or identifier, naming an item that
+is not there, or naming one bound to a different head/base or pull request is ineligible.
+
+Identity and binding say the attested item is the right record on the right commits; they say
+nothing about whether it still stands. An attested `formal_reviews` item must therefore also be in
+state `APPROVED` or `COMMENTED` — anything else, including `DISMISSED`, `CHANGES_REQUESTED`,
+`PENDING`, and an absent or non-string state, is `unacceptable_accepted_review_state`. The allowlist
+constrains the attested item only; the general review-state rules above are unchanged, so a
+`DISMISSED` review elsewhere on the surface is still not an objection.
 
 Identifier matching is **type-strict**: the string `"501"` never matches the integer `501`, so the
 snapshot must quote the identifier exactly as the surface records it. Booleans are never valid
 identifiers on either side, since `bool` is an `int` in Python and `true` would otherwise match
-`1`.
+`1`. Neither is a degenerate identifier — a number at or below zero, or an empty or whitespace-only
+string — because a sentinel that survived validation would match itself: an item whose identifier
+field was blank could be attested by an equally blank attestation. On the attestation side that is
+`invalid_accepted_review_id`; on the item side it simply matches nothing, so the snapshot is
+`unknown_accepted_review`.
 
 An attested **top-level comment** must additionally cite the expected head SHA in its own text. The
 snapshot carries the comment's `body`, and the full 40-hex `expected.head_sha` must appear in it;
