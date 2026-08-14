@@ -22,11 +22,14 @@ COLLECTED_AT = "2026-08-10T12:15:00Z"
 NOW = datetime(2026, 8, 10, 12, 15, tzinfo=UTC)
 REVIEW_ID = 501
 COMMENT_ID = 101
+PR_NUMBER = 4242
+OTHER_PR = 4243
+PR_SCOPED = ("formal_reviews", "top_level_comments", "closing_refs", "review_threads")
 GOVERNOR = Path(__file__).resolve().parents[1] / ".agent-harness" / "governor.json"
 
 
-def _surface(items: list[dict[str, object]]) -> dict[str, object]:
-    return {
+def _surface(items: list[dict[str, object]], *, pr_scoped: bool = True) -> dict[str, object]:
+    surface: dict[str, object] = {
         "complete": True,
         "paginated": False,
         "stale": False,
@@ -34,12 +37,19 @@ def _surface(items: list[dict[str, object]]) -> dict[str, object]:
         "base_sha": BASE,
         "items": items,
     }
+    if pr_scoped:
+        surface["pr_number"] = PR_NUMBER
+    return surface
 
 
 def _snapshot() -> dict[str, object]:
     bound = {"head_sha": HEAD, "base_sha": BASE}
+    # Check runs are commit-scoped, so the fixture deliberately leaves the ``checks`` surface and
+    # its item without any ``pr_number``: the golden path itself proves that exception.
+    pr_bound = {**bound, "pr_number": PR_NUMBER}
     return {
         "repository": "Chris0Jeky/developer-lens-lab",
+        "pull_request": {"number": PR_NUMBER},
         "expected": {"head_sha": HEAD, "base_sha": BASE},
         "current": {"head_sha": HEAD, "base_sha": BASE},
         "pushed_head_sha": HEAD,
@@ -47,7 +57,7 @@ def _snapshot() -> dict[str, object]:
         "collected_at": COLLECTED_AT,
         "required_check_name": "Prove the lab",
         "accepted_review": {
-            **bound,
+            **pr_bound,
             "surface": "formal_reviews",
             "id": REVIEW_ID,
         },
@@ -60,12 +70,13 @@ def _snapshot() -> dict[str, object]:
                         "status": "completed",
                         "conclusion": "success",
                     }
-                ]
+                ],
+                pr_scoped=False,
             ),
             "formal_reviews": _surface(
                 [
                     {
-                        **bound,
+                        **pr_bound,
                         "review_id": REVIEW_ID,
                         "state": "APPROVED",
                     }
@@ -74,7 +85,7 @@ def _snapshot() -> dict[str, object]:
             "top_level_comments": _surface(
                 [
                     {
-                        **bound,
+                        **pr_bound,
                         "comment_id": COMMENT_ID,
                         "body": f"Fresh-context review of {HEAD}: no blocking findings.",
                     }
@@ -84,7 +95,7 @@ def _snapshot() -> dict[str, object]:
             "review_threads": _surface(
                 [
                     {
-                        **bound,
+                        **pr_bound,
                         "thread_id": "thread-1",
                         "resolved": True,
                     }
@@ -103,10 +114,13 @@ def _attestation(snapshot: dict[str, object]) -> dict[str, object]:
     return cast(dict[str, object], snapshot["accepted_review"])
 
 
-def _items(snapshot: dict[str, object], surface: str) -> list[dict[str, object]]:
+def _surface_of(snapshot: dict[str, object], surface: str) -> dict[str, object]:
     surfaces = cast(dict[str, object], snapshot["surfaces"])
-    named = cast(dict[str, object], surfaces[surface])
-    return cast(list[dict[str, object]], named["items"])
+    return cast(dict[str, object], surfaces[surface])
+
+
+def _items(snapshot: dict[str, object], surface: str) -> list[dict[str, object]]:
+    return cast(list[dict[str, object]], _surface_of(snapshot, surface)["items"])
 
 
 def test_one_coherent_snapshot_passes_after_aging_floor() -> None:
@@ -168,6 +182,110 @@ def test_missing_paginated_and_stale_surfaces_fail_closed() -> None:
     assert "stale_surface:formal_reviews" in reasons
 
 
+@pytest.mark.parametrize("number", [0, -1, True, "4242", 42.0, None])
+def test_a_degenerate_pull_request_number_is_refused(number: object) -> None:
+    snapshot = _snapshot()
+    cast(dict[str, object], snapshot["pull_request"])["number"] = number
+
+    assert "invalid_pull_request_number" in _reasons(snapshot)
+
+
+def test_an_absent_pull_request_identity_fails_every_binding_closed() -> None:
+    snapshot = _snapshot()
+    del snapshot["pull_request"]
+
+    reasons = _reasons(snapshot)
+
+    assert "invalid_pull_request_number" in reasons
+    for name in PR_SCOPED:
+        assert f"wrong_surface_pr:{name}" in reasons
+    assert "wrong_item_pr:formal_reviews:0" in reasons
+    assert "wrong_item_pr:top_level_comments:0" in reasons
+    assert "wrong_item_pr:review_threads:0" in reasons
+    assert "wrong_accepted_review_pr" in reasons
+    # An unusable expected identity must never read as "no binding required" for the checks surface
+    # either; that surface is simply out of scope for pull-request binding.
+    assert "wrong_surface_pr:checks" not in reasons
+
+
+def test_surfaces_from_a_twin_pull_request_cannot_be_substituted() -> None:
+    # The defeat this binding closes: a second pull request opened from the same head onto the same
+    # base carries surfaces that are perfectly head/base-bound yet belong to another review.
+    snapshot = _snapshot()
+    for name in PR_SCOPED:
+        _surface_of(snapshot, name)["pr_number"] = OTHER_PR
+        for item in _items(snapshot, name):
+            item["pr_number"] = OTHER_PR
+    _attestation(snapshot)["pr_number"] = OTHER_PR
+
+    reasons = _reasons(snapshot)
+
+    assert "wrong_surface_pr:formal_reviews" in reasons
+    assert "wrong_item_pr:formal_reviews:0" in reasons
+    assert "wrong_accepted_review_pr" in reasons
+
+
+@pytest.mark.parametrize("number", [OTHER_PR, 0, True, None])
+def test_a_surface_not_bound_to_the_pull_request_is_refused(number: object) -> None:
+    snapshot = _snapshot()
+    _surface_of(snapshot, "top_level_comments")["pr_number"] = number
+
+    assert _reasons(snapshot) == ("wrong_surface_pr:top_level_comments",)
+
+
+def test_a_surface_without_a_pull_request_number_fails_closed() -> None:
+    snapshot = _snapshot()
+    del _surface_of(snapshot, "review_threads")["pr_number"]
+
+    assert _reasons(snapshot) == ("wrong_surface_pr:review_threads",)
+
+
+@pytest.mark.parametrize("number", [OTHER_PR, -1, True])
+def test_an_item_not_bound_to_the_pull_request_is_refused(number: object) -> None:
+    snapshot = _snapshot()
+    _items(snapshot, "formal_reviews")[0]["pr_number"] = number
+
+    assert _reasons(snapshot) == ("wrong_item_pr:formal_reviews:0",)
+
+
+def test_an_item_without_a_pull_request_number_fails_closed() -> None:
+    snapshot = _snapshot()
+    del _items(snapshot, "review_threads")[0]["pr_number"]
+
+    assert _reasons(snapshot) == ("wrong_item_pr:review_threads:0",)
+
+
+def test_check_runs_are_commit_scoped_and_need_no_pull_request_binding() -> None:
+    snapshot = _snapshot()
+    checks = _surface_of(snapshot, "checks")
+    check = _items(snapshot, "checks")[0]
+
+    assert "pr_number" not in checks
+    assert "pr_number" not in check
+    assert _reasons(snapshot) == ()
+
+    # A check run belongs to a commit, not to a pull request, so a collector-stamped number there
+    # is invented evidence: it is ignored rather than trusted in either direction.
+    checks["pr_number"] = OTHER_PR
+    check["pr_number"] = OTHER_PR
+
+    assert _reasons(snapshot) == ()
+
+
+def test_the_attestation_must_name_the_same_pull_request() -> None:
+    snapshot = _snapshot()
+    _attestation(snapshot)["pr_number"] = OTHER_PR
+
+    assert _reasons(snapshot) == ("wrong_accepted_review_pr",)
+
+
+def test_an_attestation_without_a_pull_request_number_fails_closed() -> None:
+    snapshot = _snapshot()
+    del _attestation(snapshot)["pr_number"]
+
+    assert _reasons(snapshot) == ("wrong_accepted_review_pr",)
+
+
 def test_exact_required_check_name_is_required() -> None:
     snapshot = deepcopy(_snapshot())
     snapshot["required_check_name"] = "check"
@@ -181,6 +299,9 @@ def test_exact_required_check_name_is_required() -> None:
 
 def test_changes_requested_is_refused_despite_a_valid_attestation() -> None:
     snapshot = _snapshot()
+    # Attest the comment so the attestation stays valid: a CHANGES_REQUESTED review cannot itself
+    # be the attested item any more.
+    _attest_the_comment(snapshot)
     _items(snapshot, "formal_reviews")[0]["state"] = "CHANGES_REQUESTED"
 
     assert _reasons(snapshot) == ("changes_requested",)
@@ -245,7 +366,9 @@ def test_top_level_comment_review_satisfies_the_gate() -> None:
 
 def test_closing_reference_is_refused() -> None:
     snapshot = _snapshot()
-    _items(snapshot, "closing_refs").append({"head_sha": HEAD, "base_sha": BASE, "ref": "issue-29"})
+    _items(snapshot, "closing_refs").append(
+        {"head_sha": HEAD, "base_sha": BASE, "pr_number": PR_NUMBER, "ref": "issue-29"}
+    )
 
     assert _reasons(snapshot) == ("closing_reference_present:0",)
 
@@ -288,14 +411,23 @@ def test_missing_review_state_never_reads_as_no_objection() -> None:
     snapshot = _snapshot()
     del _items(snapshot, "formal_reviews")[0]["state"]
 
-    assert _reasons(snapshot) == ("invalid_review_state:0",)
+    # The stateless review is also the attested one, so it is refused twice over.
+    assert _reasons(snapshot) == ("invalid_review_state:0", "unacceptable_accepted_review_state")
 
 
 def test_non_string_and_unknown_review_states_are_refused() -> None:
     snapshot = _snapshot()
     reviews = _items(snapshot, "formal_reviews")
     reviews[0]["state"] = 7
-    reviews.append({"head_sha": HEAD, "base_sha": BASE, "review_id": 502, "state": "MERGED"})
+    reviews.append(
+        {
+            "head_sha": HEAD,
+            "base_sha": BASE,
+            "pr_number": PR_NUMBER,
+            "review_id": 502,
+            "state": "MERGED",
+        }
+    )
 
     reasons = _reasons(snapshot)
 
@@ -307,7 +439,7 @@ def test_pending_formal_review_is_an_incomplete_record() -> None:
     snapshot = _snapshot()
     _items(snapshot, "formal_reviews")[0]["state"] = "PENDING"
 
-    assert _reasons(snapshot) == ("pending_formal_review:0",)
+    assert _reasons(snapshot) == ("pending_formal_review:0", "unacceptable_accepted_review_state")
 
 
 def test_collecting_late_does_not_let_a_young_head_mature() -> None:
@@ -388,6 +520,73 @@ def test_boolean_identifiers_are_never_valid() -> None:
     assert _reasons(item) == ("unknown_accepted_review",)
 
 
+def test_a_dismissed_attested_review_cannot_carry_the_gate() -> None:
+    # A DISMISSED review is a real, correctly bound, correctly identified record that no longer
+    # says anything; identity checks alone would have let it open the gate.
+    snapshot = _snapshot()
+    _items(snapshot, "formal_reviews")[0]["state"] = "DISMISSED"
+
+    assert _reasons(snapshot) == ("unacceptable_accepted_review_state",)
+
+
+@pytest.mark.parametrize("state", ["CHANGES_REQUESTED", "PENDING", "MERGED", 7])
+def test_no_other_attested_review_state_carries_the_gate(state: object) -> None:
+    snapshot = _snapshot()
+    _items(snapshot, "formal_reviews")[0]["state"] = state
+
+    assert "unacceptable_accepted_review_state" in _reasons(snapshot)
+
+
+@pytest.mark.parametrize("state", ["APPROVED", "COMMENTED"])
+def test_an_accepted_attested_review_state_still_passes(state: str) -> None:
+    snapshot = _snapshot()
+    _items(snapshot, "formal_reviews")[0]["state"] = state
+
+    assert _reasons(snapshot) == ()
+
+
+def test_the_state_allowlist_applies_only_to_the_attested_item() -> None:
+    snapshot = _snapshot()
+    _attest_the_comment(snapshot)
+    _items(snapshot, "formal_reviews")[0]["state"] = "DISMISSED"
+
+    # A DISMISSED review elsewhere on the surface is not an objection and is not attested.
+    assert _reasons(snapshot) == ()
+
+
+@pytest.mark.parametrize("identifier", [0, -1, "", "   "])
+def test_a_degenerate_attested_identifier_is_invalid(identifier: object) -> None:
+    snapshot = _snapshot()
+    _attestation(snapshot)["id"] = identifier
+
+    reasons = _reasons(snapshot)
+
+    assert "invalid_accepted_review_id" in reasons
+    assert "unknown_accepted_review" not in reasons
+
+
+@pytest.mark.parametrize("identifier", [0, "   "])
+def test_a_degenerate_identifier_can_never_match_itself(identifier: object) -> None:
+    # The defeat this closes: a surface item carrying an empty or zeroed identifier attested by an
+    # equally empty attestation, which would have matched before the identifiers were validated.
+    snapshot = _snapshot()
+    _attestation(snapshot)["id"] = identifier
+    _items(snapshot, "formal_reviews")[0]["review_id"] = identifier
+
+    reasons = _reasons(snapshot)
+
+    assert "invalid_accepted_review_id" in reasons
+    assert "unknown_accepted_review" not in reasons
+
+
+@pytest.mark.parametrize("identifier", [0, -1, "", "   "])
+def test_a_degenerate_item_identifier_matches_nothing(identifier: object) -> None:
+    snapshot = _snapshot()
+    _items(snapshot, "formal_reviews")[0]["review_id"] = identifier
+
+    assert _reasons(snapshot) == ("unknown_accepted_review",)
+
+
 def test_governor_aging_floor_matches_the_helper_constant() -> None:
     loaded = cast(dict[str, object], json.loads(GOVERNOR.read_text(encoding="utf-8")))
     gates = cast(dict[str, object], loaded["review_gates"])
@@ -417,6 +616,7 @@ def test_cli_fails_on_an_ineligible_snapshot(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     snapshot = _snapshot()
+    _attest_the_comment(snapshot)
     _items(snapshot, "formal_reviews")[0]["state"] = "CHANGES_REQUESTED"
     path = _write(tmp_path / "snapshot.json", snapshot)
 
