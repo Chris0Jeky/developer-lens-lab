@@ -512,20 +512,28 @@ threads; the failed call made no mutation.
 - **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
   exit on failure before starting the next command. The release-gate sync then used the promoted
   confined-bootstrap route and produced a real context-verifier pass.
-- **occurrences:** 2 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
+- **occurrences:** 3 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
   a later diff check), 2026-08-09 (an unsupported PowerShell `Get-Date` option was masked by later
-  successful GitHub reads).
+  successful GitHub reads), and 2026-08-15 (a Windows PowerShell 5.1 cmdlet parameter error was
+  non-terminating and allowed a misleading secondary identity assertion).
 - **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
   guards in its remaining proving commands.
 - **promotion:** Not durably promoted. This session set `$ErrorActionPreference = 'Stop'` and
   `$PSNativeCommandUseErrorActionPreference = $true` for multi-command probes and retained explicit
-  `$LASTEXITCODE` guards, but no executable prompt currently requires that preamble. Issue #34 owns
-  the smallest prompt/canon enforcement; a repository helper cannot enforce arbitrary external
-  command compositions that bypass it.
+  `$LASTEXITCODE` guards, but no executable prompt currently requires that preamble.
+  [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns the smallest
+  prompt/canon enforcement; a repository helper cannot enforce arbitrary external command
+  compositions that bypass it.
 
 _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
 preamble was not durable enforcement. The status and promotion field now record task debt until an
 applicable executable instruction installs the guard.
+
+_Note 2026-08-15 (occurrence 3, PR #85 delayed-sweep parsing):_ The Windows PowerShell 5.1
+`ConvertFrom-Json -Depth` parameter error was non-terminating under the default policy, so the next
+identity assertion emitted a misleading secondary error. The retry set `$ErrorActionPreference = 'Stop'`
+and used the compatible parser; no mutation occurred. [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)
+remains the enforcement owner.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
@@ -1900,7 +1908,9 @@ entirely stale PR response.
   failure changed tracked release bytes, a ref, or a remote object.
 - **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
   UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
-- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **occurrences:** 3 independent Windows date/encoding parameter incompatibilities — 2026-08-13
+  (two occurrences), and 2026-08-15 (Windows PowerShell 5.1 rejected `ConvertFrom-Json -Depth`
+  before PR #85 delayed-sweep parsing).
 - **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
   tracks the cross-repository Windows compatibility follow-up.
 - **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
@@ -1909,6 +1919,11 @@ entirely stale PR response.
 
 _Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
 helper remains a promotion proposal only.
+
+_Note 2026-08-15 (occurrence 3, PR #85 delayed-sweep parsing):_ Windows PowerShell 5.1 rejected
+`ConvertFrom-Json -Depth` before parsing. Compatible `ConvertFrom-Json` without `-Depth` is the
+workaround; no mutation occurred. [Product #222](https://github.com/Chris0Jeky/developer-lens/issues/222)
+remains the enforcement owner.
 
 ### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
 
