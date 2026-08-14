@@ -2261,3 +2261,24 @@ seconds — past the 120-second default outright, no longer merely brushing it, 
 field records. This is a re-measurement of the same continuously worsening condition, not a
 second independent occurrence, so the count above is unchanged; a different session hitting the
 timeout would be the genuine second occurrence that triggers the promotion decision.
+
+### FR-083 — a Windows-local full gate cannot see the mocked-Windows tests' POSIX behavior
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** PR #85's relative-SYSTEMROOT guard evaluated `Path(...).is_absolute()` with the
+  host flavour. The mocked supervision tests force `_is_windows()` true while running on the
+  POSIX hosted runner, where `PosixPath("C:\Windows")` is not absolute, so six tests failed on
+  ubuntu (hosted run `31845082670`: 6 failed / 285 passed / 1 skipped)
+  while the full local gate on the authoring Windows host was green at the same head.
+- **impact:** A local Windows green gate is weaker evidence than it appears for the
+  mocked-Windows supervision seam; the divergence surfaces only on a POSIX runner, after push.
+- **workaround:** Evaluate Windows-path semantics with an explicitly Windows-flavoured
+  `PureWindowsPath` inside the already Windows-only branch, and reproduce the hosted signature
+  locally by temporarily forcing the POSIX flavour — the swap reproduced exactly the six hosted
+  failures plus the one Windows-only test CI skips, then was reverted and never committed.
+- **occurrences:** 1 independent occurrence — the PR #85 review round on 2026-08-14.
+- **task:** issue #81 and PR #85 carry the delivery and this record.
+- **promotion:** Not promoted at one occurrence. The hosted `Prove the lab` run already enforces
+  the seam mechanically; the cheapest additional layer on recurrence is one parametrized test
+  pinning the guard's flavour on both hosts, rather than prose asking authors to remember.
