@@ -273,8 +273,8 @@ delivered:
       formally stood down at 16:11:29Z after the ownership clarification; FR-061 records that the
       adopting session had run a full duplicate implementation round whose push was rejected
       non-fast-forward, so no ref moved and one writer held the branch throughout. Post-ceiling P1/P2 findings are tracked on issue #29 comments
-      `5269020473` and `5269401432`: PR-identity binding, a dismissed-review state allowlist, and
-      identifier validation. Worktree disposition: removal of the merged helper worktree was
+      `5269020473` and `5269401432` and closed by `delivered.merge_eligibility_snapshot_hardening`:
+      PR-identity binding, an attested-review state allowlist, and identifier validation. Worktree disposition: removal of the merged helper worktree was
       interrupted mid-operation, so its stale registration was pruned, but an unregistered leftover
       directory of regenerable caches and merged tracked copies remains for manual deletion — the
       agent floor correctly refuses out-of-project recursive deletion, the same class as the
@@ -289,7 +289,7 @@ next_safe_slice: >-
   2026-08-14 owner approval. The only remaining joint-tag blocker is the distinct product release
   gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`; when it closes, the tag decision is
   handed back to the owner, never agent-executed. The three tracked helper-hardening follow-ups
-  from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, dismissed-review
+  from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, attested-review
   state allowlist, identifier validation) are DELIVERED through merged PR #82, and the previously
   deferred q-11 conditional-phrasing touch in the cross-repo contract and maintenance protocol
   docs was completed by this reconciliation. LAB-REL-01 remains the sole ACTIVE card and its
