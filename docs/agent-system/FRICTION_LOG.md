@@ -456,13 +456,14 @@ promotion decision is unchanged.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 8 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 9 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
   2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
   terminated an outer JavaScript command wrapper before PowerShell started), plus 2026-08-10 (an
   inline GraphQL repository string during the PR #56 factual refresh), plus 2026-08-14 (an inline
   quoted jq/gh form during the PR #84 factual refresh), and 2026-08-14 (an inline static-repository
-  GraphQL query during the PR #86 ready-boundary snapshot).
+  GraphQL query during the PR #86 ready-boundary snapshot), plus 2026-08-15 (a curly apostrophe in
+  a PowerShell single-quoted object value during PR #87 review triage).
 - **task:** [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   prompt-operating-system post-review hardening and the external Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
@@ -499,6 +500,11 @@ tracks the recurrence.
 _Note 2026-08-14 (occurrence 8, PR #86 ready-boundary snapshot):_ An inline static-repository
 GraphQL query lost quotes and returned a parser error. The variable-bound query succeeded with zero
 threads; the failed call made no mutation.
+
+_Note 2026-08-15 (occurrence 9, PR #87 review triage):_ A curly apostrophe in a PowerShell
+single-quoted object value crossed the command boundary as a quote terminator, causing a parser
+error before GitHub ran. The ASCII-only here-string plus explicit scalar-variable retry successfully
+posted and resolved both threads; the failed attempt made no mutation.
 
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
