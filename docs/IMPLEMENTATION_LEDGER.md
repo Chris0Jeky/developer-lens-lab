@@ -1222,3 +1222,38 @@ connector-identifier and repeated Windows PowerShell compatibility friction obse
 slice. The next pre-tag work remains final changelog/release-note synchronisation, then the
 screenshot/video package and its distinct owner gates; publication and tagging remain unperformed
 and unauthorised.
+
+## 2026-08-14 - Changelog synchronisation and q-11 media package (LAB-REL-01 / issue #29)
+
+- Changelog/release-note synchronisation is DONE: PR #78 merged as
+  `05090e7f3840265759a37a1587aee176f5461fe4` after the full gate, hosted proof at each of its
+  three heads, a MERGE-SOUND/CLEAN/CONFIRMED fresh-context review sequence, Codex P2 triage, and
+  an `eligible: true` merge-eligibility report on a fresh snapshot. The initial agent merge was
+  denied by the runtime permission layer and proceeded on explicit owner authorization (FR-074).
+- The q-11 screenshot/video package v1 was then produced locally from that merged head and
+  delivered to the owner in-session for the
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic review. It is NOT tracked,
+  staged, published, or attached to any release. Contents and SHA-256 digests:
+  `report-full.png` `a9834cfd2adff46a2646105add0acffd5a6fc0630fdc6f5d0e876122dfda38c1` (full-page
+  headless-Chrome capture of the staged HTML asset served on `127.0.0.1`, bottom-trimmed),
+  `report-viewport.png` `a79d7c412ca643d65b67a5b2b12109e693cd88ab173ac1c174d60e6cc284a63c`
+  (1280×900 above-the-fold capture), `report-scroll.gif`
+  `e265fc80c612c248289dfaafefb2783bb83164f0210c124facbf2922bcee4057` (programmatic 14-step pan of
+  the full-page capture, disclosed as a scripted pan rather than a screen recording),
+  `cli-demo.png` `d3e991f358ff0412dbe8870113c1bcade643fe91e0d515abd47cd9608aaf2612` and
+  `cli-demo.html` `d64153dde65e241b1c6ece2b95e0d4fb4a97f970c66b591bc18b5861d0d74e7a` (rendered
+  transcript of a real deterministic demo run with local paths elided), plus a provenance
+  manifest disclosing every transformation and the review-only posture.
+- Media provenance: the page captures render the staged
+  `release-assets/v0.1.0/method-trial-v1/method-trial-report.v1.html`
+  (`22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`) without modifying any asset
+  byte. The transcript records a real `wbc1_smoke` run in a clean detached worktree at the merged
+  head (report `markdown=aae1e2ce42c8e0d9e16a0a05ef2cde76380df550546277056569bca6509495b9`,
+  `html=c2a4f6df4ef08a3396a3416470b0d5ae9995964bc687201f5df6c5094ae74feb`; MethodTrialView export
+  `104f007189765ce06870b1321d3f555ccfce22396f8e52cb03424de027c8c18b`); the worktree was removed
+  after capture. FR-075 records the headless-capture substitution for the unavailable
+  browser-automation extension.
+- No new run custody decision, experiment, holdout decision, or Experiment Ledger update occurred
+  (`wbc1_smoke` is the standing deterministic smoke path). No publication, release, tag, data,
+  model, telemetry, credential, or owner-gate action occurred; q-11 sign-off remains open and
+  owner-only, distinct from product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`.
