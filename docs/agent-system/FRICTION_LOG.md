@@ -1882,9 +1882,10 @@ helper remains a promotion proposal only.
   and frozen asset hashes before adoption; the worktree was not reset, cleaned, or overwritten.
 - **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
   next writer to preflight before edit.
-- **occurrences:** 3 independent branch/worktree collision episodes — 2026-08-12, 2026-08-13, and
-  2026-08-14; the 2026-08-13 episode included two tip movements, and the 2026-08-14 episode is the
-  default-branch advance recorded in detail as FR-080.
+- **occurrences:** 4 independent branch/worktree collision episodes — 2026-08-12, 2026-08-13, and
+  two distinct 2026-08-14 episodes; the 2026-08-13 episode included two tip movements, the first
+  2026-08-14 episode is the default-branch advance recorded in detail as FR-080, and the second is
+  the mirrored same-day identifier consumption noted below.
 - **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
   ignored per-worktree writer lease/guard.
 - **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
@@ -1909,6 +1910,15 @@ genuine third collision episode for this pattern, so the occurrence count above 
 3 under the schema's allowance for updating `occurrences` on an existing entry. FR-080 carries the
 detailed record and its own promotion reasoning; the Lab #73 lease/guard remains the selected
 enforcement layer here and is still not implemented.
+
+_Note 2026-08-14 (fourth episode; occurrence count raised to 4):_ The same pattern recurred
+mirrored: while the merge-eligibility hardening slice was in flight on its own branch, the
+resumed PR #65 lane merged to the default branch and its landed friction tail consumed
+`FR-076` through `FR-081` — including the very identifier the in-flight branch had already
+allocated to its new entry. The refusal came from the hardened helper itself (`moved_base` on
+the pre-merge snapshot), the base was retargeted at the live default branch, and the in-flight
+entry was reallocated from the live tail as `FR-082`. FR-080's count was raised in the same
+pass; the two already selected layers remain the fix.
 
 ### FR-071 — a read-only Git object comparison produced a false-positive block
 
@@ -2143,8 +2153,9 @@ branch held.
   merge at the live default branch when it has advanced, and reallocate identifiers from the live
   tail rather than the planned one. Verified: the retargeted merge produced no duplicate identifier,
   and the pinned base remained an ancestor of the live tip, so nothing was skipped.
-- **occurrences:** 3 independent occurrences in the FR-070 lineage — 2026-08-12, 2026-08-13, and
-  this 2026-08-14 episode, which this entry records in detail. In every one, shared branch state
+- **occurrences:** 4 independent occurrences in the FR-070 lineage — 2026-08-12, 2026-08-13, and
+  two distinct 2026-08-14 episodes: the one this entry records in detail, and the mirrored
+  same-day episode noted below. In every one, shared branch state
   advanced under an in-flight slice.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked proof-boundary and state-reconciliation helpers; FR-070 carries the earlier episodes of
@@ -2153,8 +2164,8 @@ branch held.
   before a merge resolution is committed, which the existing merge-eligibility helper's exact-head
   floor already expresses for merges; FR-070 separately selects the Lab #73 per-worktree writer
   lease/guard. Extending the helper to cover in-progress conflict resolution stays task debt.
-  Judgment restated explicitly at three episodes rather than two: the no-structural-fix conclusion
-  still holds. All three episodes are the same shared-state-advance pattern that the two already
+  Judgment restated explicitly at four episodes: the no-structural-fix conclusion
+  still holds. All four episodes are the same shared-state-advance pattern that the two already
   selected layers address, and the only structural alternative — replacing this log's sequential
   human-readable identifier scheme with a non-contending one — would be a large change to a document
   whose readability is its point, to solve a collision the cheap re-read already catches.
@@ -2169,6 +2180,14 @@ now-reconciled choice it should have been. The `occurrences` and `promotion` fie
 corrected in the same pass: they had counted two occurrences and reasoned from two, which
 contradicted FR-070's three episodes once that count was raised. Both now read three, and the
 promotion field states explicitly that the no-structural-fix conclusion survives at three.
+
+_Note 2026-08-14 (fourth episode, mirrored; occurrence count raised to 4):_ Hours after this
+entry landed, the identical collision recurred with the roles reversed: this branch's merge
+consumed `FR-076` through `FR-081` out from under the in-flight merge-eligibility hardening
+slice, whose already-written entry had allocated `FR-076` and was reallocated as `FR-082` from
+the live tail. The re-read-before-resolution workaround held (the hardened helper's
+`moved_base` refusal forced the recollection), FR-070 was raised to four in the same pass, and
+the no-structural-fix conclusion is unchanged at four.
 
 ### FR-081 — ledger prose written before a push asserted a state the pushed head contradicted
 
@@ -2191,3 +2210,29 @@ promotion field states explicitly that the no-structural-fix conclusion survives
   future state as settled fact — is not mechanically checkable, but if it recurs the cheapest honest
   layer is a narrow check that rejects publication-state claims in a ledger section whose own head is
   not yet proved, rather than prose asking authors to remember.
+
+### FR-082 — the full pytest gate now brushes the default shell-tool timeout
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** The full `pytest` gate run takes 110–111 seconds against the agent shell tool's
+  120-second default timeout, so gate runs now tip into background execution and need an explicit
+  completion wait.
+- **impact:** The margin is gone: after the PR #65 merge landed its process-tree tests, the same
+  gate ran 287 tests in 216 seconds, so a foreground run at the 120-second default now fails
+  outright rather than merely brushing the limit, and can misread as a test failure.
+- **workaround:** Pass an explicit longer timeout (or run the gate in the background and wait for
+  completion) when invoking the full suite from an agent shell; focused suites are unaffected.
+- **occurrences:** 1 independent occurrence — 2026-08-14 PR #82 fix round.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) release
+  wave; if it recurs, add an explicit timeout note to the run-and-prove guidance in `CLAUDE.md`
+  and `AGENTS.md` as its own small slice.
+- **promotion:** Not promoted after one occurrence; the run-and-prove guidance is the natural home
+  if a second session hits it.
+
+_Note 2026-08-14 (margin vanished within the same slice):_ After the concurrent PR #65 merge
+landed its process-tree tests, the same slice's post-merge full gate ran 287 tests in 216
+seconds — past the 120-second default outright, no longer merely brushing it, as the `impact`
+field records. This is a re-measurement of the same continuously worsening condition, not a
+second independent occurrence, so the count above is unchanged; a different session hitting the
+timeout would be the genuine second occurrence that triggers the promotion decision.

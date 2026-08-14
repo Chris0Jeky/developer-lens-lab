@@ -1413,3 +1413,39 @@ hashed package bytes only; the joint tag remains blocked on product
   this ledger. No capability, authority, release, publication, or tag state changed, no real or
   private input was inspected, and `uv.lock` was not modified. This section was authored before its
   head was pushed; the exact-head hosted result is recorded by the PR's `Prove the lab` check.
+
+## 2026-08-14 - Merge-eligibility snapshot hardening (issue #29 follow-ups)
+
+- Landed the three tracked snapshot-hardening follow-ups from PR #68's Codex triage (issue #29
+  comments `5269020473` and `5269401432`), taken as one slice on the first subsequent touch of
+  `tools/merge_eligibility.py`, exactly as the tracking comments planned.
+- Pull-request identity binding: a snapshot now requires `pull_request.number` as its one
+  immutable identity, cross-checked as `pr_number` at surface and item level on the four
+  pull-request-scoped surfaces and on the `accepted_review` attestation, so surfaces from two
+  pull requests sharing a head/base pair can no longer be substituted. The `checks` surface is
+  deliberately outside the binding in both directions: check runs are commit-scoped, and a
+  collector-stamped number there would be invented evidence rather than hosted state.
+- Attested-review state allowlist: an attested `formal_reviews` item must itself be `APPROVED`
+  or `COMMENTED`; a `DISMISSED`, `CHANGES_REQUESTED`, `PENDING`, or stateless item can no longer
+  carry the gate. The general review-state rules are unchanged.
+- Identifier validation: non-positive integers and empty or whitespace-only strings are refused
+  as identifiers on both the attestation and item sides, closing the sentinel-matches-itself
+  shape where a blank field could attest an equally blank record.
+- Every new rule fails in the refusal direction only; no new path can make an ineligible
+  snapshot eligible. `docs/agent-system/CONTINUOUS_WORK_PROTOCOL.md` documents the new snapshot
+  fields, the checks-surface exception, the allowlist, and the degenerate-identifier refusal in
+  the merge-gate section. Proof: focused merge-eligibility suite then the full gate (ruff
+  format/check, pyright, pytest, strict mkdocs, hygiene, context verify) green at the
+  implementation head `4f10c0e19eee0c55c93670c634f7876cacf184a9` and re-run green in full at the
+  PR #82 fix-round head `dcbb848c3f9709bdd1f7e2928cbb4dccc36e5329`; the later docs-only commits
+  were each verified with the focused docs checks (strict mkdocs, hygiene, context verify) at
+  their own heads. Existing snapshot collectors must emit the new fields; the in-session
+  collector is runtime state and was updated in place.
+- A MERGE-SOUND fresh-context review of the implementation head returned five LOW findings. The
+  fix round closes the three coverage gaps: identifier validation is only observable when the
+  attestation and the item carry the same degenerate identifier, so that matched-pair test now
+  covers every degenerate form and the item-side test is renamed to say it pins the outcome
+  rather than the guard; the attested-state allowlist is pinned across every record matching the
+  attested identifier, not just the first; and a present-but-non-mapping `pull_request` is pinned
+  to `invalid_pull_request_number`. Each was confirmed discriminating by temporarily reverting the
+  guarded code and observing the failure; no revert was committed.

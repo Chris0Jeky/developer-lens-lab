@@ -1,8 +1,8 @@
 """Report-only merge eligibility evaluation for a single hosted-state snapshot.
 
 The evaluator deliberately has no GitHub or Git side effects.  Callers must provide one
-coherent, head/base-bound snapshot; missing, paginated, stale, or malformed surfaces fail
-closed.
+coherent snapshot bound to a single pull request and its head/base pair; missing, paginated,
+stale, or malformed surfaces fail closed.
 """
 
 from __future__ import annotations
@@ -20,6 +20,14 @@ REQUIRED_CHECK_NAME = "Prove the lab"
 AGING_MINUTES_AFTER_PUSH = 15
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _SURFACES = ("checks", "formal_reviews", "top_level_comments", "closing_refs", "review_threads")
+# Head/base binding alone cannot separate two pull requests that share the same head and base
+# commits, so every pull-request-scoped surface and item must also name the pull request it was
+# collected from.  ``checks`` is deliberately absent: GitHub check runs are commit-scoped, not
+# pull-request-scoped, so a ``pr_number`` stamped there would be collector-invented evidence rather
+# than hosted state.
+_PR_SCOPED_SURFACES = frozenset(
+    {"formal_reviews", "top_level_comments", "closing_refs", "review_threads"}
+)
 # GitHub forbids approving your own pull request and every Lab pull request is authored by the
 # single owner account, so a formal APPROVED state can never appear here.  The practiced gate is
 # instead an accepted, exact-head review: a fresh-context review posted as a top-level comment, or
@@ -31,6 +39,10 @@ _ATTESTABLE_SURFACES: dict[str, str] = {
 # A closed vocabulary: an absent, non-string or unrecognised review state must never read as
 # "not CHANGES_REQUESTED", which is the one way missing evidence could otherwise become a pass.
 _REVIEW_STATES = frozenset({"APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED", "PENDING"})
+# Identity and head/base binding say the attested review is the right record on the right commits;
+# they say nothing about whether it still stands.  Only these two states carry acceptance, so a
+# DISMISSED, superseded, or in-flight review can never be the item that opens the gate.
+_ACCEPTED_REVIEW_STATES = frozenset({"APPROVED", "COMMENTED"})
 
 
 @dataclass(frozen=True)
@@ -44,6 +56,11 @@ class MergeEligibilityReport:
     required_age_minutes: int
     expected_head_sha: str | None
     expected_base_sha: str | None
+    # A serialised report must name the pull request it evaluated, or two reports from head/base
+    # twins are indistinguishable once separated from their snapshots.  This is a carried field
+    # only: it is ``None`` exactly when the identity was unusable, which
+    # ``invalid_pull_request_number`` has already refused.
+    pull_request_number: int | None
 
     def as_dict(self) -> dict[str, object]:
         """Return a stable report suitable for a log or JSON response."""
@@ -56,6 +73,7 @@ class MergeEligibilityReport:
             "required_age_minutes": self.required_age_minutes,
             "expected_head_sha": self.expected_head_sha,
             "expected_base_sha": self.expected_base_sha,
+            "pull_request_number": self.pull_request_number,
         }
 
 
@@ -72,6 +90,14 @@ def _string(value: object) -> str | None:
 def _sha(value: object) -> str | None:
     candidate = _string(value)
     return candidate if candidate is not None and _SHA_RE.fullmatch(candidate) else None
+
+
+def _pr_number(value: object) -> int | None:
+    # ``bool`` is an ``int`` subclass, and GitHub numbers pull requests from one upward, so a
+    # boolean or a non-positive number is a degenerate placeholder rather than an identity.
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        return None
+    return value
 
 
 def _surface_items(surface: Mapping[str, object], name: str, reasons: list[str]) -> list[object]:
@@ -105,12 +131,15 @@ def _parse_timestamp(value: object) -> datetime | None:
 
 
 def _identifier(value: object) -> int | str | None:
-    # ``bool`` is an ``int`` subclass; a boolean is never a GitHub identifier.
+    # ``bool`` is an ``int`` subclass; a boolean is never a GitHub identifier.  Zero, a negative
+    # number, and a blank string are sentinels rather than identities, and a sentinel that survived
+    # here would match itself: an item whose identifier field was absent or empty could be attested
+    # by an equally empty attestation, which is exactly the missing-evidence-as-pass shape.
     if isinstance(value, bool):
         return None
     if isinstance(value, int):
-        return value
-    if isinstance(value, str) and value:
+        return value if value > 0 else None
+    if isinstance(value, str) and value.strip():
         return value
     return None
 
@@ -134,6 +163,13 @@ def _bound_to_expected(
     return base is not None and expected_base is not None and base == expected_base
 
 
+def _bound_to_pr(record: Mapping[str, object], expected_pr: int | None) -> bool:
+    number = _pr_number(record.get("pr_number"))
+    if number is None or expected_pr is None:
+        return False
+    return number == expected_pr
+
+
 def _cites_head(record: Mapping[str, object], expected_head: str | None) -> bool:
     """Report whether the item's text anchors itself to the expected head SHA."""
 
@@ -148,6 +184,7 @@ def _evaluate_accepted_review(
     surface_items: Mapping[str, list[object]],
     expected_head: str | None,
     expected_base: str | None,
+    expected_pr: int | None,
     reasons: list[str],
 ) -> None:
     """Require one named, exact-head review item to carry the acceptance."""
@@ -169,6 +206,9 @@ def _evaluate_accepted_review(
     if not _bound_to_expected(attestation, expected_head, expected_base):
         reasons.append("stale_accepted_review")
 
+    if not _bound_to_pr(attestation, expected_pr):
+        reasons.append("wrong_accepted_review_pr")
+
     if identifier_field is None or identifier is None or surface_name is None:
         return
 
@@ -184,6 +224,13 @@ def _evaluate_accepted_review(
     for record in matches:
         if not _bound_to_expected(record, expected_head, expected_base):
             reasons.append("stale_accepted_review")
+        # The general review-state loop refuses an objection anywhere on the surface; this refuses
+        # an attested item that never carried acceptance in the first place.
+        if (
+            surface_name == "formal_reviews"
+            and _string(record.get("state")) not in _ACCEPTED_REVIEW_STATES
+        ):
+            reasons.append("unacceptable_accepted_review_state")
         # A top-level comment has no native commit anchor; CONTINUOUS_WORK_PROTOCOL.md records why
         # the attested one must cite the expected head in its own text.
         if surface_name == "top_level_comments" and not _cites_head(record, expected_head):
@@ -207,6 +254,13 @@ def evaluate_merge_eligibility(
 
     if _string(snapshot.get("repository")) != REPOSITORY:
         reasons.append("wrong_repository")
+
+    # The pull-request number is the snapshot's one immutable identity: head and base SHAs can be
+    # shared by two pull requests, and a branch can be reused, but a number is never reissued.
+    pull_request = _mapping(snapshot.get("pull_request"))
+    expected_pr = _pr_number(pull_request.get("number")) if pull_request is not None else None
+    if expected_pr is None:
+        reasons.append("invalid_pull_request_number")
 
     expected = _mapping(snapshot.get("expected"))
     current = _mapping(snapshot.get("current"))
@@ -295,6 +349,8 @@ def evaluate_merge_eligibility(
             reasons.append(f"stale_surface_head:{name}")
         if surface_base is None or expected_base is None or surface_base != expected_base:
             reasons.append(f"stale_surface_base:{name}")
+        if name in _PR_SCOPED_SURFACES and not _bound_to_pr(surface, expected_pr):
+            reasons.append(f"wrong_surface_pr:{name}")
         surface_items[name] = _surface_items(surface, name, reasons)
 
     for name, items in surface_items.items():
@@ -309,6 +365,8 @@ def evaluate_merge_eligibility(
                 reasons.append(f"stale_item_head:{name}:{index}")
             if item_base is None or expected_base is None or item_base != expected_base:
                 reasons.append(f"stale_item_base:{name}:{index}")
+            if name in _PR_SCOPED_SURFACES and not _bound_to_pr(record, expected_pr):
+                reasons.append(f"wrong_item_pr:{name}:{index}")
 
     checks = surface_items["checks"]
     matching_checks: list[Mapping[str, object]] = []
@@ -339,7 +397,9 @@ def evaluate_merge_eligibility(
     if "CHANGES_REQUESTED" in review_states:
         reasons.append("changes_requested")
 
-    _evaluate_accepted_review(snapshot, surface_items, expected_head, expected_base, reasons)
+    _evaluate_accepted_review(
+        snapshot, surface_items, expected_head, expected_base, expected_pr, reasons
+    )
 
     # A closing keyword once auto-closed a live programme issue from an unrelated merge, so any
     # closing reference is refused here; an intentional issue-completing merge needs a coordinator
@@ -362,6 +422,7 @@ def evaluate_merge_eligibility(
         required_age_minutes=AGING_MINUTES_AFTER_PUSH,
         expected_head_sha=expected_head,
         expected_base_sha=expected_base,
+        pull_request_number=expected_pr,
     )
 
 

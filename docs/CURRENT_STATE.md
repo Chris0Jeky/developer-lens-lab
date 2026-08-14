@@ -42,12 +42,14 @@ active_wave:
       through merged PR #75 (see `delivered.lane_p_release_review`), and the changelog/release-note
       synchronisation is DELIVERED through merged PR #78 (see `delivered.changelog_sync`). The
       q-11 screenshot/video package v1 is delivered and owner-approved (see
-      `delivered.q11_media_package`), and its sign-off record landed through merged PR #80. The
+      `delivered.q11_media_package`), and its sign-off record landed through merged PR #80 (see
+      `delivered.q11_signoff_record`). The
       package-smoke process-tree lane is DELIVERED through merged PR #65 (see
       `delivered.package_smoke_process_tree`), which supersedes the parked-status prose and the
-      resume references issue #29 comment `5243827843` and PR #65 comment `5243827873`. The
-      in-flight slice is this post-merge state reconciliation on branch
-      `docs/state-after-pr65-20260814`.
+      resume references issue #29 comment `5243827843` and PR #65 comment `5243827873`, and its
+      post-merge state reconciliation is DELIVERED through merged PR #83. The
+      in-flight slice is the three tracked merge-eligibility hardening follow-ups on branch
+      `hardening/merge-eligibility-snapshot-20260814`.
 delivered:
   - package_smoke_process_tree: >-
       DONE — PR #65 merged 2026-08-14T13:03:19Z as
@@ -84,6 +86,16 @@ delivered:
       records the exact contents, SHA-256 digests, and transformation disclosures; FR-075 records
       the headless-capture substitution. The sign-off records aesthetic acceptance only and
       authorizes no release, publication, or tag.
+  - q11_signoff_record: >-
+      DONE — PR #80 merged 2026-08-14T12:01:27Z as
+      `672bd8e148b2cbc32bb956cb202aa17e43506c7e`:
+      `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is `[x]` with the approval's exact
+      scope, this artifact and the implementation ledger record the closure, and the sole
+      remaining joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`.
+      Proof: full local gate, hosted `Prove the lab` green at all three heads and the merge
+      commit, a MERGE-SOUND/CONFIRMED review sequence with an exact-head attestation comment,
+      Codex triage with resolved threads, an `eligible: true` report after the aging floor, and
+      clean immediate and delayed post-merge sweeps (issue #29 checkpoint `5293052472`).
   - lane_p_release_review: >-
       DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
       2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
@@ -254,10 +266,13 @@ next_safe_slice: >-
   Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off is CLOSED by the
   2026-08-14 owner approval. The only remaining joint-tag blocker is the distinct product release
   gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`; when it closes, the tag decision is
-  handed back to the owner, never agent-executed. The natural next agent slices are the three
-  tracked helper-hardening follow-ups on issue #29 comments `5269020473` and `5269401432`
-  (PR-identity binding, dismissed-review state allowlist, identifier validation) and the
-  package-smoke hardening tracked at Lab #81. FR-062 remains
+  handed back to the owner, never agent-executed. The three tracked helper-hardening follow-ups
+  from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, dismissed-review
+  state allowlist, identifier validation) are IN FLIGHT on branch
+  `hardening/merge-eligibility-snapshot-20260814`; land that branch through the ordinary PR gate
+  before opening new work. After it lands the remaining agent work is the package-smoke hardening
+  tracked at Lab #81 and the deferred conditional-phrasing touch in the cross-repo contract and
+  maintenance protocol docs. FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
@@ -325,7 +340,8 @@ blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
   The merge-eligibility helper, Lane-P staging, changelog synchronisation, and q-11 media package
   are all DELIVERED and no longer block. The three tracked
-  helper-hardening follow-ups on issue #29 are later work. Lab
+  helper-hardening follow-ups on issue #29 are in flight on branch
+  `hardening/merge-eligibility-snapshot-20260814`. Lab
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 is closed; the joint tag remains blocked on
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) alone, and no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
@@ -337,10 +353,12 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume with the live SENSE/RECONCILE described in `next_safe_slice`. The in-flight slice is this
-  post-merge state reconciliation on branch `docs/state-after-pr65-20260814`, recording the merged
-  PR #65 delivery; land it through the ordinary PR gate. The q-11 sign-off record that was in flight
-  before this slice has since landed through merged PR #80. The pre-tag agent remainder is complete and
+  Resume with the live SENSE/RECONCILE described in `next_safe_slice`. The in-flight slice is
+  branch `hardening/merge-eligibility-snapshot-20260814` (the three tracked merge-eligibility
+  hardening follow-ups from issue #29 comments `5269020473` and `5269401432`); land it through the
+  ordinary PR gate, remembering that from this slice onward the
+  helper requires the snapshot's `pull_request`/`pr_number` identity fields. The pre-tag agent
+  remainder is complete and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed; the only remaining
   joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which
   the joint tag decision is
