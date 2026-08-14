@@ -26,9 +26,10 @@ active_wave:
       `91cf991b96b242680ab6839decb110422ab9755d` over base
       `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`. The previously preserved PR #56 refresh worktree
       and its branch no longer exist locally, and the parked short-redaction branch/commit is no
-      longer a local ref or object (FR-073). Live observation 2026-08-14: a new registered
-      worktree `dl-lab-wt-pr65-20260814` on branch `resume/package-smoke-pr65-20260814` appeared
-      beside the primary checkout at exactly the parked PR #65 head `91cf991b…`, with no new
+      longer a local ref or object (FR-073). Live observation 2026-08-14: a new locally registered
+      worktree on branch `resume/package-smoke-pr65-20260814` appeared at exactly the parked
+      PR #65 head `91cf991b…` (identified here by branch and head only; the local directory name
+      is machine state and deliberately not recorded), with no new
       commits; no runtime actor is inferred, this coordinator does not write into it, and PR #65's
       parked authority (a genuinely new unlocking event or explicit fresh authority) is unchanged
       by the worktree's existence. Unregistered leftover directories from earlier removed
@@ -315,8 +316,9 @@ exact_resume_point: >-
   remainder is complete; what remains is owner-only sign-off on
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` (package delivered 2026-08-14) and product
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which the joint tag decision is
-  handed back, never agent-executed. Do not publish or tag. Observed but untouched: worktree
-  `dl-lab-wt-pr65-20260814` at the parked PR #65 head with no new commits; PR #65 remains parked at
+  handed back, never agent-executed. Do not publish or tag. Observed but untouched: a locally
+  registered worktree on branch `resume/package-smoke-pr65-20260814` at the parked PR #65 head
+  with no new commits; PR #65 remains parked at
   exact head `91cf991b96b242680ab6839decb110422ab9755d` over base
   `bf5b01db178c4dbbbea4ca9dafc5c3fc181b3e2c`; its portable patch/comment IDs are a parked reference
   only and require a genuinely new unlocking event or explicit fresh authority before reopening.

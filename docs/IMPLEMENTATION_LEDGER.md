@@ -1244,8 +1244,10 @@ and unauthorised.
   the full-page capture, disclosed as a scripted pan rather than a screen recording),
   `cli-demo.png` `d3e991f358ff0412dbe8870113c1bcade643fe91e0d515abd47cd9608aaf2612` and
   `cli-demo.html` `d64153dde65e241b1c6ece2b95e0d4fb4a97f970c66b591bc18b5861d0d74e7a` (rendered
-  transcript of a real deterministic demo run with local paths elided), plus a provenance
-  manifest disclosing every transformation and the review-only posture.
+  transcript of a real deterministic demo run with local paths elided), and `MANIFEST.md`
+  `ead2bf8afc7952ad01e8ffc40035c7f8e97cffb98793b8ea7c49c75414f76c11` — the provenance manifest
+  disclosing every transformation and the review-only posture, hashed here so the exact reviewed
+  disclosures are durably identifiable.
 - Media provenance: the page captures render the staged
   `release-assets/v0.1.0/method-trial-v1/method-trial-report.v1.html`
   (`22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29`) without modifying any asset
@@ -1255,7 +1257,13 @@ and unauthorised.
   `104f007189765ce06870b1321d3f555ccfce22396f8e52cb03424de027c8c18b`); the worktree was removed
   after capture. FR-075 records the headless-capture substitution for the unavailable
   browser-automation extension.
-- No new run custody decision, experiment, holdout decision, or Experiment Ledger update occurred
-  (`wbc1_smoke` is the standing deterministic smoke path). No publication, release, tag, data,
+- Custody honesty: like every execution of the standing smoke path (hosted CI runs it on each
+  pull request), the `wbc1_smoke` run mechanically wrote its single-use `final_holdout_custody`
+  receipt before opening the freshly generated invented dataset's final holdout — benchmark
+  mechanics on invented C0 data inside an ephemeral worktree that was then removed. This is not a
+  research holdout decision on a preregistered experiment, no finding was drawn from it, and the
+  Experiment Ledger convention (only named decision runs are ledgered) is unchanged; the frozen
+  `wbc1_demo` exhibit's recorded custody is untouched. No new experiment or Experiment Ledger
+  update occurred. No publication, release, tag, data,
   model, telemetry, credential, or owner-gate action occurred; q-11 sign-off remains open and
   owner-only, distinct from product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`.

@@ -1984,8 +1984,10 @@ observational record lives in `docs/CURRENT_STATE.md`.
 - **workaround:** Serve the staged C0 HTML asset on `127.0.0.1`, capture it with the installed
   headless Chrome (`--headless=new --screenshot`, fixed widths, scrollbars hidden), trim and
   compose the scroll-through GIF programmatically, and render the CLI transcript to a styled page
-  captured the same way. The result is deterministic and leaks no URL bar or local path, and the
-  package manifest discloses each transformation.
+  captured the same way. The pipeline is scripted end-to-end and leaks no URL bar or local path,
+  and the package manifest discloses each transformation; byte-level reproducibility across hosts
+  is not claimed, since rasterization depends on unpinned browser, font, and encoder versions —
+  the recorded digests identify the exact reviewed bytes rather than a regenerable output.
 - **occurrences:** 1 independent occurrence — 2026-08-14 q-11 media slice.
 - **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) carries the
   release-wave media record; reconnecting the extension is owner-side machine state.
