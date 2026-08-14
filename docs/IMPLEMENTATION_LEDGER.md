@@ -1473,3 +1473,55 @@ hashed package bytes only; the joint tag remains blocked on product
 - Scope: C0 docs closeout only, landed with the PR #84 state reconciliation; no capability,
   authority, release, publication, or tag state changed, no real or private input was inspected,
   and `uv.lock` was not modified.
+
+## 2026-08-14 - Package-smoke supervision hardening (issue #81 items 1-5)
+
+- Landed the five tracked supervision-hardening items from the PR #65 resume reviews (issue #81
+  body items 1-4 plus issue #81 comment `5293597118`) as one bounded slice on branch
+  `hardening/package-smoke-supervision-20260814` from base
+  `02afd7c37b3c7d0a30551025a1724fb5aa5d064b`, changing only `scripts/verify_package_smoke.py`
+  and `tests/test_package_metadata.py` plus this ledger and the hardening backlog.
+- A relative `SYSTEMROOT` now fails closed before any cleanup binary is resolved, because a
+  relative root would resolve `taskkill.exe` against the current working directory; no value
+  reaches error text.
+- `taskkill` returncode 128 (PID not found) is accepted as evidence that the direct child
+  already exited between the communicate timeout and cleanup: it falls through to the confirming
+  reap, which still gates on that direct child, and reports the ordinary timeout instead of
+  cleanup-unconfirmed. This is deliberately narrower than the POSIX `ProcessLookupError`, where
+  `killpg` targets the whole group; descendants orphaned in that race window are beyond
+  `taskkill`'s reach and remain an accepted narrow residual under issue #81 item 2's
+  fail-direction analysis. Every other nonzero returncode still fails closed.
+- The supervision catch-all now splits its exit classes: an ordinary `Exception` whose tree was
+  not confirmed reaped is reported as `ProcessTreeCleanupUnconfirmedError` chained from the
+  original, so `_probe_uv_command`'s candidate fallback can no longer swallow an unconfirmed tree
+  and start the next probe beside it; interrupt-only exits (`KeyboardInterrupt`, `SystemExit`)
+  propagate unchanged, preserving the reviewed do-not-mask semantics, and pipe release stays under
+  the existing `try/finally`.
+- Test seams: the module docstring now states the real-taskkill coverage boundary (Windows-only,
+  timing-fragile under load/AV, zero deterministic coverage of the real Windows cleanup path on
+  the ubuntu-latest hosted runner); the `nonzero` resolver parametrization raises like the real
+  `_run` instead of returning a shape it can never produce; the named command-timeout constant is
+  proved to reach supervision by a monkeypatched sentinel that a hardcoded literal fails; and the
+  remaining literal `300` assertions were replaced by the imported constant.
+- Proof at implementation head `c7a14cba5cad65aed8931d5627b9c1bbd2b4e86c` via the FR-050
+  `py -3 -m uv` module route with `--locked`: focused `pytest tests/test_package_metadata.py`
+  43 passed; then the full gate green (ruff format --check, ruff check, pyright, full pytest
+  292 passed 0 skipped on this Windows host, strict mkdocs, hygiene, context verify), with
+  `uv.lock` untouched. Four discrimination checks - a hardcoded communicate timeout, a neutered
+  absolute-root check, a reverted 128 allowance, and a neutered promotion raise - each failed the
+  matching new test when temporarily applied; no revert was committed.
+- The first hosted run, at docs head `d24317b42532806f3f0bd9ec7e5ff49c664a561f`, was RED: six
+  mocked-Windows supervision tests failed on ubuntu (run `31845082670`, 6 failed / 285 passed /
+  1 skipped) because the relative-root guard used host-flavoured `pathlib`, a defect invisible
+  to this Windows host's green gate (FR-083). The fresh-context review caught it as its P1; the
+  fix round at `6cd2784be589af1985d2882feaedc76832757311` switched the guard to an explicitly
+  Windows-flavoured `PureWindowsPath`, corrected the 128-symmetry comment to the bounded
+  direct-child claim, and removed one vacuous test assertion. A temporary `PurePosixPath` swap
+  reproduced exactly the six-failure hosted signature locally before being reverted; the focused
+  suite (43 passed) and the full local gate ran green again at the fix head. The exact-head
+  hosted result for the current head is recorded by the pull request's `Prove the lab` check;
+  the real-taskkill integration test remains skipped on ubuntu, so hosted pass/skip counts
+  differ from the local Windows run.
+- Scope stayed C0 invented mocks; no capability, authority, release, publication, or tag state
+  changed, no real or private input was inspected, and no data, model, telemetry, or credential
+  lane was touched.

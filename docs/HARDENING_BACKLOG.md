@@ -77,6 +77,10 @@ only when measurement, real-data scope, external users, or an irreversible bound
   hardening and hostile fixtures.
 - Encode every runtime-only cross-record invariant in portable JSON Schema or publish a versioned
   standalone validator before claiming schema-only interoperability outside the two repositories.
+- Add deterministic coverage of the real Windows taskkill cleanup path (a hosted Windows
+  runner or an equivalent real-tree seam) before treating the mocked supervision tests as
+  platform-call evidence; the coverage boundary is stated in the
+  `tests/test_package_metadata.py` module docstring (issue #81 item 3).
 
 ## Always blocking despite this deferral
 
