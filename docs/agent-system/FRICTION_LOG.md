@@ -96,8 +96,8 @@ Rules that bind entries:
   `uv` module; the already-promoted repository-external confined bootstrap restored `uv 0.12.3` and
   `uv sync --locked --all-groups` succeeded), and 2026-08-14 (no PATH `uv` and no host-interpreter
   `uv` module during the changelog-synchronisation slice; the FR-050-selected reversible
-  user-level module route restored `uv 0.12.4` inside the proved range and the locked sync and
-  full gate succeeded).
+  user-level module route restored `uv 0.12.4` inside the proved range; the locked sync and the
+  full declared gate ran green through it — see the dated occurrence-23 note below).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
   boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -212,6 +212,12 @@ succeeded.
 _Note 2026-08-13 (Lane-P occurrence 22):_ The dedicated worktree had neither a project interpreter
 nor a host-interpreter `uv` module. The external temporary bootstrap restored `uv 0.12.3` for the
 focused integrity proof and declared gate without changing tracked dependency state.
+
+_Note 2026-08-14 (occurrence 23, changelog-synchronisation slice):_ Neither PATH `uv` nor a
+host-interpreter `uv` module was present; see FR-050 for the selected reversible user-level module
+route, which restored `uv 0.12.4` inside the proved range. The locked sync and the full declared
+gate then ran green through that route on the slice's first commit, with focused checks on its fix
+commit.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -1461,7 +1467,8 @@ tool executables were the only surviving local proving route. The predicate also
 (no PATH `uv`, no host-interpreter `uv` module), recorded there as its 2026-08-14 occurrence. The
 user-level install resolved `uv 0.12.4`, inside the proved `>=0.12.2,<0.13` range, and now answers
 through `py -3 -m uv`, which re-enabled the declared locked gate
-(`py -3 -m uv sync --locked --all-groups` succeeded).
+(`py -3 -m uv sync --locked --all-groups` succeeded, and the full declared gate then ran green
+through the same route on the slice's first commit).
 
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
