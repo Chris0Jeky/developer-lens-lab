@@ -1883,8 +1883,9 @@ helper remains a promotion proposal only.
 - **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
   next writer to preflight before edit.
 - **occurrences:** 4 independent branch/worktree collision episodes — 2026-08-12, 2026-08-13, and
-  2026-08-14; the 2026-08-13 episode included two tip movements, and the 2026-08-14 episode is the
-  default-branch advance recorded in detail as FR-080.
+  two distinct 2026-08-14 episodes; the 2026-08-13 episode included two tip movements, the first
+  2026-08-14 episode is the default-branch advance recorded in detail as FR-080, and the second is
+  the mirrored same-day identifier consumption noted below.
 - **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
   ignored per-worktree writer lease/guard.
 - **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
@@ -2140,8 +2141,8 @@ No other field content changed.
   before a merge resolution is committed, which the existing merge-eligibility helper's exact-head
   floor already expresses for merges; FR-070 separately selects the Lab #73 per-worktree writer
   lease/guard. Extending the helper to cover in-progress conflict resolution stays task debt.
-  Judgment restated explicitly at three episodes rather than two: the no-structural-fix conclusion
-  still holds. All three episodes are the same shared-state-advance pattern that the two already
+  Judgment restated explicitly at four episodes: the no-structural-fix conclusion
+  still holds. All four episodes are the same shared-state-advance pattern that the two already
   selected layers address, and the only structural alternative — replacing this log's sequential
   human-readable identifier scheme with a non-contending one — would be a large change to a document
   whose readability is its point, to solve a collision the cheap re-read already catches.
@@ -2194,12 +2195,13 @@ the no-structural-fix conclusion is unchanged at four.
 - **symptom:** The full `pytest` gate run takes 110–111 seconds against the agent shell tool's
   120-second default timeout, so gate runs now tip into background execution and need an explicit
   completion wait.
-- **impact:** No failed run yet, but the margin is under ten seconds and shrinks with every test
-  added; a suite that crosses the default kills the foreground run mid-gate and can misread as a
-  test failure.
+- **impact:** The margin is gone: after the PR #65 merge landed its process-tree tests, the same
+  gate ran 287 tests in 216 seconds, so a foreground run at the 120-second default now fails
+  outright rather than merely brushing the limit, and can misread as a test failure.
 - **workaround:** Pass an explicit longer timeout (or run the gate in the background and wait for
   completion) when invoking the full suite from an agent shell; focused suites are unaffected.
-- **occurrences:** 1 independent occurrence — 2026-08-14 PR #82 fix round.
+- **occurrences:** 2 independent occurrences — the 2026-08-14 PR #82 fix round (110-111 s against
+  the 120 s default) and the same slice's post-merge full gate (216 s, over the default outright).
 - **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) release
   wave; if it recurs, add an explicit timeout note to the run-and-prove guidance in `CLAUDE.md`
   and `AGENTS.md` as its own small slice.
