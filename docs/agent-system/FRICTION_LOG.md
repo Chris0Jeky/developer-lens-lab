@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 21 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 22 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -205,6 +205,10 @@ example by pruning `.uv-cache` in the verifier walk) stays issue #34 task debt.
 _Note 2026-08-13 (occurrence 21):_ With neither PATH `uv` nor a host-interpreter `uv` module, the
 external temporary `uv` bootstrap fallback restored `uv 0.12.3`, and `uv sync --locked --all-groups`
 succeeded.
+
+_Note 2026-08-13 (Lane-P occurrence 22):_ The dedicated worktree had neither a project interpreter
+nor a host-interpreter `uv` module. The external temporary bootstrap restored `uv 0.12.3` for the
+focused integrity proof and declared gate without changing tracked dependency state.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -1619,14 +1623,20 @@ scaffolding is needed.
 - **workaround:** Host the bootstrap environment, `uv` cache, and managed-Python directory outside
   the repository entirely, keeping only the pruned `.venv` project environment inside the worktree.
   Verified: the identical gate sequence then passed end to end.
-- **occurrences:** 1 independent occurrence — 2026-08-12, PR #68 duplicate fix round.
+- **occurrences:** 2 independent occurrences — 2026-08-12 during PR #68 and one 2026-08-13
+  Lane-P adopted-worktree occurrence.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   proof and path-boundary hardening.
-- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest layer
-  is adding `.uv-cache` to `SKIPPED_MARKDOWN_PARTS` in `src/developer_lens_lab/context/verify.py`.
-  That closes this observed cache only: `.gitignore` names other unpruned directories
-  (`.pyright/`, `__pycache__/`, `.ipynb_checkpoints/`), so a complete ignore-aligned pruning
-  policy is a separate, deliberately unclaimed design decision.
+- **promotion:** At the second occurrence, the clean detached exact-head clone with bootstrap and
+  cache outside is the verified workaround; future ignore-aware markdown-walk pruning on Lab #34 is
+  selected enforcement debt, not implemented.
+
+_Note 2026-08-13 (Lane-P adopted-worktree occurrence):_ Pre-existing ignored runtime environments
+caused doctor/context failures and 2 context-related full-pytest failures (231 passed); no ignored
+bytes were manually inspected or altered. A clean detached clone at exact candidate
+`c0273bc1969b5ff7555a82f3c3ff4914b1f44d39` with bootstrap/cache outside then passed locked sync,
+doctor, context, Ruff, Pyright, the focused asset test, 233 tests, strict MkDocs, hygiene, cards,
+and diff check. This docs-only correction's final head will be re-proved separately.
 
 ### FR-061 — a lane adoption raced an active prior claimant by seconds
 
@@ -1645,15 +1655,21 @@ scaffolding is needed.
 - **workaround:** Prior claim wins. The adopting session stood down on both surfaces, archived the
   duplicate on a local-only branch name (deleting its local copy of the shared branch name so no
   accidental push remains possible), and recorded the cross-check result before yielding the lane.
-- **occurrences:** 1 independent occurrence of this adopt-race mode — 2026-08-12, PR #68
-  review-response lane; the broader concurrency lineage is FR-004, FR-029, and FR-033.
+- **occurrences:** 2 independent occurrences of this adopt-race mode — 2026-08-12, PR #68
+  review-response lane, and 2026-08-13, Lane-P staging reconciliation; the broader concurrency
+  lineage is FR-004, FR-029, and FR-033.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   protocol hardening; the stand-down and cross-check record is
   [PR #68 comment 5269372792](https://github.com/Chris0Jeky/developer-lens-lab/pull/68#issuecomment-5269372792).
-- **promotion:** Deliberately not promoted after one occurrence of this mode. If it recurs, the
-  cheapest layer is a lane-adoption rule in `CONTINUOUS_WORK_PROTOCOL.md`: an adopting session
-  re-polls the claimed surfaces AFTER posting its claim and BEFORE delegating any writer, and
-  treats a claim younger than one hour as live absent an explicit stand-down.
+- **promotion:** At the second occurrence, select the already-recorded cheapest layer: after an
+  adoption claim, re-poll the issue and branch before delegating a writer. Retain implementation
+  debt on Lab #34; do not detour into a protocol edit during this slice.
+
+_Note 2026-08-13 (Lane-P adoption):_ A second coordinator overlap was detected before duplicate
+writing. The prior claimant advanced and returned a clean worktree while this coordinator reconciled;
+the result was archived and adopted, and only its exact fixture/renderer-validated bytes were
+independently accepted. Claimant-reported historical replay was not used as staging authority; no
+actor identity is inferred.
 
 ### FR-062 — the agent floor blocks `gh api graphql` wholesale, including read-only queries
 
@@ -1787,3 +1803,95 @@ with `force=false`, and the remote tree was mechanically identical to the preser
 Repeated REST and ref reads then showed the branch ref at its new commit while PR #71 still reported
 its old head. The PR `updated_at` changed when review replies were posted, so this was not merely an
 entirely stale PR response.
+
+### FR-068 — review-thread connector identifiers did not bridge GraphQL and REST routes
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The thread payload exposed an incompatible opaque comment identifier, while the
+  inline-reply route required a numeric REST parent identifier and returned HTTP 404 when given the
+  opaque value.
+- **impact:** The attempted inline disposition could not be attached through that route. Treating
+  the 404 as evidence that the review thread did not exist or was already resolved would have made
+  review state less truthful.
+- **workaround:** Resolve the review thread through the available thread-state route and preserve its
+  disposition in [Lab PR #70 comment 5281737113](https://github.com/Chris0Jeky/developer-lens-lab/pull/70#issuecomment-5281737113).
+  The thread-resolution operation succeeded; all PR #70 threads are now resolved.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during PR #70 truth reconciliation.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns
+  connector and review-route hardening.
+- **promotion:** Deliberately not promoted after one occurrence. A stable connector identifier
+  bridge needs repeated evidence before changing the reviewed route or protocol.
+
+### FR-069 — Windows PowerShell parameter aliases diverged across host versions
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** The host rejected the `utf8NoBOM` encoding name before a focused Lane-P verifier ran.
+  Independently, the coordinator's Windows PowerShell 5.1 rejected `Get-Date -AsUTC`; both are newer
+  parameter or encoding aliases that cannot be assumed on the installed host.
+- **impact:** Each command stopped before its intended verification or timestamping action. Neither
+  failure changed tracked release bytes, a ref, or a remote object.
+- **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
+  UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
+- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
+  tracks the cross-repository Windows compatibility follow-up.
+- **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
+  for UTC timestamps and UTF-8 output, used by reviewed repo scripts instead of host-version-specific
+  aliases. This slice records the proposal only and does not alter runtime or harness code.
+
+_Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
+helper remains a promotion proposal only.
+
+### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-verified`
+- **symptom:** The shared branch/worktree advanced at the commit boundary while the delegated writer
+  was completing handoff. A subsequent sibling amend was caught by the next writer's preflight before
+  edit. Git author metadata does not establish runtime actor.
+- **impact:** The writer stopped. The coordinator pinned and audited the parent, diff, clean status,
+  and frozen asset hashes before adoption; the worktree was not reset, cleaned, or overwritten.
+- **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
+  next writer to preflight before edit.
+- **occurrences:** 2 independent branch/worktree collision episodes — 2026-08-12 and 2026-08-13;
+  the 2026-08-13 episode included two tip movements.
+- **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
+  ignored per-worktree writer lease/guard.
+- **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
+  the cheapest enforcement layer. This slice records and tests no guard implementation.
+
+_Note 2026-08-13 (schema correction):_ The re-pin/preflight/unique isolated-lane workaround caught
+the second tip movement and this isolated branch stayed stable. The ignored writer lease/guard
+remains selected enforcement debt on Lab #73 and is not implemented.
+
+### FR-071 — a read-only Git object comparison produced a false-positive block
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** A read-only Git object comparison was blocked after its temporary comparison file had
+  already been redirected and removed, leaving the wrapper unable to reopen the expected path.
+- **impact:** The comparison could not produce its planned result, though no ref, tracked release
+  byte, or protected input was changed.
+- **workaround:** Recover the comparison through object metadata and text checks against the exact
+  known object, then continue only after the identity result was clear.
+- **occurrences:** 1 independent occurrence — 2026-08-13 during Lane-P reconciliation.
+- **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
+  tracks the cross-repository command-wrapper follow-up.
+- **promotion:** Deliberately not promoted after one occurrence; retain the read-only metadata/text
+  route unless the temporary-file false positive recurs.
+
+### FR-072 — friction statuses escaped the closed vocabulary without verifier rejection
+
+- **first-seen:** 2026-08-13
+- **status:** `workaround-documented`
+- **symptom:** One unmerged candidate used `promotion-proposed` and `enforcement-selected` even
+  though the schema allows only its six named states, and context verification did not reject them.
+- **impact:** The operational log became nonconformant and its promotion state was misleading.
+- **workaround:** Apply an exact heading-scoped correction and run a manual closed-vocabulary scan.
+- **occurrences:** 1 independent candidate patch — the three invalid fields are one event.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks the
+  friction-log verifier follow-up.
+- **promotion:** Deliberately not promoted after one occurrence. If it recurs, the cheapest
+  enforcement is context-verifier validation and tests for every friction status.

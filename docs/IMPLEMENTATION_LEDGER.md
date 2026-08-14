@@ -1187,3 +1187,38 @@ rather than rewritten in place.
   milestone entry here. Recording it belatedly: the reconciliation landed on main, and
   `docs/CURRENT_STATE.md` now carries it as `delivered.pr64_state_reconciliation` with the same
   belated-record note.
+
+## 2026-08-13 - Lane-P frozen Method Trial v1 exhibit staging (LAB-REL-01 / issue #29)
+
+- The already-recorded 2026-08-09 frozen replay at producer
+  `0ef193070a9b80b81cef5a1710a1d65e0b271c15` and invented run `wbc1_demo` remains the evidence for
+  the selected exhibit, including frozen JSON `afcc1ed9535d9b22fb399375027792489ce6b97949f8f684682943c11152b5f9`,
+  Markdown `f9173354e86b20ccabe91334136017ff03ae68b3ba4432666f6af72172fb11b8`, and HTML
+  `22ca8c03e78c6185e527fa4c0f7312caf7d9077619d46f795f8d8dd25c530a29` hashes.
+- This staging fix performs no benchmark, reproduction, export, or report build. It validates the
+  immutable Product C0 fixture in canonical-LF and semantic form, verifies the exact derived renderer
+  bytes and static content, and stages the existing JSON/HTML beneath
+  `release-assets/v0.1.0/method-trial-v1/` as the chosen release-upload location. The provenance
+  records the immutable fixture source, frozen producer/run, contract commit
+  `b48fea579936671397a0486ae7a0342197ee6e4b`, schema checksum
+  `634b0cc7a0c3dbcefe8b9cf258e157695beae06d08cc9d02bb781a4267f633ef`, AGPL-3.0-only, and
+  copyright Cristian Tcaci.
+- No new run, custody decision, experiment, holdout decision, or Experiment Ledger update occurred.
+  This remains staged C0 review only, not publication, a release, a tag, a real-data transformation
+  approval, model activation, telemetry activation, or either owner sign-off.
+- Live truth sync: Lane-P began from PR #72 merge base
+  `db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+  Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only; neither
+  state authorizes publication, release, or a tag. The next separate pre-tag work is final
+  changelog/release-note synchronisation followed by screenshot/video preparation for
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`; no tag is authorised.
+
+_Rebase correction 2026-08-13:_ Lane-P began from PR #72 merge base
+`db104ca1f2bae2de214024e69fddff8cf9822373`; live Git/PR supplies the current landing state.
+Before ordinary merge it is a candidate; after ordinary merge it is tracked staging only; neither
+state authorizes publication, release, or a tag. FR-068 and FR-069 record the separate
+connector-identifier and repeated Windows PowerShell compatibility friction observed during this
+slice. The next pre-tag work remains final changelog/release-note synchronisation, then the
+screenshot/video package and its distinct owner gates; publication and tagging remain unperformed
+and unauthorised.
