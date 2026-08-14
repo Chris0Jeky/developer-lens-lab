@@ -1297,7 +1297,9 @@ hashed package bytes only; the joint tag remains blocked on product
   the merge-gate section. Proof: focused merge-eligibility suite then the full gate (ruff
   format/check, pyright, pytest, strict mkdocs, hygiene, context verify) green at the
   implementation head `4f10c0e19eee0c55c93670c634f7876cacf184a9` and re-run green in full at the
-  PR #82 fix-round head. Existing snapshot collectors must emit the new fields; the in-session
+  PR #82 fix-round head `dcbb848c3f9709bdd1f7e2928cbb4dccc36e5329`; the later docs-only commits
+  were each verified with the focused docs checks (strict mkdocs, hygiene, context verify) at
+  their own heads. Existing snapshot collectors must emit the new fields; the in-session
   collector is runtime state and was updated in place.
 - A MERGE-SOUND fresh-context review of the implementation head returned five LOW findings. The
   fix round closes the three coverage gaps: identifier validation is only observable when the

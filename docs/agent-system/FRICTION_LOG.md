@@ -1998,7 +1998,7 @@ observational record lives in `docs/CURRENT_STATE.md`.
 ### FR-076 — the full pytest gate now brushes the default shell-tool timeout
 
 - **first-seen:** 2026-08-14
-- **status:** `open`
+- **status:** `workaround-documented`
 - **symptom:** The full `pytest` gate run takes 110–111 seconds against the agent shell tool's
   120-second default timeout, so gate runs now tip into background execution and need an explicit
   completion wait.

@@ -613,7 +613,7 @@ def test_a_valid_attestation_never_matches_a_degenerate_item(identifier: object)
     # Pins the outcome, not the guard: a degenerate item identifier can never equal the validated
     # attestation identifier, so this refusal holds with or without the item-side check.  The
     # item-side check earns its place by making the two sides read the same way, and the
-    # matched-pair case above is what would regress if it were dropped.
+    # matched-pair case above is what would regress if identifier validation were dropped.
     snapshot = _snapshot()
     _items(snapshot, "formal_reviews")[0]["review_id"] = identifier
 
