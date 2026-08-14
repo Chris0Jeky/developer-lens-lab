@@ -7,16 +7,20 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import unicodedata
+from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
 PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS = 300
+PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS = 10
 PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT = 2_000
 PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER = "\n...[truncated]"
+_PROCESS_TREE_CLEANUP_UNCONFIRMED = "package smoke process-tree cleanup could not be confirmed"
 UV_VERSION_BOUNDS: tuple[tuple[int, int, int], tuple[int, int, int]] = (
     (0, 12, 2),
     (0, 13, 0),
@@ -24,9 +28,24 @@ UV_VERSION_BOUNDS: tuple[tuple[int, int, int], tuple[int, int, int]] = (
 _UV_VERSION_PATTERN = re.compile(r"^\s*uv\s+(?P<version>\d+\.\d+\.\d+)(?:\s|$)")
 
 
+class ProcessTreeCleanupUnconfirmedError(RuntimeError):
+    """Raised when a timed-out process tree could not be confirmed reaped.
+
+    This is deliberately distinct from the generic failures a caller may treat as
+    "this candidate did not work". It reports that supervision lost track of a live
+    process tree, so every caller must fail closed and propagate it rather than fall
+    back to another candidate and continue with an unreaped tree still running.
+    """
+
+
 def _canonicalize_line_endings(value: str) -> str:
     """Use one line-ending representation for diagnostics and redaction values."""
     return value.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _is_windows() -> bool:
+    """Return whether package-smoke supervision is running on Windows."""
+    return os.name == "nt"
 
 
 def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
@@ -155,6 +174,11 @@ def _probe_uv_command(command: list[str], *, cwd: Path, environment: dict[str, s
     """Return whether a uv command reports a version in the required range."""
     try:
         result = _run([*command, "--version"], cwd=cwd, environment=environment)
+    except ProcessTreeCleanupUnconfirmedError:
+        # An unreaped process tree is not an unusable candidate. Let it escape the
+        # candidate fallback so the smoke fails closed instead of starting the next
+        # probe alongside a process tree that is still running.
+        raise
     except (OSError, RuntimeError):
         return False
     version = _parse_uv_version(result.stdout)
@@ -222,22 +246,42 @@ def assert_doctor_report(output: str) -> dict[str, object]:
 def _run(
     command: list[str], *, cwd: Path, environment: dict[str, str]
 ) -> subprocess.CompletedProcess[str]:
+    # Deliberately not a `with subprocess.Popen(...)` block: Popen.__exit__ ends in an
+    # unbounded wait(), which would turn the fail-closed cleanup-unconfirmed path below
+    # into an indefinite hang on the very tree that could not be reaped. The explicit
+    # handlers here bound every exit path instead.
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        env=environment,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        shell=False,
+        start_new_session=not _is_windows(),
+    )
     try:
-        result = subprocess.run(
-            command,
-            cwd=cwd,
-            env=environment,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
+        stdout, stderr = process.communicate(timeout=PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        if not _terminate_process_tree(process):
+            raise ProcessTreeCleanupUnconfirmedError(_PROCESS_TREE_CLEANUP_UNCONFIRMED) from None
         rendered = _render_command(command)
         raise RuntimeError(
             "package smoke command timed out after "
             f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}"
-        ) from exc
+        ) from None
+    except BaseException:
+        # Any other exit from communicate — notably KeyboardInterrupt — would otherwise
+        # leave the child detached and its pipes open. Reap the tree on a bounded budget,
+        # release the pipes, then re-raise the original exception unchanged. The reap runs
+        # under try/finally so a second interrupt arriving during it cannot skip the
+        # pipe release.
+        try:
+            _terminate_process_tree(process)
+        finally:
+            _close_process_streams(process)
+        raise
+    result = subprocess.CompletedProcess(command, process.returncode, stdout=stdout, stderr=stderr)
     if result.returncode:
         rendered = _render_command(command)
         diagnostics = _format_failure_diagnostics(
@@ -251,6 +295,53 @@ def _run(
             f"package smoke command failed ({result.returncode}): {rendered}{diagnostics}"
         )
     return result
+
+
+def _close_process_streams(process: subprocess.Popen[str]) -> None:
+    """Release a supervised child's pipes without masking the failure in flight."""
+    for stream in (process.stdout, process.stderr, process.stdin):
+        if stream is not None:
+            with contextlib.suppress(OSError):
+                stream.close()
+
+
+def _terminate_process_tree(process: subprocess.Popen[str]) -> bool:
+    """Terminate an ordinary timed-out process tree and confirm the direct child was reaped."""
+    if _is_windows():
+        system_root = os.environ.get("SYSTEMROOT")
+        if not system_root:
+            return False
+        taskkill = Path(system_root) / "System32" / "taskkill.exe"
+        try:
+            cleanup = subprocess.run(
+                [str(taskkill), "/PID", str(process.pid), "/T", "/F"],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                shell=False,
+                check=False,
+                timeout=PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+        if cleanup.returncode != 0:
+            return False
+    else:
+        killpg = cast(Callable[[int, int], None] | None, getattr(os, "killpg", None))
+        sigkill = cast(int | None, getattr(signal, "SIGKILL", None))
+        if killpg is None or sigkill is None:
+            return False
+        try:
+            killpg(process.pid, sigkill)
+        except ProcessLookupError:
+            pass
+        except OSError:
+            return False
+    try:
+        process.communicate(timeout=PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return process.returncode is not None
 
 
 def run_package_smoke(root: Path) -> None:
