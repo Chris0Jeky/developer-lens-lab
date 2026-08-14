@@ -1518,6 +1518,12 @@ the remaining enforcement task debt is outside this repository in the plugin cac
 FR-053/FR-054 records remain only on the parked, unmerged PR #65 branch and are not claims about
 main.
 
+_Note 2026-08-14 (PR #65 landed; the sentence above is superseded):_ The parked branch was resumed
+and its base refreshed, so those two records no longer live only on an unmerged branch. They were
+renumbered to the log's next free identifiers on merge and now appear at the tail as FR-076 and
+FR-077; `FR-053` and `FR-054` stay permanently unassigned. The dated reconciliation note under
+FR-077 carries the full mapping.
+
 The first state worktree guard stopped safely because Git forward slashes and PowerShell backslashes
 compared literally; no worktree or branch was created. `Resolve-Path` normalization fixed the guard
 on the next attempt. This is occurrence 1; see [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
@@ -1876,8 +1882,9 @@ helper remains a promotion proposal only.
   and frozen asset hashes before adoption; the worktree was not reset, cleaned, or overwritten.
 - **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
   next writer to preflight before edit.
-- **occurrences:** 2 independent branch/worktree collision episodes — 2026-08-12 and 2026-08-13;
-  the 2026-08-13 episode included two tip movements.
+- **occurrences:** 3 independent branch/worktree collision episodes — 2026-08-12, 2026-08-13, and
+  2026-08-14; the 2026-08-13 episode included two tip movements, and the 2026-08-14 episode is the
+  default-branch advance recorded in detail as FR-080.
 - **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
   ignored per-worktree writer lease/guard.
 - **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
@@ -1894,6 +1901,14 @@ no new commits; no runtime actor is inferred and the observing coordinator did n
 No workaround was needed, so the occurrence count above is unchanged, but the sighting is recorded
 here so the Lab #73 lease/guard decision sees the full unexplained-worktree pattern; the
 observational record lives in `docs/CURRENT_STATE.md`.
+
+_Note 2026-08-14 (third episode; occurrence count raised to 3):_ During the PR #65 base refresh the
+default branch advanced mid-resolution and its new tail consumed the exact friction identifiers the
+in-flight slice had already allocated, which required aborting and retargeting the merge. That is a
+genuine third collision episode for this pattern, so the occurrence count above is raised from 2 to
+3 under the schema's allowance for updating `occurrences` on an existing entry. FR-080 carries the
+detailed record and its own promotion reasoning; the Lab #73 lease/guard remains the selected
+enforcement layer here and is still not implemented.
 
 ### FR-071 — a read-only Git object comparison produced a false-positive block
 
@@ -2108,12 +2123,41 @@ No other field content changed.
 - **occurrences:** 2 independent occurrences including FR-070 — shared branch state advanced under
   an in-flight slice.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
-  checked proof-boundary and state-reconciliation helpers; FR-070 carries the earlier occurrence and
-  its own occurrence count is not adjusted here, because this slice may not edit entries that exist
-  on the default branch.
+  checked proof-boundary and state-reconciliation helpers; FR-070 carries the earlier episodes of
+  this pattern and its occurrence count now includes this one.
 - **promotion:** At the second occurrence the selected cheapest enforcing layer is the re-read of
   the remote ref immediately before a merge resolution is committed, which the existing
   merge-eligibility helper's exact-head floor already expresses for merges. Extending that helper to
   cover in-progress conflict resolution stays task debt; a sequential identifier is inherently
   contended, and a structural fix would mean changing this log's identifier scheme, which is not
   justified by two occurrences.
+
+_Note 2026-08-14 (justification corrected):_ This entry originally stated that FR-070's occurrence
+count was left unadjusted because the slice may not edit entries that exist on the default branch.
+That was wrong as written: the schema explicitly permits updating `occurrences` on an existing entry
+and adding a dated note, and the bounded instruction not to renumber or rewrite landed entries was
+never a bar to a permitted occurrence update. FR-070 has since been raised to three occurrences with
+its own dated note citing this entry, and the sentence above is restated as the deliberate,
+now-reconciled choice it should have been.
+
+### FR-081 — ledger prose written before a push asserted a state the pushed head contradicted
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** A ledger section authored before its branch was pushed asserted that nothing had been
+  pushed, was committed unamended, and then remained in the archive after the head was in fact
+  pushed and hosted proof ran against it. A later review found the landed sentence contradicting the
+  observable branch and check state.
+- **impact:** The permanent evidence archive carried a false claim about publication state — the
+  most load-bearing kind of claim it makes — and a reader reconstructing the slice from the ledger
+  alone would have concluded the head was never published.
+- **workaround:** Treat pre-push prose as provisional and amend it in the same pipeline before the
+  branch merges: state the push time, name the exact head and its hosted result, and describe any
+  superseding head's proof as pending rather than implying it is green.
+- **occurrences:** 1 independent occurrence — the 2026-08-14 PR #65 base-refresh section.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked proof-boundary and evidence-truthfulness helpers.
+- **promotion:** Deliberately not promoted after one occurrence. The general defect — asserting a
+  future state as settled fact — is not mechanically checkable, but if it recurs the cheapest honest
+  layer is a narrow check that rejects publication-state claims in a ledger section whose own head is
+  not yet proved, rather than prose asking authors to remember.

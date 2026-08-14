@@ -1325,4 +1325,45 @@ and unauthorised.
   user-installed `uv`; FR-079 records that interaction and why it is environment debt rather than a
   production defect.
 - Scope stayed C0 code, tests, and docs. No capability, authority, release, or tag state changed,
-  no real or private input was inspected, and nothing was pushed.
+  and no real or private input was inspected. This section originally asserted that nothing was
+  pushed; that was written before the push and is corrected here. The head `ed281ec` was pushed to
+  the PR branch at 2026-08-14T11:59:46Z and the hosted `Prove the lab` check succeeded at that exact
+  head. The fix round recorded in the next section supersedes `ed281ec`, and its own hosted proof is
+  pending at the time this correction is authored. FR-081 records the pre-push-prose defect.
+
+## 2026-08-14 - PR #65 review fix round 1 (issue #29)
+
+- A fresh-context adversarial review returned MERGE-SOUND with no CRITICAL or HIGH findings against
+  `ed281ec`, and a Codex round posted two P2s at the same exact head that independently confirmed
+  two of its MEDIUMs. Because two independent reviews converged, this round changes production
+  supervision in `scripts/verify_package_smoke.py`, which the preceding slice had deliberately left
+  untouched.
+- Unconfirmed process-tree cleanup now raises a distinct `ProcessTreeCleanupUnconfirmedError`
+  rather than a generic `RuntimeError`, and `_probe_uv_command` re-raises it instead of swallowing
+  it. Previously an unreaped tree was indistinguishable from an unusable candidate, so the resolver
+  moved on to the next candidate while that tree was still running. The class carries an `Error`
+  suffix because Ruff `N818` rejects the bare name.
+- `_run` supervised its child only against `TimeoutExpired`, so any other exit from `communicate` —
+  notably `KeyboardInterrupt` — left the child detached with its pipes open. A catch-all now reaps
+  the tree on the existing bounded budget, releases the pipes, and re-raises the original exception
+  unchanged. This deliberately does not adopt `with subprocess.Popen(...)`: `Popen.__exit__` ends in
+  an unbounded `wait()`, which would convert the fail-closed cleanup-unconfirmed path into an
+  indefinite hang on the very tree that could not be reaped. Timeout-branch semantics are otherwise
+  unchanged.
+- Both guards carry a discriminating test, and each was verified to fail against a mutated build
+  with that guard removed rather than merely passing against the fixed one.
+- Closed a vacuous-coverage gap: the fail-closed cleanup test was the only mocked-Windows timeout
+  test that never set `SYSTEMROOT`, so on a non-Windows host it exercised the absent-root early
+  return and its failed-taskkill assertions asserted nothing. It now sets the synthetic root, and a
+  sibling test covers the absent-`SYSTEMROOT` branch deterministically, asserting that no
+  unqualified `taskkill` is attempted when the system root is unknown.
+- Friction: added a dated forward pointer under the landed stale note that still described
+  FR-053/FR-054 as living only on the parked branch; raised FR-070 to two occurrences with a dated
+  note citing FR-080 and corrected FR-080's justification, which had wrongly claimed such an update
+  was forbidden; and added FR-081 for the pre-push ledger prose.
+- Deferred by coordinator decision to a tracked Lab issue, deliberately untouched here: the
+  `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the Windows-only
+  timing-fragile test, and the impossible-state parametrization.
+- Scope stayed C0 code, tests, and docs. No capability, authority, release, or tag state changed,
+  no real or private input was inspected, and `uv.lock` was not modified. Nothing was pushed by this
+  round; hosted proof for its head is pending.
