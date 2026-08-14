@@ -1296,5 +1296,14 @@ hashed package bytes only; the joint tag remains blocked on product
   fields, the checks-surface exception, the allowlist, and the degenerate-identifier refusal in
   the merge-gate section. Proof: focused merge-eligibility suite then the full gate (ruff
   format/check, pyright, pytest, strict mkdocs, hygiene, context verify) green at the
-  implementation head. Existing snapshot collectors must emit the new fields; the in-session
+  implementation head `4f10c0e19eee0c55c93670c634f7876cacf184a9` and re-run green in full at the
+  PR #82 fix-round head. Existing snapshot collectors must emit the new fields; the in-session
   collector is runtime state and was updated in place.
+- A MERGE-SOUND fresh-context review of the implementation head returned five LOW findings. The
+  fix round closes the three coverage gaps: identifier validation is only observable when the
+  attestation and the item carry the same degenerate identifier, so that matched-pair test now
+  covers every degenerate form and the item-side test is renamed to say it pins the outcome
+  rather than the guard; the attested-state allowlist is pinned across every record matching the
+  attested identifier, not just the first; and a present-but-non-mapping `pull_request` is pinned
+  to `invalid_pull_request_number`. Each was confirmed discriminating by temporarily reverting the
+  guarded code and observing the failure; no revert was committed.

@@ -190,6 +190,16 @@ def test_a_degenerate_pull_request_number_is_refused(number: object) -> None:
     assert "invalid_pull_request_number" in _reasons(snapshot)
 
 
+@pytest.mark.parametrize("pull_request", [PR_NUMBER, [str(PR_NUMBER)], "4242", None, {}])
+def test_a_pull_request_that_is_not_a_numbered_mapping_is_refused(pull_request: object) -> None:
+    # The identity is a mapping with a number, never a bare number: a snapshot that flattened it
+    # would otherwise carry no identity at all while looking like it did.
+    snapshot = _snapshot()
+    snapshot["pull_request"] = pull_request
+
+    assert "invalid_pull_request_number" in _reasons(snapshot)
+
+
 def test_an_absent_pull_request_identity_fails_every_binding_closed() -> None:
     snapshot = _snapshot()
     del snapshot["pull_request"]
@@ -545,6 +555,24 @@ def test_an_accepted_attested_review_state_still_passes(state: str) -> None:
     assert _reasons(snapshot) == ()
 
 
+def test_every_record_matching_the_attestation_must_carry_acceptance() -> None:
+    # An identifier that resolves to more than one record is itself ambiguous evidence, so the
+    # allowlist is checked on every match: stopping at the first would let an APPROVED duplicate
+    # shadow a DISMISSED one carrying the same identifier.
+    snapshot = _snapshot()
+    _items(snapshot, "formal_reviews").append(
+        {
+            "head_sha": HEAD,
+            "base_sha": BASE,
+            "pr_number": PR_NUMBER,
+            "review_id": REVIEW_ID,
+            "state": "DISMISSED",
+        }
+    )
+
+    assert _reasons(snapshot) == ("unacceptable_accepted_review_state",)
+
+
 def test_the_state_allowlist_applies_only_to_the_attested_item() -> None:
     snapshot = _snapshot()
     _attest_the_comment(snapshot)
@@ -565,10 +593,11 @@ def test_a_degenerate_attested_identifier_is_invalid(identifier: object) -> None
     assert "unknown_accepted_review" not in reasons
 
 
-@pytest.mark.parametrize("identifier", [0, "   "])
+@pytest.mark.parametrize("identifier", [0, -1, "", "   "])
 def test_a_degenerate_identifier_can_never_match_itself(identifier: object) -> None:
-    # The defeat this closes: a surface item carrying an empty or zeroed identifier attested by an
-    # equally empty attestation, which would have matched before the identifiers were validated.
+    # The defeat this closes, and the only shape in which identifier validation is observable: a
+    # surface item carrying a zeroed or blank identifier, attested by an identical one.  Before the
+    # identifiers were validated the two matched and the snapshot came out eligible.
     snapshot = _snapshot()
     _attestation(snapshot)["id"] = identifier
     _items(snapshot, "formal_reviews")[0]["review_id"] = identifier
@@ -580,7 +609,11 @@ def test_a_degenerate_identifier_can_never_match_itself(identifier: object) -> N
 
 
 @pytest.mark.parametrize("identifier", [0, -1, "", "   "])
-def test_a_degenerate_item_identifier_matches_nothing(identifier: object) -> None:
+def test_a_valid_attestation_never_matches_a_degenerate_item(identifier: object) -> None:
+    # Pins the outcome, not the guard: a degenerate item identifier can never equal the validated
+    # attestation identifier, so this refusal holds with or without the item-side check.  The
+    # item-side check earns its place by making the two sides read the same way, and the
+    # matched-pair case above is what would regress if it were dropped.
     snapshot = _snapshot()
     _items(snapshot, "formal_reviews")[0]["review_id"] = identifier
 
