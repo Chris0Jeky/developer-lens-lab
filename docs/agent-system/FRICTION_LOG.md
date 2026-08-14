@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 22 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 23 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -94,7 +94,10 @@ Rules that bind entries:
   repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
   cache directory breaks the verifier walk), and 2026-08-13 (no PATH `uv` and no host-interpreter
   `uv` module; the already-promoted repository-external confined bootstrap restored `uv 0.12.3` and
-  `uv sync --locked --all-groups` succeeded).
+  `uv sync --locked --all-groups` succeeded), and 2026-08-14 (no PATH `uv` and no host-interpreter
+  `uv` module during the changelog-synchronisation slice; the FR-050-selected reversible
+  user-level module route restored `uv 0.12.4` inside the proved range and the locked sync and
+  full gate succeeded).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and #34 (checked proof
   boundaries), which depend on a runnable locked environment.
 - **promotion:** Promoted to canon prose in [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md),
@@ -1447,15 +1450,18 @@ four unresolved PR #60 threads.
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
 - **promotion:** At the second occurrence, select the cheapest enforcing layer: restore the module
-  route with a reversible user-level `pip install uv`, keeping the project toolchain and repository
-  unchanged. Host provisioning stays outside this repository, so recurrence tracking remains on the
-  Lab #34 comment thread.
+  route with a reversible user-level `pip install "uv>=0.12.2,<0.13"`, the same pinned range the
+  promoted FR-001 confined bootstrap proves. This supplements, and does not replace, the promoted
+  [MAINTENANCE_PROTOCOL.md](MAINTENANCE_PROTOCOL.md) confined-bootstrap canon; host provisioning
+  stays outside this repository, so recurrence tracking remains on the Lab #34 comment thread.
 
 _Note 2026-08-14 (second occurrence, changelog-synchronisation slice):_ Both the standalone PATH
 route and the previously verified `py -3 -m uv` module route were absent; the repository venv's own
-tool executables were the only surviving local proving route. The selected user-level install was
-performed and `uv 0.12.4` now answers through `py -3 -m uv`, which re-enabled the declared locked
-gate (`py -3 -m uv sync --locked --all-groups` succeeded).
+tool executables were the only surviving local proving route. The predicate also matches FR-001
+(no PATH `uv`, no host-interpreter `uv` module), recorded there as its 2026-08-14 occurrence. The
+user-level install resolved `uv 0.12.4`, inside the proved `>=0.12.2,<0.13` range, and now answers
+through `py -3 -m uv`, which re-enabled the declared locked gate
+(`py -3 -m uv sync --locked --all-groups` succeeded).
 
 ### FR-051 — estate registry no-match stopped a batched orientation read
 

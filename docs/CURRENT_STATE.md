@@ -42,8 +42,9 @@ delivered:
   - lane_p_release_review: >-
       DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
       2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
-      commits over base `db104ca1f2bae2de214024e69fddff8cf9822373`: the byte-preserving fixture
-      JSON, the deterministic derived HTML, the provenance/checksum/licence manifest declaring
+      commits over base `db104ca1f2bae2de214024e69fddff8cf9822373` and landing four staged
+      surfaces: the byte-preserving fixture JSON, the deterministic derived HTML, the
+      provenance/checksum/licence manifest declaring
       `staged_for_release_review_only`, and `tests/test_release_assets.py`. Hosted `Prove the lab`
       passed at exact head `7e17e15f828cfc302d27bbbce0feeef115a11e64`; the independent exact-head
       review was MERGE-SOUND; the post-merge sweeps on issue #29 were clean. The staged hashes match
