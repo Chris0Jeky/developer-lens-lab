@@ -1994,3 +1994,22 @@ observational record lives in `docs/CURRENT_STATE.md`.
 - **promotion:** Deliberately not promoted after one occurrence; the headless route is arguably the
   better default for reproducible review media, so a recurrence should weigh promoting it as the
   canonical capture route rather than restoring the extension.
+
+### FR-076 — the full pytest gate now brushes the default shell-tool timeout
+
+- **first-seen:** 2026-08-14
+- **status:** `open`
+- **symptom:** The full `pytest` gate run takes 110–111 seconds against the agent shell tool's
+  120-second default timeout, so gate runs now tip into background execution and need an explicit
+  completion wait.
+- **impact:** No failed run yet, but the margin is under ten seconds and shrinks with every test
+  added; a suite that crosses the default kills the foreground run mid-gate and can misread as a
+  test failure.
+- **workaround:** Pass an explicit longer timeout (or run the gate in the background and wait for
+  completion) when invoking the full suite from an agent shell; focused suites are unaffected.
+- **occurrences:** 1 independent occurrence — 2026-08-14 PR #82 fix round.
+- **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) release
+  wave; if it recurs, add an explicit timeout note to the run-and-prove guidance in `CLAUDE.md`
+  and `AGENTS.md` as its own small slice.
+- **promotion:** Not promoted after one occurrence; the run-and-prove guidance is the natural home
+  if a second session hits it.
