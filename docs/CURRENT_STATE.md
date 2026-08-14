@@ -316,7 +316,8 @@ exact_resume_point: >-
   Resume with the live SENSE/RECONCILE described in `next_safe_slice`, not with another PR #65 fix
   push. The in-flight slice is branch `docs/q11-signoff-20260814` (recording the 2026-08-14 owner
   approval that closes `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`); land it through the
-  ordinary PR gate. The pre-tag agent remainder is complete and q-11 is closed; the only remaining
+  ordinary PR gate. The pre-tag agent remainder is complete and
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed; the only remaining
   joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which
   the joint tag decision is
   handed back, never agent-executed. Do not publish or tag. Observed but untouched: a locally
