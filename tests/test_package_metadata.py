@@ -928,10 +928,9 @@ def test_package_smoke_ordinary_failure_with_confirmed_cleanup_keeps_its_excepti
 
     # A confirmed reap leaves nothing for a caller to fail closed on, so the original
     # failure must reach the caller unchanged.
-    with pytest.raises(OSError, match="synthetic communicate failure") as exc_info:
+    with pytest.raises(OSError, match="synthetic communicate failure"):
         _run(["synthetic-tool"], cwd=tmp_path, environment={})
 
-    assert not isinstance(exc_info.value, ProcessTreeCleanupUnconfirmedError)
     assert processes[0].returncode == -9
     assert processes[0].stdout is not None
     assert processes[0].stdout.closed

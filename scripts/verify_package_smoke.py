@@ -13,7 +13,7 @@ import sys
 import tempfile
 import unicodedata
 from collections.abc import Callable
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import cast
 
 PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS = 300
@@ -318,8 +318,12 @@ def _terminate_process_tree(process: subprocess.Popen[str]) -> bool:
         if not system_root:
             return False
         # A relative system root would resolve taskkill.exe against the current working
-        # directory, so the cleanup binary is only trusted from an absolute root.
-        if not Path(system_root).is_absolute():
+        # directory, so the cleanup binary is only trusted from an absolute root. The
+        # flavour must be explicit rather than host-derived: this branch is reached with
+        # _is_windows() forced true by the mocked supervision tests, which run on POSIX CI
+        # where a host-flavoured PosixPath(r"C:\Windows") is not absolute. The semantic
+        # target is a Windows path on either host, so evaluate it as one.
+        if not PureWindowsPath(system_root).is_absolute():
             return False
         taskkill = Path(system_root) / "System32" / "taskkill.exe"
         try:
@@ -334,10 +338,14 @@ def _terminate_process_tree(process: subprocess.Popen[str]) -> bool:
             )
         except (OSError, subprocess.TimeoutExpired):
             return False
-        # taskkill reports 128 when the PID is not found, meaning the direct child already
-        # exited between the communicate timeout and this cleanup. That is the Windows
-        # counterpart of the POSIX ProcessLookupError below, so both fall through to the
-        # confirming reap rather than failing closed on a tree that is already gone.
+        # taskkill reports 128 when the PID is not found: the direct child already exited
+        # between the communicate timeout and this cleanup, so fall through to the
+        # confirming reap below, which still gates on that direct child. The claim stops
+        # there and is narrower than the POSIX ProcessLookupError below, where killpg
+        # targets the whole group and so implies no group member survived. Descendants
+        # orphaned by an independently exited child inside this race window are past
+        # taskkill's reach with no job-object backstop here — an accepted narrow residual
+        # under issue #81 item 2's fail-direction analysis.
         if cleanup.returncode not in {0, 128}:
             return False
     else:
