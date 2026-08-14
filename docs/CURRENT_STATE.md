@@ -49,7 +49,12 @@ active_wave:
       resume references issue #29 comment `5243827843` and PR #65 comment `5243827873`, and its
       post-merge state reconciliation is DELIVERED through merged PR #83. The
       three tracked merge-eligibility hardening follow-ups are DELIVERED through merged PR #82
-      (see `delivered.merge_eligibility_snapshot_hardening`), and no lab write lane is in flight.
+      (see `delivered.merge_eligibility_snapshot_hardening`). The in-flight write lane is the
+      Lab #81 package-smoke supervision hardening on branch
+      `hardening/package-smoke-supervision-20260814` (coordinator-owned worktree from base
+      `02afd7c37b3c7d0a30551025a1724fb5aa5d064b`; bounded implementation committed locally at
+      `c7a14cba5cad65aed8931d5627b9c1bbd2b4e86c` with the full local gate green, pending
+      fresh-context review and its pull request).
 delivered:
   - merge_eligibility_snapshot_hardening: >-
       DONE — PR #82 merged 2026-08-14T21:17:34Z as
@@ -294,7 +299,8 @@ next_safe_slice: >-
   deferred q-11 conditional-phrasing touch in the cross-repo contract and maintenance protocol
   docs was completed by this reconciliation. LAB-REL-01 remains the sole ACTIVE card and its
   remaining step is the owner-gated tag, so the next agent-executable work is tracked-issue
-  maintenance, starting with the package-smoke hardening at Lab #81. FR-062 remains
+  maintenance, starting with the package-smoke hardening at Lab #81, whose lane is already in
+  flight (see `active_wave`). FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
@@ -303,8 +309,7 @@ next_safe_slice: >-
   the `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the Windows-only
   timing-fragile test, the impossible-state parametrization, and propagating the
   cleanup-unconfirmed error, chained from the original, when a non-interrupt exception's own cleanup
-  attempt is unconfirmed while interrupt semantics are preserved. It is now the first queued
-  maintenance slice. Keep
+  attempt is unconfirmed while interrupt semantics are preserved. It is the in-flight slice. Keep
   remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
   contract, credential, or release activation occurred.
 release_and_owner_gates: >-
@@ -373,17 +378,18 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume with the live SENSE/RECONCILE described in `next_safe_slice`. No lab write lane is in
-  flight: PR #82 is merged as `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
+  Resume with the live SENSE/RECONCILE described in `next_safe_slice`. PR #82 is merged as
+  `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
   `e57576469f2fa87b76372918fc78a17e776e3cf0`, its T+22m post-merge sweep was clean, and every
-  merge-eligibility snapshot now requires the `pull_request`/`pr_number` identity fields. The pre-tag agent
+  merge-eligibility snapshot now requires the `pull_request`/`pr_number` identity fields. The
+  in-flight write lane is the Lab #81 package-smoke supervision hardening on branch
+  `hardening/package-smoke-supervision-20260814`; resume it through the ordinary PR gate. The pre-tag agent
   remainder is complete and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed; the only remaining
   joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which
   the joint tag decision is
-  handed back, never agent-executed. Do not publish or tag. The next agent-executable work is the
-  Lab #81 package-smoke supervision hardening; the other open maintenance issues follow per the
-  deterministic queue. Where the GitHub connector exposes the thread-aware route, collect its
+  handed back, never agent-executed. Do not publish or tag. The other open maintenance issues
+  follow per the deterministic queue. Where the GitHub connector exposes the thread-aware route, collect its
   `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
   ineligible rather than treating the shell GraphQL restriction as clear debt. This grants
   neither a merge nor a tag. The previously preserved short-redaction branch/commit

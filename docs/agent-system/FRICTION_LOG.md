@@ -2217,13 +2217,24 @@ the no-structural-fix conclusion is unchanged at four.
 - **workaround:** Treat pre-push prose as provisional and amend it in the same pipeline before the
   branch merges: state the push time, name the exact head and its hosted result, and describe any
   superseding head's proof as pending rather than implying it is green.
-- **occurrences:** 1 independent occurrence — the 2026-08-14 PR #65 base-refresh section.
+- **occurrences:** 2 independent occurrences — the 2026-08-14 PR #65 base-refresh section, and the
+  2026-08-14 PR #84 state prose (dated note below).
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked proof-boundary and evidence-truthfulness helpers.
 - **promotion:** Deliberately not promoted after one occurrence. The general defect — asserting a
   future state as settled fact — is not mechanically checkable, but if it recurs the cheapest honest
   layer is a narrow check that rejects publication-state claims in a ledger section whose own head is
   not yet proved, rather than prose asking authors to remember.
+
+_Note 2026-08-14 (second occurrence, PR #84 state prose):_ The PR #84 fix-round head asserted "no
+lab write lane is in flight" and was pushed at 21:56:50Z, minutes after the same session had
+already opened the Lab #81 hardening lane in a coordinator-owned worktree (branch created about
+21:52Z). The sentence was true when authored and was pushed without re-verifying it against the
+lane state the session itself had just changed. Repaired in the same pipeline before merge by
+naming the in-flight lane. The first occurrence's narrow-check idea was scoped to
+publication-state claims in ledger sections whose own head is unproved; lane-status prose in the
+state artifact has no equivalent mechanical check, so the class stays procedural task debt on the
+Lab #34 thread: re-verify lane-status sentences at push time exactly as pre-push ledger prose.
 
 ### FR-082 — the full pytest gate now brushes the default shell-tool timeout
 
