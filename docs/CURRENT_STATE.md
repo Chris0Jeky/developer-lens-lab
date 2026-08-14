@@ -48,9 +48,31 @@ active_wave:
       `delivered.package_smoke_process_tree`), which supersedes the parked-status prose and the
       resume references issue #29 comment `5243827843` and PR #65 comment `5243827873`, and its
       post-merge state reconciliation is DELIVERED through merged PR #83. The
-      in-flight slice is the three tracked merge-eligibility hardening follow-ups on branch
-      `hardening/merge-eligibility-snapshot-20260814`.
+      three tracked merge-eligibility hardening follow-ups are DELIVERED through merged PR #82
+      (see `delivered.merge_eligibility_snapshot_hardening`), and no lab write lane is in flight.
 delivered:
+  - merge_eligibility_snapshot_hardening: >-
+      DONE — PR #82 merged 2026-08-14T21:17:34Z as
+      `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
+      `e57576469f2fa87b76372918fc78a17e776e3cf0`, closing the three tracked follow-ups from issue
+      #29 comments `5269020473` and `5269401432`: pull-request identity binding
+      (`pull_request.number` cross-checked as `pr_number` on the four pull-request-scoped surfaces
+      and the accepted-review attestation, with the commit-scoped `checks` surface deliberately
+      outside the binding), the attested-review state allowlist (`APPROVED`/`COMMENTED` only), and
+      degenerate-identifier refusal on both the attestation and item sides; every new rule fails
+      toward refusal only. Proof: full local gate at implementation head
+      `4f10c0e19eee0c55c93670c634f7876cacf184a9` and fix-round head
+      `dcbb848c3f9709bdd1f7e2928cbb4dccc36e5329`, focused docs checks at the later docs-only
+      heads, hosted `Prove the lab` green at the final head (run `31840866416`) and at the merge
+      commit, and a MERGE-SOUND fresh-context review chain extended through both base absorptions
+      plus an accepted-and-fixed Codex round. The merge executed on an explicit owner instruction
+      at a demonstrated public head age of about 12m22s, below the binding 15-minute floor; that
+      FR-028-lineage process record is stated plainly on PR #82 comment `5298266904`, and issue
+      #29 checkpoint `5298304308` records the delivery. The 2026-08-14T21:39-21:41Z (T+22m)
+      post-merge sweep was clean: zero post-merge reviews, inline comments, or further top-level
+      comments, and main unmoved. From this delivery onward every merge-eligibility snapshot
+      requires the pull-request identity fields. No publication, release, or tag is authorized by
+      this merge.
   - package_smoke_process_tree: >-
       DONE — PR #65 merged 2026-08-14T13:03:19Z as
       `eab341b9f7cdf98ce64676a7c12f4ed61563573b` from final head
@@ -268,22 +290,21 @@ next_safe_slice: >-
   gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`; when it closes, the tag decision is
   handed back to the owner, never agent-executed. The three tracked helper-hardening follow-ups
   from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, dismissed-review
-  state allowlist, identifier validation) are IN FLIGHT on branch
-  `hardening/merge-eligibility-snapshot-20260814`; land that branch through the ordinary PR gate
-  before opening new work. After it lands the remaining agent work is the package-smoke hardening
-  tracked at Lab #81 and the deferred conditional-phrasing touch in the cross-repo contract and
-  maintenance protocol docs. FR-062 remains
+  state allowlist, identifier validation) are DELIVERED through merged PR #82, and the previously
+  deferred q-11 conditional-phrasing touch in the cross-repo contract and maintenance protocol
+  docs was completed by this reconciliation. LAB-REL-01 remains the sole ACTIVE card and its
+  remaining step is the owner-gated tag, so the next agent-executable work is tracked-issue
+  maintenance, starting with the package-smoke hardening at Lab #81. FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
-  and this read/resolve route does not authorize a merge. PR #65 is no longer a parked reference: it
-  was resumed and merged on 2026-08-14, so issue #29 comment `5243827843` and PR #65 comment
-  `5243827873` are superseded resume references kept only as history, and its portable patch is
-  landed rather than pending. That lane's deferred hardening is the five items tracked at Lab #81:
+  and this read/resolve route does not authorize a merge. The Lab #81 hardening is the five items
+  deferred from the merged PR #65 resume lane:
   the `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the Windows-only
   timing-fragile test, the impossible-state parametrization, and propagating the
   cleanup-unconfirmed error, chained from the original, when a non-interrupt exception's own cleanup
-  attempt is unconfirmed while interrupt semantics are preserved. It is later work, not a next push. Keep
+  attempt is unconfirmed while interrupt semantics are preserved. It is now the first queued
+  maintenance slice. Keep
   remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
   contract, credential, or release activation occurred.
 release_and_owner_gates: >-
@@ -338,10 +359,9 @@ canonical_evidence:
     was not rerun because that merge did not touch the proved seam
 blockers: >-
   No dependency-alert blocker remains: issue #5 is closed and the post-merge alert count is zero.
-  The merge-eligibility helper, Lane-P staging, changelog synchronisation, and q-11 media package
-  are all DELIVERED and no longer block. The three tracked
-  helper-hardening follow-ups on issue #29 are in flight on branch
-  `hardening/merge-eligibility-snapshot-20260814`. Lab
+  The merge-eligibility helper and its three tracked hardening follow-ups (merged PR #82), Lane-P
+  staging, changelog synchronisation, and the q-11 media package
+  are all DELIVERED and no longer block. Lab
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 is closed; the joint tag remains blocked on
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) alone, and no tag is authorized.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
@@ -353,22 +373,17 @@ late_review_debt: >-
   follow-up; issue #23 tracked as LAB-CONTRACT-03 (product-owned schema change); issue #6 remains open
   even though LAB-WBC1-06 is DONE.
 exact_resume_point: >-
-  Resume with the live SENSE/RECONCILE described in `next_safe_slice`. The in-flight slice is
-  branch `hardening/merge-eligibility-snapshot-20260814` (the three tracked merge-eligibility
-  hardening follow-ups from issue #29 comments `5269020473` and `5269401432`); land it through the
-  ordinary PR gate, remembering that from this slice onward the
-  helper requires the snapshot's `pull_request`/`pr_number` identity fields. The pre-tag agent
+  Resume with the live SENSE/RECONCILE described in `next_safe_slice`. No lab write lane is in
+  flight: PR #82 is merged as `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
+  `e57576469f2fa87b76372918fc78a17e776e3cf0`, its T+22m post-merge sweep was clean, and every
+  merge-eligibility snapshot now requires the `pull_request`/`pr_number` identity fields. The pre-tag agent
   remainder is complete and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed; the only remaining
   joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which
   the joint tag decision is
-  handed back, never agent-executed. Do not publish or tag. PR #65 is merged as
-  `eab341b9f7cdf98ce64676a7c12f4ed61563573b` from final head
-  `01d4368b812a9fa12aae377db31c5567b3bf393a`, its post-merge sweep was clean, and its resume
-  worktree on branch `resume/package-smoke-pr65-20260814` has been removed; the earlier parked
-  head `91cf991b96b242680ab6839decb110422ab9755d` and its portable patch/comment IDs are superseded
-  history requiring no unlocking event, and that lane's remaining hardening is issue #81 work.
-  Where the GitHub connector exposes the thread-aware route, collect its
+  handed back, never agent-executed. Do not publish or tag. The next agent-executable work is the
+  Lab #81 package-smoke supervision hardening; the other open maintenance issues follow per the
+  deterministic queue. Where the GitHub connector exposes the thread-aware route, collect its
   `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
   ineligible rather than treating the shell GraphQL restriction as clear debt. This grants
   neither a merge nor a tag. The previously preserved short-redaction branch/commit
