@@ -65,8 +65,9 @@ delivered:
       authorizes no release, publication, or tag.
   - q11_signoff_record: >-
       DONE — PR #80 merged 2026-08-14T12:01:27Z as
-      `672bd8e148b2cbc32bb956cb202aa17e43506c7e`: `HUMAN_TODO.md` q-11 is `[x]` with the approval's
-      exact scope, this artifact and the implementation ledger record the closure, and the sole
+      `672bd8e148b2cbc32bb956cb202aa17e43506c7e`:
+      `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is `[x]` with the approval's exact
+      scope, this artifact and the implementation ledger record the closure, and the sole
       remaining joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`.
       Proof: full local gate, hosted `Prove the lab` green at all three heads and the merge
       commit, a MERGE-SOUND/CONFIRMED review sequence with an exact-head attestation comment,

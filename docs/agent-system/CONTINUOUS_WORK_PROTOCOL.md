@@ -188,7 +188,9 @@ must be recollected, because the validity window and the aging floor are the sam
 quantum. A missing or malformed `collected_at` is `invalid_collected_at`, a `collected_at` after
 the observation time is `future_collected_at`, and a `pushed_at` after `collected_at` is
 `future_pushed_at`. The report carries both `age_minutes` and `snapshot_age_minutes` so the
-coordinator can see which of the two bounds is binding.
+coordinator can see which of the two bounds is binding, alongside the validated
+`pull_request_number` and the expected head/base SHAs, so a serialised report read away from its
+snapshot still names exactly which pull request and commits it evaluated.
 
 ### Formal review states
 

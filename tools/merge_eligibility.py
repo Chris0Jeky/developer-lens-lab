@@ -56,6 +56,11 @@ class MergeEligibilityReport:
     required_age_minutes: int
     expected_head_sha: str | None
     expected_base_sha: str | None
+    # A serialised report must name the pull request it evaluated, or two reports from head/base
+    # twins are indistinguishable once separated from their snapshots.  This is a carried field
+    # only: it is ``None`` exactly when the identity was unusable, which
+    # ``invalid_pull_request_number`` has already refused.
+    pull_request_number: int | None
 
     def as_dict(self) -> dict[str, object]:
         """Return a stable report suitable for a log or JSON response."""
@@ -68,6 +73,7 @@ class MergeEligibilityReport:
             "required_age_minutes": self.required_age_minutes,
             "expected_head_sha": self.expected_head_sha,
             "expected_base_sha": self.expected_base_sha,
+            "pull_request_number": self.pull_request_number,
         }
 
 
@@ -416,6 +422,7 @@ def evaluate_merge_eligibility(
         required_age_minutes=AGING_MINUTES_AFTER_PUSH,
         expected_head_sha=expected_head,
         expected_base_sha=expected_base,
+        pull_request_number=expected_pr,
     )
 
 

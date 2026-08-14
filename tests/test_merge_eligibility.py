@@ -131,6 +131,7 @@ def test_one_coherent_snapshot_passes_after_aging_floor() -> None:
     assert report.age_minutes == 15
     assert report.snapshot_age_minutes == 0
     assert report.required_age_minutes == 15
+    assert report.pull_request_number == PR_NUMBER
 
 
 def test_green_proof_before_fifteen_minutes_is_rejected() -> None:
@@ -187,7 +188,12 @@ def test_a_degenerate_pull_request_number_is_refused(number: object) -> None:
     snapshot = _snapshot()
     cast(dict[str, object], snapshot["pull_request"])["number"] = number
 
-    assert "invalid_pull_request_number" in _reasons(snapshot)
+    report = evaluate_merge_eligibility(snapshot, now=NOW)
+
+    assert "invalid_pull_request_number" in report.reasons
+    # The report never carries a number it did not validate, so a refused identity reads as
+    # absent rather than as whatever the snapshot claimed.
+    assert report.pull_request_number is None
 
 
 @pytest.mark.parametrize("pull_request", [PR_NUMBER, [str(PR_NUMBER)], "4242", None, {}])
@@ -643,6 +649,8 @@ def test_cli_reports_an_eligible_snapshot_without_failing(
     assert exit_code == 0
     assert printed["eligible"] is True
     assert printed["snapshot_age_minutes"] == 0
+    # A serialised report is read away from its snapshot, so it must name its own pull request.
+    assert printed["pull_request_number"] == PR_NUMBER
 
 
 def test_cli_fails_on_an_ineligible_snapshot(
