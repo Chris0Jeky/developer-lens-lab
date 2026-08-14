@@ -2093,8 +2093,13 @@ its own new tail, and the implementation ledger conflicted at the tail once more
 including the friction log itself, merged cleanly. The recorded procedure resolved it as merge
 `738b91e`: the incoming side was taken verbatim, the two files that the branch had never edited were
 confirmed hash-identical to the incoming blobs, the incoming note was kept in the position it
-annotates, and the branch's own sections were re-placed chronologically. `git diff --numstat` against
-the default branch then showed `+102/-0` for the ledger, proving zero main-side deletions. No
+annotates, and the branch's own sections were re-placed chronologically. The preservation proof is
+range-specific: `git diff --numstat 738b91e^2 738b91e -- docs/IMPLEMENTATION_LEDGER.md` reports
+`100 0`, so the merge itself added 100 ledger lines and deleted none of the main-side content. The
+branch total against that same main tip reached `102 0` only after the later amendments commit
+(`git diff --numstat 672bd8e 01d4368 -- docs/IMPLEMENTATION_LEDGER.md`); an earlier draft of this
+note quoted that 102 as if it measured the merge, which overstated the merge's range. The zero in
+either range is the preservation claim, and the merge-scoped 100/0 is the one that proves it. No
 renumbering was needed on this episode, because the incoming tail had not consumed any identifier the
 branch held.
 

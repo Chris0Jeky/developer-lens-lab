@@ -27,10 +27,13 @@ active_wave:
       `01d4368b812a9fa12aae377db31c5567b3bf393a` (see
       `delivered.package_smoke_process_tree`). The previously preserved PR #56 refresh worktree
       and its branch no longer exist locally, and the parked short-redaction branch/commit is no
-      longer a local ref or object (FR-073). The locally registered worktree on branch
-      `resume/package-smoke-pr65-20260814`, recorded on 2026-08-14 as an untouched observation at
-      the then-parked head, was the resume checkout for that delivery and has since been removed;
-      the earlier no-runtime-actor observation stands as written for the moment it was made.
+      longer a local ref or object (FR-073). The delivering coordinator created the worktree on
+      branch `resume/package-smoke-pr65-20260814` at 2026-08-14T09:36Z as the resume checkout for
+      the PR #65 delivery; that provenance is coordinator-observed, not inferred from the earlier
+      record. The delivery commits were authored in that worktree and pushed to the PR branch, and
+      the coordinator removed it after the clean post-merge sweep. The earlier no-runtime-actor
+      observation stands as written for the moment it was made: it predates the lane's start, and
+      the worktree was untouched between its creation and the lane beginning work.
       Unregistered leftover directories from earlier removed
       worktrees remain for manual disposition without content inspection.
     state: >-
@@ -254,18 +257,18 @@ next_safe_slice: >-
   handed back to the owner, never agent-executed. The natural next agent slices are the three
   tracked helper-hardening follow-ups on issue #29 comments `5269020473` and `5269401432`
   (PR-identity binding, dismissed-review state allowlist, identifier validation) and the
-  package-smoke hardening tracked at
-  https://github.com/Chris0Jeky/developer-lens-lab/issues/81. FR-062 remains
+  package-smoke hardening tracked at Lab #81. FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
   and this read/resolve route does not authorize a merge. PR #65 is no longer a parked reference: it
   was resumed and merged on 2026-08-14, so issue #29 comment `5243827843` and PR #65 comment
   `5243827873` are superseded resume references kept only as history, and its portable patch is
-  landed rather than pending. That lane's deferred hardening — the `SYSTEMROOT` absolute-path check,
-  `taskkill` already-exited diagnostics, the Windows-only timing-fragile test, and the
-  impossible-state parametrization — is tracked at
-  https://github.com/Chris0Jeky/developer-lens-lab/issues/81 and is later work, not a next push. Keep
+  landed rather than pending. That lane's deferred hardening is the five items tracked at Lab #81:
+  the `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the Windows-only
+  timing-fragile test, the impossible-state parametrization, and propagating the
+  cleanup-unconfirmed error, chained from the original, when a non-interrupt exception's own cleanup
+  attempt is unconfirmed while interrupt semantics are preserved. It is later work, not a next push. Keep
   remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
   contract, credential, or release activation occurred.
 release_and_owner_gates: >-
