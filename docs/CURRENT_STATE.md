@@ -42,8 +42,8 @@ active_wave:
       q-11 screenshot/video package v1 is delivered and owner-approved (see
       `delivered.q11_media_package`). PR #65 remains PARKED and not
       merge-sound after two review rounds; its exact resume reference remains issue #29 comment
-      `5243827843` and PR #65 comment `5243827873`. The in-flight slice is this documentation
-      reconciliation on branch `docs/q11-package-20260814`.
+      `5243827843` and PR #65 comment `5243827873`. The in-flight slice is the q-11 sign-off
+      record on branch `docs/q11-signoff-20260814`.
 delivered:
   - changelog_sync: >-
       DONE — PR #78 merged 2026-08-14T09:36:18Z as
