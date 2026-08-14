@@ -237,8 +237,7 @@ next_safe_slice: >-
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
-  and this read/resolve route does not authorize a merge. The three tracked helper-hardening
-  follow-ups on issue #29 are a later natural slice, not this one. PR #65's portable patch is a
+  and this read/resolve route does not authorize a merge. PR #65's portable patch is a
   PARKED REFERENCE only, not a next push: its exact resume reference remains issue #29 comment
   `5243827843` and PR #65 comment `5243827873`, with `synthetic_root =
   r"C:\Windows"` and `expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")`.

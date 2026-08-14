@@ -1235,7 +1235,9 @@ and unauthorised.
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic review. It is NOT tracked,
   staged, published, or attached to any release. Contents and SHA-256 digests:
   `report-full.png` `a9834cfd2adff46a2646105add0acffd5a6fc0630fdc6f5d0e876122dfda38c1` (full-page
-  headless-Chrome capture of the staged HTML asset served on `127.0.0.1`, bottom-trimmed),
+  headless-Chrome capture of the staged HTML asset served on `127.0.0.1`; the bottom trim removed
+  only blank canvas below the last rendered row, detected by background-color scan plus a 60px
+  margin, so no report content was cropped),
   `report-viewport.png` `a79d7c412ca643d65b67a5b2b12109e693cd88ab173ac1c174d60e6cc284a63c`
   (1280×900 above-the-fold capture), `report-scroll.gif`
   `e265fc80c612c248289dfaafefb2783bb83164f0210c124facbf2922bcee4057` (programmatic 14-step pan of

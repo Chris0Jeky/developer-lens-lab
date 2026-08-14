@@ -1887,6 +1887,14 @@ _Note 2026-08-13 (schema correction):_ The re-pin/preflight/unique isolated-lane
 the second tip movement and this isolated branch stayed stable. The ignored writer lease/guard
 remains selected enforcement debt on Lab #73 and is not implemented.
 
+_Note 2026-08-14 (related sighting, counted for this pattern without a collision):_ A new
+registered worktree appeared beside the primary checkout on branch
+`resume/package-smoke-pr65-20260814` at exactly the parked PR #65 head, with no tip movement and
+no new commits; no runtime actor is inferred and the observing coordinator did not write into it.
+No workaround was needed, so the occurrence count above is unchanged, but the sighting is recorded
+here so the Lab #73 lease/guard decision sees the full unexplained-worktree pattern; the
+observational record lives in `docs/CURRENT_STATE.md`.
+
 ### FR-071 — a read-only Git object comparison produced a false-positive block
 
 - **first-seen:** 2026-08-13
