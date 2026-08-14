@@ -1530,6 +1530,12 @@ adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/develope
 Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
 scaffolding is needed.
 
+_Note 2026-08-14 (PR #65 landed; the FR-053/FR-054 sentence in the 2026-08-10 note above is
+superseded):_ The parked branch was resumed and its base refreshed, so those two records no longer
+live only on an unmerged branch. They were renumbered to the log's next free identifiers on merge
+and now appear at the tail as FR-076 and FR-077; `FR-053` and `FR-054` stay permanently unassigned.
+The dated reconciliation note under FR-077 carries the full mapping.
+
 ### FR-055 — a post-removal PowerShell regex check raised an invalid pattern error
 
 - **first-seen:** 2026-08-10
@@ -1876,8 +1882,9 @@ helper remains a promotion proposal only.
   and frozen asset hashes before adoption; the worktree was not reset, cleaned, or overwritten.
 - **workaround:** Preserve the adopted patch untouched, re-pin branch/base state, and require the
   next writer to preflight before edit.
-- **occurrences:** 2 independent branch/worktree collision episodes — 2026-08-12 and 2026-08-13;
-  the 2026-08-13 episode included two tip movements.
+- **occurrences:** 4 independent branch/worktree collision episodes — 2026-08-12, 2026-08-13, and
+  2026-08-14; the 2026-08-13 episode included two tip movements, and the 2026-08-14 episode is the
+  default-branch advance recorded in detail as FR-080.
 - **task:** [Lab #73 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/73) owns the
   ignored per-worktree writer lease/guard.
 - **promotion:** At the second occurrence, select that per-worktree ignored writer lease/guard as
@@ -1894,6 +1901,23 @@ no new commits; no runtime actor is inferred and the observing coordinator did n
 No workaround was needed, so the occurrence count above is unchanged, but the sighting is recorded
 here so the Lab #73 lease/guard decision sees the full unexplained-worktree pattern; the
 observational record lives in `docs/CURRENT_STATE.md`.
+
+_Note 2026-08-14 (third episode; occurrence count raised to 3):_ During the PR #65 base refresh the
+default branch advanced mid-resolution and its new tail consumed the exact friction identifiers the
+in-flight slice had already allocated, which required aborting and retargeting the merge. That is a
+genuine third collision episode for this pattern, so the occurrence count above is raised from 2 to
+3 under the schema's allowance for updating `occurrences` on an existing entry. FR-080 carries the
+detailed record and its own promotion reasoning; the Lab #73 lease/guard remains the selected
+enforcement layer here and is still not implemented.
+
+_Note 2026-08-14 (fourth episode; occurrence count raised to 4):_ The same pattern recurred
+mirrored: while the merge-eligibility hardening slice was in flight on its own branch, the
+resumed PR #65 lane merged to the default branch and its landed friction tail consumed
+`FR-076` through `FR-081` — including the very identifier the in-flight branch had already
+allocated to its new entry. The refusal came from the hardened helper itself (`moved_base` on
+the pre-merge snapshot), the base was retargeted at the live default branch, and the in-flight
+entry was reallocated from the live tail as `FR-082`. FR-080's count was raised in the same
+pass; the two already selected layers remain the fix.
 
 ### FR-071 — a read-only Git object comparison produced a false-positive block
 
@@ -1995,7 +2019,175 @@ observational record lives in `docs/CURRENT_STATE.md`.
   better default for reproducible review media, so a recurrence should weigh promoting it as the
   canonical capture route rather than restoring the extension.
 
-### FR-076 — the full pytest gate now brushes the default shell-tool timeout
+### FR-076 — bounded writer delegation ended before a handoff
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** The assigned process-tree cleanup writer ended with uncommitted owned-path changes
+  and no completion handoff.
+- **impact:** A replacement writer had to re-establish the pinned branch/base and inspect the
+  preserved work-in-progress before continuing the same bounded slice.
+- **workaround:** Preserve the existing owned-path edits, verify branch and committed base before
+  takeover, and complete the normal focused/full proving route without expanding scope.
+- **occurrences:** 1 independent occurrence — issue #29 package-smoke process-tree slice on
+  2026-08-10.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  durable governor/delegation reliability follow-up.
+- **promotion:** Deliberately not promoted after one occurrence; do not infer a cause from the
+  missing handoff.
+
+### FR-077 — bundled GitHub helper hit a Windows subprocess-decoding failure again
+
+- **first-seen:** 2026-08-10
+- **status:** `workaround-documented`
+- **symptom:** PR #65's bundled `inspect_pr_checks.py` completed authentication and run fetch,
+  then Windows cp1252 decoding failed on byte `0x81`; its later `log_text` use was `None`.
+- **impact:** The helper could not provide CI-log evidence for the completed run.
+- **workaround:** Use the separately retrieved completed-run metadata and do not treat the failed
+  helper output as evidence.
+- **occurrences:** 2 independent occurrences including FR-047 — a GitHub subprocess response
+  crossed an unhandled Windows text-decoding boundary. The same event is already summarised in the
+  dated PR #65 note above the FR-055 heading as occurrence 2 of the FR-047 lineage; this entry is
+  that occurrence's detailed record, not an additional occurrence.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) comment
+  `5243638848` tracks explicit encoding/error handling at the bundled helper subprocess boundary.
+- **promotion:** The cheapest enforcing layer is explicit encoding/error handling in that helper,
+  but it stays task debt because the plugin cache is outside this repository; capture is not
+  permission to detour.
+
+_Note 2026-08-14 (PR #65 base refresh renumbering):_ The two entries above were written on the
+parked PR #65 branch as `FR-053` and `FR-054` while the default branch's tail was `FR-052`. The
+default branch then advanced past those numbers without assigning them, recording in the dated PR
+#65 note above the FR-055 heading that the records lived only on the parked branch. This log's
+schema requires new entries at the end with the next free `FR-NNN`, so on merge they were re-placed
+at the tail as `FR-076` and `FR-077`; `FR-053` and `FR-054` stay permanently unassigned and that
+earlier note resolves here. No entry that exists on the default branch was renumbered or edited.
+`FR-077`'s original `tracked-task-debt` status was outside the schema's six named states and was
+corrected to `workaround-documented`; FR-072 records why an out-of-vocabulary status is a defect.
+No other field content changed.
+
+### FR-078 — merging an advanced default branch into a long-parked branch collided only in append-only ledgers
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** Merging the advanced default branch into the four-day-parked PR #65 branch conflicted
+  in exactly the two append-only documents — this log and the implementation ledger — because both
+  sides had appended at the same former end of file, while every code path merged cleanly.
+- **impact:** A textual conflict resolution can silently drop landed entries from either side, which
+  is the FR-046 failure mode, and it forces an identifier reconciliation before the slice continues.
+- **workaround:** Restore both files to the incoming default-branch content verbatim, confirm each
+  restored file hashes identically to that branch's blob, then re-place only the parked branch's own
+  additions at their schema-correct positions — the tail for this log, the chronological position
+  for the ledger. Verified: both files matched the incoming blob hashes before re-placement, and the
+  diff against the default branch afterwards contained only additions.
+- **occurrences:** 2 independent occurrences including FR-046 — an append-only history was at risk
+  of reduction during a merge resolution.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked parent-range and history-preservation helpers.
+- **promotion:** At the second occurrence the selected cheapest enforcing layer is the recorded
+  restore-verbatim-then-re-place procedure with its blob-hash check, together with the FR-046
+  parent-range comparison. An automated append-only merge driver stays task debt because it would
+  need per-file schema knowledge that only these two documents currently justify.
+
+### FR-079 — the package smoke's own hardening hides a user-installed `uv` from its resolver
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** With no PATH `uv`, the package smoke failed to resolve any compatible `uv` on a host
+  where the FR-050 user-level module route reports a version inside the required range. The smoke
+  builds a deliberately hardened child environment that sets `PYTHONNOUSERSITE`, so its
+  current-interpreter module probe cannot see a `uv` installed into the user site directory.
+  Invoking the smoke through the project environment fails for the separate reason that the synced
+  project interpreter carries no `uv` module at all.
+- **impact:** The final step of the declared gate looks unrunnable on a host where every other step
+  passes through the module route, which invites either skipping the smoke or weakening the child
+  environment the smoke exists to prove.
+- **workaround:** Run the smoke from the FR-001 repository-external standard-library bootstrap that
+  holds `uv` in its own environment's site directory rather than the user site directory, leaving
+  the rest of the gate on whichever route FR-001 selected. Verified: the smoke then completed
+  successfully on the refreshed PR #65 tree while the hardened child environment stayed unchanged.
+- **occurrences:** 1 independent occurrence — the 2026-08-14 PR #65 base-refresh gate.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked proof-boundary helpers; the underlying environment cost belongs to the FR-001 lineage.
+- **promotion:** Deliberately not promoted after one occurrence, and explicitly not by relaxing
+  `PYTHONNOUSERSITE`, which is part of what the smoke asserts. If it recurs, the cheapest honest
+  layer is a maintenance-protocol sentence naming the bootstrap interpreter as the smoke's
+  invocation route on a host without a PATH `uv`.
+
+### FR-080 — the default branch advanced mid-slice and consumed the identifiers a parked branch was about to use
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-verified`
+- **symptom:** During a base refresh of the parked PR #65 branch, the default branch advanced by a
+  merge while the resolution was in progress. The newly landed tail assigned `FR-074` and `FR-075`,
+  the exact next-free identifiers the refresh had already allocated to the parked branch's two
+  renumbered entries, and a second merge into the same worktree was needed to observe it.
+- **impact:** A resolution completed against the superseded base would have committed duplicate
+  friction identifiers and a stale ledger position, forcing a second reconciliation pass after the
+  work had already been proved.
+- **workaround:** Re-read the remote ref immediately before committing the resolution, retarget the
+  merge at the live default branch when it has advanced, and reallocate identifiers from the live
+  tail rather than the planned one. Verified: the retargeted merge produced no duplicate identifier,
+  and the pinned base remained an ancestor of the live tip, so nothing was skipped.
+- **occurrences:** 4 independent occurrences in the FR-070 lineage — 2026-08-12, 2026-08-13, and
+  two distinct 2026-08-14 episodes: the one this entry records in detail, and the mirrored
+  same-day episode noted below. In every one, shared branch state
+  advanced under an in-flight slice.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked proof-boundary and state-reconciliation helpers; FR-070 carries the earlier episodes of
+  this pattern and its occurrence count now includes this one.
+- **promotion:** The selected cheapest enforcing layer is the re-read of the remote ref immediately
+  before a merge resolution is committed, which the existing merge-eligibility helper's exact-head
+  floor already expresses for merges; FR-070 separately selects the Lab #73 per-worktree writer
+  lease/guard. Extending the helper to cover in-progress conflict resolution stays task debt.
+  Judgment restated explicitly at three episodes rather than two: the no-structural-fix conclusion
+  still holds. All three episodes are the same shared-state-advance pattern that the two already
+  selected layers address, and the only structural alternative — replacing this log's sequential
+  human-readable identifier scheme with a non-contending one — would be a large change to a document
+  whose readability is its point, to solve a collision the cheap re-read already catches.
+
+_Note 2026-08-14 (justification corrected):_ This entry originally stated that FR-070's occurrence
+count was left unadjusted because the slice may not edit entries that exist on the default branch.
+That was wrong as written: the schema explicitly permits updating `occurrences` on an existing entry
+and adding a dated note, and the bounded instruction not to renumber or rewrite landed entries was
+never a bar to a permitted occurrence update. FR-070 has since been raised to three occurrences with
+its own dated note citing this entry, and the sentence above is restated as the deliberate,
+now-reconciled choice it should have been. The `occurrences` and `promotion` fields above were
+corrected in the same pass: they had counted two occurrences and reasoned from two, which
+contradicted FR-070's three episodes once that count was raised. Both now read three, and the
+promotion field states explicitly that the no-structural-fix conclusion survives at three.
+
+_Note 2026-08-14 (fourth episode, mirrored; occurrence count raised to 4):_ Hours after this
+entry landed, the identical collision recurred with the roles reversed: this branch's merge
+consumed `FR-076` through `FR-081` out from under the in-flight merge-eligibility hardening
+slice, whose already-written entry had allocated `FR-076` and was reallocated as `FR-082` from
+the live tail. The re-read-before-resolution workaround held (the hardened helper's
+`moved_base` refusal forced the recollection), FR-070 was raised to four in the same pass, and
+the no-structural-fix conclusion is unchanged at four.
+
+### FR-081 — ledger prose written before a push asserted a state the pushed head contradicted
+
+- **first-seen:** 2026-08-14
+- **status:** `workaround-documented`
+- **symptom:** A ledger section authored before its branch was pushed asserted that nothing had been
+  pushed, was committed unamended, and then remained in the archive after the head was in fact
+  pushed and hosted proof ran against it. A later review found the landed sentence contradicting the
+  observable branch and check state.
+- **impact:** The permanent evidence archive carried a false claim about publication state — the
+  most load-bearing kind of claim it makes — and a reader reconstructing the slice from the ledger
+  alone would have concluded the head was never published.
+- **workaround:** Treat pre-push prose as provisional and amend it in the same pipeline before the
+  branch merges: state the push time, name the exact head and its hosted result, and describe any
+  superseding head's proof as pending rather than implying it is green.
+- **occurrences:** 1 independent occurrence — the 2026-08-14 PR #65 base-refresh section.
+- **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  checked proof-boundary and evidence-truthfulness helpers.
+- **promotion:** Deliberately not promoted after one occurrence. The general defect — asserting a
+  future state as settled fact — is not mechanically checkable, but if it recurs the cheapest honest
+  layer is a narrow check that rejects publication-state claims in a ledger section whose own head is
+  not yet proved, rather than prose asking authors to remember.
+
+### FR-082 — the full pytest gate now brushes the default shell-tool timeout
 
 - **first-seen:** 2026-08-14
 - **status:** `workaround-documented`

@@ -1092,6 +1092,25 @@ Append milestone evidence. Live GitHub facts are snapshots and must be refreshed
   context, Ruff format/check, Pyright, 193 pytest passes with 3 declared Windows symlink skips,
   strict MkDocs, hygiene, and diff check. No shared prompt block or parity manifest changed.
 
+## 2026-08-10 - Package-smoke ordinary process-tree timeout cleanup (issue #29)
+
+- Replaced direct `subprocess.run` timeout supervision with `Popen` plus bounded `communicate`.
+  POSIX children run in a new session and timeout cleanup targets that process group; Windows uses
+  fully qualified `System32\\taskkill.exe /PID <pid> /T /F` with no shell and discarded cleanup
+  streams. Both paths require a bounded direct-child reap before reporting the ordinary timeout.
+- Cleanup denial, failure, or bounded-drain failure reports only the fixed redacted
+  `package smoke process-tree cleanup could not be confirmed` error; this slice makes no claim
+  about escaping descendants or hostile-writer containment.
+- Added invented child/grandchild lock fixture coverage. On Windows, a two-second timeout proved
+  the lock resource became available after `taskkill /T`; focused
+  `py -3 -m uv run pytest tests/test_package_metadata.py -q` passed (34 tests).
+- The full locked code/config gate passed from this worktree: locked sync, doctor, context, Ruff
+  format/check, Pyright, 198 tests with 3 declared unavailable-symlink skips, strict MkDocs, and
+  hygiene. The generated documentation directory remains ignored.
+- Written on the parked PR #65 branch and re-placed unchanged at its chronological position during
+  the 2026-08-14 base refresh; the 2026-08-14 continuation at the end of this ledger carries the
+  refreshed base, the friction renumbering, the cross-platform test repair, and the re-proved gate.
+
 ## 2026-08-12 - Report-only Lab merge-eligibility helper (FR-028 / issue #29)
 
 - Delivered the enforcement layer FR-028's `promotion` field had selected:
@@ -1273,6 +1292,89 @@ delivered package v1, closing `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-1
 record and its exact scope live in `HUMAN_TODO.md`. The approval is aesthetic acceptance of the
 hashed package bytes only; the joint tag remains blocked on product
 `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` and stays owner-executed.
+
+## 2026-08-14 - PR #65 base refresh and cross-platform taskkill test repair (issue #29)
+
+- Resumed the parked package-smoke process-tree branch by merging the current default branch into
+  it as an ordinary merge commit. Every code path merged cleanly; the only conflicts were the two
+  append-only documents, which both sides had extended at the same former end of file. Both files
+  were restored to the incoming default-branch content and confirmed identical to that branch's
+  blob by object hash before this branch's own additions were re-placed, so the resolution removes
+  no landed line from either document. FR-078 records the merge shape and the verified procedure.
+- The default branch advanced mid-slice, past the base this resume was planned against, and the
+  newly landed tail had itself taken `FR-074` and `FR-075`. The refresh was therefore retargeted at
+  the live default branch rather than the planned base, since merging the superseded base would
+  have landed colliding identifiers. FR-080 records the divergence; FR-070 is its lineage.
+- Renumbered this branch's two friction entries to the log's next free identifiers at the tail:
+  `FR-053` became `FR-076` and `FR-054` became `FR-077`. The default branch had already recorded,
+  in its dated PR #65 note, that these records lived only on the parked branch; `FR-053` and
+  `FR-054` therefore stay permanently unassigned, and that note's reference is resolved by the
+  dated reconciliation note under the renumbered pair. No entry that exists on the default branch
+  was renumbered or edited. `FR-077`'s original `tracked-task-debt` status was outside the schema's
+  six named states and is now `workaround-documented`; FR-072 records why that is a defect.
+- Repaired the hosted Ubuntu failure in the mocked Windows timeout tests. Three sites set
+  `SYSTEMROOT` from a raw literal that encoded a doubled backslash, and one assertion hard-coded
+  native separators, so the expectation could only match on a Windows host. Each site now sets
+  `SYSTEMROOT` from a `synthetic_root` literal, and the assertion compares against
+  `expected_taskkill`, built as `str(Path(synthetic_root) / "System32" / "taskkill.exe")` — the same
+  expression production uses — so the expectation renders through host `Path` semantics on either
+  platform. Production code in `scripts/verify_package_smoke.py` was not changed.
+- The full declared gate passed from this worktree through the FR-050 user-level `uv 0.12.4` module
+  route, with the cache and managed-Python directories held outside the repository per FR-060:
+  locked sync with `uv.lock` unmodified, doctor, context verification, Ruff format and check, strict
+  Pyright, the full pytest suite, strict MkDocs, hygiene, the card programme check, and
+  `git diff --check`. The focused
+  `pytest tests/test_package_metadata.py -k "taskkill or timeout"` selection passed 8 tests.
+- The package smoke needed a separate route and passed only through a repository-external
+  standard-library bootstrap holding `uv` in its own site directory. The smoke deliberately sets
+  `PYTHONNOUSERSITE`, which makes its current-interpreter module probe unable to see a
+  user-installed `uv`; FR-079 records that interaction and why it is environment debt rather than a
+  production defect.
+- Scope stayed C0 code, tests, and docs. No capability, authority, release, or tag state changed,
+  and no real or private input was inspected. This section originally asserted that nothing was
+  pushed; that was written before the push and is corrected here. The head `ed281ec` was pushed to
+  the PR branch at 2026-08-14T11:59:46Z and the hosted `Prove the lab` check succeeded at that exact
+  head. The fix round recorded in the next section supersedes `ed281ec`, and its own hosted proof is
+  pending at the time this correction is authored. FR-081 records the pre-push-prose defect.
+
+## 2026-08-14 - PR #65 review fix round 1 (issue #29)
+
+- A fresh-context adversarial review returned MERGE-SOUND with no CRITICAL or HIGH findings against
+  `ed281ec`, and a Codex round posted two P2s at the same exact head that independently confirmed
+  two of its MEDIUMs. Because two independent reviews converged, this round changes production
+  supervision in `scripts/verify_package_smoke.py`, which the preceding slice had deliberately left
+  untouched.
+- Unconfirmed process-tree cleanup now raises a distinct `ProcessTreeCleanupUnconfirmedError`
+  rather than a generic `RuntimeError`, and `_probe_uv_command` re-raises it instead of swallowing
+  it. Previously an unreaped tree was indistinguishable from an unusable candidate, so the resolver
+  moved on to the next candidate while that tree was still running. The class carries an `Error`
+  suffix because Ruff `N818` rejects the bare name.
+- `_run` supervised its child only against `TimeoutExpired`, so any other exit from `communicate` —
+  notably `KeyboardInterrupt` — left the child detached with its pipes open. A catch-all now reaps
+  the tree on the existing bounded budget, releases the pipes, and re-raises the original exception
+  unchanged. This deliberately does not adopt `with subprocess.Popen(...)`: `Popen.__exit__` ends in
+  an unbounded `wait()`, which would convert the fail-closed cleanup-unconfirmed path into an
+  indefinite hang on the very tree that could not be reaped. Timeout-branch semantics are otherwise
+  unchanged.
+- Both guards carry a discriminating test, and each was verified to fail against a mutated build
+  with that guard removed rather than merely passing against the fixed one.
+- Closed a vacuous-coverage gap: the fail-closed cleanup test was the only mocked-Windows timeout
+  test that never set `SYSTEMROOT`, so on a non-Windows host it exercised the absent-root early
+  return and its failed-taskkill assertions asserted nothing. It now sets the synthetic root, and a
+  sibling test covers the absent-`SYSTEMROOT` branch deterministically, asserting that no
+  unqualified `taskkill` is attempted when the system root is unknown.
+- Friction: added a dated forward pointer under the landed stale note that still described
+  FR-053/FR-054 as living only on the parked branch; raised FR-070 to three occurrences with a dated
+  note citing FR-080 and corrected FR-080's justification, which had wrongly claimed such an update
+  was forbidden; and added FR-081 for the pre-push ledger prose.
+- Deferred by coordinator decision to
+  [Lab #81 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/81), deliberately
+  untouched here: the `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the
+  Windows-only timing-fragile test, and the impossible-state parametrization.
+- Scope stayed C0 code, tests, and docs. No capability, authority, release, or tag state changed,
+  no real or private input was inspected, and `uv.lock` was not modified. This section was authored
+  before its head was pushed; the exact-head hosted result is recorded by the PR's `Prove the lab`
+  check.
 
 ## 2026-08-14 - Merge-eligibility snapshot hardening (issue #29 follow-ups)
 
