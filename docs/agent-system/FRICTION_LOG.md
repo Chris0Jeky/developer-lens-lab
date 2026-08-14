@@ -1124,12 +1124,14 @@ selected ownership-token/merge-lease preflight remains unimplemented.
   plus smaller file-scoped patches.
 - **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
   atomic failure as the guard against partial state updates.
-- **occurrences:** 6 independent occurrences — the stale combined hunk during sdist current-base
+- **occurrences:** 7 independent occurrences — the stale combined hunk during sdist current-base
   state sync, the ambiguous FR-033 status hunk during PR #55 review correction, the unanchored
   FR-033 occurrence and status edits during PR #55 post-merge reconciliation, and the unanchored
   FR-037 status edit during issue #58 proof reconciliation on 2026-08-09, plus the console-rendered
-  em-dash context mismatch during the issue #34 PR #56 factual follow-up on 2026-08-10.
-- **task:** lab issue #34 tracks external patch-context and command-boundary workflow hardening.
+  em-dash context mismatch during the issue #34 PR #56 factual follow-up on 2026-08-10, plus the
+  under-anchored FR-044 status patch during PR #87 on 2026-08-15.
+- **task:** [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks external
+  patch-context and command-boundary workflow hardening.
 - **promotion:** At the second occurrence, the selected enforcement layer was an exact section-header
   anchor plus a pre-stage diff assertion. Later occurrences show that an ad-hoc command does not
   reliably enforce that guard; a checked state-sync helper is the selected task-debt layer on
@@ -1167,6 +1169,11 @@ _Note 2026-08-10 (PR #56 factual follow-up):_ A combined three-file patch used t
 mojibake form of an em dash in repeated friction-log context. The patch failed atomically before
 changing any file. UTF-8 reads plus smaller section-anchored patches then applied the intended
 changes; the checked state-sync helper remains the selected enforcement layer.
+
+_Note 2026-08-15 (occurrence 7, PR #87):_ An under-anchored FR-044 status patch first matched
+FR-004's repeated status line. Immediate exact-diff inspection caught it, FR-004 was restored before
+commit, and a heading-anchored retry changed FR-044 only. No commit, push, GitHub object, or
+protected byte contained the transient edit.
 
 ### FR-035 — an unannounced post-merge state worktree appeared at live main
 
