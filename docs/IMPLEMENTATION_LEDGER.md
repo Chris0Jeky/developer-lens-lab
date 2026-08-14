@@ -1449,3 +1449,43 @@ hashed package bytes only; the joint tag remains blocked on product
   attested identifier, not just the first; and a present-but-non-mapping `pull_request` is pinned
   to `invalid_pull_request_number`. Each was confirmed discriminating by temporarily reverting the
   guarded code and observing the failure; no revert was committed.
+
+## 2026-08-14 - Package-smoke supervision hardening (issue #81 items 1-5)
+
+- Landed the five tracked supervision-hardening items from the PR #65 resume reviews (issue #81
+  body items 1-4 plus issue #81 comment `5293597118`) as one bounded slice on branch
+  `hardening/package-smoke-supervision-20260814` from base
+  `02afd7c37b3c7d0a30551025a1724fb5aa5d064b`, changing only `scripts/verify_package_smoke.py`
+  and `tests/test_package_metadata.py` plus this ledger and the hardening backlog.
+- A relative `SYSTEMROOT` now fails closed before any cleanup binary is resolved, because a
+  relative root would resolve `taskkill.exe` against the current working directory; no value
+  reaches error text.
+- `taskkill` returncode 128 (PID not found) is treated as the Windows counterpart of the POSIX
+  `ProcessLookupError`: the direct child that exited between the communicate timeout and cleanup
+  falls through to the confirming reap and reports the ordinary timeout instead of
+  cleanup-unconfirmed. Every other nonzero returncode still fails closed.
+- The supervision catch-all now splits its exit classes: an ordinary `Exception` whose tree was
+  not confirmed reaped is reported as `ProcessTreeCleanupUnconfirmedError` chained from the
+  original, so `_probe_uv_command`'s candidate fallback can no longer swallow an unconfirmed tree
+  and start the next probe beside it; interrupt-only exits (`KeyboardInterrupt`, `SystemExit`)
+  propagate unchanged, preserving the reviewed do-not-mask semantics, and pipe release stays under
+  the existing `try/finally`.
+- Test seams: the module docstring now states the real-taskkill coverage boundary (Windows-only,
+  timing-fragile under load/AV, zero deterministic coverage of the real Windows cleanup path on
+  the ubuntu-latest hosted runner); the `nonzero` resolver parametrization raises like the real
+  `_run` instead of returning a shape it can never produce; the named command-timeout constant is
+  proved to reach supervision by a monkeypatched sentinel that a hardcoded literal fails; and the
+  remaining literal `300` assertions were replaced by the imported constant.
+- Proof at implementation head `c7a14cba5cad65aed8931d5627b9c1bbd2b4e86c` via the FR-050
+  `py -3 -m uv` module route with `--locked`: focused `pytest tests/test_package_metadata.py`
+  43 passed; then the full gate green (ruff format --check, ruff check, pyright, full pytest
+  292 passed 0 skipped on this Windows host, strict mkdocs, hygiene, context verify), with
+  `uv.lock` untouched. Four discrimination checks - a hardcoded communicate timeout, a neutered
+  absolute-root check, a reverted 128 allowance, and a neutered promotion raise - each failed the
+  matching new test when temporarily applied; no revert was committed. On the hosted ubuntu
+  runner the real-taskkill integration test is skipped, so the hosted pass/skip counts differ
+  from the local run. This section was authored before its head was pushed; the exact-head hosted
+  result is recorded by the pull request's `Prove the lab` check.
+- Scope stayed C0 invented mocks; no capability, authority, release, publication, or tag state
+  changed, no real or private input was inspected, and no data, model, telemetry, or credential
+  lane was touched.
