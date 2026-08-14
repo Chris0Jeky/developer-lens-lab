@@ -1376,6 +1376,44 @@ hashed package bytes only; the joint tag remains blocked on product
   before its head was pushed; the exact-head hosted result is recorded by the PR's `Prove the lab`
   check.
 
+## 2026-08-14 - Post-merge state reconciliation after PR #65 (issue #29)
+
+- PR #65 merged 2026-08-14T13:03:19Z as `eab341b9f7cdf98ce64676a7c12f4ed61563573b` from final head
+  `01d4368b812a9fa12aae377db31c5567b3bf393a`, closing the package-smoke process-tree lane that had
+  been parked since 2026-08-10 and was resumed per the issue #29 recipe.
+- Merge evidence, recorded here because the state artifact is a resume point rather than an evidence
+  archive: hosted `Prove the lab` was green at each of the three heads `ed281ec`, `1ecc8b7`, and
+  `01d4368`, the last of which is the merged final head. The review sequence was a MERGE-SOUND
+  fresh-context review, a micro-verification round, and a CONFIRMED CLEAN final round, reaching the
+  two-fix-round ceiling. All 5 Codex threads were triaged and resolved. The post-merge sweep at
+  2026-08-14T13:35Z, T+32 after the merge, found zero post-merge reviews and zero post-merge
+  comments, with all 5 threads resolved.
+- Reconciled `docs/CURRENT_STATE.md`, which still described PR #65 as open, PARKED, CONFLICTING at
+  the superseded head `91cf991b…`, and as something not to receive another fix push. The stale
+  claims in the active-wave writer and state fields, in `next_safe_slice`, and in
+  `exact_resume_point` are replaced with the merged record, and a new
+  `delivered.package_smoke_process_tree` entry carries the delivery evidence in the same shape as
+  its sibling lanes. The superseded resume references (issue #29 comment `5243827843`, PR #65
+  comment `5243827873`) are retained but explicitly marked as history rather than as a live
+  unlocking path. The pinned `active_wave[0].lane` scalar was deliberately left untouched, because
+  `tests/test_context.py` asserts it exactly.
+- The resume point states only what the artifact's own structure supports: the pre-tag agent
+  remainder is complete, the Lab q-11 gate is closed by the 2026-08-14 owner approval recorded
+  through merged PR #80, and the sole remaining joint-tag blocker is the product gate
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which the joint v0.1.0 tag decision
+  returns to the owner and is never agent-executed. No new work was invented.
+- Raised FR-078 to three occurrences with a dated note for the PR #65 round-2 ledger-tail conflict
+  resolved as merge `738b91e`, where the restore-verbatim-then-re-place procedure again produced a
+  zero-deletion result. Its promotion reasoning is restated explicitly for three episodes: the
+  recorded procedure still holds and the case for it is stronger than at two, while an automated
+  append-only merge driver stays task debt.
+- Deferred package-smoke hardening from the merged lane is tracked at
+  [Lab #81 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/81) and is later work.
+- Scope stayed C0 docs, limited to `docs/CURRENT_STATE.md`, `docs/agent-system/FRICTION_LOG.md`, and
+  this ledger. No capability, authority, release, publication, or tag state changed, no real or
+  private input was inspected, and `uv.lock` was not modified. This section was authored before its
+  head was pushed; the exact-head hosted result is recorded by the PR's `Prove the lab` check.
+
 ## 2026-08-14 - Merge-eligibility snapshot hardening (issue #29 follow-ups)
 
 - Landed the three tracked snapshot-hardening follow-ups from PR #68's Codex triage (issue #29

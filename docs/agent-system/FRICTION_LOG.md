@@ -2081,14 +2081,37 @@ No other field content changed.
   additions at their schema-correct positions — the tail for this log, the chronological position
   for the ledger. Verified: both files matched the incoming blob hashes before re-placement, and the
   diff against the default branch afterwards contained only additions.
-- **occurrences:** 2 independent occurrences including FR-046 — an append-only history was at risk
-  of reduction during a merge resolution.
+- **occurrences:** 3 independent occurrences including FR-046 — an append-only history was at risk
+  of reduction during a merge resolution: the FR-046 episode, this entry's original PR #65 base
+  refresh, and the PR #65 round-2 refresh recorded in the dated note below.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked parent-range and history-preservation helpers.
-- **promotion:** At the second occurrence the selected cheapest enforcing layer is the recorded
+- **promotion:** The selected cheapest enforcing layer is the recorded
   restore-verbatim-then-re-place procedure with its blob-hash check, together with the FR-046
-  parent-range comparison. An automated append-only merge driver stays task debt because it would
-  need per-file schema knowledge that only these two documents currently justify.
+  parent-range comparison. Judgment restated explicitly at three episodes rather than two: that
+  layer still holds, and the case for it is stronger than at two rather than weaker. The third
+  episode was resolved by the same procedure at the cost of one resolution step, with a
+  zero-deletion numstat check proving the result, so the procedure is demonstrably sufficient rather
+  than merely plausible. An automated append-only merge driver stays task debt for the same reason
+  as before — it would need per-file schema knowledge that only these two documents currently
+  justify — and a driver that inferred that schema wrongly would fail in exactly the silent-deletion
+  way the procedure exists to prevent.
+
+_Note 2026-08-14 (third episode; occurrence count raised to 3):_ The PR #65 round-2 base refresh hit
+this pattern again. The default branch had advanced to a second later tip while the branch carried
+its own new tail, and the implementation ledger conflicted at the tail once more; every other path,
+including the friction log itself, merged cleanly. The recorded procedure resolved it as merge
+`738b91e`: the incoming side was taken verbatim, the two files that the branch had never edited were
+confirmed hash-identical to the incoming blobs, the incoming note was kept in the position it
+annotates, and the branch's own sections were re-placed chronologically. The preservation proof is
+range-specific: `git diff --numstat 738b91e^2 738b91e -- docs/IMPLEMENTATION_LEDGER.md` reports
+`100 0`, so the merge itself added 100 ledger lines and deleted none of the main-side content. The
+branch total against that same main tip reached `102 0` only after the later amendments commit
+(`git diff --numstat 672bd8e 01d4368 -- docs/IMPLEMENTATION_LEDGER.md`); an earlier draft of this
+note quoted that 102 as if it measured the merge, which overstated the merge's range. The zero in
+either range is the preservation claim, and the merge-scoped 100/0 is the one that proves it. No
+renumbering was needed on this episode, because the incoming tail had not consumed any identifier the
+branch held.
 
 ### FR-079 — the package smoke's own hardening hides a user-installed `uv` from its resolver
 
