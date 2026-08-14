@@ -1518,12 +1518,6 @@ the remaining enforcement task debt is outside this repository in the plugin cac
 FR-053/FR-054 records remain only on the parked, unmerged PR #65 branch and are not claims about
 main.
 
-_Note 2026-08-14 (PR #65 landed; the sentence above is superseded):_ The parked branch was resumed
-and its base refreshed, so those two records no longer live only on an unmerged branch. They were
-renumbered to the log's next free identifiers on merge and now appear at the tail as FR-076 and
-FR-077; `FR-053` and `FR-054` stay permanently unassigned. The dated reconciliation note under
-FR-077 carries the full mapping.
-
 The first state worktree guard stopped safely because Git forward slashes and PowerShell backslashes
 compared literally; no worktree or branch was created. `Resolve-Path` normalization fixed the guard
 on the next attempt. This is occurrence 1; see [Lab #34 comment 5243851975](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5243851975).
@@ -1535,6 +1529,12 @@ passed, but hosted pytest enforced the exact stable lane scalar and failed run `
 adjacent; see [PR #66 comment 5244014884](https://github.com/Chris0Jeky/developer-lens-lab/pull/66#issuecomment-5244014884).
 Occurrence 1; the existing full test is already the cheapest enforcing layer, so no promotion or
 scaffolding is needed.
+
+_Note 2026-08-14 (PR #65 landed; the FR-053/FR-054 sentence in the 2026-08-10 note above is
+superseded):_ The parked branch was resumed and its base refreshed, so those two records no longer
+live only on an unmerged branch. They were renumbered to the log's next free identifiers on merge
+and now appear at the tail as FR-076 and FR-077; `FR-053` and `FR-054` stay permanently unassigned.
+The dated reconciliation note under FR-077 carries the full mapping.
 
 ### FR-055 — a post-removal PowerShell regex check raised an invalid pattern error
 
@@ -2120,17 +2120,21 @@ No other field content changed.
   merge at the live default branch when it has advanced, and reallocate identifiers from the live
   tail rather than the planned one. Verified: the retargeted merge produced no duplicate identifier,
   and the pinned base remained an ancestor of the live tip, so nothing was skipped.
-- **occurrences:** 2 independent occurrences including FR-070 — shared branch state advanced under
-  an in-flight slice.
+- **occurrences:** 3 independent occurrences in the FR-070 lineage — 2026-08-12, 2026-08-13, and
+  this 2026-08-14 episode, which this entry records in detail. In every one, shared branch state
+  advanced under an in-flight slice.
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked proof-boundary and state-reconciliation helpers; FR-070 carries the earlier episodes of
   this pattern and its occurrence count now includes this one.
-- **promotion:** At the second occurrence the selected cheapest enforcing layer is the re-read of
-  the remote ref immediately before a merge resolution is committed, which the existing
-  merge-eligibility helper's exact-head floor already expresses for merges. Extending that helper to
-  cover in-progress conflict resolution stays task debt; a sequential identifier is inherently
-  contended, and a structural fix would mean changing this log's identifier scheme, which is not
-  justified by two occurrences.
+- **promotion:** The selected cheapest enforcing layer is the re-read of the remote ref immediately
+  before a merge resolution is committed, which the existing merge-eligibility helper's exact-head
+  floor already expresses for merges; FR-070 separately selects the Lab #73 per-worktree writer
+  lease/guard. Extending the helper to cover in-progress conflict resolution stays task debt.
+  Judgment restated explicitly at three episodes rather than two: the no-structural-fix conclusion
+  still holds. All three episodes are the same shared-state-advance pattern that the two already
+  selected layers address, and the only structural alternative — replacing this log's sequential
+  human-readable identifier scheme with a non-contending one — would be a large change to a document
+  whose readability is its point, to solve a collision the cheap re-read already catches.
 
 _Note 2026-08-14 (justification corrected):_ This entry originally stated that FR-070's occurrence
 count was left unadjusted because the slice may not edit entries that exist on the default branch.
@@ -2138,7 +2142,10 @@ That was wrong as written: the schema explicitly permits updating `occurrences` 
 and adding a dated note, and the bounded instruction not to renumber or rewrite landed entries was
 never a bar to a permitted occurrence update. FR-070 has since been raised to three occurrences with
 its own dated note citing this entry, and the sentence above is restated as the deliberate,
-now-reconciled choice it should have been.
+now-reconciled choice it should have been. The `occurrences` and `promotion` fields above were
+corrected in the same pass: they had counted two occurrences and reasoned from two, which
+contradicted FR-070's three episodes once that count was raised. Both now read three, and the
+promotion field states explicitly that the no-structural-fix conclusion survives at three.
 
 ### FR-081 — ledger prose written before a push asserted a state the pushed head contradicted
 

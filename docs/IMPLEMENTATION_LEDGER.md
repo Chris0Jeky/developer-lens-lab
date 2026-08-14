@@ -1364,12 +1364,14 @@ hashed package bytes only; the joint tag remains blocked on product
   sibling test covers the absent-`SYSTEMROOT` branch deterministically, asserting that no
   unqualified `taskkill` is attempted when the system root is unknown.
 - Friction: added a dated forward pointer under the landed stale note that still described
-  FR-053/FR-054 as living only on the parked branch; raised FR-070 to two occurrences with a dated
+  FR-053/FR-054 as living only on the parked branch; raised FR-070 to three occurrences with a dated
   note citing FR-080 and corrected FR-080's justification, which had wrongly claimed such an update
   was forbidden; and added FR-081 for the pre-push ledger prose.
-- Deferred by coordinator decision to a tracked Lab issue, deliberately untouched here: the
-  `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the Windows-only
-  timing-fragile test, and the impossible-state parametrization.
+- Deferred by coordinator decision to
+  [Lab #81 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/81), deliberately
+  untouched here: the `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the
+  Windows-only timing-fragile test, and the impossible-state parametrization.
 - Scope stayed C0 code, tests, and docs. No capability, authority, release, or tag state changed,
-  no real or private input was inspected, and `uv.lock` was not modified. Nothing was pushed by this
-  round; hosted proof for its head is pending.
+  no real or private input was inspected, and `uv.lock` was not modified. This section was authored
+  before its head was pushed; the exact-head hosted result is recorded by the PR's `Prove the lab`
+  check.

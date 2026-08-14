@@ -273,9 +273,13 @@ def _run(
     except BaseException:
         # Any other exit from communicate — notably KeyboardInterrupt — would otherwise
         # leave the child detached and its pipes open. Reap the tree on a bounded budget,
-        # release the pipes, then re-raise the original exception unchanged.
-        _terminate_process_tree(process)
-        _close_process_streams(process)
+        # release the pipes, then re-raise the original exception unchanged. The reap runs
+        # under try/finally so a second interrupt arriving during it cannot skip the
+        # pipe release.
+        try:
+            _terminate_process_tree(process)
+        finally:
+            _close_process_streams(process)
         raise
     result = subprocess.CompletedProcess(command, process.returncode, stdout=stdout, stderr=stderr)
     if result.returncode:
