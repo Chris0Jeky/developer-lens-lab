@@ -1840,12 +1840,17 @@ entirely stale PR response.
   failure changed tracked release bytes, a ref, or a remote object.
 - **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
   UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
-- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **occurrences:** 3 independent Windows date/encoding parameter incompatibilities — 2026-08-13 and
+  2026-08-14.
 - **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
   tracks the cross-repository Windows compatibility follow-up.
 - **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
   for UTC timestamps and UTF-8 output, used by reviewed repo scripts instead of host-version-specific
   aliases. This slice records the proposal only and does not alter runtime or harness code.
+
+_Note 2026-08-14 (occurrence 3):_ The merge-snapshot mechanic independently hit Windows PowerShell
+5.1's `Get-Date -AsUTC` rejection. The existing compatibility-safe UTC conversion produced the
+required timestamp; the Product #222 promotion remains unchanged.
 
 ### FR-070 — a second concurrent writer changed the isolated worktree mid-handoff
 
@@ -1917,3 +1922,8 @@ entirely stale PR response.
   tracks the protocol/helper sink follow-up.
 - **promotion:** If this recurs, the cheapest enforcement layer is a protocol update naming an
   external protected-safe temporary sink, or helper stdin support with synthetic tests.
+
+_Note 2026-08-14:_ External temporary-directory cleanup initially used a mistyped or nonexistent
+command working directory and failed before any deletion. The operation was rerun only after the
+exact external temporary path was verified, then deleted successfully. This is a one-off cleanup-path
+hiccup linked to the existing Lab #34 task/comment, with no new enforcement selected.
