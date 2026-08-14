@@ -2337,3 +2337,23 @@ timeout would be the genuine second occurrence that triggers the promotion decis
 - **promotion:** Not promoted at one occurrence. The hosted `Prove the lab` run already enforces
   the seam mechanically; the cheapest additional layer on recurrence is one parametrized test
   pinning the guard's flavour on both hosts, rather than prose asking authors to remember.
+
+### FR-084 — plain worktree removal left an unregistered directory after a Windows filename-length failure
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-documented`
+- **symptom:** After clean tracked status and ignored-name preflight, plain `git worktree remove`
+  removed the registration and `.git` metadata but failed deleting the remaining reproducible
+  ignored-output directory with `Filename too long`.
+- **impact:** Coordinator cleanup remains incomplete and leaves disk residue, but no repository ref
+  or work was lost.
+- **workaround:** Stop, do not use `--force` or cross-shell recursive deletion, and park the
+  remainder.
+- **occurrences:** 1 independent occurrence — 2026-08-15 coordinator cleanup.
+- **task:** [Lab #34 comment 5299194948](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299194948)
+  tracks the follow-up.
+- **promotion:** Not promoted after one occurrence. At a second recurrence, choose either a shorter
+  coordinator root or a reviewed long-path-aware helper.
+
+_Note 2026-08-15:_ Only ignored path names were observed; no cache contents or protected bytes were
+inspected, and no release, data, model, telemetry, or credential authority moved.
