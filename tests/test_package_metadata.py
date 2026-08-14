@@ -411,7 +411,8 @@ def test_package_smoke_run_reports_timeout_without_environment(
     monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", successful_taskkill)
-    monkeypatch.setenv("SYSTEMROOT", r"C:\\Windows")
+    synthetic_root = r"C:\Windows"
+    monkeypatch.setenv("SYSTEMROOT", synthetic_root)
 
     with pytest.raises(RuntimeError) as exc_info:
         _run(
@@ -459,7 +460,9 @@ def test_package_smoke_timeout_uses_taskkill_and_reaps_direct_child(
     monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", taskkill)
-    monkeypatch.setenv("SYSTEMROOT", r"C:\\Windows")
+    synthetic_root = r"C:\Windows"
+    expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")
+    monkeypatch.setenv("SYSTEMROOT", synthetic_root)
 
     with pytest.raises(RuntimeError, match="timed out after 300 seconds") as exc_info:
         _run(["synthetic-tool"], cwd=tmp_path, environment={"SAFE": "yes"})
@@ -469,7 +472,7 @@ def test_package_smoke_timeout_uses_taskkill_and_reaps_direct_child(
     assert processes[0].returncode == -9
     assert taskkill_calls == [
         (
-            [r"C:\Windows\System32\taskkill.exe", "/PID", "4312", "/T", "/F"],
+            [expected_taskkill, "/PID", "4312", "/T", "/F"],
             {
                 "stdin": subprocess.DEVNULL,
                 "stdout": subprocess.DEVNULL,
@@ -539,7 +542,8 @@ def test_package_smoke_timeout_fails_closed_when_bounded_reap_times_out(
     monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", successful_taskkill)
-    monkeypatch.setenv("SYSTEMROOT", r"C:\\Windows")
+    synthetic_root = r"C:\Windows"
+    monkeypatch.setenv("SYSTEMROOT", synthetic_root)
 
     with pytest.raises(
         RuntimeError, match=r"^package smoke process-tree cleanup could not be confirmed$"
