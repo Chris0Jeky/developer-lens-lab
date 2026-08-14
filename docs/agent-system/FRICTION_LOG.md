@@ -2200,10 +2200,16 @@ the no-structural-fix conclusion is unchanged at four.
   outright rather than merely brushing the limit, and can misread as a test failure.
 - **workaround:** Pass an explicit longer timeout (or run the gate in the background and wait for
   completion) when invoking the full suite from an agent shell; focused suites are unaffected.
-- **occurrences:** 2 independent occurrences — the 2026-08-14 PR #82 fix round (110-111 s against
-  the 120 s default) and the same slice's post-merge full gate (216 s, over the default outright).
+- **occurrences:** 1 independent occurrence — 2026-08-14 PR #82 fix round.
 - **task:** [Lab #29 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/29) release
   wave; if it recurs, add an explicit timeout note to the run-and-prove guidance in `CLAUDE.md`
   and `AGENTS.md` as its own small slice.
 - **promotion:** Not promoted after one occurrence; the run-and-prove guidance is the natural home
   if a second session hits it.
+
+_Note 2026-08-14 (margin vanished within the same slice):_ After the concurrent PR #65 merge
+landed its process-tree tests, the same slice's post-merge full gate ran 287 tests in 216
+seconds — past the 120-second default outright, no longer merely brushing it, as the `impact`
+field records. This is a re-measurement of the same continuously worsening condition, not a
+second independent occurrence, so the count above is unchanged; a different session hitting the
+timeout would be the genuine second occurrence that triggers the promotion decision.
