@@ -1375,17 +1375,25 @@ change before the focused lint, type, and test proofs; no protected or ignored c
 ### FR-044 — PowerShell hashtable interpolation supplied an invalid review-thread ID
 
 - **first-seen:** 2026-08-09
-- **status:** `resolved`
+- **status:** `workaround-documented`
 - **symptom:** The first PR #59 review-reply loop passed a hashtable's string representation plus
   the literal member suffix to GraphQL instead of the stored review-thread ID.
 - **impact:** The issue #34 tracking comment succeeded, but the first thread reply failed before any
   reply or resolution mutation occurred.
 - **workaround:** Read each indexed hashtable value into an explicitly typed scalar before passing
   it as a GraphQL variable, then verify every returned reply URL and resolved state.
-- **occurrences:** 1 independent occurrence — PR #59 review triage on 2026-08-09.
-- **task:** lab issue #34 tracks checked GitHub mutation wrappers and command-boundary hardening.
-- **promotion:** Deliberately not promoted after one occurrence. If it recurs, replace the ad-hoc
-  loop with a checked typed thread-triage helper.
+- **occurrences:** 2 independent occurrences — PR #59 review triage on 2026-08-09, and Product PR
+  #248 review triage on 2026-08-15.
+- **task:** [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) owns checked
+  GitHub mutation wrappers and command-boundary hardening.
+- **promotion:** At the second occurrence, select the existing proposed checked typed thread-triage
+  helper as the cheapest enforcement layer. It remains Lab #34 task debt and is not implemented in
+  this friction slice.
+
+_Note 2026-08-15 (occurrence 2, Product PR #248 review triage):_ PowerShell passed the object
+string plus literal `.id` to GraphQL, and the first reply failed before any GitHub mutation. The
+explicit `[string]` scalar assignment and quoted `key=value` retry succeeded for all four replies
+and resolutions.
 
 ### FR-045 — YAML comment syntax truncated the active-wave issue reference
 
