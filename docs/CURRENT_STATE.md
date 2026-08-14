@@ -96,14 +96,6 @@ delivered:
       commit, a MERGE-SOUND/CONFIRMED review sequence with an exact-head attestation comment,
       Codex triage with resolved threads, an `eligible: true` report after the aging floor, and
       clean immediate and delayed post-merge sweeps (issue #29 checkpoint `5293052472`).
-  - package_smoke_process_tree: >-
-      DONE — PR #65 merged 2026-08-14T13:03:18Z as
-      `eab341b9f7cdf98ce64676a7c12f4ed61563573b`, closing the long-parked package-smoke
-      process-tree cleanup lane: fail-closed unconfirmed-cleanup handling, non-timeout reaping,
-      cross-platform taskkill test repair, and two base refreshes of the advanced default branch.
-      Recorded from live Git by the coordinating session that observed the merge mid-slice; the
-      acting runtime is not inferred. The merged lane's ledger entries and FR-076 through FR-081
-      carry its proof trail; this record adds nothing beyond the observed merge.
   - lane_p_release_review: >-
       DONE — the frozen Method Trial v1 C0 exhibit is tracked staging on main. PR #75 merged
       2026-08-14T07:19Z as `8ac0cb431130a5004d3f8a8e8adcf0dcc37615ca`, preserving five reviewed
