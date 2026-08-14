@@ -12,6 +12,7 @@ import pytest
 from scripts.verify_package_smoke import (
     PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS,
     PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT,
+    ProcessTreeCleanupUnconfirmedError,
     _run,  # pyright: ignore[reportPrivateUsage] - direct timeout seam coverage
     _uv_version_requirement,  # pyright: ignore[reportPrivateUsage] - config parity coverage
     assert_doctor_report,
@@ -39,12 +40,26 @@ class _WindowsByteLocker(Protocol):
     def locking(self, file_descriptor: int, mode: int, length: int) -> None: ...
 
 
+class _RecordingStream:
+    """A minimal invented pipe that records whether supervision released it."""
+
+    def __init__(self) -> None:
+        self.closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+
 class _CompletedPopen:
     def __init__(self, returncode: int | None, stdout: str = "", stderr: str = "") -> None:
         self.pid = 4312
         self.returncode: int | None = returncode
         self._stdout = stdout
         self._stderr = stderr
+        # Real Popen exposes its pipes; supervision releases them on non-timeout exits.
+        self.stdout: _RecordingStream | None = None
+        self.stderr: _RecordingStream | None = None
+        self.stdin: _RecordingStream | None = None
 
     def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
         del timeout
@@ -501,11 +516,15 @@ def test_package_smoke_timeout_fails_closed_without_raw_cleanup_details(
     def failed_taskkill(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess([], 1, stderr=raw_taskkill_output)
 
+    synthetic_root = r"C:\Windows"
     monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
     monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", failed_taskkill)
+    # Without this the cleanup returns early on the absent-SYSTEMROOT branch, and the
+    # failed-taskkill assertions below never observe the failed cleanup they name.
+    monkeypatch.setenv("SYSTEMROOT", synthetic_root)
 
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(ProcessTreeCleanupUnconfirmedError) as exc_info:
         _run(["synthetic-tool"], cwd=tmp_path, environment={"SECRET_VALUE": secret})
 
     message = str(exc_info.value)
@@ -515,6 +534,38 @@ def test_package_smoke_timeout_fails_closed_without_raw_cleanup_details(
     assert str(tmp_path) not in message
     assert "4312" not in message
     assert raw_taskkill_output not in message
+
+
+def test_package_smoke_timeout_fails_closed_when_system_root_is_absent(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    class TimeoutPopen(_CompletedPopen):
+        def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
+            raise subprocess.TimeoutExpired(["synthetic-tool"], timeout or 0)
+
+    taskkill_calls: list[list[str]] = []
+
+    def timeout_popen(*_args: object, **_kwargs: object) -> TimeoutPopen:
+        return TimeoutPopen(None)
+
+    def unexpected_taskkill(
+        command: list[str], **_kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        taskkill_calls.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", timeout_popen)
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", unexpected_taskkill)
+    monkeypatch.delenv("SYSTEMROOT", raising=False)
+
+    with pytest.raises(ProcessTreeCleanupUnconfirmedError) as exc_info:
+        _run(["synthetic-tool"], cwd=tmp_path, environment={})
+
+    assert str(exc_info.value) == "package smoke process-tree cleanup could not be confirmed"
+    assert exc_info.value.__cause__ is None
+    # No unqualified taskkill may be attempted when the system root is unknown.
+    assert taskkill_calls == []
 
 
 def test_package_smoke_timeout_fails_closed_when_bounded_reap_times_out(
@@ -552,6 +603,84 @@ def test_package_smoke_timeout_fails_closed_when_bounded_reap_times_out(
 
     assert processes[0].timeouts == [300, PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS]
     assert processes[0].returncode is None
+
+
+def test_package_smoke_probe_propagates_unconfirmed_cleanup_instead_of_falling_back(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    probed: list[list[str]] = []
+
+    def unconfirmed_cleanup(
+        command: list[str], *, cwd: Path, environment: dict[str, str]
+    ) -> subprocess.CompletedProcess[str]:
+        del cwd, environment
+        probed.append(command)
+        raise ProcessTreeCleanupUnconfirmedError(
+            "package smoke process-tree cleanup could not be confirmed"
+        )
+
+    monkeypatch.setattr("scripts.verify_package_smoke.shutil.which", _path_uv)
+    monkeypatch.setattr("scripts.verify_package_smoke._run", unconfirmed_cleanup)
+
+    with pytest.raises(ProcessTreeCleanupUnconfirmedError):
+        resolve_uv_command(cwd=tmp_path, environment={})
+
+    # The unreaped tree must stop candidate resolution outright. An ordinary invalid
+    # candidate would instead be rejected and the interpreter-module candidate probed,
+    # which is what test_package_smoke_rejects_invalid_uv_candidates... asserts.
+    assert probed == [["uv-on-path", "--version"]]
+
+
+def test_package_smoke_run_reaps_child_when_communicate_fails_without_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    class InterruptedPopen(_CompletedPopen):
+        def __init__(self) -> None:
+            super().__init__(None)
+            self.communicate_calls = 0
+            self.stdout = _RecordingStream()
+            self.stderr = _RecordingStream()
+
+        def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
+            del timeout
+            self.communicate_calls += 1
+            if self.communicate_calls == 1:
+                raise KeyboardInterrupt
+            self.returncode = -9
+            return "", ""
+
+    processes: list[InterruptedPopen] = []
+    taskkill_calls: list[list[str]] = []
+
+    def interrupted_popen(*_args: object, **_kwargs: object) -> InterruptedPopen:
+        process = InterruptedPopen()
+        processes.append(process)
+        return process
+
+    def successful_taskkill(
+        command: list[str], **_kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        taskkill_calls.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    synthetic_root = r"C:\Windows"
+    expected_taskkill = str(Path(synthetic_root) / "System32" / "taskkill.exe")
+    monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: True)
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", interrupted_popen)
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.run", successful_taskkill)
+    monkeypatch.setenv("SYSTEMROOT", synthetic_root)
+
+    with pytest.raises(KeyboardInterrupt):
+        _run(["synthetic-tool"], cwd=tmp_path, environment={})
+
+    # The original exception is re-raised unchanged, but only after the tree is reaped
+    # and the pipes are released; without the catch-all both would leak.
+    assert taskkill_calls == [[expected_taskkill, "/PID", "4312", "/T", "/F"]]
+    assert processes[0].returncode == -9
+    assert processes[0].stdout is not None
+    assert processes[0].stderr is not None
+    assert processes[0].stdout.closed
+    assert processes[0].stderr.closed
 
 
 def test_package_smoke_posix_timeout_kills_its_new_process_group(
