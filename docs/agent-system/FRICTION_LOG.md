@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 25 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 26 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -101,7 +101,8 @@ Rules that bind entries:
   (the PR #84 `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` isolated fix worktree found
   bare `uv` absent and stopped before edits), and 2026-08-14 (the fresh PR #86 exact-head reviewer
   found bare `uv` absent, but the already-promoted `py -3 -m uv`/available-interpreter route
-  supplied focused proof).
+  supplied focused proof), and 2026-08-15 (the terminal PR #87 exact-head reviewer found bare `uv`
+  absent while `py -3 -m uv 0.12.4` supplied the repository-source checks noted below).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and
   [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) (checked proof boundaries),
   which depend on a runnable locked environment.
@@ -233,6 +234,14 @@ _Note 2026-08-14 (occurrence 25, PR #86 exact-head review):_ Bare `uv` was absen
 already-promoted `py -3 -m uv` and available-interpreter route supplied focused proof. No protected
 bytes were inspected, no global install occurred, and `uv.lock` was not mutated.
 
+_Note 2026-08-15 (occurrence 26, PR #87 terminal exact-head review; [Lab #34 comment
+5299982661](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299982661)):_
+Bare `uv` discovery returned absent and `py -3 -m uv --version` returned `0.12.4`. The exact-head
+checks bound `PYTHONPATH` to repository `src` and verified `developer_lens_lab.__file__` resolved
+from the worktree. A mistaken `import dllab` probe tested the console-script name rather than the
+Python package, so environment installation remains **NOT VERIFIED** and that probe is not a
+separate occurrence. No protected bytes, global install, or lockfile mutation occurred.
+
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
 - **first-seen:** 2026-08-09
@@ -353,8 +362,8 @@ alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 - **workaround:** Write the throwaway script to a file under the gitignored bootstrap directory and
   run the interpreter against that path; delete generated paths with an explicitly resolvable target
   or leave gitignored build output in place. Both are cheap and leave the tracked tree clean.
-- **occurrences:** 4 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), two
-  independent 2026-08-12 events, and the independent 2026-08-15 PR #87 review event noted below.
+- **occurrences:** 5 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), two
+  independent 2026-08-12 events, and two independent 2026-08-15 PR #87 review events noted below.
 - **task:** [Lab issue #33](https://github.com/Chris0Jeky/developer-lens-lab/issues/33) carries the
   original record; [Lab issue #34 comment
   5299907170](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299907170)
@@ -381,6 +390,13 @@ containing recursive `Remove-Item` against a validated OS-temporary target befor
 reviewer used a fresh GUID-named OS-temporary MkDocs target and left it uninspected and undeleted;
 no generated output, deletion, repository ref, or GitHub state changed. The existing session-memory
 promotion decision is unchanged because the refusal cost one safe retry and did not block the lane.
+
+_Note 2026-08-15 (occurrence 5, PR #87 terminal review; [Lab #34 comment
+5299982661](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299982661)):_ A
+separately validated GUID-named OS-temporary cleanup target still caused the recursive `Remove-Item`
+wrapper to be policy-rejected before execution. The retry omitted deletion, strict MkDocs succeeded,
+and the output remained uninspected and undeleted. No generated state, repository ref, or GitHub
+state changed; the existing promotion decision remains unchanged.
 
 ### FR-006 — orchestration wall-clock timeout terminated a session after its work was complete
 
