@@ -353,9 +353,12 @@ alter `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8`.
 - **workaround:** Write the throwaway script to a file under the gitignored bootstrap directory and
   run the interpreter against that path; delete generated paths with an explicitly resolvable target
   or leave gitignored build output in place. Both are cheap and leave the tracked tree clean.
-- **occurrences:** 3 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), plus two
-  independent 2026-08-12 events noted below.
-- **task:** lab issue #33 records it; no repository change is required.
+- **occurrences:** 4 recorded — 2026-08-09 (LAB-GOV-02, both forms in the same session), two
+  independent 2026-08-12 events, and the independent 2026-08-15 PR #87 review event noted below.
+- **task:** [Lab issue #33](https://github.com/Chris0Jeky/developer-lens-lab/issues/33) carries the
+  original record; [Lab issue #34 comment
+  5299907170](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299907170)
+  records the PR #87 recurrence and safe stop.
 - **promotion:** Deliberately NOT promoted. This is agent-harness behaviour, not a repository
   invariant: the cheapest layer is session memory, which is outside this repository's enforcement
   ladder. Revisit only if it recurs in a way that costs a lane rather than a minute.
@@ -372,6 +375,12 @@ worked around with the file-edit tool; and a heredoc piped into a GitHub CLI com
 (`… <<'EOF' | gh … --body-file -`) during the lane claim, worked around by writing the body to a
 scratch file and passing `--body-file <path>`. Both cost one retry each and blocked no lane; the
 promotion decision is unchanged.
+
+_Note 2026-08-15 (occurrence 4, PR #87 exact-head review):_ The policy floor rejected a wrapper
+containing recursive `Remove-Item` against a validated OS-temporary target before execution. The
+reviewer used a fresh GUID-named OS-temporary MkDocs target and left it uninspected and undeleted;
+no generated output, deletion, repository ref, or GitHub state changed. The existing session-memory
+promotion decision is unchanged because the refusal cost one safe retry and did not block the lane.
 
 ### FR-006 — orchestration wall-clock timeout terminated a session after its work was complete
 
@@ -2518,3 +2527,25 @@ Plain removal followed the same tracked-clean and ignored-reproducible-output pr
 Git registration, then failed to finish directory deletion with `Filename too long`. No force or
 cross-shell recursive deletion was used; the unregistered residue is parked for the selected helper
 or explicit human cleanup.
+
+### FR-087 — runtime skill catalog omitted the required Lab continuation skill
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-documented`
+- **symptom:** During PR #87 exact-head review, the runtime's advertised skill catalog exposed the
+  Product `developer-lens-continuation` skill but no `developer-lens-lab-continuation` entry or Lab
+  `SKILL.md` resource path, even though Lab canon requires that skill before continuation work. This
+  records catalog exposure, not absence of the repository's tracked Lab skill file.
+- **impact:** The reviewer could not satisfy the Lab-specific continuation route through the
+  advertised runtime surface and risked losing Lab-only boundary and handoff guidance.
+- **workaround:** Use the available Product continuation only for general orientation, then take
+  authority and protected-boundary guidance directly from tracked Lab `AGENTS.md`, `CLAUDE.md`,
+  tier, governor policy, protocol, and live current state. No missing instruction was inferred and
+  no authority boundary was relaxed.
+- **occurrences:** 1 independent occurrence — PR #87 exact-head review on 2026-08-15.
+- **task:** [Lab issue #34 comment 5299907170](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299907170)
+  records the runtime catalog gap and bounded workaround.
+- **promotion:** Not promoted after one occurrence. At a second independent occurrence, the
+  cheapest enforcing layer is a runtime catalog/skill-packaging parity check that asserts the
+  canon-required Lab skill ID and `SKILL.md` resource are advertised together. This is distinct
+  from FR-063's unavailable Luna-routing predicate and remains Lab #34 task debt.
