@@ -94,7 +94,11 @@ Rules that bind entries:
   repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
   cache directory breaks the verifier walk), and 2026-08-13 (no PATH `uv` and no host-interpreter
   `uv` module; the already-promoted repository-external confined bootstrap restored `uv 0.12.3` and
-  `uv sync --locked --all-groups` succeeded), and 2026-08-14 (no PATH `uv` and no host-interpreter
+  `uv sync --locked --all-groups` succeeded), and 2026-08-13 (the Lane-P dedicated worktree had
+  neither a project interpreter nor a host-interpreter `uv` module; the external temporary
+  bootstrap restored `uv 0.12.3` for its focused integrity proof and declared gate — previously
+  recorded only by the Lane-P occurrence-22 note below, which left this list one item short of
+  the count), and 2026-08-14 (no PATH `uv` and no host-interpreter
   `uv` module during the changelog-synchronisation slice; the FR-050-selected reversible
   user-level module route restored `uv 0.12.4` inside the proved range; the locked sync and the
   full declared gate ran green through it — see the dated occurrence-23 note below), 2026-08-14
@@ -253,11 +257,12 @@ separate occurrence. No protected bytes, global install, or lockfile mutation oc
 
 _Note 2026-08-15 (occurrence 27, post-wave reconciliation slice):_ Bare `uv` was absent and the
 installed Python-module route `python -m uv 0.12.4` ran the locked sync and the complete declared
-gate green (310 passed) at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`. The same slice landed
-the `docs/CURRENT_STATE.md` q-11 qualification that the occurrence-24 note above records as
-authored on the preserved, unpushed `afe296e6e68339ceec482f3e31b306cf683bf613`; that preserved
-delta is now superseded by a merged equivalent, unblocking the branch's disposition tracked on
-issue #77 comment `5301895208`. No protected bytes, global install, or lockfile mutation occurred.
+gate green (310 passed) at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`. The same slice
+authored the `docs/CURRENT_STATE.md` `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`
+qualification that the occurrence-24 note above records as preserved on the unpushed
+`afe296e6e68339ceec482f3e31b306cf683bf613`; once this slice merges, that preserved delta is
+superseded and the branch disposition tracked on issue #77 comment `5301895208` unblocks. No
+protected bytes, global install, or lockfile mutation occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -2439,8 +2444,9 @@ the no-structural-fix conclusion is unchanged at four.
 - **workaround:** Treat pre-push prose as provisional and amend it in the same pipeline before the
   branch merges: state the push time, name the exact head and its hosted result, and describe any
   superseding head's proof as pending rather than implying it is green.
-- **occurrences:** 2 independent occurrences — the 2026-08-14 PR #65 base-refresh section, and the
-  2026-08-14 PR #84 state prose (dated note below).
+- **occurrences:** 3 independent occurrences — the 2026-08-14 PR #65 base-refresh section, the
+  2026-08-14 PR #84 state prose (dated note below), and the 2026-08-15 PR #91 pre-merge
+  supersession claim (dated note below).
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked proof-boundary and evidence-truthfulness helpers.
 - **promotion:** Deliberately not promoted after one occurrence. The general defect — asserting a
@@ -2457,6 +2463,14 @@ naming the in-flight lane. The first occurrence's narrow-check idea was scoped t
 publication-state claims in ledger sections whose own head is unproved; lane-status prose in the
 state artifact has no equivalent mechanical check, so the class stays procedural task debt on the
 Lab #34 thread: re-verify lane-status sentences at push time exactly as pre-push ledger prose.
+
+_Note 2026-08-15 (third occurrence, PR #91 reconciliation slice):_ The pushed head's FR-001
+occurrence-27 note asserted the preserved `afe296e6e68339ceec482f3e31b306cf683bf613` delta "is now
+superseded by a merged equivalent" while the slice itself was an unmerged branch commit — the
+predicate exactly, in the entry class (a friction record about supersession) most likely to drive
+a deletion. The fresh-context review caught it at the pushed head; repaired in the same pipeline
+before merge by restating the supersession as conditional on this slice's merge. The class stays
+procedural task debt on the Lab #34 thread.
 
 ### FR-082 — the full pytest gate now brushes the default shell-tool timeout
 
@@ -2684,7 +2698,9 @@ retry, content inspection, or deletion was attempted.
 - **task:** [Lab #34 comment 5301830192](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5301830192)
   is the durable capture; this entry lands at the first free identifier after PR #90's FR-088 and
   FR-089 merged, as that capture reserved.
-- **promotion:** Not promoted after one occurrence. At a second independent recurrence, the
-  cheapest enforcing layer is one line in the reviewer delegation guidance in
-  [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) requiring the patch to be supplied as content or a path,
-  never as a command for the reviewer to execute.
+- **promotion:** Not promoted after one occurrence. The violated layer already exists:
+  `.claude/agents/dll-reviewer.md` binds the coordinator to hand the reviewer the exact diff as a
+  pasted patch or an explicit changed-file list, and the PR #87 brief bypassed that binding rather
+  than exposing a missing rule. At a second independent recurrence, the cheapest enforcing layer
+  is a delegation-template line in [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) that references the
+  existing agent-definition binding — not a duplicate prose rule that could drift from it.

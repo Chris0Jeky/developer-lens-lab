@@ -323,7 +323,7 @@ next_safe_slice: >-
   from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, attested-review
   state allowlist, identifier validation) are DELIVERED through merged PR #82, and the previously
   deferred `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` conditional-phrasing touch in the
-  cross-repo contract and maintenance protocol docs was completed by this reconciliation.
+  cross-repo contract and maintenance protocol docs was completed by the PR #84 reconciliation.
   LAB-REL-01 remains the sole ACTIVE card and its
   release sequence is the parked Product QA proof, Product sign-off, then agent-executed mechanics,
   so work while that lane is parked restarts the deterministic queue with SENSE/RECONCILE against
