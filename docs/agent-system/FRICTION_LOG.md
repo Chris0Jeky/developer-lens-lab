@@ -442,13 +442,14 @@ promotion decision is unchanged.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 6 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 7 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
   2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
   terminated an outer JavaScript command wrapper before PowerShell started), plus 2026-08-10 (an
-  inline GraphQL repository string during the PR #56 factual refresh).
-- **task:** lab issue #34 tracks prompt-operating-system post-review hardening and the external
-  Windows review-tool boundary.
+  inline GraphQL repository string during the PR #56 factual refresh), plus 2026-08-15 (an inline
+  quoted jq filter during the issue #29 release-authority repair).
+- **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  prompt-operating-system post-review hardening and the external Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
   through `--body-file -`, and parsing JSON with `ConvertFrom-Json` worked in this session, but no
   executable prompt currently requires that route. Issue #34 owns the smallest prompt/canon
@@ -474,6 +475,11 @@ _Note 2026-08-10 (PR #56 factual refresh):_ Two forms of the same static-string 
 the repository-name quotes and returned a parser error without repository data or mutation. The
 variable-bound query then succeeded and supplied the exact pull-request/thread evidence. The two
 failed forms are one independent recurrence of the same predicate.
+
+_Note 2026-08-15 (occurrence 7, issue #29 release-authority repair):_ An inline `gh --jq`
+filename filter lost its string quotes at the PowerShell/tool boundary and failed before returning
+repository data. A plain `gh api` read followed by PowerShell `ConvertFrom-Json` supplied the same
+read-only file patch; no repository ref, review surface, or tracked file changed in the failed call.
 
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
@@ -2282,3 +2288,31 @@ timeout would be the genuine second occurrence that triggers the promotion decis
 - **promotion:** Not promoted at one occurrence. The hosted `Prove the lab` run already enforces
   the seam mechanically; the cheapest additional layer on recurrence is one parametrized test
   pinning the guard's flavour on both hosts, rather than prose asking authors to remember.
+
+### FR-084 — operative release surfaces assigned agent-owned mechanics to the owner
+
+- **first-seen:** 2026-08-15
+- **status:** `resolved`
+- **symptom:** The cross-repository contract, maintenance protocol, and live resume artifact said
+  the joint tag decision was owner-executed or handed back to the owner after Product release
+  sign-off, despite owner constitution A1=FULL assigning releases, versioning, packaging, and
+  cross-repository coordination to agents.
+- **impact:** A release governor following those operative surfaces would stop after the aesthetic
+  gate and ask the owner to perform mechanics that agent authority already owns, leaving the
+  synchronized release parked under a false authority boundary.
+- **workaround:** none — the three operative surfaces now separate the owner-only five-minute
+  aesthetic decision from the subsequent agent-executed version, tag, package, and approved
+  C0-publication mechanics, while preserving every ordinary gate.
+- **occurrences:** 1 concrete divergence across three tracked operational surfaces, observed by the
+  2026-08-15 exact-head Product reconciliation review and recorded on Lab issue #29.
+- **task:** [Lab issue #29 comment 5299376876](https://github.com/Chris0Jeky/developer-lens-lab/issues/29#issuecomment-5299376876)
+  records the consumer, acceptance behavior, authority boundary, and proof for this repair.
+- **promotion:** Resolved at the cheapest operative layer by correcting the three consumers of the
+  false claim and proving their authority/context surface. At a second independent recurrence, add
+  a semantic context-verifier assertion for the A1 release-actor split rather than another prose
+  reminder.
+
+_Numbering note 2026-08-15:_ This is the next free identifier on live main
+`2806574915e80118e43dee577bf0c53ea0d1fc83`. Parked PR #87 independently reserved `FR-084` on its
+unmerged branch; if that branch resumes, its new entry must be renumbered from the then-live tail.
+No PR #87 occurrence count or entry was imported here.
