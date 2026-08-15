@@ -456,15 +456,18 @@ promotion decision is unchanged.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 9 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 12 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
   2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
   terminated an outer JavaScript command wrapper before PowerShell started), plus 2026-08-10 (an
   inline GraphQL repository string during the PR #56 factual refresh), plus 2026-08-14 (an inline
-  quoted jq/gh form during the PR #84 factual refresh), and 2026-08-14 (an inline static-repository
-  GraphQL query during the PR #86 ready-boundary snapshot), plus 2026-08-15 (a curly apostrophe in
-  a PowerShell single-quoted object value during PR #87 review triage).
-- **task:** [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  quoted jq/gh form during the PR #84 factual refresh), 2026-08-14 (an inline static-repository
+  GraphQL query during the PR #86 ready-boundary snapshot), 2026-08-15 (a curly apostrophe in a
+  PowerShell single-quoted object value during PR #87 review triage), 2026-08-15 (an inline quoted
+  jq filter during the issue #29 release-authority repair), and 2026-08-15 (a nested `gh api --jq`
+  filter during PR #89 exact-head review), plus 2026-08-15 (a colon immediately after an
+  interpolated variable name in the PR #87 reconciliation validator).
+- **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   prompt-operating-system post-review hardening and the external Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
   through `--body-file -`, and parsing JSON with `ConvertFrom-Json` worked in this session, but no
@@ -492,19 +495,36 @@ the repository-name quotes and returned a parser error without repository data o
 variable-bound query then succeeded and supplied the exact pull-request/thread evidence. The two
 failed forms are one independent recurrence of the same predicate.
 
-_Note 2026-08-14 (occurrence 7, PR #84 factual refresh):_ An inline quoted jq/gh form failed at
+_Note 2026-08-14 (occurrence 9, PR #84 factual refresh):_ An inline quoted jq/gh form failed at
 the PowerShell boundary; a structured connector succeeded instead. [Lab #34 comment
 5298770402](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5298770402)
 tracks the recurrence.
 
-_Note 2026-08-14 (occurrence 8, PR #86 ready-boundary snapshot):_ An inline static-repository
+_Note 2026-08-14 (occurrence 10, PR #86 ready-boundary snapshot):_ An inline static-repository
 GraphQL query lost quotes and returned a parser error. The variable-bound query succeeded with zero
 threads; the failed call made no mutation.
 
-_Note 2026-08-15 (occurrence 9, PR #87 review triage):_ A curly apostrophe in a PowerShell
+_Note 2026-08-15 (occurrence 11, PR #87 review triage):_ A curly apostrophe in a PowerShell
 single-quoted object value crossed the command boundary as a quote terminator, causing a parser
 error before GitHub ran. The ASCII-only here-string plus explicit scalar-variable retry successfully
 posted and resolved both threads; the failed attempt made no mutation.
+
+_Note 2026-08-15 (occurrence 7, issue #29 release-authority repair):_ An inline `gh --jq`
+filename filter lost its string quotes at the PowerShell/tool boundary and failed before returning
+repository data. A plain `gh api` read followed by PowerShell `ConvertFrom-Json` supplied the same
+read-only file patch; no repository ref, review surface, or tracked file changed in the failed call.
+
+_Note 2026-08-15 (occurrence 8, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_ A
+nested `gh api --jq` filter split at the PowerShell/tool boundary and failed with
+`accepts 1 arg(s), received 3`. Raw JSON plus an immediate `$LASTEXITCODE` guard,
+`ConvertFrom-Json`, and `Where-Object` supplied the same read-only result; the failed call changed no
+repository or GitHub state.
+
+_Note 2026-08-15 (occurrence 12, PR #87 reconciliation validator):_ A colon immediately after
+`$field` in an interpolated regex string was parsed as part of a drive-qualified variable name, so
+PowerShell rejected the validator before it ran. Delimiting the name as `${field}` made the retry
+unambiguous; the failed attempt made no tracked or GitHub mutation.
 
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
@@ -518,10 +538,11 @@ posted and resolved both threads; the failed attempt made no mutation.
 - **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
   exit on failure before starting the next command. The release-gate sync then used the promoted
   confined-bootstrap route and produced a real context-verifier pass.
-- **occurrences:** 3 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
+- **occurrences:** 5 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
   a later diff check), 2026-08-09 (an unsupported PowerShell `Get-Date` option was masked by later
   successful GitHub reads), and 2026-08-15 (a Windows PowerShell 5.1 cmdlet parameter error was
-  non-terminating and allowed a misleading secondary identity assertion).
+  non-terminating and allowed a misleading secondary identity assertion), plus two PR #88
+  fresh-review occurrences on 2026-08-15 detailed below.
 - **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
   guards in its remaining proving commands.
 - **promotion:** Not durably promoted. This session set `$ErrorActionPreference = 'Stop'` and
@@ -535,11 +556,21 @@ _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that th
 preamble was not durable enforcement. The status and promotion field now record task debt until an
 applicable executable instruction installs the guard.
 
-_Note 2026-08-15 (occurrence 3, PR #85 delayed-sweep parsing):_ The Windows PowerShell 5.1
+_Note 2026-08-15 (occurrence 5, PR #85 delayed-sweep parsing):_ The Windows PowerShell 5.1
 `ConvertFrom-Json -Depth` parameter error was non-terminating under the default policy, so the next
 identity assertion emitted a misleading secondary error. The retry set `$ErrorActionPreference = 'Stop'`
 and used the compatible parser; no mutation occurred. [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)
 remains the enforcement owner.
+
+_Note 2026-08-15 (third occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_ A composed
+`if` expression in a `gh api` URL failed and returned HTTP 404, then later commands masked the
+failure. An explicit repository/identifier mapping, immediate `$LASTEXITCODE` guard, and
+`ConvertFrom-Json` completed the read successfully.
+
+_Note 2026-08-15 (fourth occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_
+`New-Item -LiteralPath` was unsupported and raised a non-terminating error that a later successful
+MkDocs command masked. Running MkDocs directly against a fresh temporary target succeeded. The
+existing prompt/canon promotion decision remains task debt; neither recurrence changes helper logic.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
@@ -1130,14 +1161,15 @@ selected ownership-token/merge-lease preflight remains unimplemented.
   plus smaller file-scoped patches.
 - **workaround:** Re-read the narrow mismatched region and apply exact file-scoped patches, retaining
   atomic failure as the guard against partial state updates.
-- **occurrences:** 7 independent occurrences — the stale combined hunk during sdist current-base
+- **occurrences:** 8 independent occurrences — the stale combined hunk during sdist current-base
   state sync, the ambiguous FR-033 status hunk during PR #55 review correction, the unanchored
   FR-033 occurrence and status edits during PR #55 post-merge reconciliation, and the unanchored
   FR-037 status edit during issue #58 proof reconciliation on 2026-08-09, plus the console-rendered
   em-dash context mismatch during the issue #34 PR #56 factual follow-up on 2026-08-10, plus the
-  under-anchored FR-044 status patch during PR #87 on 2026-08-15.
-- **task:** [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks external
-  patch-context and command-boundary workflow hardening.
+  under-anchored FR-044 status patch during PR #87 on 2026-08-15, plus the
+  mis-targeted FR-085 hunk during the issue #81 state repair on 2026-08-15.
+- **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
+  external patch-context and command-boundary workflow hardening.
 - **promotion:** At the second occurrence, the selected enforcement layer was an exact section-header
   anchor plus a pre-stage diff assertion. Later occurrences show that an ad-hoc command does not
   reliably enforce that guard; a checked state-sync helper is the selected task-debt layer on
@@ -1176,10 +1208,15 @@ mojibake form of an em dash in repeated friction-log context. The patch failed a
 changing any file. UTF-8 reads plus smaller section-anchored patches then applied the intended
 changes; the checked state-sync helper remains the selected enforcement layer.
 
-_Note 2026-08-15 (occurrence 7, PR #87):_ An under-anchored FR-044 status patch first matched
+_Note 2026-08-15 (occurrence 8, PR #87):_ An under-anchored FR-044 status patch first matched
 FR-004's repeated status line. Immediate exact-diff inspection caught it, FR-004 was restored before
 commit, and a heading-anchored retry changed FR-044 only. No commit, push, GitHub object, or
 protected byte contained the transient edit.
+
+_Note 2026-08-15 (occurrence 7, issue #81 state repair):_ A combined patch accidentally anchored
+the new FR-085 tail hunk against `docs/CURRENT_STATE.md` instead of the friction log. The patch
+failed atomically before changing any file; exact file-scoped patches then applied the state and
+friction updates separately. The checked state-sync helper remains the selected enforcement layer.
 
 ### FR-035 — an unannounced post-merge state worktree appeared at live main
 
@@ -1301,10 +1338,11 @@ no repository mutation, ignored-output access, protected-byte access, or GitHub 
   mistaken for a repository documentation failure.
 - **workaround:** Keep the declared MkDocs/Material version bounds, record the warning separately,
   and use the process exit status plus the generated documentation result for pass/fail.
-- **occurrences:** 4 independent occurrences — PR #55 correction/finalization proof, PR #55
+- **occurrences:** 5 independent occurrences — PR #55 correction/finalization proof, PR #55
   post-merge reconciliation, issue #58 current-base full-gate proof on 2026-08-09, and issue #34
-  factual-doc proof on 2026-08-10.
-- **task:** lab issue #34 tracks reusable proof-command and tooling-boundary hardening.
+  factual-doc proof on 2026-08-10, plus PR #87 live-main reconciliation proof on 2026-08-15.
+- **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks reusable
+  proof-command and tooling-boundary hardening.
 - **promotion:** At the second occurrence this remains task debt rather than a suppression rule:
   the warning is emitted upstream while the pinned build succeeds, and hiding it would remove useful
   upgrade evidence. Dependency-range maintenance on issue #34 is the cheapest effective layer if
@@ -1317,6 +1355,10 @@ content, release evidence, or publication state was changed or inspected.
 _Note 2026-08-10 (issue #34 factual-doc proof):_ The strict build passed with the same upstream
 warning. Its process status remained green; dependency bounds and generated documentation were not
 changed or inspected.
+
+_Note 2026-08-15 (occurrence 5, PR #87 live-main reconciliation):_ The strict build passed with the
+same upstream warning. The warning remains visible by design under the existing promotion decision;
+dependency bounds and generated documentation were not changed or inspected.
 
 ### FR-040 — focused Ruff format check found new line wrapping
 
@@ -1500,11 +1542,19 @@ four unresolved PR #60 threads.
   with an explicit strict UTF-8 decoder and normalize line endings before comparing section blocks.
   The repeated comparison then proved FR-036 equal to preserved PR #56 head `e2e2795` and FR-033
   equal to parent main `ebc8626`.
-- **occurrences:** 1 independent occurrence — PR #61's pre-stage friction-history comparison on
-  2026-08-10.
-- **task:** lab issue #34 tracks checked state-reconciliation and Windows command-boundary helpers.
-- **promotion:** Deliberately not promoted after one occurrence. If it recurs, make explicit UTF-8
-  decoding and line-ending normalization part of the checked parent-range helper selected by FR-046.
+- **occurrences:** 2 independent occurrences — PR #61's pre-stage friction-history comparison on
+  2026-08-10, and PR #87's live-main reconciliation comparison on 2026-08-15.
+- **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks checked
+  state-reconciliation and Windows command-boundary helpers.
+- **promotion:** At the second occurrence, select explicit UTF-8 decoding and line-ending
+  normalization in the checked parent-range helper already selected by FR-046 as the cheapest
+  enforcing layer. It remains Lab #34 task debt; this friction slice does not add the helper.
+
+_Note 2026-08-15 (occurrence 2, PR #87 live-main reconciliation):_ A mechanical whole-section
+comparison used PowerShell's default text read for the worktree while Git supplied UTF-8 for the
+parent, so an unchanged em dash rendered as mojibake and the checker stopped on a false mismatch.
+Re-reading the worktree with explicit `-Encoding UTF8` proved the bytes unchanged; no ledger entry
+was rewritten in response to the false result.
 
 ### FR-050 - the standalone uv proving command was absent from the Windows PATH
 
@@ -1518,8 +1568,9 @@ four unresolved PR #60 threads.
   invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
   189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
-- **occurrences:** 2 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
-  2026-08-10, and the flagship changelog-synchronisation slice on 2026-08-14.
+- **occurrences:** 4 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10, the flagship changelog-synchronisation slice on 2026-08-14, the merge-helper
+  predecessor-history proof on 2026-08-15, and the PR #88 merge-eligibility snapshot on 2026-08-15.
 - **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
@@ -1538,6 +1589,17 @@ through `py -3 -m uv`, which re-enabled the declared locked gate
 (`py -3 -m uv sync --locked --all-groups` succeeded, and the full declared gate then ran green
 through the same route on the slice's first commit).
 
+_Note 2026-08-15 (third occurrence, merge-helper predecessor-history proof):_ The standalone `uv`
+command was again absent. The already-reviewed `py -3 -m uv 0.12.4` module route started the focused
+test successfully, so no new bootstrap, global install, or project-toolchain change was attempted.
+The existing host-provisioning promotion and Lab #34 task link remain unchanged.
+
+_Note 2026-08-15 (fourth occurrence, [PR #88](https://github.com/Chris0Jeky/developer-lens-lab/pull/88)
+merge-eligibility snapshot; [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)):_
+The mechanical snapshot's standalone `uv` invocation was unavailable. The same complete snapshot
+evaluated successfully through the existing `py -3 -m uv` module route; no surface was filtered or
+recollected selectively. The existing host-provisioning promotion remains unchanged.
+
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
 - **first-seen:** 2026-08-10
@@ -1548,8 +1610,9 @@ through the same route on the slice's first commit).
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 2 independent occurrences — flagship governor orientation on 2026-08-10 and
-  truth-repair orientation on 2026-08-13.
+- **occurrences:** 4 independent occurrences — flagship governor orientation on 2026-08-10,
+  truth-repair orientation on 2026-08-13, merge-helper orientation on 2026-08-15, and PR #89
+  exact-head review orientation on 2026-08-15.
 - **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
   Lab registry entry; that owner surface is outside this repository.
 - **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
@@ -1559,6 +1622,18 @@ through the same route on the slice's first commit).
 _Note 2026-08-13 (truth-repair orientation):_ The canonical estate file was unavailable and the
 Codex repository-map fallback had no Lab match. Repository-local tier and canon plus live Git and
 GitHub state established authority; no replacement path was invented.
+
+_Note 2026-08-15 (third occurrence, merge-helper orientation):_ The canonical estate file was again
+unavailable and the Codex repository-map fallback still had no Lab row. Repository-local authority
+and live Git/GitHub state established the bounded checkout without a detour. The cheapest durable fix
+still belongs to the external estate registry/sync owner, so this remains task debt on Lab #34 and
+does not widen the repository helper slice.
+
+_Note 2026-08-15 (fourth occurrence, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_ The
+canonical estate file was absent and the Codex repository map had no usable Lab row. Repository-local
+tier/canon plus live Git/GitHub established authority without a registry detour. The external
+registry/sync promotion and task debt remain unchanged; no repository helper change is appropriate.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
@@ -1929,9 +2004,10 @@ entirely stale PR response.
   failure changed tracked release bytes, a ref, or a remote object.
 - **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
   UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
-- **occurrences:** 3 independent Windows date/encoding parameter incompatibilities — 2026-08-13
+- **occurrences:** 4 independent Windows date/encoding parameter incompatibilities — 2026-08-13
   (two occurrences), and 2026-08-15 (Windows PowerShell 5.1 rejected `ConvertFrom-Json -Depth`
-  before PR #85 delayed-sweep parsing).
+  before PR #85 delayed-sweep parsing), plus 2026-08-15 (Windows PowerShell rejected `Get-Date
+  -AsUTC -Format o` during PR #89 exact-head review).
 - **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
   tracks the cross-repository Windows compatibility follow-up.
 - **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
@@ -1941,10 +2017,17 @@ entirely stale PR response.
 _Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
 helper remains a promotion proposal only.
 
-_Note 2026-08-15 (occurrence 3, PR #85 delayed-sweep parsing):_ Windows PowerShell 5.1 rejected
+_Note 2026-08-15 (occurrence 4, PR #85 delayed-sweep parsing):_ Windows PowerShell 5.1 rejected
 `ConvertFrom-Json -Depth` before parsing. Compatible `ConvertFrom-Json` without `-Depth` is the
 workaround; no mutation occurred. [Product #222](https://github.com/Chris0Jeky/developer-lens/issues/222)
 remains the enforcement owner.
+
+_Note 2026-08-15 (third occurrence, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_
+Windows PowerShell again rejected `Get-Date -AsUTC -Format o`; the compatible
+`[DateTime]::UtcNow.ToString('o')` form supplied the UTC timestamp without mutation. This occurrence
+is classified once under FR-069's explicit host-parameter compatibility scope; FR-017 and FR-010 are
+not incremented.
 
 ### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
 
@@ -2344,22 +2427,94 @@ timeout would be the genuine second occurrence that triggers the promotion decis
   the seam mechanically; the cheapest additional layer on recurrence is one parametrized test
   pinning the guard's flavour on both hosts, rather than prose asking authors to remember.
 
-### FR-084 — plain worktree removal left an unregistered directory after a Windows filename-length failure
+### FR-084 — operative release surfaces assigned agent-owned mechanics to the owner
+
+- **first-seen:** 2026-08-15
+- **status:** `resolved`
+- **symptom:** The cross-repository contract, maintenance protocol, and live resume artifact said
+  the joint tag decision was owner-executed or handed back to the owner after Product release
+  sign-off, despite owner constitution A1=FULL assigning releases, versioning, packaging, and
+  cross-repository coordination to agents.
+- **impact:** A release governor following those operative surfaces would stop after the aesthetic
+  gate and ask the owner to perform mechanics that agent authority already owns, leaving the
+  synchronized release parked under a false authority boundary.
+- **workaround:** none — the three operative surfaces now separate the owner-only five-minute
+  aesthetic decision from the subsequent agent-executed version, tag, package, and approved
+  C0-publication mechanics, while preserving every ordinary gate.
+- **occurrences:** 1 concrete divergence across three tracked operational surfaces, observed by the
+  2026-08-15 exact-head Product reconciliation review and recorded on Lab issue #29.
+- **task:** [Lab issue #29 comment 5299376876](https://github.com/Chris0Jeky/developer-lens-lab/issues/29#issuecomment-5299376876)
+  records the consumer, acceptance behavior, authority boundary, and proof for this repair.
+- **promotion:** Resolved at the cheapest operative layer by correcting the three consumers of the
+  false claim and proving their authority/context surface. At a second independent recurrence, add
+  a semantic context-verifier assertion for the A1 release-actor split rather than another prose
+  reminder.
+
+_Numbering note 2026-08-15:_ This is the next free identifier on live main
+`2806574915e80118e43dee577bf0c53ea0d1fc83`. Parked PR #87 independently reserved `FR-084` on its
+unmerged branch; if that branch resumes, its new entry must be renumbered from the then-live tail.
+No PR #87 occurrence count or entry was imported here.
+
+_Reconciliation note 2026-08-15:_ PR #87 later resumed over live main. Its cleanup occurrence was
+consolidated into FR-086 rather than duplicated or renumbered as a separate entry; the preceding
+numbering note remains the factual state at the moment FR-084 first landed.
+
+### FR-085 — the live resume artifact kept a delivered Lab #81 lane in flight
+
+- **first-seen:** 2026-08-15
+- **status:** `resolved`
+- **symptom:** Three operative `docs/CURRENT_STATE.md` fields still described the Lab #81
+  package-smoke supervision branch as in flight and pending review after PR #85 had merged and
+  issue #81 had closed.
+- **impact:** A cold successor following the resume artifact could try to resume a merged branch
+  instead of re-running the deterministic queue from live Git and GitHub state.
+- **workaround:** none — the three fields now record the merged head and commit, green required and
+  merge runs, clean delayed sweep, closed issue, and an explicit return to SENSE/RECONCILE without
+  inventing a successor card.
+- **occurrences:** 1 stale resume divergence spanning `active_wave.state`, `next_safe_slice`, and
+  `exact_resume_point`, observed before this branch's first push.
+- **task:** [Lab issue #81](https://github.com/Chris0Jeky/developer-lens-lab/issues/81) carries the
+  delivered work; [PR #85 comment 5299142189](https://github.com/Chris0Jeky/developer-lens-lab/pull/85#issuecomment-5299142189)
+  carries the clean delayed-sweep evidence.
+- **promotion:** Resolved at the live resume layer. At a second independent recurrence, select a
+  GitHub-backed state-sync lifecycle check; the repository's network-free context verifier cannot
+  prove live pull-request or issue state by itself.
+
+### FR-086 — plain worktree removal leaves Windows long-path residue
 
 - **first-seen:** 2026-08-15
 - **status:** `workaround-documented`
-- **symptom:** After clean tracked status and ignored-name preflight, plain `git worktree remove`
-  removed the registration and `.git` metadata but failed deleting the remaining reproducible
-  ignored-output directory with `Filename too long`.
-- **impact:** Coordinator cleanup remains incomplete and leaves disk residue, but no repository ref
-  or work was lost.
-- **workaround:** Stop, do not use `--force` or cross-shell recursive deletion, and park the
-  remainder.
-- **occurrences:** 1 independent occurrence — 2026-08-15 coordinator cleanup.
-- **task:** [Lab #34 comment 5299194948](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299194948)
-  tracks the follow-up.
-- **promotion:** Not promoted after one occurrence. At a second recurrence, choose either a shorter
-  coordinator root or a reviewed long-path-aware helper.
+- **symptom:** On two tracked-clean worktrees containing ignored reproducible outputs only, plain
+  `git worktree remove` removed the Git registration but could not finish deleting the directory
+  because Windows returned `Filename too long`.
+- **impact:** The coordinator completes Git worktree cleanup but an unregistered directory remains,
+  accumulating local machine-hygiene debt that the ordinary safe removal route cannot clear.
+- **workaround:** Confirm tracked cleanliness and that only ignored reproducible outputs remain,
+  attempt plain `git worktree remove` once, then park any unregistered residue. Do not use force or
+  cross-shell recursive deletion, and do not inspect protected/generated contents to justify it.
+- **occurrences:** 3 independent occurrences on 2026-08-15 — the issue #76 helper worktree recorded
+  on parked PR #87, the merged PR #88 authority-repair worktree recorded on issue #77, and the
+  merged PR #89 helper worktree `merge-eligibility-history-20260815` recorded on issue #77.
+- **task:** [Lab issue #77 comment 5299609287](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5299609287)
+  records the first two occurrences and their parked residues; [Lab issue #77 comment
+  5299811681](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5299811681)
+  records the third occurrence and the same exact safe stop boundary.
+- **promotion:** At the second occurrence, the cheapest enforcing layer is a reviewed
+  Windows-long-path cleanup helper and preflight owned by Lab issue #77. It remains task debt until
+  that helper lands and proves confined target resolution; explicit human machine cleanup is the
+  alternative unlocking event, not permission for an agent to bypass the safe removal route.
 
-_Note 2026-08-15:_ Only ignored path names were observed; no cache contents or protected bytes were
-inspected, and no release, data, model, telemetry, or credential authority moved.
+_Note 2026-08-15 (occurrence 1, issue #76 helper residue; [Lab #34 comment
+5299194948](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299194948)):_
+Plain removal followed a tracked-clean and ignored-name preflight, removed the registration and
+`.git` metadata, then failed on the Windows filename-length boundary. Only ignored path names were
+observed; no ignored contents or protected bytes were inspected, and no release, data, model,
+telemetry, or credential authority moved.
+
+_Note 2026-08-15 (occurrence 3, merged PR #89 helper worktree
+`merge-eligibility-history-20260815`; [Lab #77 comment
+5299811681](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5299811681)):_
+Plain removal followed the same tracked-clean and ignored-reproducible-output preflight, removed the
+Git registration, then failed to finish directory deletion with `Filename too long`. No force or
+cross-shell recursive deletion was used; the unregistered residue is parked for the selected helper
+or explicit human cleanup.

@@ -156,10 +156,11 @@ any other value is refused — and binds `expected` and `current` 40-character h
 `pushed_head_sha`, `pushed_at`, `collected_at`, and the exact required hosted check name
 (`Prove the lab`). Its complete, non-paginated, non-stale surfaces are
 `checks`, `formal_reviews`, `top_level_comments`, `closing_refs`, and `review_threads`; every
-surface and item carries the same head/base pair. The check must be completed and successful and
-every review thread must be resolved. A moved head/base, or any missing, paginated, stale,
-malformed, or unresolved surface, is ineligible. The result is a report only; it never calls a
-hosted service or performs a merge.
+surface carries the same head/base pair. Items carry that pair too except for complete immutable
+`formal_reviews` and `top_level_comments` history, whose predecessor-head treatment is defined
+below. The check must be completed and successful and every review thread must be resolved. A moved
+head/base, or any missing, paginated, stale, malformed, or unresolved surface, is ineligible. The
+result is a report only; it never calls a hosted service or performs a merge.
 
 ### Pull-request identity binds every review surface
 
@@ -200,6 +201,22 @@ unrecognised state is `invalid_review_state:<index>` rather than an implicit "no
 was the one place where missing evidence could have become a pass. A `PENDING` review is
 `pending_formal_review:<index>`, because an in-flight review is an incomplete record. Any
 `CHANGES_REQUESTED` review is `changes_requested`.
+
+### Predecessor review history stays complete
+
+GitHub's formal-review and top-level-comment surfaces are append-only history: after a fix push,
+records bound to the predecessor head remain in every complete collection. The collector must keep
+them. A well-formed item on either surface may therefore carry a different head SHA when it retains
+the snapshot's current base SHA and pull-request identity. A predecessor top-level comment is
+context only. A predecessor formal review is context only and is benign only in normalized state
+`APPROVED`, `COMMENTED`, or `DISMISSED`; `CHANGES_REQUESTED`, `PENDING`, an absent/non-string/unknown
+state, a wrong pull-request binding, or a malformed or different-base SHA binding remains
+ineligible. No history is filtered or dropped to obtain that result.
+
+Historical items never satisfy acceptance. The required `accepted_review` and the item it names
+must still bind the exact current head, current base, and pull request under the next section. Review
+threads retain their exact-head binding, and any unresolved thread remains ineligible regardless of
+whether its discussion began on a predecessor head.
 
 ### The accepted-review attestation
 

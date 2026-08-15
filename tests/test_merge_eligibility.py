@@ -17,6 +17,7 @@ from tools.merge_eligibility import (
 HEAD = "a" * 40
 BASE = "b" * 40
 OTHER = "c" * 40
+PREDECESSOR_HEAD = "d" * 40
 PUSHED_AT = "2026-08-10T12:00:00Z"
 COLLECTED_AT = "2026-08-10T12:15:00Z"
 NOW = datetime(2026, 8, 10, 12, 15, tzinfo=UTC)
@@ -394,6 +395,123 @@ def _attest_the_comment(snapshot: dict[str, object]) -> dict[str, object]:
     attestation["surface"] = "top_level_comments"
     attestation["id"] = COMMENT_ID
     return _items(snapshot, "top_level_comments")[0]
+
+
+def _pr87_shaped_snapshot() -> dict[str, object]:
+    """Return complete immutable predecessor history plus one current-head attestation."""
+
+    snapshot = _snapshot()
+    _attest_the_comment(snapshot)
+    predecessor_bound = {
+        "head_sha": PREDECESSOR_HEAD,
+        "base_sha": BASE,
+        "pr_number": PR_NUMBER,
+    }
+    _surface_of(snapshot, "formal_reviews")["items"] = [
+        {**predecessor_bound, "review_id": 601, "state": "COMMENTED"},
+        {**predecessor_bound, "review_id": 602, "state": "COMMENTED"},
+        {**predecessor_bound, "review_id": 603, "state": "COMMENTED"},
+    ]
+    _items(snapshot, "top_level_comments").insert(
+        0,
+        {
+            **predecessor_bound,
+            "comment_id": 100,
+            "body": f"Earlier review context for {PREDECESSOR_HEAD}.",
+        },
+    )
+    return snapshot
+
+
+def test_pr87_shaped_benign_predecessor_history_is_retained_as_context() -> None:
+    snapshot = _pr87_shaped_snapshot()
+    original = deepcopy(snapshot)
+
+    report = evaluate_merge_eligibility(snapshot, now=NOW)
+
+    assert report.eligible
+    assert report.reasons == ()
+    assert snapshot == original
+    assert [item["state"] for item in _items(snapshot, "formal_reviews")] == [
+        "COMMENTED",
+        "COMMENTED",
+        "COMMENTED",
+    ]
+    assert len(_items(snapshot, "top_level_comments")) == 2
+
+
+@pytest.mark.parametrize("state", ["APPROVED", "COMMENTED", "DISMISSED"])
+def test_benign_predecessor_formal_review_states_are_tolerated(state: str) -> None:
+    snapshot = _pr87_shaped_snapshot()
+    _items(snapshot, "formal_reviews")[0]["state"] = state
+
+    assert _reasons(snapshot) == ()
+
+
+@pytest.mark.parametrize(
+    ("state", "reason"),
+    [
+        ("CHANGES_REQUESTED", "changes_requested"),
+        ("PENDING", "pending_formal_review:0"),
+        ("UNKNOWN", "invalid_review_state:0"),
+        (7, "invalid_review_state:0"),
+    ],
+)
+def test_predecessor_formal_review_states_fail_closed(state: object, reason: str) -> None:
+    snapshot = _pr87_shaped_snapshot()
+    _items(snapshot, "formal_reviews")[0]["state"] = state
+
+    assert reason in _reasons(snapshot)
+
+
+def test_missing_predecessor_formal_review_state_fails_closed() -> None:
+    snapshot = _pr87_shaped_snapshot()
+    del _items(snapshot, "formal_reviews")[0]["state"]
+
+    assert "invalid_review_state:0" in _reasons(snapshot)
+
+
+@pytest.mark.parametrize("surface", ["formal_reviews", "top_level_comments"])
+def test_predecessor_review_history_with_the_wrong_pull_request_is_refused(surface: str) -> None:
+    snapshot = _pr87_shaped_snapshot()
+    _items(snapshot, surface)[0]["pr_number"] = OTHER_PR
+
+    assert f"wrong_item_pr:{surface}:0" in _reasons(snapshot)
+
+
+@pytest.mark.parametrize(
+    ("surface", "field", "reason"),
+    [
+        ("formal_reviews", "head_sha", "stale_item_head:formal_reviews:0"),
+        ("formal_reviews", "base_sha", "stale_item_base:formal_reviews:0"),
+        ("top_level_comments", "head_sha", "stale_item_head:top_level_comments:0"),
+        ("top_level_comments", "base_sha", "stale_item_base:top_level_comments:0"),
+    ],
+)
+def test_malformed_predecessor_sha_binding_is_refused(
+    surface: str, field: str, reason: str
+) -> None:
+    snapshot = _pr87_shaped_snapshot()
+    _items(snapshot, surface)[0][field] = "not-a-sha"
+
+    assert reason in _reasons(snapshot)
+
+
+def test_predecessor_comment_cannot_be_the_accepted_review() -> None:
+    snapshot = _pr87_shaped_snapshot()
+    predecessor_comment = _items(snapshot, "top_level_comments")[0]
+    # Even text that cites the current head cannot make a predecessor-bound item current.
+    predecessor_comment["body"] = f"Context mentions {HEAD} but belongs to {PREDECESSOR_HEAD}."
+    _attestation(snapshot)["id"] = predecessor_comment["comment_id"]
+
+    assert "stale_accepted_review" in _reasons(snapshot)
+
+
+def test_predecessor_history_does_not_override_an_unresolved_thread() -> None:
+    snapshot = _pr87_shaped_snapshot()
+    _items(snapshot, "review_threads")[0]["resolved"] = False
+
+    assert "unresolved_review_thread:0" in _reasons(snapshot)
 
 
 def test_an_attested_comment_without_a_body_is_unanchored() -> None:
