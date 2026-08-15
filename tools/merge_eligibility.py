@@ -28,6 +28,11 @@ _SURFACES = ("checks", "formal_reviews", "top_level_comments", "closing_refs", "
 _PR_SCOPED_SURFACES = frozenset(
     {"formal_reviews", "top_level_comments", "closing_refs", "review_threads"}
 )
+# GitHub review and issue-comment APIs return immutable history as well as records for the current
+# head.  A well-formed predecessor record from the same pull request and current base remains useful
+# context, but it can never satisfy the exact-head acceptance gate.  Other surfaces still bind every
+# item to the expected head because their records describe the one current merge decision snapshot.
+_PREDECESSOR_CONTEXT_SURFACES = frozenset({"formal_reviews", "top_level_comments"})
 # GitHub forbids approving your own pull request and every Lab pull request is authored by the
 # single owner account, so a formal APPROVED state can never appear here.  The practiced gate is
 # instead an accepted, exact-head review: a fresh-context review posted as a top-level comment, or
@@ -361,7 +366,25 @@ def evaluate_merge_eligibility(
                 continue
             item_head = _sha(record.get("head_sha"))
             item_base = _sha(record.get("base_sha"))
-            if item_head is None or expected_head is None or item_head != expected_head:
+            # Formal reviews and top-level comments are append-only hosted history.  Retain a
+            # predecessor-head item as context when its SHA is well formed, its base is still the
+            # expected base, and its pull-request binding (checked below) remains valid.  The
+            # accepted-review evaluator separately requires the named gate item itself to bind the
+            # exact current head/base, so historical context cannot carry acceptance forward.
+            predecessor_context = (
+                name in _PREDECESSOR_CONTEXT_SURFACES
+                and item_head is not None
+                and expected_head is not None
+                and item_head != expected_head
+                and item_base is not None
+                and expected_base is not None
+                and item_base == expected_base
+            )
+            if (
+                item_head is None
+                or expected_head is None
+                or (item_head != expected_head and not predecessor_context)
+            ):
                 reasons.append(f"stale_item_head:{name}:{index}")
             if item_base is None or expected_base is None or item_base != expected_base:
                 reasons.append(f"stale_item_base:{name}:{index}")

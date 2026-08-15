@@ -487,9 +487,9 @@ failed forms are one independent recurrence of the same predicate.
 - **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
   exit on failure before starting the next command. The release-gate sync then used the promoted
   confined-bootstrap route and produced a real context-verifier pass.
-- **occurrences:** 2 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
+- **occurrences:** 4 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
   a later diff check), 2026-08-09 (an unsupported PowerShell `Get-Date` option was masked by later
-  successful GitHub reads).
+  successful GitHub reads), and two PR #88 fresh-review occurrences on 2026-08-15 detailed below.
 - **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
   guards in its remaining proving commands.
 - **promotion:** Not durably promoted. This session set `$ErrorActionPreference = 'Stop'` and
@@ -501,6 +501,16 @@ failed forms are one independent recurrence of the same predicate.
 _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
 preamble was not durable enforcement. The status and promotion field now record task debt until an
 applicable executable instruction installs the guard.
+
+_Note 2026-08-15 (third occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_ A composed
+`if` expression in a `gh api` URL failed and returned HTTP 404, then later commands masked the
+failure. An explicit repository/identifier mapping, immediate `$LASTEXITCODE` guard, and
+`ConvertFrom-Json` completed the read successfully.
+
+_Note 2026-08-15 (fourth occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_
+`New-Item -LiteralPath` was unsupported and raised a non-terminating error that a later successful
+MkDocs command masked. Running MkDocs directly against a fresh temporary target succeeded. The
+existing prompt/canon promotion decision remains task debt; neither recurrence changes helper logic.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
@@ -1464,8 +1474,9 @@ four unresolved PR #60 threads.
   invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
   189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
-- **occurrences:** 2 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
-  2026-08-10, and the flagship changelog-synchronisation slice on 2026-08-14.
+- **occurrences:** 3 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10, the flagship changelog-synchronisation slice on 2026-08-14, and the merge-helper
+  predecessor-history proof on 2026-08-15.
 - **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
@@ -1484,6 +1495,11 @@ through `py -3 -m uv`, which re-enabled the declared locked gate
 (`py -3 -m uv sync --locked --all-groups` succeeded, and the full declared gate then ran green
 through the same route on the slice's first commit).
 
+_Note 2026-08-15 (third occurrence, merge-helper predecessor-history proof):_ The standalone `uv`
+command was again absent. The already-reviewed `py -3 -m uv 0.12.4` module route started the focused
+test successfully, so no new bootstrap, global install, or project-toolchain change was attempted.
+The existing host-provisioning promotion and Lab #34 task link remain unchanged.
+
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
 - **first-seen:** 2026-08-10
@@ -1494,8 +1510,8 @@ through the same route on the slice's first commit).
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 2 independent occurrences — flagship governor orientation on 2026-08-10 and
-  truth-repair orientation on 2026-08-13.
+- **occurrences:** 3 independent occurrences — flagship governor orientation on 2026-08-10,
+  truth-repair orientation on 2026-08-13, and merge-helper orientation on 2026-08-15.
 - **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
   Lab registry entry; that owner surface is outside this repository.
 - **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
@@ -1505,6 +1521,12 @@ through the same route on the slice's first commit).
 _Note 2026-08-13 (truth-repair orientation):_ The canonical estate file was unavailable and the
 Codex repository-map fallback had no Lab match. Repository-local tier and canon plus live Git and
 GitHub state established authority; no replacement path was invented.
+
+_Note 2026-08-15 (third occurrence, merge-helper orientation):_ The canonical estate file was again
+unavailable and the Codex repository-map fallback still had no Lab row. Repository-local authority
+and live Git/GitHub state established the bounded checkout without a detour. The cheapest durable fix
+still belongs to the external estate registry/sync owner, so this remains task debt on Lab #34 and
+does not widen the repository helper slice.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
