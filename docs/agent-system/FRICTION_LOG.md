@@ -1487,9 +1487,9 @@ four unresolved PR #60 threads.
   invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
   189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
-- **occurrences:** 3 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
-  2026-08-10, the flagship changelog-synchronisation slice on 2026-08-14, and the merge-helper
-  predecessor-history proof on 2026-08-15.
+- **occurrences:** 4 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10, the flagship changelog-synchronisation slice on 2026-08-14, the merge-helper
+  predecessor-history proof on 2026-08-15, and the PR #88 merge-eligibility snapshot on 2026-08-15.
 - **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
@@ -1512,6 +1512,12 @@ _Note 2026-08-15 (third occurrence, merge-helper predecessor-history proof):_ Th
 command was again absent. The already-reviewed `py -3 -m uv 0.12.4` module route started the focused
 test successfully, so no new bootstrap, global install, or project-toolchain change was attempted.
 The existing host-provisioning promotion and Lab #34 task link remain unchanged.
+
+_Note 2026-08-15 (fourth occurrence, [PR #88](https://github.com/Chris0Jeky/developer-lens-lab/pull/88)
+merge-eligibility snapshot; [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)):_
+The mechanical snapshot's standalone `uv` invocation was unavailable. The same complete snapshot
+evaluated successfully through the existing `py -3 -m uv` module route; no surface was filtered or
+recollected selectively. The existing host-provisioning promotion remains unchanged.
 
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
@@ -2366,3 +2372,24 @@ No PR #87 occurrence count or entry was imported here.
 - **promotion:** Resolved at the live resume layer. At a second independent recurrence, select a
   GitHub-backed state-sync lifecycle check; the repository's network-free context verifier cannot
   prove live pull-request or issue state by itself.
+
+### FR-086 — plain worktree removal leaves Windows long-path residue
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-documented`
+- **symptom:** On two tracked-clean worktrees containing ignored reproducible outputs only, plain
+  `git worktree remove` removed the Git registration but could not finish deleting the directory
+  because Windows returned `Filename too long`.
+- **impact:** The coordinator completes Git worktree cleanup but an unregistered directory remains,
+  accumulating local machine-hygiene debt that the ordinary safe removal route cannot clear.
+- **workaround:** Confirm tracked cleanliness and that only ignored reproducible outputs remain,
+  attempt plain `git worktree remove` once, then park any unregistered residue. Do not use force or
+  cross-shell recursive deletion, and do not inspect protected/generated contents to justify it.
+- **occurrences:** 2 independent occurrences on 2026-08-15 — the issue #76 helper worktree recorded
+  on parked PR #87, and the merged PR #88 authority-repair worktree recorded on issue #77.
+- **task:** [Lab issue #77 comment 5299609287](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5299609287)
+  records the second occurrence, both parked residues, and the exact safe stop boundary.
+- **promotion:** At the second occurrence, the cheapest enforcing layer is a reviewed
+  Windows-long-path cleanup helper and preflight owned by Lab issue #77. It remains task debt until
+  that helper lands and proves confined target resolution; explicit human machine cleanup is the
+  alternative unlocking event, not permission for an agent to bypass the safe removal route.
