@@ -1635,7 +1635,7 @@ recollected selectively. The existing host-provisioning promotion remains unchan
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 4 independent occurrences — flagship governor orientation on 2026-08-10,
+- **occurrences:** 5 independent occurrences — flagship governor orientation on 2026-08-10,
   truth-repair orientation on 2026-08-13, merge-helper orientation on 2026-08-15, and PR #89
   exact-head review orientation on 2026-08-15.
 - **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
@@ -1659,6 +1659,13 @@ _Note 2026-08-15 (fourth occurrence, PR #89 exact-head review; [Lab #34 comment
 canonical estate file was absent and the Codex repository map had no usable Lab row. Repository-local
 tier/canon plus live Git/GitHub established authority without a registry detour. The external
 registry/sync promotion and task debt remain unchanged; no repository helper change is appropriate.
+
+_Note 2026-08-15 (fifth occurrence, PR #87 terminal collection/review hop; [Lab #34 comment
+5300083083](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5300083083)):_ The
+canonical estate registry was absent. A read-only recursive `ESTATE.md` fallback search reached its
+20-second bound before any GitHub collection, so the collector stopped rather than treating the
+missing registry as permission to continue. The external registry/sync promotion and Lab #34 task
+debt remain unchanged.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
@@ -2565,3 +2572,41 @@ or explicit human cleanup.
   cheapest enforcing layer is a runtime catalog/skill-packaging parity check that asserts the
   canon-required Lab skill ID and `SKILL.md` resource are advertised together. This is distinct
   from FR-063's unavailable Luna-routing predicate and remains Lab #34 task debt.
+
+### FR-088 — shell transport truncated an otherwise complete review-thread JSON response
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-documented`
+- **symptom:** The already-oriented one-shot review collector returned eight unfiltered threads at
+  `2026-08-15T02:25:30.505Z`, but the shell transport cut its JSON response at exactly 20,000
+  characters; parsing stopped at position 20000.
+- **impact:** The complete collection could not be parsed, so it could not support a review snapshot
+  or a merge-eligibility helper result. Treating the partial response as a usable thread surface
+  would weaken evidence.
+- **workaround:** Stop with no snapshot or helper outcome; do not filter the response or recollect
+  selected surfaces to manufacture a result.
+- **occurrences:** 1 independent occurrence — the PR #87 terminal collection/review hop on
+  2026-08-15.
+- **task:** [Lab #34 comment 5300083083](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5300083083)
+  records the bounded transport failure and its no-fabrication stop.
+- **promotion:** Not promoted after one occurrence. If it recurs independently, select a checked
+  collector transport that preserves one complete, unfiltered response or fails closed before a
+  snapshot is claimed; Lab #34 retains that task debt.
+
+### FR-089 — review-comment identifiers are not review-thread identifiers
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-verified`
+- **symptom:** The first review-reply mutation supplied PRRC review-comment IDs where the mutation
+  required PRRT review-thread IDs, so GitHub rejected the whole attempted disposition atomically.
+- **impact:** Neither reply nor resolution state changed in that attempt, and assuming partial
+  success would have made the review record untruthful.
+- **workaround:** Query the small direct thread surface, use its PRRT identifiers for the one-time
+  dispositions, and verify the resulting thread states.
+- **occurrences:** 1 independent occurrence — the PR #87 terminal collection/review hop on
+  2026-08-15.
+- **task:** [Lab #34 comment 5300083083](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5300083083)
+  records the identifier-class mismatch and verified bounded recovery.
+- **promotion:** Not promoted after one occurrence. At a second independent recurrence, the cheapest
+  enforcing layer is a checked mutation preflight that labels and validates the required PRRT thread
+  identifier before sending a reply or resolution; Lab #34 retains that task debt.
