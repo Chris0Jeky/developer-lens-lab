@@ -33,7 +33,7 @@ Each entry carries exactly these fields:
 | `symptom` | What was observed, factually, without inference. |
 | `impact` | What it costs a session when it happens. |
 | `workaround` | What was actually done instead, or `none`. |
-| `occurrences` | Count plus the dates or artifacts that record them. |
+| `occurrences` | Count plus the dates or artifacts that record them. A dated note's ordinal is its assignment order, not its position in the enumeration, which stays chronological. |
 | `task` | The linked issue, card or owner action — a fully qualified ref for anything cross-repository or human-only. |
 | `promotion` | The enforcement layer chosen, or the recorded reason it stays task debt. |
 
@@ -591,7 +591,10 @@ _Note 2026-08-15 (occurrence 5, PR #85 delayed-sweep parsing):_ The Windows Powe
 `ConvertFrom-Json -Depth` parameter error was non-terminating under the default policy, so the next
 identity assertion emitted a misleading secondary error. The retry set `$ErrorActionPreference = 'Stop'`
 and used the compatible parser; no mutation occurred. [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)
-remains the enforcement owner.
+remains the enforcement owner. This is the same event FR-069 records as its occurrence 4: it is
+counted in both entries only because it exhibits both predicates — the host-parameter
+incompatibility FR-069 scopes, and the non-terminating masking FR-010 scopes — so a burndown pass
+totalling Windows friction must count it once, not twice.
 
 _Note 2026-08-15 (third occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_ A composed
 `if` expression in a `gh api` URL failed and returned HTTP 404, then later commands masked the
