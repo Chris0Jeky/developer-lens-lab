@@ -442,12 +442,13 @@ promotion decision is unchanged.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 7 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 8 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
   2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
   terminated an outer JavaScript command wrapper before PowerShell started), plus 2026-08-10 (an
   inline GraphQL repository string during the PR #56 factual refresh), plus 2026-08-15 (an inline
-  quoted jq filter during the issue #29 release-authority repair).
+  quoted jq filter during the issue #29 release-authority repair), plus 2026-08-15 (a nested
+  `gh api --jq` filter during PR #89 exact-head review).
 - **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   prompt-operating-system post-review hardening and the external Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
@@ -480,6 +481,13 @@ _Note 2026-08-15 (occurrence 7, issue #29 release-authority repair):_ An inline 
 filename filter lost its string quotes at the PowerShell/tool boundary and failed before returning
 repository data. A plain `gh api` read followed by PowerShell `ConvertFrom-Json` supplied the same
 read-only file patch; no repository ref, review surface, or tracked file changed in the failed call.
+
+_Note 2026-08-15 (occurrence 8, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_ A
+nested `gh api --jq` filter split at the PowerShell/tool boundary and failed with
+`accepts 1 arg(s), received 3`. Raw JSON plus an immediate `$LASTEXITCODE` guard,
+`ConvertFrom-Json`, and `Where-Object` supplied the same read-only result; the failed call changed no
+repository or GitHub state.
 
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
@@ -1529,8 +1537,9 @@ recollected selectively. The existing host-provisioning promotion remains unchan
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 3 independent occurrences — flagship governor orientation on 2026-08-10,
-  truth-repair orientation on 2026-08-13, and merge-helper orientation on 2026-08-15.
+- **occurrences:** 4 independent occurrences — flagship governor orientation on 2026-08-10,
+  truth-repair orientation on 2026-08-13, merge-helper orientation on 2026-08-15, and PR #89
+  exact-head review orientation on 2026-08-15.
 - **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
   Lab registry entry; that owner surface is outside this repository.
 - **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
@@ -1546,6 +1555,12 @@ unavailable and the Codex repository-map fallback still had no Lab row. Reposito
 and live Git/GitHub state established the bounded checkout without a detour. The cheapest durable fix
 still belongs to the external estate registry/sync owner, so this remains task debt on Lab #34 and
 does not widen the repository helper slice.
+
+_Note 2026-08-15 (fourth occurrence, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_ The
+canonical estate file was absent and the Codex repository map had no usable Lab row. Repository-local
+tier/canon plus live Git/GitHub established authority without a registry detour. The external
+registry/sync promotion and task debt remain unchanged; no repository helper change is appropriate.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
@@ -1916,7 +1931,8 @@ entirely stale PR response.
   failure changed tracked release bytes, a ref, or a remote object.
 - **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
   UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
-- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **occurrences:** 3 independent Windows date/encoding parameter incompatibilities — two on
+  2026-08-13 and one during PR #89 exact-head review on 2026-08-15.
 - **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
   tracks the cross-repository Windows compatibility follow-up.
 - **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
@@ -1925,6 +1941,13 @@ entirely stale PR response.
 
 _Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
 helper remains a promotion proposal only.
+
+_Note 2026-08-15 (third occurrence, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_
+Windows PowerShell again rejected `Get-Date -AsUTC -Format o`; the compatible
+`[DateTime]::UtcNow.ToString('o')` form supplied the UTC timestamp without mutation. This occurrence
+is classified once under FR-069's explicit host-parameter compatibility scope; FR-017 and FR-010 are
+not incremented.
 
 ### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
 
