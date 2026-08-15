@@ -3,7 +3,7 @@
 Live Git and CI outrank this file. Historical ledgers never override it.
 
 ```yaml
-updated: 2026-08-14
+updated: 2026-08-15
 phase: M3_GOVERNOR_CONTROL_PLANE
 posture: >-
   public repository; constitution v2 recorded (docs/OWNER_CONSTITUTION.md) — real own/curated data,
@@ -49,12 +49,12 @@ active_wave:
       resume references issue #29 comment `5243827843` and PR #65 comment `5243827873`, and its
       post-merge state reconciliation is DELIVERED through merged PR #83. The
       three tracked merge-eligibility hardening follow-ups are DELIVERED through merged PR #82
-      (see `delivered.merge_eligibility_snapshot_hardening`). The in-flight write lane is the
-      Lab #81 package-smoke supervision hardening on branch
-      `hardening/package-smoke-supervision-20260814` (coordinator-owned worktree from base
-      `02afd7c37b3c7d0a30551025a1724fb5aa5d064b`; bounded implementation committed locally at
-      `c7a14cba5cad65aed8931d5627b9c1bbd2b4e86c` with the full local gate green, pending
-      fresh-context review and its pull request).
+      (see `delivered.merge_eligibility_snapshot_hardening`). The previously recorded Lab #81
+      package-smoke supervision lane is DELIVERED: PR #85 merged final head
+      `1f5dfda9545d05df83982eabffd799aa0ae143e5` as
+      `89358200b428aac53d1c8b47a3d544e7a981efac`; required run `31846406666` and merge run
+      `31847458392` are green; delayed-sweep comment `5299142189` is clean; and issue #81 is CLOSED.
+      Its former branch is not an in-flight or resumable lane.
 delivered:
   - merge_eligibility_snapshot_hardening: >-
       DONE — PR #82 merged 2026-08-14T21:17:34Z as
@@ -288,38 +288,44 @@ delivered:
       reviews, top-level comments, inline comments, and no new issue #29 activity.
 next_safe_slice: >-
   SENSE/RECONCILE first from live `origin/main`, the cards source, issue #29, and open pull requests.
-  The pre-tag agent remainder is COMPLETE: the merge-eligibility helper, Lane-P staging, the
-  changelog/release-note synchronisation, and the q-11 media package are all delivered, and the
-  Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off is CLOSED by the
-  2026-08-14 owner approval. The only remaining joint-tag blocker is the distinct product release
-  gate `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`; when it closes, the tag decision is
-  handed back to the owner, never agent-executed. The three tracked helper-hardening follow-ups
+  The Lab-side pre-sign-off preparation recorded here is COMPLETE: the merge-eligibility helper,
+  Lane-P staging, the changelog/release-note synchronisation, and the Lab media package are all
+  delivered, and Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is CLOSED by the
+  2026-08-14 owner approval of that package only. The joint release is PARKED before owner handoff:
+  Product browser visual QA is **NOT VERIFIED** because the mandated browser surface is unavailable.
+  Product issue #200 comment `5299321093` records the tooling stop. The unlocking event is
+  availability of that surface plus completed Product visual proof; only then can the owner supply
+  the five-minute aesthetic sign-off at
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. After Product records that sign-off complete,
+  agents execute the synchronized version, tag, package, and approved C0-publication mechanics under
+  A1=FULL and the ordinary release gates. No such QA, sign-off, tag, package publication, or
+  C0-asset publication is claimed here. The three tracked helper-hardening follow-ups
   from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, attested-review
   state allowlist, identifier validation) are DELIVERED through merged PR #82, and the previously
   deferred q-11 conditional-phrasing touch in the cross-repo contract and maintenance protocol
   docs was completed by this reconciliation. LAB-REL-01 remains the sole ACTIVE card and its
-  remaining step is the owner-gated tag, so the next agent-executable work is tracked-issue
-  maintenance, starting with the package-smoke hardening at Lab #81, whose lane is already in
-  flight (see `active_wave`). FR-062 remains
+  release sequence is the parked Product QA proof, Product sign-off, then agent-executed mechanics,
+  so work while that lane is parked restarts the deterministic queue with SENSE/RECONCILE against
+  live `origin/main`, `tools/cards.py`, issue #29, and open pull requests. The previously recorded
+  Lab #81 hardening is delivered and its issue is closed as recorded in `active_wave.state`; do not
+  resume its former branch or select a successor card from this artifact. FR-062 remains
   true for shell `gh api graphql`, but a connector-equipped session may use its thread-aware route
   to collect `review_threads` with `is_resolved` and `is_outdated`. Do not infer that every runtime
   has that connector route: without a collectible surface the helper still refuses eligibility,
-  and this read/resolve route does not authorize a merge. The Lab #81 hardening is the five items
-  deferred from the merged PR #65 resume lane:
-  the `SYSTEMROOT` absolute-path check, `taskkill` already-exited diagnostics, the Windows-only
-  timing-fragile test, the impossible-state parametrization, and propagating the
-  cleanup-unconfirmed error, chained from the original, when a non-interrupt exception's own cleanup
-  attempt is unconfirmed while interrupt semantics are preserved. It is the in-flight slice. Keep
-  remaining hardening, asset, release, publication, and tag work separate; no data, model, telemetry,
-  contract, credential, or release activation occurred.
+  and this read/resolve route does not authorize a merge. Keep remaining hardening, asset, release,
+  publication, and tag work separate; no data, model, telemetry, contract, credential, or release
+  activation occurred.
 release_and_owner_gates: >-
   Live `HUMAN_TODO.md` remains the owner-gate source: joint release remains reaffirmed, but no tag is
   authorized. The closed product
   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` gate does not close the distinct open Lab
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` real-study public-transformation gate.
-  Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off still blocks tags;
-  Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed by the 2026-08-14 owner
-  approval of the delivered package. Lab
+  Product browser visual QA is **NOT VERIFIED / PARKED** until the mandated browser surface is
+  available, so Product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` remains open and still
+  blocks tags. Lab `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed by the 2026-08-14
+  owner approval of the delivered package only. The owner supplies that aesthetic sign-off;
+  after it is recorded, agents execute synchronized version, tag, package, and approved
+  C0-publication mechanics under A1=FULL and the ordinary gates. Lab
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7` legal review and
   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13` machine hygiene remain open; the separate
   Code of Conduct inbox is pending under `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10`. None authorizes release,
@@ -367,8 +373,11 @@ blockers: >-
   The merge-eligibility helper and its three tracked hardening follow-ups (merged PR #82), Lane-P
   staging, changelog synchronisation, and the q-11 media package
   are all DELIVERED and no longer block. Lab
-  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 is closed; the joint tag remains blocked on
-  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) alone, and no tag is authorized.
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 is closed for its approved package only. The
+  joint release is first blocked on Product browser visual QA, which is NOT VERIFIED / PARKED until
+  the mandated browser surface is available, and then on the owner aesthetic sign-off at
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c). After that sign-off, agents own the release
+  mechanics under A1=FULL; no tag or publication is authorized or claimed yet.
   Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 cleanup is open but does not block these C0
   preparation slices. FR-062's shell GraphQL restriction remains, but connector-equipped sessions
   may collect thread state through the verified thread-aware route; sessions without it keep the
@@ -382,13 +391,18 @@ exact_resume_point: >-
   `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
   `e57576469f2fa87b76372918fc78a17e776e3cf0`, its T+22m post-merge sweep was clean, and every
   merge-eligibility snapshot now requires the `pull_request`/`pr_number` identity fields. The
-  in-flight write lane is the Lab #81 package-smoke supervision hardening on branch
-  `hardening/package-smoke-supervision-20260814`; resume it through the ordinary PR gate. The pre-tag agent
-  remainder is complete and
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed; the only remaining
-  joint-tag blocker is product `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`, after which
-  the joint tag decision is
-  handed back, never agent-executed. Do not publish or tag. The other open maintenance issues
+  previously recorded Lab #81 package-smoke supervision lane is DELIVERED through merged PR #85
+  (`89358200b428aac53d1c8b47a3d544e7a981efac` from final head
+  `1f5dfda9545d05df83982eabffd799aa0ae143e5`), its delayed sweep is clean, and issue #81 is CLOSED;
+  do not resume its former branch. Re-run the deterministic queue from live state without selecting
+  a successor card in this artifact. The
+  Lab-side pre-sign-off remainder is complete and
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` is closed for its approved package only.
+  Product browser visual QA is NOT VERIFIED / PARKED until the mandated browser surface is
+  available; after that proof, the owner supplies only the aesthetic sign-off at
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. Once Product records it complete, agents
+  execute the synchronized version, tag, package, and approved C0-publication mechanics under
+  A1=FULL and the ordinary gates. Do not publish or tag before that sequence. The other open maintenance issues
   follow per the deterministic queue. Where the GitHub connector exposes the thread-aware route, collect its
   `is_resolved`/`is_outdated` state before judging the surface; otherwise leave it uncollected and
   ineligible rather than treating the shell GraphQL restriction as clear debt. This grants

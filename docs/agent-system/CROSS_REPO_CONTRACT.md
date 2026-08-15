@@ -111,12 +111,16 @@ A change that skips a step is not compatible-by-assumption; it is unverified.
   lab PR again; never infer its state from a pull request, a quiet session, or another agent's
   message. `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` remains the unrelated real-data
   public-transformation gate.
-- **Release remains gated.** Joint release is reaffirmed, but no tag is authorized until the
-  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off is complete; the lab
-  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off closed on 2026-08-14
-  with the owner's approval of the delivered media package, and the tag decision itself stays
-  owner-executed. No data,
-  model, telemetry, credential, or publication lane is opened by this reconciliation.
+- **Release remains gated.** Joint release is reaffirmed, but Product browser visual QA is
+  currently **NOT VERIFIED / PARKED** until the mandated browser surface becomes available, so the
+  owner-only five-minute aesthetic sign-off at
+  `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` remains open. The lab
+  `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` sign-off closed on 2026-08-14 for the
+  delivered media package only. After Product records that sign-off complete, agents execute the
+  synchronized version, tag, package, and approved C0-publication mechanics under A1=FULL and the
+  ordinary release gates; the owner supplies the aesthetic decision, not those mechanics. No
+  Product QA proof, Product sign-off, tag, package publication, or C0-asset publication is claimed
+  here, and no data, model, telemetry, or credential lane is opened by this reconciliation.
 - **Shared surfaces today:** the `methodTrialView` presentation contract with its C0 fixture parity,
   and the ResearchPack schema. Both are product-owned; the lab consumes them check-only.
 - **Data lanes stay C0.** Nothing in this contract opens a real-data lane on either side; that is

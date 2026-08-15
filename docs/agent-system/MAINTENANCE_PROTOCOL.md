@@ -54,11 +54,13 @@ publication gate; see [CROSS_REPO_CONTRACT.md](CROSS_REPO_CONTRACT.md) and FR-00
 5. Package metadata and uvx/PyPI readiness for the lab.
 6. Selected C0 JSON/HTML release assets with provenance and licence notices; release review per
    lane P.
-7. Synchronized changelog/release notes; tag; verify the release renders and installs. A joint
-   release is reaffirmed, but no tag is authorized until the
-   `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)` release sign-off is complete; the lab
-   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` aesthetic sign-off closed on 2026-08-14,
-   and the tag decision itself stays owner-executed.
+7. Synchronized changelog/release notes; tag; verify the release renders and installs. Agents first
+   produce the required visual proof, then the owner supplies only the final five-minute aesthetic
+   sign-off at `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`; the lab
+   `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` sign-off closed on 2026-08-14 for its
+   delivered media package only. After Product records that sign-off complete, agents execute the
+   synchronized version, tag, package, and approved C0-publication mechanics under A1=FULL and the
+   ordinary release gates. Sign-off alone is not evidence that any of those mechanics ran.
 8. The frozen Method Trial v1 ships as the canonical exhibit — do not wait for the next
    experiment to tag.
 
