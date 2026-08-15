@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 26 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 27 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -94,7 +94,11 @@ Rules that bind entries:
   repository-external bootstrap then ran the full locked gate — see FR-060 for why an in-worktree
   cache directory breaks the verifier walk), and 2026-08-13 (no PATH `uv` and no host-interpreter
   `uv` module; the already-promoted repository-external confined bootstrap restored `uv 0.12.3` and
-  `uv sync --locked --all-groups` succeeded), and 2026-08-14 (no PATH `uv` and no host-interpreter
+  `uv sync --locked --all-groups` succeeded), and 2026-08-13 (the Lane-P dedicated worktree had
+  neither a project interpreter nor a host-interpreter `uv` module; the external temporary
+  bootstrap restored `uv 0.12.3` for its focused integrity proof and declared gate — previously
+  recorded only by the Lane-P occurrence-22 note below, which left this list one item short of
+  the count), and 2026-08-14 (no PATH `uv` and no host-interpreter
   `uv` module during the changelog-synchronisation slice; the FR-050-selected reversible
   user-level module route restored `uv 0.12.4` inside the proved range; the locked sync and the
   full declared gate ran green through it — see the dated occurrence-23 note below), 2026-08-14
@@ -103,7 +107,10 @@ Rules that bind entries:
   sync), and 2026-08-14 (the fresh PR #86 exact-head reviewer
   found bare `uv` absent, but the already-promoted `py -3 -m uv`/available-interpreter route
   supplied focused proof), and 2026-08-15 (the terminal PR #87 exact-head reviewer found bare `uv`
-  absent while `py -3 -m uv 0.12.4` supplied the repository-source checks noted below).
+  absent while `py -3 -m uv 0.12.4` supplied the repository-source checks noted below), and
+  2026-08-15 (the post-wave reconciliation slice found bare `uv` absent while the installed
+  Python-module route `python -m uv`, version 0.12.4, ran the locked sync and the full declared
+  gate green at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and
   [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) (checked proof boundaries),
   which depend on a runnable locked environment.
@@ -247,6 +254,15 @@ checks bound `PYTHONPATH` to repository `src` and verified `developer_lens_lab._
 from the worktree. A mistaken `import dllab` probe tested the console-script name rather than the
 Python package, so environment installation remains **NOT VERIFIED** and that probe is not a
 separate occurrence. No protected bytes, global install, or lockfile mutation occurred.
+
+_Note 2026-08-15 (occurrence 27, post-wave reconciliation slice):_ Bare `uv` was absent and the
+installed Python-module route `python -m uv`, version 0.12.4, ran the locked sync and the
+complete declared gate green (310 passed) at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`. The same slice
+authored the `docs/CURRENT_STATE.md` `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`
+qualification that the occurrence-24 note above records as preserved on the unpushed
+`afe296e6e68339ceec482f3e31b306cf683bf613`; once this slice merges, that preserved delta is
+superseded and the branch disposition tracked on issue #77 comment `5301895208` unblocks. No
+protected bytes, global install, or lockfile mutation occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -659,17 +675,36 @@ permitted friction-log path. No repository or GitHub state changed in the failed
 - **workaround:** Inspect the exact diff immediately, then reapply with the entry heading in the
   patch context. FR-010 was corrected before commit. FR-001's resulting `promoted` status is also
   truthful because its promotion field already records the maintenance-protocol promotion.
-- **occurrences:** 2 independent occurrences — 2026-08-09 (the FR-010 promotion update) and
-  2026-08-09 (the PR #41 owner-gate review fix initially changed FR-003 instead of FR-014).
+- **occurrences:** 3 independent occurrences — 2026-08-09 (the FR-010 promotion update),
+  2026-08-09 (the PR #41 owner-gate review fix initially changed FR-003 instead of FR-014), and
+  2026-08-15 (the PR #87 under-anchored FR-044 status patch first matched FR-004's repeated status
+  line).
 - **task:** lab issue #34 owns prompt-operating-system and friction-ledger hardening.
 - **promotion:** Promoted to mandatory heading-anchored patch context plus immediate exact-diff
-  inspection for repeated-field Markdown ledgers. A schema-aware updater stays task debt: it cannot
-  infer which semantically intended entry a caller meant to target, while the heading anchor makes
-  that intent explicit at the cheapest enforceable boundary.
+  inspection for repeated-field Markdown ledgers. The third occurrence shows the heading anchor is
+  a discipline rather than a mechanical check — it can be bypassed by an under-anchored patch — so
+  this entry converges on the same checked state-sync helper task debt FR-034 already selected on
+  issue #34. A schema-aware updater otherwise stays task debt: it cannot infer which semantically
+  intended entry a caller meant to target, while the heading anchor makes that intent explicit at
+  the cheapest enforceable boundary.
 
 _Note 2026-08-09 (second occurrence):_ Exact-diff inspection caught the wrong FR-003 status before
 commit. FR-003 was restored to `open`, and the corrected patch included both the FR-014 heading and
 its field.
+
+_Note 2026-08-15 (third occurrence, PR #87; [Lab #34 comment
+5301885111](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5301885111)):_
+The heading-anchor half of the promoted layer was bypassed by an under-anchored FR-044 status
+patch, while the immediate-exact-diff-inspection half caught the wrong match before commit and
+FR-004 was restored. The event is recorded in full as FR-034 occurrence 8: one event may appear
+under two entries when it exhibits both predicates, but a burndown counts it once.
+
+_Note 2026-08-15 (adjacent hazard, post-wave reconciliation slice):_ An exact-string replacement
+whose match context extended through the following entry's heading dropped the `### FR-002`
+heading on re-insertion. The promoted immediate-exact-diff inspection caught it before staging and
+the heading was restored in the same hop. Not counted as an occurrence: the edit hit the intended
+entry, so the predicate here is the inverse shape — consuming a neighbouring heading as context —
+not an under-anchored match.
 
 ### FR-014 — a confined bootstrap environment escaped its worktree
 
@@ -2409,8 +2444,9 @@ the no-structural-fix conclusion is unchanged at four.
 - **workaround:** Treat pre-push prose as provisional and amend it in the same pipeline before the
   branch merges: state the push time, name the exact head and its hosted result, and describe any
   superseding head's proof as pending rather than implying it is green.
-- **occurrences:** 2 independent occurrences — the 2026-08-14 PR #65 base-refresh section, and the
-  2026-08-14 PR #84 state prose (dated note below).
+- **occurrences:** 3 independent occurrences — the 2026-08-14 PR #65 base-refresh section, the
+  2026-08-14 PR #84 state prose (dated note below), and the 2026-08-15 PR #91 pre-merge
+  supersession claim (dated note below).
 - **task:** [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   checked proof-boundary and evidence-truthfulness helpers.
 - **promotion:** Deliberately not promoted after one occurrence. The general defect — asserting a
@@ -2427,6 +2463,14 @@ naming the in-flight lane. The first occurrence's narrow-check idea was scoped t
 publication-state claims in ledger sections whose own head is unproved; lane-status prose in the
 state artifact has no equivalent mechanical check, so the class stays procedural task debt on the
 Lab #34 thread: re-verify lane-status sentences at push time exactly as pre-push ledger prose.
+
+_Note 2026-08-15 (third occurrence, PR #91 reconciliation slice):_ The pushed head's FR-001
+occurrence-27 note asserted the preserved `afe296e6e68339ceec482f3e31b306cf683bf613` delta "is now
+superseded by a merged equivalent" while the slice itself was an unmerged branch commit — the
+predicate exactly, in the entry class (a friction record about supersession) most likely to drive
+a deletion. The fresh-context review caught it at the pushed head; repaired in the same pipeline
+before merge by restating the supersession as conditional on this slice's merge. The class stays
+procedural task debt on the Lab #34 thread.
 
 ### FR-082 — the full pytest gate now brushes the default shell-tool timeout
 
@@ -2633,3 +2677,30 @@ retry, content inspection, or deletion was attempted.
 - **promotion:** Not promoted after one occurrence. At a second independent recurrence, the cheapest
   enforcing layer is a checked mutation preflight that labels and validates the required PRRT thread
   identifier before sending a reply or resolution; Lab #34 retains that task debt.
+
+### FR-090 — a reviewer delegation pinned a command the reviewer role cannot run
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-verified`
+- **symptom:** The PR #87 exact-head review brief instructed the reviewer to obtain the delta with
+  a `git diff <base>..<head>` shell command, but the `dll-reviewer` role is toolset-restricted to
+  Read/Grep/Glob by construction and has no shell, so the prescribed command could not run. The
+  reviewer reconstructed the delta by comparing tracked-file copies across checkouts and explicitly
+  flagged its base as assumed rather than proved.
+- **impact:** Delta attribution in an exact-head review fell back to an inferred base, weakening
+  the exact-head-over-exact-base guarantee the review exists to supply; every finding's attribution
+  inherited that assumption. The verdict was not wrong here — the coordinator independently
+  confirmed the delta — but the guarantee was weaker than the brief implied.
+- **workaround:** Supply the patch to the reviewer as content or as a file path, never as a command
+  for the reviewer to execute. Verified in the same session: the PR #84 and PR #85 review briefs
+  used the file-path form and hit no such gap; only the PR #87 brief pinned a shell command.
+- **occurrences:** 1 independent occurrence — the PR #87 exact-head review on 2026-08-15.
+- **task:** [Lab #34 comment 5301830192](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5301830192)
+  is the durable capture; this entry lands at the first free identifier after PR #90's FR-088 and
+  FR-089 merged, as that capture reserved.
+- **promotion:** Not promoted after one occurrence. The violated layer already exists:
+  `.claude/agents/dll-reviewer.md` binds the coordinator to hand the reviewer the exact diff as a
+  pasted patch or an explicit changed-file list, and the PR #87 brief bypassed that binding rather
+  than exposing a missing rule. At a second independent recurrence, the cheapest enforcing layer
+  is a delegation-template line in [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) that references the
+  existing agent-definition binding — not a duplicate prose rule that could drift from it.

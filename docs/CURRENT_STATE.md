@@ -56,6 +56,27 @@ active_wave:
       `31847458392` are green; delayed-sweep comment `5299142189` is clean; and issue #81 is CLOSED.
       Its former branch is not an in-flight or resumable lane.
 delivered:
+  - release_asset_immutable_provenance: >-
+      DONE — PR #86 merged 2026-08-14T23:30:28Z as
+      `2806574915e80118e43dee577bf0c53ea0d1fc83` (issue #76): the v0.1.0 method-trial provenance
+      manifest now pins the frozen producer commit, the verified Lab commit, and four path→blob
+      OIDs for the renderer/validator/serializer/schema, and `tests/test_release_assets.py`
+      resolves those Git objects directly, failing closed on missing commits or paths, non-blob
+      objects, or OID mismatch. Hosted check green at the merge commit (run `31850603185`); the
+      delayed post-merge sweep is recorded PR-locally at comment `5299230783` (clean). Recorded
+      belatedly by the 2026-08-15 post-wave reconciliation; no publication, release, or tag is
+      authorized by this merge.
+  - merge_eligibility_predecessor_history: >-
+      DONE — PR #89 merged 2026-08-15T01:23:38Z as
+      `41b4f23358b570d6c20740cb7f27dcffe246c688`: predecessor-head formal reviews and top-level
+      comments are retained as complete history — a predecessor top-level comment is context only,
+      and a predecessor formal review is benign only in normalized state
+      `APPROVED`/`COMMENTED`/`DISMISSED`; `CHANGES_REQUESTED`, `PENDING`, malformed or unknown
+      states, wrong pull-request or base bindings, and unresolved threads stay fail-closed, and
+      acceptance still requires the exact current-head/current-base/PR-bound attestation. Hosted
+      check green at the merge commit (run `31856385187`). The delayed post-merge sweep is
+      backfilled clean on issue #29 comment `5302113363`. Recorded belatedly by the 2026-08-15
+      post-wave reconciliation; no publication, release, or tag is authorized by this merge.
   - merge_eligibility_snapshot_hardening: >-
       DONE — PR #82 merged 2026-08-14T21:17:34Z as
       `02afd7c37b3c7d0a30551025a1724fb5aa5d064b` from final head
@@ -302,8 +323,9 @@ next_safe_slice: >-
   C0-asset publication is claimed here. The three tracked helper-hardening follow-ups
   from issue #29 comments `5269020473` and `5269401432` (PR-identity binding, attested-review
   state allowlist, identifier validation) are DELIVERED through merged PR #82, and the previously
-  deferred q-11 conditional-phrasing touch in the cross-repo contract and maintenance protocol
-  docs was completed by this reconciliation. LAB-REL-01 remains the sole ACTIVE card and its
+  deferred `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` conditional-phrasing touch in the
+  cross-repo contract and maintenance protocol docs was completed by the PR #84 reconciliation.
+  LAB-REL-01 remains the sole ACTIVE card and its
   release sequence is the parked Product QA proof, Product sign-off, then agent-executed mechanics,
   so work while that lane is parked restarts the deterministic queue with SENSE/RECONCILE against
   live `origin/main`, `tools/cards.py`, issue #29, and open pull requests. The previously recorded
