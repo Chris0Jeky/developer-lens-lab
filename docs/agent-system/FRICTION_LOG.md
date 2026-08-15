@@ -563,7 +563,7 @@ unambiguous; the failed attempt made no tracked or GitHub mutation.
 - **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
   exit on failure before starting the next command. The release-gate sync then used the promoted
   confined-bootstrap route and produced a real context-verifier pass.
-- **occurrences:** 5 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
+- **occurrences:** 6 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
   a later diff check), 2026-08-09 (an unsupported PowerShell `Get-Date` option was masked by later
   successful GitHub reads), and 2026-08-15 (a Windows PowerShell 5.1 cmdlet parameter error was
   non-terminating and allowed a misleading secondary identity assertion), plus two PR #88
@@ -596,6 +596,13 @@ _Note 2026-08-15 (fourth occurrence, PR #88 fresh review; Lab #34 comment `52995
 `New-Item -LiteralPath` was unsupported and raised a non-terminating error that a later successful
 MkDocs command masked. Running MkDocs directly against a fresh temporary target succeeded. The
 existing prompt/canon promotion decision remains task debt; neither recurrence changes helper logic.
+
+_Note 2026-08-15 (sixth occurrence, PR #87 terminal friction capture; [Lab #34 comment
+5300083083](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5300083083)):_ A
+final local-state script passed an unquoted commit range to `git diff`, which printed usage; later
+successful status reads masked the native nonzero exit despite `$ErrorActionPreference = 'Stop'`.
+The retry quoted the range and checked `$LASTEXITCODE` immediately; it returned only the one
+permitted friction-log path. No repository or GitHub state changed in the failed report command.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
