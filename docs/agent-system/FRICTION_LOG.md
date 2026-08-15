@@ -109,8 +109,8 @@ Rules that bind entries:
   supplied focused proof), and 2026-08-15 (the terminal PR #87 exact-head reviewer found bare `uv`
   absent while `py -3 -m uv 0.12.4` supplied the repository-source checks noted below), and
   2026-08-15 (the post-wave reconciliation slice found bare `uv` absent while the installed
-  Python-module route `python -m uv 0.12.4` ran the locked sync and the full declared gate green
-  at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`).
+  Python-module route `python -m uv`, version 0.12.4, ran the locked sync and the full declared
+  gate green at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and
   [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) (checked proof boundaries),
   which depend on a runnable locked environment.
@@ -256,8 +256,8 @@ Python package, so environment installation remains **NOT VERIFIED** and that pr
 separate occurrence. No protected bytes, global install, or lockfile mutation occurred.
 
 _Note 2026-08-15 (occurrence 27, post-wave reconciliation slice):_ Bare `uv` was absent and the
-installed Python-module route `python -m uv 0.12.4` ran the locked sync and the complete declared
-gate green (310 passed) at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`. The same slice
+installed Python-module route `python -m uv`, version 0.12.4, ran the locked sync and the
+complete declared gate green (310 passed) at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`. The same slice
 authored the `docs/CURRENT_STATE.md` `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11`
 qualification that the occurrence-24 note above records as preserved on the unpushed
 `afe296e6e68339ceec482f3e31b306cf683bf613`; once this slice merges, that preserved delta is

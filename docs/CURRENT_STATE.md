@@ -69,7 +69,8 @@ delivered:
   - merge_eligibility_predecessor_history: >-
       DONE — PR #89 merged 2026-08-15T01:23:38Z as
       `41b4f23358b570d6c20740cb7f27dcffe246c688`: predecessor-head formal reviews and top-level
-      comments are retained as complete history and are benign only in normalized state
+      comments are retained as complete history — a predecessor top-level comment is context only,
+      and a predecessor formal review is benign only in normalized state
       `APPROVED`/`COMMENTED`/`DISMISSED`; `CHANGES_REQUESTED`, `PENDING`, malformed or unknown
       states, wrong pull-request or base bindings, and unresolved threads stay fail-closed, and
       acceptance still requires the exact current-head/current-base/PR-bound attestation. Hosted
