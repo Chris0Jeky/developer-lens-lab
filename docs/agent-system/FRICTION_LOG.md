@@ -99,7 +99,8 @@ Rules that bind entries:
   user-level module route restored `uv 0.12.4` inside the proved range; the locked sync and the
   full declared gate ran green through it — see the dated occurrence-23 note below), 2026-08-14
   (the PR #84 `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11` isolated fix worktree found
-  bare `uv` absent and stopped before edits), and 2026-08-14 (the fresh PR #86 exact-head reviewer
+  bare `uv` absent, and the already-provisioned `py -3 -m uv` fallback completed its locked
+  sync), and 2026-08-14 (the fresh PR #86 exact-head reviewer
   found bare `uv` absent, but the already-promoted `py -3 -m uv`/available-interpreter route
   supplied focused proof), and 2026-08-15 (the terminal PR #87 exact-head reviewer found bare `uv`
   absent while `py -3 -m uv 0.12.4` supplied the repository-source checks noted below).
@@ -227,7 +228,12 @@ commit.
 
 _Note 2026-08-14 (occurrence 24, PR #84
 Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 isolated fix worktree):_ Bare `uv` was absent,
-so the lane stopped before edits. No protected bytes were inspected, no global install occurred,
+so the literal bootstrap command failed before any repository check; the already-provisioned
+`py -3 -m uv` module fallback then completed the locked sync, which is the successful-fallback
+shape Lab #34 comment `5298699653` reserved this occurrence for. The lane's edits were authored
+and committed locally as `afe296e6e68339ceec482f3e31b306cf683bf613` and deliberately not pushed,
+because PR #84 had reached its two-fix-round ceiling — the lane was stopped by that ceiling, not
+by the missing executable. No protected bytes were inspected, no global install occurred,
 and `uv.lock` was not mutated.
 
 _Note 2026-08-14 (occurrence 25, PR #86 exact-head review):_ Bare `uv` was absent, but the
