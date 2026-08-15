@@ -2531,7 +2531,7 @@ numbering note remains the factual state at the moment FR-084 first landed.
 - **workaround:** Confirm tracked cleanliness and that only ignored reproducible outputs remain,
   attempt plain `git worktree remove` once, then park any unregistered residue. Do not use force or
   cross-shell recursive deletion, and do not inspect protected/generated contents to justify it.
-- **occurrences:** 3 independent occurrences on 2026-08-15 — the issue #76 helper worktree recorded
+- **occurrences:** 4 independent occurrences on 2026-08-15 — the issue #76 helper worktree recorded
   on parked PR #87, the merged PR #88 authority-repair worktree recorded on issue #77, and the
   merged PR #89 helper worktree `merge-eligibility-history-20260815` recorded on issue #77.
 - **task:** [Lab issue #77 comment 5299609287](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5299609287)
@@ -2557,6 +2557,13 @@ Plain removal followed the same tracked-clean and ignored-reproducible-output pr
 Git registration, then failed to finish directory deletion with `Filename too long`. No force or
 cross-shell recursive deletion was used; the unregistered residue is parked for the selected helper
 or explicit human cleanup.
+
+_Note 2026-08-15 (occurrence 4, PR #90 post-push teardown; [Lab #77 comment
+5300166876](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5300166876)):_
+After the tracked-clean worktree and its ignored reproducible names were verified, one plain
+`git worktree remove` deregistered it but returned exit 255 with `Filename too long` while deleting
+the directory. The unregistered basename `pr87-terminal-friction-20260815` remains parked; no force,
+retry, content inspection, or deletion was attempted.
 
 ### FR-087 — runtime skill catalog omitted the required Lab continuation skill
 
