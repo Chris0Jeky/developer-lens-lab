@@ -442,12 +442,13 @@ promotion decision is unchanged.
 - **workaround:** The first occurrence used GraphQL variables. Later multiline bodies were piped to
   `gh ... --body-file -`, and JSON verification used PowerShell `ConvertFrom-Json` instead of an
   inline quoted jq literal.
-- **occurrences:** 7 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
+- **occurrences:** 8 independent occurrences — 2026-08-09 (an inline GraphQL repository string),
   2026-08-09 (a multiline PR body passed as one argument), 2026-08-09 (a quoted jq literal), and
   2026-08-09 (an inline post-merge GraphQL repository string), and 2026-08-09 (Markdown code ticks
   terminated an outer JavaScript command wrapper before PowerShell started), plus 2026-08-10 (an
   inline GraphQL repository string during the PR #56 factual refresh), plus 2026-08-15 (an inline
-  quoted jq filter during the issue #29 release-authority repair).
+  quoted jq filter during the issue #29 release-authority repair), plus 2026-08-15 (a nested
+  `gh api --jq` filter during PR #89 exact-head review).
 - **task:** [Lab issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) tracks
   prompt-operating-system post-review hardening and the external Windows review-tool boundary.
 - **promotion:** Not durably promoted. Binding GraphQL variables, streaming multiline Markdown
@@ -481,6 +482,13 @@ filename filter lost its string quotes at the PowerShell/tool boundary and faile
 repository data. A plain `gh api` read followed by PowerShell `ConvertFrom-Json` supplied the same
 read-only file patch; no repository ref, review surface, or tracked file changed in the failed call.
 
+_Note 2026-08-15 (occurrence 8, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_ A
+nested `gh api --jq` filter split at the PowerShell/tool boundary and failed with
+`accepts 1 arg(s), received 3`. Raw JSON plus an immediate `$LASTEXITCODE` guard,
+`ConvertFrom-Json`, and `Where-Object` supplied the same read-only result; the failed call changed no
+repository or GitHub state.
+
 ### FR-010 — a later native command can mask an earlier failure in PowerShell
 
 - **first-seen:** 2026-08-09
@@ -493,9 +501,9 @@ read-only file patch; no repository ref, review surface, or tracked file changed
 - **workaround:** Check `$LASTEXITCODE` immediately after each required native proving command and
   exit on failure before starting the next command. The release-gate sync then used the promoted
   confined-bootstrap route and produced a real context-verifier pass.
-- **occurrences:** 2 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
+- **occurrences:** 4 independent occurrences — 2026-08-09 (a missing Python runtime was masked by
   a later diff check), 2026-08-09 (an unsupported PowerShell `Get-Date` option was masked by later
-  successful GitHub reads).
+  successful GitHub reads), and two PR #88 fresh-review occurrences on 2026-08-15 detailed below.
 - **task:** lab issue #29 owns the release-evidence boundary; retain explicit per-command failure
   guards in its remaining proving commands.
 - **promotion:** Not durably promoted. This session set `$ErrorActionPreference = 'Stop'` and
@@ -507,6 +515,16 @@ read-only file patch; no repository ref, review surface, or tracked file changed
 _Note 2026-08-09 (late-review reconciliation):_ Exact-head review showed that the active-session
 preamble was not durable enforcement. The status and promotion field now record task debt until an
 applicable executable instruction installs the guard.
+
+_Note 2026-08-15 (third occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_ A composed
+`if` expression in a `gh api` URL failed and returned HTTP 404, then later commands masked the
+failure. An explicit repository/identifier mapping, immediate `$LASTEXITCODE` guard, and
+`ConvertFrom-Json` completed the read successfully.
+
+_Note 2026-08-15 (fourth occurrence, PR #88 fresh review; Lab #34 comment `5299530415`):_
+`New-Item -LiteralPath` was unsupported and raised a non-terminating error that a later successful
+MkDocs command masked. Running MkDocs directly against a fresh temporary target succeeded. The
+existing prompt/canon promotion decision remains task debt; neither recurrence changes helper logic.
 
 ### FR-011 — a worktree cannot create itself from a not-yet-existing working directory
 
@@ -1477,8 +1495,9 @@ four unresolved PR #60 threads.
   invocation to synchronize successfully and verify doctor, context, Ruff format/check, Pyright,
   189 pytest passes with 3 declared symlink skips, strict MkDocs, and hygiene. The earlier
   `$env:PYTHONPATH='src'; py -3 -m pytest tests/test_context.py` result remains a focused fallback.
-- **occurrences:** 2 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
-  2026-08-10, and the flagship changelog-synchronisation slice on 2026-08-14.
+- **occurrences:** 4 independent occurrences - DL-P01 / DL-P03 flagship delivery governor slice on
+  2026-08-10, the flagship changelog-synchronisation slice on 2026-08-14, the merge-helper
+  predecessor-history proof on 2026-08-15, and the PR #88 merge-eligibility snapshot on 2026-08-15.
 - **task:** Lab #34 comment `5235339754` is the durable task link for this verified workaround and
   any recurrence/promotion decision; use the installed module invocation for future proving passes
   without changing the project toolchain.
@@ -1497,6 +1516,17 @@ through `py -3 -m uv`, which re-enabled the declared locked gate
 (`py -3 -m uv sync --locked --all-groups` succeeded, and the full declared gate then ran green
 through the same route on the slice's first commit).
 
+_Note 2026-08-15 (third occurrence, merge-helper predecessor-history proof):_ The standalone `uv`
+command was again absent. The already-reviewed `py -3 -m uv 0.12.4` module route started the focused
+test successfully, so no new bootstrap, global install, or project-toolchain change was attempted.
+The existing host-provisioning promotion and Lab #34 task link remain unchanged.
+
+_Note 2026-08-15 (fourth occurrence, [PR #88](https://github.com/Chris0Jeky/developer-lens-lab/pull/88)
+merge-eligibility snapshot; [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)):_
+The mechanical snapshot's standalone `uv` invocation was unavailable. The same complete snapshot
+evaluated successfully through the existing `py -3 -m uv` module route; no surface was filtered or
+recollected selectively. The existing host-provisioning promotion remains unchanged.
+
 ### FR-051 — estate registry no-match stopped a batched orientation read
 
 - **first-seen:** 2026-08-10
@@ -1507,8 +1537,9 @@ through the same route on the slice's first commit).
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 2 independent occurrences — flagship governor orientation on 2026-08-10 and
-  truth-repair orientation on 2026-08-13.
+- **occurrences:** 4 independent occurrences — flagship governor orientation on 2026-08-10,
+  truth-repair orientation on 2026-08-13, merge-helper orientation on 2026-08-15, and PR #89
+  exact-head review orientation on 2026-08-15.
 - **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
   Lab registry entry; that owner surface is outside this repository.
 - **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
@@ -1518,6 +1549,18 @@ through the same route on the slice's first commit).
 _Note 2026-08-13 (truth-repair orientation):_ The canonical estate file was unavailable and the
 Codex repository-map fallback had no Lab match. Repository-local tier and canon plus live Git and
 GitHub state established authority; no replacement path was invented.
+
+_Note 2026-08-15 (third occurrence, merge-helper orientation):_ The canonical estate file was again
+unavailable and the Codex repository-map fallback still had no Lab row. Repository-local authority
+and live Git/GitHub state established the bounded checkout without a detour. The cheapest durable fix
+still belongs to the external estate registry/sync owner, so this remains task debt on Lab #34 and
+does not widen the repository helper slice.
+
+_Note 2026-08-15 (fourth occurrence, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_ The
+canonical estate file was absent and the Codex repository map had no usable Lab row. Repository-local
+tier/canon plus live Git/GitHub established authority without a registry detour. The external
+registry/sync promotion and task debt remain unchanged; no repository helper change is appropriate.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
@@ -1888,7 +1931,8 @@ entirely stale PR response.
   failure changed tracked release bytes, a ref, or a remote object.
 - **workaround:** Use a disposable ignored-runtime helper for the verifier and a compatibility-safe
   UTC conversion rather than the rejected date switch. The Lane-P checks then ran successfully.
-- **occurrences:** 2 independent Windows date/encoding parameter incompatibilities — 2026-08-13.
+- **occurrences:** 3 independent Windows date/encoding parameter incompatibilities — two on
+  2026-08-13 and one during PR #89 exact-head review on 2026-08-15.
 - **task:** [Chris0Jeky/developer-lens#222](https://github.com/Chris0Jeky/developer-lens/issues/222)
   tracks the cross-repository Windows compatibility follow-up.
 - **promotion:** Proposed cheapest enforcement layer: a small shared PowerShell compatibility helper
@@ -1897,6 +1941,13 @@ entirely stale PR response.
 
 _Note 2026-08-13 (schema correction):_ Status is `workaround-documented`; the proposed compatibility
 helper remains a promotion proposal only.
+
+_Note 2026-08-15 (third occurrence, PR #89 exact-head review; [Lab #34 comment
+5299689914](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5299689914)):_
+Windows PowerShell again rejected `Get-Date -AsUTC -Format o`; the compatible
+`[DateTime]::UtcNow.ToString('o')` form supplied the UTC timestamp without mutation. This occurrence
+is classified once under FR-069's explicit host-parameter compatibility scope; FR-017 and FR-010 are
+not incremented.
 
 ### FR-070 — a shared branch/worktree advanced at a commit boundary during Lane-P handoff
 
@@ -2344,3 +2395,24 @@ No PR #87 occurrence count or entry was imported here.
 - **promotion:** Resolved at the live resume layer. At a second independent recurrence, select a
   GitHub-backed state-sync lifecycle check; the repository's network-free context verifier cannot
   prove live pull-request or issue state by itself.
+
+### FR-086 — plain worktree removal leaves Windows long-path residue
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-documented`
+- **symptom:** On two tracked-clean worktrees containing ignored reproducible outputs only, plain
+  `git worktree remove` removed the Git registration but could not finish deleting the directory
+  because Windows returned `Filename too long`.
+- **impact:** The coordinator completes Git worktree cleanup but an unregistered directory remains,
+  accumulating local machine-hygiene debt that the ordinary safe removal route cannot clear.
+- **workaround:** Confirm tracked cleanliness and that only ignored reproducible outputs remain,
+  attempt plain `git worktree remove` once, then park any unregistered residue. Do not use force or
+  cross-shell recursive deletion, and do not inspect protected/generated contents to justify it.
+- **occurrences:** 2 independent occurrences on 2026-08-15 — the issue #76 helper worktree recorded
+  on parked PR #87, and the merged PR #88 authority-repair worktree recorded on issue #77.
+- **task:** [Lab issue #77 comment 5299609287](https://github.com/Chris0Jeky/developer-lens-lab/issues/77#issuecomment-5299609287)
+  records the second occurrence, both parked residues, and the exact safe stop boundary.
+- **promotion:** At the second occurrence, the cheapest enforcing layer is a reviewed
+  Windows-long-path cleanup helper and preflight owned by Lab issue #77. It remains task debt until
+  that helper lands and proves confined target resolution; explicit human machine cleanup is the
+  alternative unlocking event, not permission for an agent to bypass the safe removal route.
