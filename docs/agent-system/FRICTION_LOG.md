@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 27 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 28 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -110,7 +110,8 @@ Rules that bind entries:
   absent while `py -3 -m uv 0.12.4` supplied the repository-source checks noted below), and
   2026-08-15 (the post-wave reconciliation slice found bare `uv` absent while the installed
   Python-module route `python -m uv`, version 0.12.4, ran the locked sync and the full declared
-  gate green at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`).
+  gate green at main `0fd8a50a39bb6632e21982c33c6a5c409a6fcf6f`), and 2026-08-15 (the Lab #34
+  friction-log slice found bare `uv` absent while `py -3 -m uv` supplied the focused proof).
 - **task:** lab issues #29 (release wave), #5 (dependency triage), and
   [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34) (checked proof boundaries),
   which depend on a runnable locked environment.
@@ -263,6 +264,11 @@ qualification that the occurrence-24 note above records as preserved on the unpu
 `afe296e6e68339ceec482f3e31b306cf683bf613`; once this slice merges, that preserved delta is
 superseded and the branch disposition tracked on issue #77 comment `5301895208` unblocks. No
 protected bytes, global install, or lockfile mutation occurred.
+
+_Note 2026-08-15 (occurrence 28, Lab #34 friction-log slice):_ The governor orientation in the
+primary Lab checkout found bare `uv` unavailable while `py -3 -m uv` supplied the focused
+task-programme check. The failed discovery attempt itself changed no repository, toolchain, or
+protected bytes.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -2704,3 +2710,20 @@ retry, content inspection, or deletion was attempted.
   than exposing a missing rule. At a second independent recurrence, the cheapest enforcing layer
   is a delegation-template line in [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) that references the
   existing agent-definition binding — not a duplicate prose rule that could drift from it.
+
+### FR-091 — Windows PowerShell 5.1 rejects `&&` before execution
+
+- **first-seen:** 2026-08-15
+- **status:** `workaround-documented`
+- **symptom:** A command composed with the Bash `&&` operator was submitted to Windows PowerShell
+  5.1, which rejected the operator during parsing before any command executed.
+- **impact:** The intended read-only verification did not run on the first attempt, adding a retry
+  and making shell syntax a source of avoidable session friction.
+- **workaround:** Use PowerShell statement separators or separate tool calls for sequential commands;
+  do not pass Bash `&&` syntax to this shell.
+- **occurrences:** 1 independent occurrence — the 2026-08-15 Lab governor reconciliation hop.
+- **task:** [Lab issue #34 comment 5303361645](https://github.com/Chris0Jeky/developer-lens-lab/issues/34#issuecomment-5303361645)
+  records the exact parse failure and bounded workaround.
+- **promotion:** Not promoted after one occurrence. At a second independent recurrence, choose the
+  cheapest enforcing layer that rejects or rewrites shell-incompatible compound commands before
+  execution; until then this remains Lab #34 task debt.
