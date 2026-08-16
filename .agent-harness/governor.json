@@ -71,6 +71,20 @@
       "autonomy": "L0-L2; pre-approved L3 plans only",
       "models": ["capable non-flagship orchestrators"]
     },
+    "codex_delegation": {
+      "luna": {
+        "model": "gpt-5.6-luna",
+        "risk_classes": ["L1", "L2"],
+        "scope": "paved, directly verifiable child work"
+      },
+      "terra_sol": {
+        "models": ["terra", "sol"],
+        "scope": "genuinely judgment-heavy investigation/review or approved-L3 implementation"
+      },
+      "coordinator": {
+        "owns": ["authority", "methodology", "cross-repo contracts", "final decisions"]
+      }
+    },
     "prohibited_models": ["haiku"]
   },
   "risk_classes": {
