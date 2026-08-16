@@ -13,9 +13,16 @@ artifact-store, or handoff work.
 
 Use `tools/cards.py` as the task source and choose the first dependency-safe active card. Use one
 writer per checkout; parallel writers need separate coordinator-owned worktrees and disjoint
-paths. Escalate judgment-heavy implementation or review to Terra/Sol. Risk classes, routing, and
-protocols live in `.agent-harness/governor.json` and `docs/agent-system/`; non-flagship
-orchestrators use the Research Governor Lite prompt in `docs/agent-system/PROMPT_LIBRARY.md`.
+paths. Native `gpt-5.6-luna` subagents are generally available without defining custom agents.
+Once Sol/Terra delegates, make native Luna the default for every clear, bounded, well-paved,
+directly verifiable lane, including focused implementation, tests, checks, formatting, and
+mechanical triage rather than inventory alone. Keep Terra/Sol children for delegated tasks whose
+own ambiguity, architecture, security, or causal-review judgment requires them. Escalate
+judgment-heavy implementation or review to Terra/Sol. Risk classes, routing, and protocols live in
+`.agent-harness/governor.json` and `docs/agent-system/`; non-flagship orchestrators use the
+Research Governor Lite prompt in `docs/agent-system/PROMPT_LIBRARY.md`. Do not create a custom
+agent or launch nested Codex merely to select Luna; preserve the declared authority and merge
+rules.
 
 ## Prompts and friction (full rule in `CLAUDE.md`)
 
