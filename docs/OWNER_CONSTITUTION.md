@@ -81,6 +81,15 @@ main programme; the approval above stands).
 | Hardening triggers | ResearchPack #181/#182 before third-party producers or real C1 packs; #183 parked under 10k scopes; no hostile-writer containment claim (#142); product #168 residuals before real activation; dependency triage before v0.1.0; visual QA = agent proof + short owner sign-off |
 | Brand | Current hero question stays; reflective-scientific voice with cinematic visuals; claims strong-approaching-bold but evidence-bounded |
 
+## Codex delegation clarification (2026-08-16)
+
+This is a Codex-specific routing clarification; constitution v2 and all Claude model pins/routes
+remain unchanged. Once Sol/Terra delegates, native `gpt-5.6-luna` is preferred for paved,
+directly verifiable L1/L2 child work, including focused implementation, tests, and checks.
+Terra/Sol children are for genuinely judgment-heavy investigation or review, or for implementing
+an already-approved L3 design. Authority, methodology, cross-repo contracts, and final decisions
+remain coordinator-owned.
+
 ## Remaining owner-only actions
 
 Legal review of AGPL/CLA strategy; supplying real-data scopes and credentials when a task needs

@@ -49,6 +49,14 @@ visibility. Agents prepare exact options and stop.
 | Mechanic | Sonnet 4.6 high (`dll-mechanic`) | Generated files, formatting, repeated checks, metadata — no methodology or policy interpretation |
 | Governor Lite | capable non-flagship orchestrator | L0–L2 autonomously; pre-approved L3 plans; prompt in [PROMPT_LIBRARY.md](PROMPT_LIBRARY.md) |
 
+### Codex delegation clarification (2026-08-16)
+
+The Claude routes above remain unchanged. Once Sol/Terra delegates, native `gpt-5.6-luna` is
+preferred for paved, directly verifiable L1/L2 child work, including focused implementation,
+tests, and checks. Terra/Sol children are reserved for genuinely judgment-heavy investigation or
+review, or for implementing an already-approved L3 design. Authority, methodology, cross-repo
+contracts, and final decisions remain coordinator-owned.
+
 Haiku is never routed lab work. Pins live in `.claude/agents/` and change only after the runtime
 demonstrably accepts the identifier — never commit an invented model ID; if a target identifier
 is unsupported, keep the working pin and record the target mapping as an issue.
