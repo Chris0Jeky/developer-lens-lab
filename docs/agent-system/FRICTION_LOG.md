@@ -1967,18 +1967,20 @@ or a merge-gate bypass.
 ### FR-063 — requested Luna inventory routing was unavailable in the collaboration runtime
 
 - **first-seen:** 2026-08-13
-- **status:** `workaround-documented`
+- **status:** `resolved`
 - **symptom:** The collaboration runtime rejected a requested `gpt-5.6-luna` read-only inventory
   delegation as an unknown model and listed only Sol/Terra.
 - **impact:** The intended Luna mechanical-inventory lane could not start; no task state or file
   changed in that attempt.
 - **workaround:** The coordinator performs the read-only inventory inline with Sol and reserves
   Terra for writer/reviewer work.
-- **occurrences:** 1 independent occurrence — 2026-08-13.
+- **occurrences:** 1 independent failed occurrence — 2026-08-13; direct native-success verification —
+  2026-08-16 (this task spawned `gpt-5.6-luna` successfully).
 - **task:** LAB-REL-01 and [Lab #34 issue](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)
   track the runtime-routing debt.
-- **promotion:** Deliberately not promoted after one occurrence; if it recurs, the cheapest layer is
-  runtime/model-routing configuration or skill wording.
+- **promotion:** Resolved 2026-08-16 by direct runtime evidence: native Luna is generally available,
+  so no custom agent or nested Codex is needed merely for model selection. This resolves the
+  Luna-availability predicate only; unrelated Lab #34 debt remains open.
 
 ### FR-064 — user-owned IDE metadata changed during a docs-only closeout
 

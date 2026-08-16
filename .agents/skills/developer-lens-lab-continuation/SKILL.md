@@ -20,6 +20,16 @@ Use `tools/cards.py` as the task source and choose the first dependency-safe act
 owned paths, non-goals, acceptance behavior, rollback, focused checks, and stop condition. Use one
 writer per checkout; parallel writers need separate coordinator-owned worktrees and disjoint paths.
 
+## Codex routing
+
+Native `gpt-5.6-luna` subagents are generally available without defining custom agents. Once
+Sol/Terra delegates, use native Luna by default for every clear, bounded, well-paved, directly
+verifiable lane, including focused implementation, tests, checks, formatting, and mechanical
+triage rather than inventory alone. Keep Terra/Sol children for delegated tasks whose own
+ambiguity, architecture, security, or causal-review judgment requires them. Do not create a
+custom agent or launch nested Codex merely to select Luna. Preserve one-writer ownership, the
+declared authority, and the repository's review and merge gates.
+
 <!-- shared:protected-data-defaults start -->
 Default to invented fixtures. Do not inspect or collect real repositories, generated product data,
 credentials, browser profiles, caches, working trees, or provider accounts. Network collection,
