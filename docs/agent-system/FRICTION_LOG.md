@@ -68,7 +68,7 @@ Rules that bind entries:
   bootstrap itself costs a few minutes once per checkout.
 - **workaround:** Bootstrap the confined `uv` as above and run the declared gate through it. The
   bootstrap environment is gitignored; `uv.lock` is never modified as a side effect.
-- **occurrences:** 28 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
+- **occurrences:** 29 recorded — 2026-08-08 (bootstrap first proved: locked sync plus full gate),
   2026-08-09 (LAB-GOV-02 reused the same route from a clean checkout), 2026-08-09 (the release-gate
   sync reused its surviving confined bootstrap), 2026-08-09 (the post-dependency state-sync
   worktree bootstrapped its own copy), 2026-08-09 (the licence/package-identity worktree reused the
@@ -269,6 +269,8 @@ _Note 2026-08-15 (occurrence 28, Lab #34 friction-log slice):_ The governor orie
 primary Lab checkout found bare `uv` unavailable while `py -3 -m uv` supplied the focused
 task-programme check. The failed discovery attempt itself changed no repository, toolchain, or
 protected bytes.
+
+_Note 2026-08-18 (occurrence 29, flagship cold-start; [Lab #29](https://github.com/Chris0Jeky/developer-lens-lab/issues/29); [Lab #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34)):_ The flagship cold-start in the primary Lab checkout found bare `uv` unavailable; the already-promoted `py -3 -m uv` route supplied focused proof. No global install, lockfile mutation, or protected-data access occurred.
 
 ### FR-002 — a stale "tooling-blocked" claim outlived the proof that removed it
 
@@ -896,15 +898,21 @@ no tracked file, Git ref, GitHub object, ignored output, or protected byte chang
   proof or Git/GitHub action occurred.
 - **workaround:** Use a no-history worker fork with a context-complete bounded task brief when a role
   override is required.
-- **occurrences:** 1 independent occurrence — 2026-08-09 while recovering the PATH/uv-validation
+- **occurrences:** 2 independent occurrences — 2026-08-09 while recovering the PATH/uv-validation
   publication lane from FR-021.
 - **task:** lab issue #34 tracks external agent-routing and command-wrapper workflow hardening.
-- **promotion:** Deliberately NOT promoted after one occurrence. The corrected invocation is the
-  cheapest layer; a second independent recurrence should move the compatibility rule into the
-  routing skill or its executable schema.
+- **promotion:** At this second independent occurrence, the cheapest enforcing layer is the
+  cross-repository `route-codex-work` skill: it should require no-history or bounded-history forks
+  whenever explicit role/model overrides are requested. Implementation remains Lab #34 task debt;
+  this one-file slice does not edit the global skill, so enforcement has not landed.
 
 _Note 2026-08-09 (PATH/uv validation):_ Rejection happened before agent creation and changed no
 tracked file beyond this friction record, Git ref, GitHub object, ignored output, or protected byte.
+
+_Note 2026-08-18 (occurrence 2, bounded Lab #34 delegation):_ Requesting a full-history fork plus
+ an explicit `luna_slice_builder` role was rejected before agent creation; the corrected no-history
+ bounded task brief created this worker. The route-codex-work skill change remains Lab #34 task debt
+ and is not implemented by this one-file slice.
 
 ### FR-023 — a completed builder thread could not accept the blocking fix follow-up
 
