@@ -534,6 +534,47 @@ def test_governor_pin_match_reports_no_pin_failure(tmp_path: Path) -> None:
     assert not any("model_routing.implementer" in failure for failure in failures)
 
 
+def test_governor_pin_agent_must_be_lexically_repo_relative(tmp_path: Path) -> None:
+    agent_rel = ".claude/agents/dll-implementer.md"
+    _write_agent(tmp_path, agent_rel, "claude-opus-5")
+    valid_agent = tmp_path / agent_rel
+    for configured_path in (
+        str(valid_agent),
+        "/.claude/agents/dll-implementer.md",
+        r"\.claude\agents\dll-implementer.md",
+        r"C:relative-agent.md",
+        r"C:\absolute-agent.md",
+        r"\\server\share\agent.md",
+        ".claude/agents/../agents/dll-implementer.md",
+        r".claude\agents\..\agents\dll-implementer.md",
+    ):
+        _write_governor(tmp_path, _pin_governor(configured_path, "claude-opus-5"))
+        failures = verify_governor(tmp_path)
+        assert any(
+            "model_routing.implementer" in failure
+            and "lexical relative path without parent traversal" in failure
+            for failure in failures
+        ), configured_path
+
+
+def test_governor_pin_resolution_failure_is_a_controlled_diagnostic(tmp_path: Path) -> None:
+    loop = tmp_path / ".claude" / "agents" / "loop.md"
+    loop.parent.mkdir(parents=True)
+    try:
+        loop.symlink_to(loop.name)
+    except OSError:
+        pytest.skip("file symlinks are unavailable on this host")
+    _write_governor(tmp_path, _pin_governor(".claude/agents/loop.md", "claude-opus-5"))
+
+    failures = verify_governor(tmp_path)
+
+    assert any(
+        "model_routing.implementer" in failure
+        and "could not be resolved inside the repository" in failure
+        for failure in failures
+    )
+
+
 def test_governor_pin_agent_outside_the_repo_fails_before_frontmatter_read(
     tmp_path: Path,
 ) -> None:
