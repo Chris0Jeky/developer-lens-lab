@@ -1621,3 +1621,20 @@ hashed package bytes only; the joint tag remains blocked on product
   Coordinator proof then completed the full locked gate over the same diff: sync, doctor/context,
   formatting, lint, Pyright, 314 tests, strict MkDocs, hygiene, and final diff check all passed. No
   governor, routing/model, prompt, card, data, release, publication, or owner-gate surface changed.
+
+## 2026-08-30 - Reconcile continuation-skill activation gates (issue #27)
+
+- Reconciled the byte-identical `shared:protected-data-defaults` block in the Claude and Codex
+  continuation skills with constitution v2 and the machine-readable governor. Non-C0 lanes retain
+  the full activation-precondition and task-specific owner gates; selected C0 publication stays on
+  lane P's exact-transformation, release-review, and ordinary release gates; synthetic-only external
+  model work remains separate from real-data activation while model calls and credential use retain
+  their own explicit gate.
+- Preserved the absolute protected-input prohibition, the ban on durable cross-repository identity
+  keys or joins, and Product ownership of stable promotion. This wording activates no lane, model
+  call, credential use, release, publication, or promotion.
+- Both skill packages passed the skill-creator validator. Focused proof passed with 102 context tests,
+  context verification, shared-block parity, and `git diff --check`; the complete locked code/config
+  gate then passed with sync, doctor/context, formatting, lint, Pyright (0 errors), 314 tests, strict
+  MkDocs, hygiene, and final diff check. MkDocs emitted its known upstream 2.0 warning without
+  failing; the locked documentation toolchain was unchanged.
