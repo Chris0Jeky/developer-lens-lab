@@ -1606,3 +1606,18 @@ hashed package bytes only; the joint tag remains blocked on product
   check all passed. MkDocs emitted its already-recorded upstream 2.0 warning without failing; the
   locked documentation-toolchain pair was unchanged. No governor, prompt, card, release, data,
   model, telemetry, credential, or publication surface changed.
+
+## 2026-08-30 - Contain governor-pinned agent paths (issue #27)
+
+- Extended `_verify_governor_pins` to resolve each pinned `agent` path against the resolved
+  repository root and reject absolute, parent-traversal, or symlink-resolved escapes before reading
+  agent frontmatter. Valid in-repository pins continue through the existing model-coherence check.
+- Added invented coverage for absolute and parent/ancestor escapes, including readable outside files,
+  plus the existing valid-pin and mismatch cases.
+- Focused proof over the uncommitted working tree based on
+  `7262cfb0b8e5310dfbe6ccba6828d53015b30a00`: `uv run pytest tests/test_context.py -q` (102
+  passed), `uv run pyright` (0 errors), `uv run dllab context verify` (passed), `uv run ruff format
+  --check .` (94 files formatted), `uv run ruff check .` (passed), and `git diff --check` (passed).
+  Coordinator proof then completed the full locked gate over the same diff: sync, doctor/context,
+  formatting, lint, Pyright, 314 tests, strict MkDocs, hygiene, and final diff check all passed. No
+  governor, routing/model, prompt, card, data, release, publication, or owner-gate surface changed.

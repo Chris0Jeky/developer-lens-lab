@@ -413,7 +413,15 @@ def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
                 f"governor.json model_routing.{role} must declare agent and model for pin coherence"
             )
             continue
-        agent_model = _agent_frontmatter_model(root / agent_rel)
+        resolved_root = root.resolve()
+        resolved_agent = (resolved_root / agent_rel).resolve()
+        if not resolved_agent.is_relative_to(resolved_root):
+            failures.append(
+                f"governor.json model_routing.{role} agent {agent_rel!r} must stay inside the "
+                "repository; it resolves outside it"
+            )
+            continue
+        agent_model = _agent_frontmatter_model(resolved_agent)
         if agent_model is None:
             failures.append(
                 f"governor.json model_routing.{role} agent {agent_rel!r} has no readable "

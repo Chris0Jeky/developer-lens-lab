@@ -534,6 +534,25 @@ def test_governor_pin_match_reports_no_pin_failure(tmp_path: Path) -> None:
     assert not any("model_routing.implementer" in failure for failure in failures)
 
 
+def test_governor_pin_agent_outside_the_repo_fails_before_frontmatter_read(
+    tmp_path: Path,
+) -> None:
+    # Even a readable agent file must not satisfy a pin when its path escapes the checkout.
+    for agent_rel in (
+        str(tmp_path.parent / "outside-agent-absolute.md"),
+        "../outside-agent-parent.md",
+        "../../outside-agent-ancestor.md",
+    ):
+        outside_path = (tmp_path / agent_rel).resolve()
+        outside_path.write_text("---\nname: x\nmodel: claude-opus-5\n---\nbody\n", encoding="utf-8")
+        _write_governor(tmp_path, _pin_governor(agent_rel, "claude-opus-5"))
+        failures = verify_governor(tmp_path)
+        assert any(
+            "model_routing.implementer" in failure and "must stay inside the repository" in failure
+            for failure in failures
+        ), agent_rel
+
+
 def test_governor_routing_to_a_prohibited_model_fails(tmp_path: Path) -> None:
     # Listing "haiku" under prohibited_models is not enforcement. A routed model id that embeds a
     # prohibited token must fail even when the pin itself is coherent with the agent file.
