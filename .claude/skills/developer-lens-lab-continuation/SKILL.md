@@ -26,11 +26,15 @@ paths. Subagents can move HEAD — pin git state in every delegation prompt and 
 
 <!-- shared:protected-data-defaults start -->
 Default to invented fixtures. Do not inspect or collect real repositories, generated product data,
-credentials, browser profiles, caches, working trees, or provider accounts. Network collection,
-real datasets, new classes/sinks, durable indexes, model calls, publication, cross-repo identity,
-and product promotion require the activation preconditions in `.agent-harness/governor.json` to be
-mechanically true plus any remaining owner gate in `HUMAN_TODO.md` — constitution v2 authorizes
-lanes in principle but activates none of them.
+credentials, browser profiles, caches, working trees, or provider accounts. Non-C0 lanes (including
+network collection, real datasets, new classes/sinks, and durable indexes) stay closed until the
+activation preconditions in `.agent-harness/governor.json` are mechanically true plus any remaining
+task-specific owner gate in `HUMAN_TODO.md`. Synthetic-only external-model work does not activate a
+real-data lane; external model calls and credential use require their own explicit gate. Selected C0
+publication through lane P uses exact-transformation disclosure and the lane-P release review and
+ordinary release gates. Durable cross-repo identity keys or joins are prohibited; stable-product
+promotion stays product-governed. Constitution v2 authorizes lanes in principle but activates no
+non-C0 lane by itself.
 <!-- shared:protected-data-defaults end -->
 
 <!-- shared:evaluation-integrity start -->
