@@ -430,7 +430,7 @@ def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
             continue
         try:
             resolved_agent = (resolved_root / agent_rel).resolve()
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             failures.append(
                 f"governor.json model_routing.{role} agent {agent_rel!r} could not be resolved "
                 "inside the repository"
