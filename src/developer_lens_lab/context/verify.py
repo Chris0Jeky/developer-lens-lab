@@ -366,24 +366,31 @@ def _agent_frontmatter_model(path: Path) -> str | None:
 
 
 def _routed_models(routing: dict[str, object]) -> list[tuple[str, str]]:
-    """Every ``(role, model_id)`` a routing entry actually routes work to.
+    """Every ``(full_path, model_id)`` a routing entry actually routes work to.
 
-    Covers both the singular ``model`` key and the plural ``models`` list (``governor_lite``), so
-    a prohibited model cannot be reintroduced through whichever key the check ignored.
+    Covers both the singular ``model`` key and the plural ``models`` list (``governor_lite``) at
+    any depth, so a prohibited model cannot be reintroduced through a nested routing entry. Only
+    those exact schema keys are meaningful here; arbitrary metadata strings are not model IDs.
     """
     routed: list[tuple[str, str]] = []
-    for role, entry_raw in routing.items():
-        if not isinstance(entry_raw, dict):
-            continue
-        entry = cast(dict[str, object], entry_raw)
-        model = entry.get("model")
-        if isinstance(model, str):
-            routed.append((role, model))
-        models_raw = entry.get("models")
-        if isinstance(models_raw, list):
-            routed.extend(
-                (role, item) for item in cast(list[object], models_raw) if isinstance(item, str)
-            )
+
+    def visit(value: object, path: str) -> None:
+        if isinstance(value, dict):
+            mapping = cast(dict[str, object], value)
+            for key, child in mapping.items():
+                child_path = f"{path}.{key}"
+                if key == "model" and isinstance(child, str):
+                    routed.append((child_path, child))
+                elif key == "models" and isinstance(child, list):
+                    for index, item in enumerate(cast(list[object], child)):
+                        if isinstance(item, str):
+                            routed.append((f"{child_path}[{index}]", item))
+                visit(cast(object, child), child_path)
+        elif isinstance(value, list):
+            for index, item in enumerate(cast(list[object], value)):
+                visit(item, f"{path}[{index}]")
+
+    visit(routing, "model_routing")
     return routed
 
 
@@ -589,7 +596,7 @@ def verify_governor(root: Path) -> list[str]:
         for token in prohibited:
             if token.lower() in routed_model.lower():
                 failures.append(
-                    f"governor.json model_routing.{role} routes to {routed_model!r}, which "
+                    f"governor.json {role} routes to {routed_model!r}, which "
                     f"contains the prohibited model token {token!r}"
                 )
     evolution_raw = payload.get("self_evolution")

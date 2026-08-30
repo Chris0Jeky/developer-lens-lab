@@ -1700,9 +1700,10 @@ recollected selectively. The existing host-provisioning promotion remains unchan
   authority had to be established independently before continuing.
 - **workaround:** Treat the no-match as data and read repository authority separately; take no
   registry detour.
-- **occurrences:** 5 independent occurrences — flagship governor orientation on 2026-08-10,
-  truth-repair orientation on 2026-08-13, merge-helper orientation on 2026-08-15, and PR #89
-  exact-head review orientation on 2026-08-15.
+- **occurrences:** 6 independent occurrences — flagship governor orientation on 2026-08-10,
+  truth-repair orientation on 2026-08-13, merge-helper orientation on 2026-08-15, PR #89
+  exact-head review orientation on 2026-08-15, and nested-routing issue #95 orientation on
+  2026-08-30.
 - **task:** Lab #34 owns this task debt while the canonical estate owner restores a Developer Lens
   Lab registry entry; that owner surface is outside this repository.
 - **promotion:** At the second occurrence, select the cheapest enforcing layer: the canonical estate
@@ -1731,6 +1732,12 @@ canonical estate registry was absent. A read-only recursive `ESTATE.md` fallback
 20-second bound before any GitHub collection, so the collector stopped rather than treating the
 missing registry as permission to continue. The external registry/sync promotion and Lab #34 task
 debt remain unchanged.
+
+_Note 2026-08-30 (sixth occurrence, nested-routing issue #95 orientation):_ The canonical estate
+registry was absent again. The Codex repository-map fallback supplied the Lab row, while repository
+instructions, tier, and live Git established the bounded checkout and authority; no registry detour
+or replacement path was invented. The external registry/sync promotion and Lab #34 task debt remain
+unchanged.
 
 ### FR-052 — connector mutation response lagged remote and numbered PR state
 
