@@ -1590,3 +1590,19 @@ hashed package bytes only; the joint tag remains blocked on product
   exercises the shipped suite.
 - This ledger and `docs/CURRENT_STATE.md` previously omitted the milestone; the 2026-08-15
   post-wave reconciliation records it belatedly. No publication, release, or tag is authorized.
+
+## 2026-08-30 - Nested model-routing prohibition coverage (issue #95)
+
+- Extended the context verifier's governor model scan to recursively inspect exact `model` and
+  `models` keys anywhere under `model_routing`, including nested dictionary and list paths. Failure
+  messages now identify the complete dotted/indexed route, while arbitrary non-model metadata strings
+  remain outside the model-ID scan. Prohibited-token matching remains case-insensitive.
+- Added invented fixtures covering valid nested Codex routing, a prohibited nested model with its
+  full path, and metadata strings containing a prohibited token that must be ignored. Existing
+  Claude routes and the current Codex delegation mapping remain accepted.
+- Focused proof: `uv run pytest tests/test_context.py -q` - 101 passed; `uv run pyright` - 0 errors;
+  `uv run dllab context verify` passed. Coordinator proof then completed the full locked gate:
+  sync, doctor/context, formatting, lint, Pyright, 313 tests, strict MkDocs, hygiene, and final diff
+  check all passed. MkDocs emitted its already-recorded upstream 2.0 warning without failing; the
+  locked documentation-toolchain pair was unchanged. No governor, prompt, card, release, data,
+  model, telemetry, credential, or publication surface changed.

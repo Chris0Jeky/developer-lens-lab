@@ -558,6 +558,42 @@ def test_governor_prohibited_token_match_is_case_insensitive(tmp_path: Path) -> 
     assert any("prohibited model token" in failure for failure in verify_governor(tmp_path))
 
 
+def test_governor_nested_codex_routing_accepts_valid_models(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["model_routing"]["codex_delegation"]["nested"] = {
+        "model": "gpt-5.6-luna",
+        "models": ["terra", "sol"],
+    }
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert not any("prohibited model token" in failure for failure in failures)
+
+
+def test_governor_nested_routing_to_a_prohibited_model_reports_full_path(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["model_routing"]["codex_delegation"]["nested"] = {
+        "selection": {"models": ["terra", "Claude-HAIKU-4-5"]}
+    }
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert any(
+        "model_routing.codex_delegation.nested.selection.models[1]" in failure
+        and "prohibited model token 'haiku'" in failure
+        for failure in failures
+    )
+
+
+def test_governor_nested_non_model_metadata_strings_are_ignored(tmp_path: Path) -> None:
+    payload = _load_governor()
+    payload["model_routing"]["codex_delegation"]["metadata"] = {
+        "description": "haiku is not a selected model",
+        "examples": ["HAIKU", "ordinary metadata"],
+    }
+    _write_governor(tmp_path, payload)
+    failures = verify_governor(tmp_path)
+    assert not any("prohibited model token" in failure for failure in failures)
+
+
 def test_governor_pin_role_missing_agent_key_fails(tmp_path: Path) -> None:
     # Dropping the agent key previously skipped the pin check silently, leaving a pinned role
     # unverified while the gate stayed green.
