@@ -1638,3 +1638,19 @@ hashed package bytes only; the joint tag remains blocked on product
   gate then passed with sync, doctor/context, formatting, lint, Pyright (0 errors), 314 tests, strict
   MkDocs, hygiene, and final diff check. MkDocs emitted its known upstream 2.0 warning without
   failing; the locked documentation toolchain was unchanged.
+
+## 2026-08-30 - Harden governor-pinned agent path diagnostics (issue #101)
+
+- Tightened `model_routing.*.agent` pins to require a lexical repository-relative path before
+  canonical containment. POSIX absolute paths, Windows root/drive/UNC paths, and parent traversal
+  expressed with either separator now fail even when normalization would land inside the checkout.
+- Converted expected `Path.resolve()` filesystem and symlink-loop failures into a controlled
+  governor diagnostic, preserving verification of the remaining pins instead of aborting context
+  verification with a traceback. Canonical resolved-root containment remains the second boundary.
+- Added invented coverage for an absolute path to a valid in-repository agent, POSIX and Windows
+  rooted forms, drive-relative and drive-absolute forms, UNC, forward/backslash traversal that
+  normalizes inside the repository, and a real circular symlink. Focused proof passed with 104
+  context tests, context verification, Pyright (0 errors), formatting, lint, and diff check; the
+  complete locked gate then passed with sync, doctor/context, formatting, lint, Pyright, 316 tests,
+  strict MkDocs, hygiene, and final diff check. MkDocs emitted its known upstream 2.0 warning without
+  failing; no protected input, data/model/credential lane, release, publication, or promotion changed.

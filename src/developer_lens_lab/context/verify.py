@@ -8,7 +8,7 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import cast
 
 import yaml
@@ -396,6 +396,7 @@ def _routed_models(routing: dict[str, object]) -> list[tuple[str, str]]:
 
 def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
     failures: list[str] = []
+    resolved_root = root.resolve()
     for role in GOVERNOR_PIN_ROLES:
         role_raw = routing.get(role)
         if not isinstance(role_raw, dict):
@@ -413,8 +414,28 @@ def _verify_governor_pins(routing: dict[str, object], root: Path) -> list[str]:
                 f"governor.json model_routing.{role} must declare agent and model for pin coherence"
             )
             continue
-        resolved_root = root.resolve()
-        resolved_agent = (resolved_root / agent_rel).resolve()
+        posix_path = PurePosixPath(agent_rel)
+        windows_path = PureWindowsPath(agent_rel)
+        if (
+            posix_path.is_absolute()
+            or bool(windows_path.drive)
+            or bool(windows_path.root)
+            or ".." in posix_path.parts
+            or ".." in windows_path.parts
+        ):
+            failures.append(
+                f"governor.json model_routing.{role} agent {agent_rel!r} must stay inside the "
+                "repository as a lexical relative path without parent traversal"
+            )
+            continue
+        try:
+            resolved_agent = (resolved_root / agent_rel).resolve()
+        except (OSError, RuntimeError):
+            failures.append(
+                f"governor.json model_routing.{role} agent {agent_rel!r} could not be resolved "
+                "inside the repository"
+            )
+            continue
         if not resolved_agent.is_relative_to(resolved_root):
             failures.append(
                 f"governor.json model_routing.{role} agent {agent_rel!r} must stay inside the "
