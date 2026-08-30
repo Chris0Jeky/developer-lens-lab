@@ -32,6 +32,9 @@ An invented result proves mechanics, privacy, negative controls, failure handlin
 and planted-effect recovery only. It cannot establish real validity. The initial decision may be
 rejection; the deterministic fallback remains complete.
 
-Later candidates and every real dataset are parked behind evidence and owner gates. Public corpus
-work begins with a quality/support report, never training. WB-C6 or WB-C7 may be considered only
-after a separately approved representative dataset exists.
+Own and curated real-data validation is authorised in principle, but every non-C0 lane remains
+operationally closed until the activation preconditions in `.agent-harness/governor.json` are
+mechanically true and the owner approves the exact repository scope at
+`Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-9`. Public corpus work begins with a
+quality/support report, never training. WB-C6 or WB-C7 may be considered only after a
+governor-activated representative dataset and a newly reserved untouched holdout exist.
