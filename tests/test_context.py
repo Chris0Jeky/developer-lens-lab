@@ -575,6 +575,18 @@ def test_governor_pin_resolution_failure_is_a_controlled_diagnostic(tmp_path: Pa
     )
 
 
+def test_governor_pin_invalid_path_is_a_controlled_diagnostic(tmp_path: Path) -> None:
+    _write_governor(tmp_path, _pin_governor("agent\0.md", "claude-opus-5"))
+
+    failures = verify_governor(tmp_path)
+
+    assert any(
+        "model_routing.implementer" in failure
+        and "could not be resolved inside the repository" in failure
+        for failure in failures
+    )
+
+
 def test_governor_pin_agent_outside_the_repo_fails_before_frontmatter_read(
     tmp_path: Path,
 ) -> None:

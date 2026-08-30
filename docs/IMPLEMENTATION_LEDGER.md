@@ -1654,3 +1654,15 @@ hashed package bytes only; the joint tag remains blocked on product
   complete locked gate then passed with sync, doctor/context, formatting, lint, Pyright, 316 tests,
   strict MkDocs, hygiene, and final diff check. MkDocs emitted its known upstream 2.0 warning without
   failing; no protected input, data/model/credential lane, release, publication, or promotion changed.
+
+## 2026-08-30 - Control invalid governor agent-path values (issue #104)
+
+- Extended the narrow pinned-agent resolution exception boundary to translate `ValueError` from an
+  invalid path value into the same controlled governor diagnostic used for filesystem and symlink
+  resolution failures. The lexical and canonical containment gates are unchanged.
+- Added an invented embedded-NUL regression proving `verify_governor()` returns a named failure
+  instead of raising. Focused proof passed with 105 context tests, context verification, Pyright
+  (0 errors), formatting, lint, and diff check; the complete locked gate then passed with sync,
+  doctor/context, formatting, lint, Pyright, 317 tests, strict MkDocs, hygiene, and final diff check.
+  MkDocs emitted its known upstream 2.0 warning without failing; no protected input or active lane,
+  release, publication, or promotion changed.
