@@ -1,0 +1,15 @@
+{
+  "schema_version":1,"reviewed_on":"2026-09-10","repository":"Chris0Jeky/developer-lens-lab","stable_id":"developer-lens-lab","runtime_class":"local",
+  "public_origin":null,"origin_evidence":"not-configured",
+  "target":"Local research CLI; approved synthetic reports only",
+  "source_paths":["README.md","CLAUDE.md"],
+  "persistent_state":["Local .dllab store; never upload it as a website"],
+  "invariants":["Synthetic-only preparation; no corpus or external-model activation","Product owns projection contracts and promotion","Existing prompt library, governor and continuation workflow remain authoritative"],
+  "gates":["Reviewed synthetic report allowlist","Product-owned projection validation","Separate publication approval"],
+  "tasks":[
+    {"id":"LL1","goal":"Define a reviewed synthetic report delivery surface","acceptance":"No raw .dllab runs, private allowlists or provider metadata enter published output"},
+    {"id":"LL2","goal":"Retain the product-owned projection boundary","acceptance":"Pinned method-trial contracts are reused; no parallel public schema or automatic model promotion"},
+    {"id":"LL3","goal":"Route publication preparation through existing task cards","acceptance":"No duplicate prompt library, governor or collector is installed"}
+  ],
+  "activation_authorized":false
+}
