@@ -27,7 +27,7 @@ FORBIDDEN_KEY_FRAGMENTS = {
 FORBIDDEN_EXACT_KEYS = {"environment_name", "environment_value", "environment_variables"}
 ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\|/|~[\\/]|file://)", re.IGNORECASE)
 ROOTED_PATH_RE = re.compile(r"^\\(?!\\)")
-DRIVE_RELATIVE_PATH_RE = re.compile(r"^[A-Za-z]:[^\\/\s]")
+LETTER_COLON_RE = re.compile(r"^[A-Za-z]:")
 
 RELATION_COLUMNS: dict[str, tuple[str, ...]] = {
     "coverage": (
@@ -119,10 +119,7 @@ def assert_path_free_manifest(value: object) -> None:
             if (
                 ABSOLUTE_PATH_RE.match(candidate)
                 or ROOTED_PATH_RE.match(candidate)
-                or (
-                    DRIVE_RELATIVE_PATH_RE.match(candidate)
-                    and ("\\" in candidate or "/" in candidate)
-                )
+                or LETTER_COLON_RE.match(candidate)
                 or "../" in candidate
                 or "..\\" in candidate
                 or candidate == ".."

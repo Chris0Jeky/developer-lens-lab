@@ -84,7 +84,14 @@ def _casefold_pattern(term: str, *, prefix: bool = False) -> str:
     if prefix:
         core = r"[._-]+".join(cores)
         return rf"(?:^|[._-]){core}[A-Za-z0-9]*(?:$|[._-])"
-    cores[-1] = f"{cores[-1]}(?:[eE]?[sS])?"
+    base = cores[-1]
+    if parts[-1].lower().endswith("y"):
+        stem = "".join(
+            f"[{char.lower()}{char.upper()}]" if char.isalpha() else char for char in parts[-1][:-1]
+        )
+        cores[-1] = f"(?:{base}(?:[eE]?[sS])?|{stem}[iI][eE][sS])"
+    else:
+        cores[-1] = f"{base}(?:[eE]?[sS])?"
     core = r"[._-]+".join(cores)
     return rf"(?:^|[._-]){core}(?:$|[._-])"
 
