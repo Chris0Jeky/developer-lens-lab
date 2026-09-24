@@ -87,13 +87,9 @@ def test_replay_final_holdout_matches_open_on_identical_dataset() -> None:
 def test_final_holdout_metadata_raises_before_open_or_replay() -> None:
     dataset = build_benchmark_dataset(smoke=True)
 
-    with pytest.raises(
-        HoldoutAlreadyOpenedError, match="final holdout has not been opened"
-    ):
+    with pytest.raises(HoldoutAlreadyOpenedError, match="final holdout has not been opened"):
         _ = dataset.final_holdout_metadata
-    with pytest.raises(
-        HoldoutAlreadyOpenedError, match="final holdout has not been opened"
-    ):
+    with pytest.raises(HoldoutAlreadyOpenedError, match="final holdout has not been opened"):
         _ = dataset.opened_seed_families
 
 
@@ -130,9 +126,7 @@ def test_open_final_holdout_second_open_raises_and_does_not_rewrite_receipt() ->
     calls: list[str] = []
     dataset.open_final_holdout(calls.append)
 
-    with pytest.raises(
-        HoldoutAlreadyOpenedError, match="final holdout has already been opened"
-    ):
+    with pytest.raises(HoldoutAlreadyOpenedError, match="final holdout has already been opened"):
         dataset.open_final_holdout(calls.append)
 
     assert calls == [dataset.dataset_sha256]
