@@ -535,3 +535,95 @@ def test_viable_selection_ignores_threshold_not_viable_on_fit(
     assert selection.training_metrics.detection_rate == 0.8
     assert selection.inner_validation_metrics is not None
     assert selection.inner_validation_metrics.false_alerts_per_year == 2.0
+
+
+def _passing_decision_inputs() -> tuple[AggregateMetrics, AggregateMetrics, EvaluationPlan]:
+    baseline = _agg(
+        "rolling_median_mad",
+        false_alerts_per_year=10.0,
+        detection_rate=0.80,
+        median_detection_delay=2.0,
+    )
+    candidate = _agg(
+        "bocpd_gaussian",
+        false_alerts_per_year=2.0,
+        detection_rate=0.85,
+        median_detection_delay=1.0,
+    )
+    plan = _plan(baseline_viable=True, candidate_viable=True)
+    return baseline, candidate, plan
+
+
+def test_decision_all_preregistered_gates_pass() -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "benchmarked"
+    assert reasons == ("ALL_PREREGISTERED_GATES_PASSED",)
+
+
+def test_decision_rejects_nonviable_candidate_selection() -> None:
+    baseline, candidate, _ = _passing_decision_inputs()
+    plan = _plan(baseline_viable=True, candidate_viable=False)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "reject"
+    assert reasons == ("CANDIDATE_SELECTION_VIABLE",)
+
+
+def test_decision_rejects_candidate_below_detection_floor() -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    baseline = dataclasses.replace(baseline, detection_rate=0.70)
+    candidate = dataclasses.replace(candidate, detection_rate=0.74)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "reject"
+    assert reasons == ("CANDIDATE_DETECTION_FLOOR",)
+
+
+@pytest.mark.parametrize("delay", [float(DETECTION_DELAY_BUDGET + 1), None])
+def test_decision_rejects_candidate_over_delay_budget(delay: float | None) -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    delays = () if delay is None else (int(delay),)
+    candidate = dataclasses.replace(candidate, median_detection_delay=delay)
+    candidate = dataclasses.replace(candidate, detection_delays=delays)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "reject"
+    assert reasons == ("CANDIDATE_DELAY_BUDGET",)
+
+
+@pytest.mark.parametrize("baseline_alerts,candidate_alerts", [(10.0, 10.0 * 0.81), (0.0, 2.0)])
+def test_decision_rejects_candidate_without_false_alert_improvement(
+    baseline_alerts: float, candidate_alerts: float
+) -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    baseline = dataclasses.replace(baseline, false_alerts_per_year=baseline_alerts)
+    candidate = dataclasses.replace(candidate, false_alerts_per_year=candidate_alerts)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "reject"
+    assert reasons == ("CANDIDATE_FALSE_ALERT_IMPROVEMENT",)
+
+
+def test_decision_rejects_candidate_worse_detection_above_floor() -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    candidate = dataclasses.replace(candidate, detection_rate=0.76)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "reject"
+    assert reasons == ("CANDIDATE_NOT_WORSE_DETECTION",)
+
+
+@pytest.mark.parametrize("baseline_confound", [0.0, None])
+def test_decision_rejects_candidate_confound_regression(baseline_confound: float | None) -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    baseline = dataclasses.replace(baseline, coverage_confound_false_alert_rate=baseline_confound)
+    candidate = dataclasses.replace(candidate, coverage_confound_false_alert_rate=0.01)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "reject"
+    assert reasons == ("CANDIDATE_CONFOUND_GUARD",)
+
+
+def test_decision_benchmarks_on_improvement_and_detection_boundaries() -> None:
+    baseline, candidate, plan = _passing_decision_inputs()
+    baseline = dataclasses.replace(baseline, detection_rate=0.75)
+    candidate = dataclasses.replace(candidate, detection_rate=0.75)
+    candidate = dataclasses.replace(candidate, false_alerts_per_year=10.0 * 0.8)
+    decision, reasons = decide_benchmark(baseline, candidate, plan)
+    assert decision == "benchmarked"
+    assert reasons == ("ALL_PREREGISTERED_GATES_PASSED",)
