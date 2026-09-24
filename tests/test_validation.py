@@ -118,12 +118,26 @@ def test_manifest_path_filter_accepts_padded_plain_text() -> None:
 @pytest.mark.parametrize(
     "value",
     [
+        "C:secret",
+        "C:.",
+        "C:..",
         "a:b",
         "x: y",
+    ],
+)
+def test_manifest_path_filter_refuses_letter_colon_prefix(value: str) -> None:
+    with pytest.raises(ManifestError, match="local path"):
+        assert_path_free_manifest({"note": value})
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
         "2026-09-24T00:00:00Z",
         "DL.WEEK.CHANGE_COUNT.v1",
         "v1..v2",
         "ratio 3:1",
+        "sha256:0123abcd",
     ],
 )
 def test_manifest_path_filter_accepts_plain_text(value: str) -> None:

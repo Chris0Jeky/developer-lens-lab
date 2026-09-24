@@ -107,6 +107,10 @@ def test_research_pack_rejects_plural_person_performance_terms() -> None:
         "DL.PERSONS.TOTAL.v1",
         "DL.WEEK.EFFORTS.v1",
         "DL.ENGINEERS.OUTPUT.v1",
+        "DL.SENIORITIES.COUNT.v1",
+        "DL.AVAILABILITIES.RATIO.v1",
+        "DL.QUALITIES.SCORE.v1",
+        "DL.PERSONALITIES.COUNT.v1",
     ):
         prohibited = research_pack()
         prohibited["feature_registry"][0]["feature_id"] = feature_id
