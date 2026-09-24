@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 
 from developer_lens_lab.wbc1.generator import (
+    SCENARIOS,
     BenchmarkDataset,
     HoldoutAlreadyOpenedError,
-    SCENARIOS,
     WeeklySeries,
     build_benchmark_dataset,
 )
