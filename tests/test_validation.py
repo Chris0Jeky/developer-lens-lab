@@ -78,6 +78,38 @@ def test_manifest_path_filter_and_read_only_cli(tmp_path: Path) -> None:
     assert bundle.exit_code == 0, bundle.output
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        r"\Users\x\secret",
+        r"\tmp",
+        r"C:Users\x",
+        r"d:tmp/y",
+        r"..",
+        r"a/..",
+        r"a\..",
+    ],
+)
+def test_manifest_path_filter_refuses_rooted_drive_relative_and_bare_parent(value: str) -> None:
+    with pytest.raises(ManifestError, match="local path"):
+        assert_path_free_manifest({"note": value})
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "a:b",
+        "x: y",
+        "2026-09-24T00:00:00Z",
+        "DL.WEEK.CHANGE_COUNT.v1",
+        "v1..v2",
+        "ratio 3:1",
+    ],
+)
+def test_manifest_path_filter_accepts_plain_text(value: str) -> None:
+    assert_path_free_manifest({"note": value})
+
+
 def test_cli_sanitizes_unknown_input_and_malformed_parquet(tmp_path: Path) -> None:
     secret = "invented-sensitive-value"
     unknown = research_pack()

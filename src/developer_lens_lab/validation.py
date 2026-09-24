@@ -26,6 +26,8 @@ FORBIDDEN_KEY_FRAGMENTS = {
 }
 FORBIDDEN_EXACT_KEYS = {"environment_name", "environment_value", "environment_variables"}
 ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\|/|~[\\/]|file://)", re.IGNORECASE)
+ROOTED_PATH_RE = re.compile(r"^\\(?!\\)")
+DRIVE_RELATIVE_PATH_RE = re.compile(r"^[A-Za-z]:[^\\/\s]")
 
 RELATION_COLUMNS: dict[str, tuple[str, ...]] = {
     "coverage": (
@@ -113,7 +115,16 @@ def assert_path_free_manifest(value: object) -> None:
             for child in cast(list[object], node):
                 visit(child)
         elif isinstance(node, str):
-            if ABSOLUTE_PATH_RE.match(node) or "../" in node or "..\\" in node:
+            if (
+                ABSOLUTE_PATH_RE.match(node)
+                or ROOTED_PATH_RE.match(node)
+                or (DRIVE_RELATIVE_PATH_RE.match(node) and ("\\" in node or "/" in node))
+                or "../" in node
+                or "..\\" in node
+                or node == ".."
+                or node.endswith("/..")
+                or node.endswith("\\..")
+            ):
                 raise ManifestError("manifest contains a local path")
 
     visit(value)
