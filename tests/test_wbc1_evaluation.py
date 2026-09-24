@@ -276,3 +276,262 @@ def test_nonviable_fallback_prefers_a_genuine_zero_detection_delay(
 
     assert selection.viable is False
     assert selection.threshold == 3.0
+
+
+def test_viable_selection_prefers_lowest_validation_false_alerts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scripted = {
+        2.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=5.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        3.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=1.0,
+            detection_rate=0.75,
+            median_detection_delay=8.0,
+        ),
+        3.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=3.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        4.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=4.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        5.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=6.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        6.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=7.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+    }
+    worse = _agg(
+        "rolling_median_mad",
+        false_alerts_per_year=9.0,
+        detection_rate=0.1,
+        median_detection_delay=6.0,
+    )
+
+    def fake_evaluate(
+        _partition: Partition, _method: MethodCode, threshold: float
+    ) -> AggregateMetrics:
+        template = scripted.get(threshold, worse)
+        return dataclasses.replace(template, threshold=threshold)
+
+    monkeypatch.setattr(evaluation_module, "evaluate_partition", fake_evaluate)
+    partition = Partition("train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (), ("f0",))
+
+    selection = select_threshold(partition, "rolling_median_mad")
+
+    assert selection.viable is True
+    assert selection.threshold == 3.0
+    assert selection.training_metrics.detection_rate == 0.75
+    assert selection.inner_validation_metrics is not None
+    assert selection.inner_validation_metrics.false_alerts_per_year == 1.0
+
+
+def test_viable_selection_prefers_lower_confound_rate_with_none_as_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scripted = {
+        2.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=5.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        3.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=1.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+            coverage_confound_false_alert_rate=None,
+        ),
+        3.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=5.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        4.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=1.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+            coverage_confound_false_alert_rate=0.4,
+        ),
+        5.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=5.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        6.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=5.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+    }
+    worse = _agg(
+        "rolling_median_mad",
+        false_alerts_per_year=9.0,
+        detection_rate=0.1,
+        median_detection_delay=6.0,
+    )
+
+    def fake_evaluate(
+        _partition: Partition, _method: MethodCode, threshold: float
+    ) -> AggregateMetrics:
+        template = scripted.get(threshold, worse)
+        return dataclasses.replace(template, threshold=threshold)
+
+    monkeypatch.setattr(evaluation_module, "evaluate_partition", fake_evaluate)
+    partition = Partition("train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (), ("f0",))
+
+    selection = select_threshold(partition, "rolling_median_mad")
+
+    assert selection.viable is True
+    assert selection.threshold == 3.0
+    assert selection.inner_validation_metrics is not None
+    assert selection.inner_validation_metrics.coverage_confound_false_alert_rate is None
+
+
+def test_viable_selection_prefers_higher_threshold_on_full_tie(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scripted = {
+        2.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=5.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        3.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=4.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        3.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=3.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        4.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=2.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+            coverage_confound_false_alert_rate=0.1,
+        ),
+        5.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=3.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        6.0: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=2.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+            coverage_confound_false_alert_rate=0.1,
+        ),
+    }
+    worse = _agg(
+        "rolling_median_mad",
+        false_alerts_per_year=9.0,
+        detection_rate=0.1,
+        median_detection_delay=6.0,
+    )
+
+    def fake_evaluate(
+        _partition: Partition, _method: MethodCode, threshold: float
+    ) -> AggregateMetrics:
+        template = scripted.get(threshold, worse)
+        return dataclasses.replace(template, threshold=threshold)
+
+    monkeypatch.setattr(evaluation_module, "evaluate_partition", fake_evaluate)
+    partition = Partition("train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (), ("f0",))
+
+    selection = select_threshold(partition, "rolling_median_mad")
+
+    assert selection.viable is True
+    assert selection.threshold == 6.0
+    assert selection.inner_validation_metrics is not None
+    assert selection.inner_validation_metrics.false_alerts_per_year == 2.0
+
+
+def test_viable_selection_ignores_threshold_not_viable_on_fit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fit_scripted = {
+        2.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=0.5,
+            detection_rate=0.74,
+            median_detection_delay=2.0,
+        ),
+        3.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=2.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+    }
+    validation_scripted = {
+        2.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=0.5,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+        3.5: _agg(
+            "rolling_median_mad",
+            false_alerts_per_year=2.0,
+            detection_rate=0.8,
+            median_detection_delay=2.0,
+        ),
+    }
+    worse = _agg(
+        "rolling_median_mad",
+        false_alerts_per_year=9.0,
+        detection_rate=0.1,
+        median_detection_delay=6.0,
+    )
+
+    def fake_evaluate(
+        _partition: Partition, _method: MethodCode, threshold: float
+    ) -> AggregateMetrics:
+        if _partition.seed_families == ("f1",):
+            template = validation_scripted.get(threshold, worse)
+        else:
+            template = fit_scripted.get(threshold, worse)
+        return dataclasses.replace(template, threshold=threshold)
+
+    monkeypatch.setattr(evaluation_module, "evaluate_partition", fake_evaluate)
+    partition = Partition("train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (), ("f0", "f1"))
+
+    selection = select_threshold(partition, "rolling_median_mad")
+
+    assert selection.viable is True
+    assert selection.threshold == 3.5
+    assert selection.training_metrics.detection_rate == 0.8
+    assert selection.inner_validation_metrics is not None
+    assert selection.inner_validation_metrics.false_alerts_per_year == 2.0
