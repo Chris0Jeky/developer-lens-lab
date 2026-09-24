@@ -3,9 +3,13 @@ from __future__ import annotations
 import numpy as np
 from scipy.special import gammaln
 
-from developer_lens_lab.wbc1.generator import build_benchmark_dataset
+from developer_lens_lab.wbc1.evaluation import (
+    _eligible,  # pyright: ignore[reportPrivateUsage] - eligibility floor coverage
+)
+from developer_lens_lab.wbc1.generator import WeeklySeries, build_benchmark_dataset
 from developer_lens_lab.wbc1.methods import (
     BocpdParameters,
+    alerts_from_scores,
     bocpd_scores,
     parameters_sha256,
     rolling_median_mad_scores,
@@ -142,3 +146,91 @@ def test_bocpd_missing_block_is_observed_sample_equivalent() -> None:
     assert float(full[gap_start + gap :].max()) > float(
         np.median(full[parameters.warmup : gap_start])
     )
+
+
+def test_alerts_from_scores_threshold_is_inclusive() -> None:
+    scores = np.asarray([0.5, 0.4999999, 0.5000001], dtype=np.float64)
+    observed = np.asarray([True, True, True], dtype=np.bool_)
+    assert alerts_from_scores(scores, 0.5, 1, observed) == (0, 2)
+    empty_scores = np.zeros(0, dtype=np.float64)
+    empty_observed = np.zeros(0, dtype=bool)
+    assert alerts_from_scores(empty_scores, 0.5, 1, empty_observed) == ()
+
+
+def test_alerts_from_scores_cooldown_suppresses_window() -> None:
+    scores = np.full(7, 0.9, dtype=np.float64)
+    observed = np.ones(7, dtype=bool)
+    assert alerts_from_scores(scores, 0.5, 3, observed) == (0, 3, 6)
+    assert alerts_from_scores(scores, 0.5, 100, observed) == (0,)
+
+
+def test_alerts_from_scores_unobserved_never_alerts_nor_cools_down() -> None:
+    scores = np.full(4, 0.9, dtype=np.float64)
+    observed = np.asarray([False, True, True, True], dtype=np.bool_)
+    assert alerts_from_scores(scores, 0.5, 10, observed) == (1,)
+    assert alerts_from_scores(scores, 0.5, 1, np.zeros(4, dtype=bool)) == ()
+
+
+def test_alerts_from_scores_nonfinite_scores_never_alert() -> None:
+    scores = np.asarray([np.nan, np.inf, -np.inf, 0.9], dtype=np.float64)
+    observed = np.ones(4, dtype=bool)
+    assert alerts_from_scores(scores, 0.5, 10, observed) == (3,)
+    nonfinite = np.asarray([np.nan, np.inf, -np.inf], dtype=np.float64)
+    assert alerts_from_scores(nonfinite, 0.5, 1, np.ones(3, dtype=bool)) == ()
+
+
+def test_alerts_from_scores_result_is_ascending_int_tuple() -> None:
+    scores = np.asarray([0.9, 0.1, 0.9, 0.9], dtype=np.float64)
+    observed = np.ones(4, dtype=bool)
+    for cooldown in (0, 1):
+        alerts = alerts_from_scores(scores, 0.5, cooldown, observed)
+        assert alerts == (0, 2, 3)
+        assert isinstance(alerts, tuple)
+        assert all(isinstance(index, int) for index in alerts)
+        assert list(alerts) == sorted(alerts)
+
+
+def _weekly_series(n_weeks: int, n_observed: int) -> WeeklySeries:
+    values = np.zeros(n_weeks, dtype=np.float64)
+    observed = np.asarray([True] * n_observed + [False] * (n_weeks - n_observed))
+    return WeeklySeries(
+        system_alias="pin",
+        seed_family="pin",
+        scenario_code="no_change",
+        noise_family="gaussian",
+        week_starts=tuple(["2020-01-06T00:00:00Z"] * n_weeks),
+        values=values,
+        observed=observed,
+        confound=np.zeros(n_weeks, dtype=bool),
+        change_index=None,
+        change_kind=None,
+        confound_kind=None,
+        coverage_id="pin",
+    )
+
+
+def test_eligible_accepts_52_weeks_at_coverage_boundary() -> None:
+    series = _weekly_series(52, 42)
+    assert int(series.observed.sum()) == 42
+    assert float(series.observed.mean()) >= 0.8
+    assert _eligible(series) is True
+
+
+def test_eligible_accepts_exactly_80_percent_observed() -> None:
+    series = _weekly_series(55, 44)
+    assert float(series.observed.mean()) == 0.8
+    assert _eligible(series) is True
+
+
+def test_eligible_rejects_51_weeks_even_when_fully_observed() -> None:
+    series = _weekly_series(51, 51)
+    assert float(series.observed.mean()) == 1.0
+    assert _eligible(series) is False
+    assert _eligible(_weekly_series(0, 0)) is False
+
+
+def test_eligible_rejects_coverage_just_below_threshold() -> None:
+    series = _weekly_series(52, 41)
+    assert int(series.observed.sum()) == 41
+    assert float(series.observed.mean()) < 0.8
+    assert _eligible(series) is False
