@@ -3,7 +3,9 @@ from __future__ import annotations
 import numpy as np
 from scipy.special import gammaln
 
-from developer_lens_lab.wbc1.evaluation import _eligible
+from developer_lens_lab.wbc1.evaluation import (
+    _eligible,  # pyright: ignore[reportPrivateUsage] - eligibility floor coverage
+)
 from developer_lens_lab.wbc1.generator import WeeklySeries, build_benchmark_dataset
 from developer_lens_lab.wbc1.methods import (
     BocpdParameters,
@@ -148,7 +150,7 @@ def test_bocpd_missing_block_is_observed_sample_equivalent() -> None:
 
 def test_alerts_from_scores_threshold_is_inclusive() -> None:
     scores = np.asarray([0.5, 0.4999999, 0.5000001], dtype=np.float64)
-    observed = np.asarray([True, True, True])
+    observed = np.asarray([True, True, True], dtype=np.bool_)
     assert alerts_from_scores(scores, 0.5, 1, observed) == (0, 2)
     empty_scores = np.zeros(0, dtype=np.float64)
     empty_observed = np.zeros(0, dtype=bool)
@@ -164,7 +166,7 @@ def test_alerts_from_scores_cooldown_suppresses_window() -> None:
 
 def test_alerts_from_scores_unobserved_never_alerts_nor_cools_down() -> None:
     scores = np.full(4, 0.9, dtype=np.float64)
-    observed = np.asarray([False, True, True, True])
+    observed = np.asarray([False, True, True, True], dtype=np.bool_)
     assert alerts_from_scores(scores, 0.5, 10, observed) == (1,)
     assert alerts_from_scores(scores, 0.5, 1, np.zeros(4, dtype=bool)) == ()
 
