@@ -98,6 +98,26 @@ def test_manifest_path_filter_refuses_rooted_drive_relative_and_bare_parent(valu
 @pytest.mark.parametrize(
     "value",
     [
+        " /etc/passwd",
+        "\tC:/Users/x",
+        r" \Users\x",
+        " ..",
+        "\n~/secrets",
+        "a/.. ",
+    ],
+)
+def test_manifest_path_filter_refuses_surrounding_whitespace(value: str) -> None:
+    with pytest.raises(ManifestError, match="local path"):
+        assert_path_free_manifest({"note": value})
+
+
+def test_manifest_path_filter_accepts_padded_plain_text() -> None:
+    assert_path_free_manifest({"note": "  plain text  "})
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
         "a:b",
         "x: y",
         "2026-09-24T00:00:00Z",

@@ -115,15 +115,19 @@ def assert_path_free_manifest(value: object) -> None:
             for child in cast(list[object], node):
                 visit(child)
         elif isinstance(node, str):
+            candidate = node.strip()
             if (
-                ABSOLUTE_PATH_RE.match(node)
-                or ROOTED_PATH_RE.match(node)
-                or (DRIVE_RELATIVE_PATH_RE.match(node) and ("\\" in node or "/" in node))
-                or "../" in node
-                or "..\\" in node
-                or node == ".."
-                or node.endswith("/..")
-                or node.endswith("\\..")
+                ABSOLUTE_PATH_RE.match(candidate)
+                or ROOTED_PATH_RE.match(candidate)
+                or (
+                    DRIVE_RELATIVE_PATH_RE.match(candidate)
+                    and ("\\" in candidate or "/" in candidate)
+                )
+                or "../" in candidate
+                or "..\\" in candidate
+                or candidate == ".."
+                or candidate.endswith("/..")
+                or candidate.endswith("\\..")
             ):
                 raise ManifestError("manifest contains a local path")
 
