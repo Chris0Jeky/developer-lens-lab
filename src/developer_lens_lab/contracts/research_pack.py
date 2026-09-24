@@ -77,12 +77,16 @@ PROHIBITED_FEATURE_TERMS = CANONICAL_PERSON_SUBJECT_TERMS + PROHIBITED_PERFORMAN
 
 def _casefold_pattern(term: str, *, prefix: bool = False) -> str:
     parts = term.split("_")
-    core = r"[._-]+".join(
+    cores = [
         "".join(f"[{char.lower()}{char.upper()}]" if char.isalpha() else char for char in part)
         for part in parts
-    )
-    suffix = "[A-Za-z0-9]*" if prefix else ""
-    return rf"(?:^|[._-]){core}{suffix}(?:$|[._-])"
+    ]
+    if prefix:
+        core = r"[._-]+".join(cores)
+        return rf"(?:^|[._-]){core}[A-Za-z0-9]*(?:$|[._-])"
+    cores[-1] = f"{cores[-1]}(?:[eE]?[sS])?"
+    core = r"[._-]+".join(cores)
+    return rf"(?:^|[._-]){core}(?:$|[._-])"
 
 
 PROHIBITED_FEATURE_RE = re.compile(

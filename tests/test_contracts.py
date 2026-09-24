@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from copy import deepcopy
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from pydantic import ValidationError
 
 from developer_lens_lab.contracts import EvaluationBundle, ResearchPack
 from developer_lens_lab.contracts.common import UTC_PATTERN
+from developer_lens_lab.contracts.research_pack import FEATURE_ID_PATTERN
 
 from .factories import evaluation_bundle, research_pack
 
@@ -95,6 +97,32 @@ def test_research_pack_rejects_unknown_fields_and_non_z_timestamps() -> None:
     }
     parsed = ResearchPack.model_validate_json(json.dumps(integral_json_numbers))
     assert parsed.relations.repository_week.row_count == 1
+
+
+def test_research_pack_rejects_plural_person_performance_terms() -> None:
+    for feature_id in (
+        "DL.AUTHORS.COUNT.v1",
+        "DL.DEVELOPERS.RANK.v1",
+        "DL.REVIEWERS.LATENCY.v1",
+        "DL.PERSONS.TOTAL.v1",
+        "DL.WEEK.EFFORTS.v1",
+        "DL.ENGINEERS.OUTPUT.v1",
+    ):
+        prohibited = research_pack()
+        prohibited["feature_registry"][0]["feature_id"] = feature_id
+        with pytest.raises(ValidationError, match="person-scoring"):
+            ResearchPack.model_validate_json(json.dumps(prohibited))
+        assert re.fullmatch(FEATURE_ID_PATTERN, feature_id) is None
+
+    for feature_id in (
+        "DL.WEEK.AUTHORIZATION_STATE.v1",
+        "DL.WEEK.STATUS.v1",
+    ):
+        allowed = research_pack()
+        allowed["feature_registry"][0]["feature_id"] = feature_id
+        parsed_allowed = ResearchPack.model_validate_json(json.dumps(allowed))
+        assert parsed_allowed.feature_registry[0].feature_id == feature_id
+        assert re.fullmatch(FEATURE_ID_PATTERN, feature_id) is not None
 
 
 def test_consumer_schema_rejects_person_productivity_feature_standalone() -> None:
