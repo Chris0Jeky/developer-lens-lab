@@ -111,12 +111,39 @@ def _load_vendor_snapshot(
     if not schema_path.is_file():
         raise RunnerError("vendor producer snapshot is missing schema.json")
     schema_bytes = schema_path.read_bytes()
-    schema = cast(dict[str, Any], json.loads(schema_bytes))
-    provenance = cast(dict[str, Any], json.loads(provenance_path.read_text(encoding="utf-8")))
-    declared_files = {
-        str(entry["name"]): entry
-        for entry in cast(list[dict[str, Any]], provenance.get("files", []))
-    }
+    try:
+        schema = cast(dict[str, Any], json.loads(schema_bytes))
+    except Exception as exc:
+        raise RunnerError(f"vendor producer snapshot schema.json is not valid JSON: {exc}") from exc
+    try:
+        provenance_raw: object = json.loads(provenance_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RunnerError(
+            f"vendor producer snapshot provenance.json is not valid JSON: {exc}"
+        ) from exc
+    if not isinstance(provenance_raw, dict):
+        raise RunnerError("vendor producer snapshot provenance.json must be a JSON object")
+    provenance = cast(dict[str, Any], provenance_raw)
+    files = provenance.get("files")
+    if not isinstance(files, list):
+        raise RunnerError("vendor producer snapshot provenance.json files must be a list")
+    for entry in files:
+        if not isinstance(entry, dict):
+            raise RunnerError(
+                "vendor producer snapshot provenance.json files entries must be objects"
+            )
+        size_bytes = entry.get("size_bytes")
+        if (
+            not isinstance(entry.get("name"), str)
+            or not isinstance(entry.get("sha256"), str)
+            or not isinstance(size_bytes, int)
+            or isinstance(size_bytes, bool)
+        ):
+            raise RunnerError(
+                "vendor producer snapshot provenance.json files entries must define"
+                " name/sha256/size_bytes"
+            )
+    declared_files = {str(entry["name"]): entry for entry in cast(list[dict[str, Any]], files)}
     for name, payload in (("invented.fixture.json", fixture_bytes), ("schema.json", schema_bytes)):
         declaration = declared_files.get(name)
         if declaration is None:
