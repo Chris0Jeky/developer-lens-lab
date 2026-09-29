@@ -139,7 +139,11 @@ def verify_markdown_links(root: Path) -> list[str]:
         relative_parts = path.relative_to(root).parts
         if relative_parts[:2] == ("reports", "generated"):
             continue
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            failures.append(f"broken/unreadable file in {path.relative_to(root)}: {exc}")
+            continue
         for raw_target in LOCAL_LINK_RE.findall(text):
             target = raw_target.split("#", 1)[0].replace("%20", " ")
             if not target:
@@ -1159,7 +1163,12 @@ def verify_prompt_classifications(root: Path) -> list[str]:
     """
     failures: list[str] = []
     for path in _markdown_files(root):
-        for classification in PROMPT_CLASSIFICATION_RE.findall(path.read_text(encoding="utf-8")):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            failures.append(f"broken/unreadable file in {path.relative_to(root)}: {exc}")
+            continue
+        for classification in PROMPT_CLASSIFICATION_RE.findall(text):
             if classification not in ALLOWED_PROMPT_CLASSIFICATIONS:
                 failures.append(
                     f"{path.relative_to(root)}: prompt-classification {classification!r} must be "
