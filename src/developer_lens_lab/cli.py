@@ -278,7 +278,14 @@ def export_method_trial_command(
     """Export a deterministic MethodTrialView for a validated synthetic run."""
     try:
         result = export_method_trial(run_id, output=output, root=_repo_root())
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (
+        OSError,
+        ValueError,
+        json.JSONDecodeError,
+        ArtifactError,
+        ValidationError,
+        ManifestError,
+    ) as exc:
         typer.echo(f"ERROR: MethodTrialView export failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"exported {result.output_path} sha256={result.sha256}")
@@ -292,7 +299,14 @@ def demo_export_command(
     """Export the canonical MethodTrialView for a recorded synthetic run."""
     try:
         result = export_method_trial(run_id, output=output, root=_repo_root())
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (
+        OSError,
+        ValueError,
+        json.JSONDecodeError,
+        ArtifactError,
+        ValidationError,
+        ManifestError,
+    ) as exc:
         typer.echo(f"ERROR: demo export failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"exported path={result.output_path} sha256={result.sha256}")
