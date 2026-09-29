@@ -8,8 +8,17 @@ from developer_lens_lab.wbc1.generator import (
     BenchmarkDataset,
     HoldoutAlreadyOpenedError,
     WeeklySeries,
+    _noise,  # pyright: ignore[reportPrivateUsage] - direct noise normalization coverage
+    _seed,  # pyright: ignore[reportPrivateUsage] - deterministic generator seed coverage
     build_benchmark_dataset,
 )
+
+
+def test_heavy_tailed_noise_is_unit_variance() -> None:
+    rng = np.random.default_rng(_seed("seed_family_train_00:heavy_tailed_no_change"))
+    samples = _noise(rng, "heavy_tailed", 20000)
+
+    assert 0.8 < float(np.var(samples)) < 1.2
 
 
 def test_invented_generator_is_deterministic_and_split_clean() -> None:
