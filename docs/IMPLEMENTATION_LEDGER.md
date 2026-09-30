@@ -1666,3 +1666,15 @@ hashed package bytes only; the joint tag remains blocked on product
   doctor/context, formatting, lint, Pyright, 317 tests, strict MkDocs, hygiene, and final diff check.
   MkDocs emitted its known upstream 2.0 warning without failing; no protected input or active lane,
   release, publication, or promotion changed.
+
+## 2026-09-30 - Pin WB-C1 confound missing-week geometry
+
+- Added one test for the exact coverage-gap missing/confound interval and permission-shift
+  every-third-week observation pattern with the full post-change confound interval.
+- Swarm finding `f-7fb5da7560`: Muse wrote the first draft; the coordinator reviewed the diff and
+  ran the focused suite (15 passed). In-memory window-shift and modulo mutations both failed the
+  new assertion without changing generator source files.
+- The initial host check failed at collection with an uninstalled package and unsupported default
+  interpreter; the locked supported environment supplied the focused proof (FR-092).
+- This is synthetic train-series test coverage; no new experiment or holdout-custody decision.
+  Full gate results are recorded in the publishing PR; this entry asserts no hosted or merge proof.
