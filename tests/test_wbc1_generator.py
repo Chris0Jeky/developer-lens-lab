@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import numpy as np
 import pytest
 
 from developer_lens_lab.wbc1.generator import (
     SCENARIOS,
     BenchmarkDataset,
+    GeneratorConfig,
     HoldoutAlreadyOpenedError,
     WeeklySeries,
+    _generate_series,  # pyright: ignore[reportPrivateUsage] - exact missing-geometry coverage
     _noise,  # pyright: ignore[reportPrivateUsage] - direct noise normalization coverage
     _seed,  # pyright: ignore[reportPrivateUsage] - deterministic generator seed coverage
     build_benchmark_dataset,
@@ -198,3 +202,24 @@ def test_no_change_series_carries_no_change_marker() -> None:
 
     assert series.change_index is None
     assert series.change_kind is None
+
+
+def test_confound_missing_geometry_is_exact() -> None:
+    config = GeneratorConfig()
+    change = config.change_index
+    start = datetime(2020, 1, 6, tzinfo=UTC)
+    by_code = {scenario.code: (index, scenario) for index, scenario in enumerate(SCENARIOS)}
+
+    gap_index, gap_scenario = by_code["coverage_gap"]
+    gap = _generate_series("train", start, 0, gap_index, gap_scenario, config)
+    expected_gap = set(range(change - 8, change + 8))
+
+    assert set(np.flatnonzero(~gap.observed)) == expected_gap
+    assert set(np.flatnonzero(gap.confound)) == expected_gap
+
+    shift_index, shift_scenario = by_code["permission_shift"]
+    shifted = _generate_series("train", start, 0, shift_index, shift_scenario, config)
+    expected_missing = {week for week in range(change, config.weeks) if (week - change) % 3 != 0}
+
+    assert set(np.flatnonzero(~shifted.observed)) == expected_missing
+    assert set(np.flatnonzero(shifted.confound)) == set(range(change, config.weeks))

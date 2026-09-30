@@ -2744,3 +2744,17 @@ retry, content inspection, or deletion was attempted.
 - **promotion:** Not promoted after one occurrence. At a second independent recurrence, choose the
   cheapest enforcing layer that rejects or rewrites shell-incompatible compound commands before
   execution; until then this remains Lab #34 task debt.
+
+### FR-092 - Swarm verification used an uninstalled, unsupported interpreter
+
+- **first-seen:** 2026-09-30
+- **status:** `workaround-verified`
+- **symptom:** The swarm host's bare Python pytest command failed during collection because the
+  lab package was not installed; its interpreter was outside the declared supported range.
+- **impact:** The worker's exact missing-geometry test had no executable proof from the host.
+- **workaround:** Run locked dependency sync and pytest through the repository's uv environment.
+  The focused suite passed all 15 tests under supported Python; both geometry mutations were detected.
+- **occurrences:** 1 independent occurrence in this publishing hop.
+- **task:** Swarm finding `f-7fb5da7560`; follow-up: route lab host verification through the locked
+  project environment rather than the machine's default interpreter.
+- **promotion:** Captured as task debt; host-runner changes remain outside this test-only slice.
