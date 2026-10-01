@@ -3,6 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
+import numpy as np
+
+from developer_lens_lab.wbc1.export import (
+    _case_points,  # pyright: ignore[reportPrivateUsage] - direct missing-reason coverage
+)
+from developer_lens_lab.wbc1.generator import WeeklySeries
 from developer_lens_lab.wbc1.report import (
     build_method_trial_html,
     build_method_trial_markdown,
@@ -195,6 +201,56 @@ def _view() -> dict[str, Any]:
             },
         },
     }
+
+
+def _instrument_series(confound_kind: str, scenario_code: str) -> WeeklySeries:
+    week_starts = tuple(f"2020-{index:03d}" for index in range(8))
+    observed = np.asarray([True, True, False, True, True, False, True, True], dtype=np.bool_)
+    values = np.asarray([10.0, 11.0, np.nan, 13.0, 14.0, np.nan, 16.0, 17.0], dtype=np.float64)
+    return WeeklySeries(
+        system_alias=f"system_{confound_kind}",
+        seed_family="family_00",
+        scenario_code=scenario_code,
+        noise_family="gaussian",
+        week_starts=week_starts,
+        values=values,
+        observed=observed,
+        confound=np.zeros(8, dtype=np.bool_),
+        change_index=None,
+        change_kind=None,
+        confound_kind=confound_kind,
+        coverage_id="coverage_00",
+    )
+
+
+def test_missing_points_carry_instrument_reasons() -> None:
+    for confound_kind, expected_reason in (
+        ("permission_shift", "permission_gap"),
+        ("parser_shift", "instrumentation_gap"),
+    ):
+        series = _instrument_series(confound_kind, confound_kind)
+        values = {
+            (series.system_alias, week): 10.0 + index
+            for index, week in enumerate(series.week_starts)
+            if bool(series.observed[index])
+        }
+        points = _case_points(series, values, 1.0, 0.5, 0, len(series.values), "none", "none")
+        missing = [point for point in points if point["observed"]["state"] == "missing"]
+        assert len(missing) == 2
+        for point in missing:
+            assert point["observed"] == {"state": "missing", "reason": expected_reason}
+            assert point["baseline"]["score"] == {
+                "status": "unavailable",
+                "reason": "missing_observation",
+            }
+            assert point["candidate"]["probability"] == {
+                "status": "unavailable",
+                "reason": "missing_observation",
+            }
+            assert point["baseline"]["alert"] is False
+            assert point["candidate"]["alert"] is False
+        observed_points = [point for point in points if point["observed"]["state"] == "observed"]
+        assert len(observed_points) == 6
 
 
 def test_method_trial_reports_are_deterministic_and_complete() -> None:
