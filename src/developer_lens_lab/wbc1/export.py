@@ -123,6 +123,8 @@ def load_recorded_provenance(
 def _read_series_values(
     store: ArtifactStore, run_id: str, bundle: EvaluationBundle, manifest: dict[str, Any]
 ) -> dict[tuple[str, str], float]:
+    if "research_pack_repository_week" not in manifest:
+        raise ValueError("run manifest is missing required field: research_pack_repository_week")
     ref = ArtifactRef.model_validate(manifest["research_pack_repository_week"])
     payload = store.get_bytes(run_id, ref)
     descriptor = bundle.research_pack_sha256
@@ -353,6 +355,21 @@ def compose_method_trial_view(
         if not manifest_path.is_file():
             raise ValueError(f"run manifest not found for {run_id}")
         manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
+    for _field in (
+        "bundle",
+        "baseline",
+        "candidate",
+        "pelt",
+        "custody",
+        "research_pack",
+        "research_pack_coverage",
+        "research_pack_repository_week",
+    ):
+        if _field not in manifest:
+            raise ValueError(f"run manifest is missing required field: {_field}")
+    _research_pack = manifest["research_pack"]
+    if not isinstance(_research_pack, dict) or "sha256" not in _research_pack:
+        raise ValueError("run manifest is missing required field: research_pack/sha256")
     if bundle is None:
         bundle_ref = ArtifactRef.model_validate(manifest["bundle"])
         bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))

@@ -2758,3 +2758,14 @@ retry, content inspection, or deletion was attempted.
 - **task:** Swarm finding `f-7fb5da7560`; follow-up: route lab host verification through the locked
   project environment rather than the machine's default interpreter.
 - **promotion:** Captured as task debt; host-runner changes remain outside this test-only slice.
+
+### FR-093 - Swarm manifest verification repeated the bare-interpreter failure
+
+- **first-seen:** 2026-10-01
+- **status:** `workaround-verified`
+- **symptom:** The host's bare Python pytest command could not import the uninstalled lab package.
+- **impact:** Finding `f-26a1b58788` initially had no executable verification.
+- **workaround:** Locked uv sync and project-environment pytest passed the three manifest tests.
+- **occurrences:** Second independent occurrence of the FR-092 host-runner mismatch.
+- **task:** Swarm finding `f-26a1b58788`; reuse FR-092's host-runner follow-up.
+- **promotion:** Route host verification through the locked project environment; host tooling is outside this export slice.
