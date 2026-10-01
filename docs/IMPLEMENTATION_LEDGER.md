@@ -1679,6 +1679,12 @@ hashed package bytes only; the joint tag remains blocked on product
 - This is synthetic train-series test coverage; no new experiment or holdout-custody decision.
   Full gate results are recorded in the publishing PR; this entry asserts no hosted or merge proof.
 
+## 2026-10-01 - Controlled missing-field errors for MethodTrial exports
+
+- Swarm finding `f-26a1b58788`: validate required run-manifest fields before indexing in the export composer and series reader, raising a field-naming ValueError.
+- Three invented-fixture regression tests cover empty manifests and missing repository-week references. Pre-fix composer and series-reader KeyErrors were reproduced from the committed source without replacing the worker draft.
+- Focused verification: 3 manifest tests passed; existing export suite plus regressions: 9 passed, 1 skipped because host file symlinks are unavailable. FR-093 records the host-runner workaround.
+- Scope stays C0; no schema, CLI handler, data lane, release or human-gate changes. The Muse worker wrote the first draft; the publishing coordinator formatted it and annotated the private-helper test seam.
 ## 2026-10-01 - Pin WB-C1 custody fields
 
 - Swarm finding `f-7fff6c42da`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory threshold swap failure.

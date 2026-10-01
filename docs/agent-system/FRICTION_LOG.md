@@ -2759,6 +2759,16 @@ retry, content inspection, or deletion was attempted.
   project environment rather than the machine's default interpreter.
 - **promotion:** Captured as task debt; host-runner changes remain outside this test-only slice.
 
+### FR-093 - Swarm manifest verification repeated the bare-interpreter failure
+
+- **first-seen:** 2026-10-01
+- **status:** `workaround-verified`
+- **symptom:** The host's bare Python pytest command could not import the uninstalled lab package.
+- **impact:** Finding `f-26a1b58788` initially had no executable verification.
+- **workaround:** Locked uv sync and project-environment pytest passed the three manifest tests.
+- **occurrences:** Second independent occurrence of the FR-092 host-runner mismatch.
+- **task:** Swarm finding `f-26a1b58788`; reuse FR-092's host-runner follow-up.
+- **promotion:** Route host verification through the locked project environment; host tooling is outside this export slice.
 ### FR-093a - Host verification recurrence in custody coverage
 
 - **first-seen:** 2026-10-01
@@ -2776,3 +2786,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Locked uv sync and uv-run pytest use the supported project interpreter.
 - **task:** Swarm finding `f-d5bd9dc4a3`; host-runner routing remains tracked debt outside this tests-only task.
 - **promotion:** Reuse FR-092's host-runner follow-up; do not change host policy in this publication.
+
+### FR-094 - Missing Babel locale data blocked land-turn docs proof
+
+- **first-seen:** 2026-10-01
+- **status:** workaround-verified
+- **symptom:** Strict MkDocs build rejected locale `en`; the installed Babel package reported zero locale identifiers.
+- **workaround:** Reinstall and refresh only the locked Babel dependency in the owned environment. Locale `en` then resolved, 1082 locale identifiers were present, and strict docs build and hygiene passed.
+- **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
+- **promotion:** Environment repair only; no dependency version, policy, or gate change.
