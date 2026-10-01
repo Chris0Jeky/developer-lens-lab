@@ -1684,3 +1684,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-7fff6c42da`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory threshold swap failure.
 - Coverage pins baseline/candidate thresholds and default parameter hashes in custody. Production implementation is unchanged.
 - Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093a). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
+
+## 2026-10-01 - Pin WB-C1 missing-observation reasons
+
+- Swarm finding `f-d5bd9dc4a3`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory reason-branch swap failure.
+- Coverage pins permission/parser missing reasons, unavailable scores, and absent alerts. Production implementation is unchanged.
+- Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093b). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
