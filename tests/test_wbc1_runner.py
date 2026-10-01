@@ -10,7 +10,13 @@ import pytest
 
 from developer_lens_lab.artifacts import ArtifactError, ArtifactStore
 from developer_lens_lab.contracts import ArtifactRef, ResearchPack
+from developer_lens_lab.wbc1.evaluation import prepare_evaluation
 from developer_lens_lab.wbc1.generator import build_benchmark_dataset
+from developer_lens_lab.wbc1.methods import (
+    DEFAULT_BASELINE_PARAMETERS,
+    DEFAULT_BOCPD_PARAMETERS,
+    parameters_sha256,
+)
 from developer_lens_lab.wbc1.runner import (
     RunnerError,
     build_report,
@@ -34,6 +40,19 @@ def _permit_test_tree(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _manifest(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_custody_records_thresholds_and_parameter_shas(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_custody_fields")
+    custody = json.loads(result.manifest_path.with_name("custody.json").read_text(encoding="utf-8"))
+    plan = prepare_evaluation(build_benchmark_dataset(smoke=True).train)
+    assert custody["baseline_threshold"] == plan.baseline_selection.threshold
+    assert custody["candidate_threshold"] == plan.candidate_selection.threshold
+    assert custody["baseline_parameters_sha256"] == parameters_sha256(DEFAULT_BASELINE_PARAMETERS)
+    assert custody["candidate_parameters_sha256"] == parameters_sha256(DEFAULT_BOCPD_PARAMETERS)
 
 
 def test_smoke_run_materializes_complete_pack_and_reproduces(

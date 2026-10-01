@@ -1685,3 +1685,14 @@ hashed package bytes only; the joint tag remains blocked on product
 - Three invented-fixture regression tests cover empty manifests and missing repository-week references. Pre-fix composer and series-reader KeyErrors were reproduced from the committed source without replacing the worker draft.
 - Focused verification: 3 manifest tests passed; existing export suite plus regressions: 9 passed, 1 skipped because host file symlinks are unavailable. FR-093 records the host-runner workaround.
 - Scope stays C0; no schema, CLI handler, data lane, release or human-gate changes. The Muse worker wrote the first draft; the publishing coordinator formatted it and annotated the private-helper test seam.
+## 2026-10-01 - Pin WB-C1 custody fields
+
+- Swarm finding `f-7fff6c42da`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory threshold swap failure.
+- Coverage pins baseline/candidate thresholds and default parameter hashes in custody. Production implementation is unchanged.
+- Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093a). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
+
+## 2026-10-01 - Pin WB-C1 missing-observation reasons
+
+- Swarm finding `f-d5bd9dc4a3`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory reason-branch swap failure.
+- Coverage pins permission/parser missing reasons, unavailable scores, and absent alerts. Production implementation is unchanged.
+- Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093b). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.

@@ -2769,3 +2769,20 @@ retry, content inspection, or deletion was attempted.
 - **occurrences:** Second independent occurrence of the FR-092 host-runner mismatch.
 - **task:** Swarm finding `f-26a1b58788`; reuse FR-092's host-runner follow-up.
 - **promotion:** Route host verification through the locked project environment; host tooling is outside this export slice.
+### FR-093a - Host verification recurrence in custody coverage
+
+- **first-seen:** 2026-10-01
+- **status:** workaround-verified
+- **symptom:** Bare Python pytest failed collection because the lab package was uninstalled; the default interpreter is outside the supported range (FR-092 recurrence).
+- **workaround:** Locked uv sync and uv-run pytest use the supported project interpreter.
+- **task:** Swarm finding `f-7fff6c42da`; host-runner routing remains tracked debt outside this tests-only task.
+- **promotion:** Reuse FR-092's host-runner follow-up; do not change host policy in this publication.
+
+### FR-093b - Host verification recurrence in missing-reason coverage
+
+- **first-seen:** 2026-10-01
+- **status:** workaround-verified
+- **symptom:** Bare Python pytest failed collection because the lab package was uninstalled; the default interpreter is outside the supported range (FR-092 recurrence).
+- **workaround:** Locked uv sync and uv-run pytest use the supported project interpreter.
+- **task:** Swarm finding `f-d5bd9dc4a3`; host-runner routing remains tracked debt outside this tests-only task.
+- **promotion:** Reuse FR-092's host-runner follow-up; do not change host policy in this publication.
