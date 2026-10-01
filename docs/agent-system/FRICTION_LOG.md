@@ -2758,3 +2758,12 @@ retry, content inspection, or deletion was attempted.
 - **task:** Swarm finding `f-7fb5da7560`; follow-up: route lab host verification through the locked
   project environment rather than the machine's default interpreter.
 - **promotion:** Captured as task debt; host-runner changes remain outside this test-only slice.
+
+### FR-093a - Host verification recurrence in custody coverage
+
+- **first-seen:** 2026-10-01
+- **status:** workaround-verified
+- **symptom:** Bare Python pytest failed collection because the lab package was uninstalled; the default interpreter is outside the supported range (FR-092 recurrence).
+- **workaround:** Locked uv sync and uv-run pytest use the supported project interpreter.
+- **task:** Swarm finding `f-7fff6c42da`; host-runner routing remains tracked debt outside this tests-only task.
+- **promotion:** Reuse FR-092's host-runner follow-up; do not change host policy in this publication.
