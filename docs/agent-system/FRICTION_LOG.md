@@ -2786,3 +2786,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Locked uv sync and uv-run pytest use the supported project interpreter.
 - **task:** Swarm finding `f-d5bd9dc4a3`; host-runner routing remains tracked debt outside this tests-only task.
 - **promotion:** Reuse FR-092's host-runner follow-up; do not change host policy in this publication.
+
+### FR-094 - Missing Babel locale data blocked land-turn docs proof
+
+- **first-seen:** 2026-10-01
+- **status:** workaround-verified
+- **symptom:** Strict MkDocs build rejected locale `en`; the installed Babel package reported zero locale identifiers.
+- **workaround:** Reinstall and refresh only the locked Babel dependency in the owned environment. Locale `en` then resolved, 1082 locale identifiers were present, and strict docs build and hygiene passed.
+- **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
+- **promotion:** Environment repair only; no dependency version, policy, or gate change.
