@@ -153,8 +153,8 @@ def _validate_reference_closure(schema: dict[str, Any]) -> None:
             reference = contents.get(keyword)
             if reference is None:
                 continue
-            if not isinstance(reference, str) or not reference.startswith("#"):
-                raise ValueError("nonlocal schema reference")
+            if not isinstance(reference, str):
+                raise ValueError("schema reference must be a URI string")
             resolved = resolver.lookup(reference)
             Draft202012Validator.check_schema(resolved.contents)
             target = Resource.from_contents(resolved.contents, default_specification=DRAFT202012)

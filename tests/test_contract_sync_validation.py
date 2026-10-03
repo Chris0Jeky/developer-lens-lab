@@ -147,3 +147,25 @@ def test_sync_accepts_local_reference_closure_without_scanning_instance_data(
     assert (destination / "vendor/developer-lens/research-pack/v1/schema.json").read_bytes() == (
         source.read_bytes()
     )
+
+
+@pytest.mark.parametrize("contract", ["research-pack", "method-trial-view"])
+@pytest.mark.parametrize("reference", ["child", "", "https://example.invalid/root/child"])
+def test_sync_accepts_bundled_uri_references_without_retrieval(
+    tmp_path: Path, contract: str, reference: str
+) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts" / contract / "v1/schema.json"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    vendor = Path(__file__).resolve().parents[1] / "vendor/developer-lens" / contract / "v1"
+    schema = json.loads((vendor / "schema.json").read_bytes())
+    schema["$id"] = "https://example.invalid/root/"
+    schema.setdefault("$defs", {})["bundledChild"] = {"$id": "child", "type": "string"}
+    schema["properties"]["unused"] = {"$ref": reference}
+    source.write_text(json.dumps(schema), encoding="utf-8")
+    destination = tmp_path / "lab"
+    sync = sync_product_contract if contract == "research-pack" else sync_method_trial_view_contract
+    sync(destination, product, _commit(product))
+    assert (destination / "vendor/developer-lens" / contract / "v1/schema.json").read_bytes() == (
+        source.read_bytes()
+    )
