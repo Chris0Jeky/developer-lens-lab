@@ -13,7 +13,7 @@ from typing import Any, cast
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError
 
-from developer_lens_lab.finding_canonical import canonical_bytes
+from developer_lens_lab.finding_canonical import canonical_bytes, check_json_budget
 
 FINDING_VENDOR_ROOT = Path("vendor/developer-lens/research-finding/v1")
 FINDING_CONTRACT_COMMIT = "d8961cdbe794edb40d2ca221a267fe2728ade5d6"
@@ -85,8 +85,9 @@ def load_finding_contract(root: Path) -> dict[str, Any]:
 
 
 def finding_bundle_hash(value: dict[str, Any]) -> str:
-    body = copy.deepcopy(value)
     try:
+        check_json_budget(value)
+        body = copy.deepcopy(value)
         body["provenance"].pop("bundle_hash", None)
         payload = canonical_bytes(body)
     except (KeyError, TypeError, AttributeError, ValueError) as exc:

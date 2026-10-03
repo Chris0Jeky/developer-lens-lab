@@ -10,6 +10,41 @@ from typing import cast
 import orjson
 
 
+def check_json_budget(value: object) -> None:
+    """Bound traversal and total text before copying, schema errors, or rendering."""
+    pending: list[tuple[object, int]] = [(value, 0)]
+    nodes = 4096
+    characters = 65536
+    while pending:
+        item, depth = pending.pop()
+        nodes -= 1
+        if depth > 64 or nodes < 0:
+            raise ValueError("finding JSON exceeds the node or depth budget")
+        if type(item) is str:
+            characters -= len(item)
+        elif type(item) is dict:
+            mapping = cast(dict[object, object], item)
+            if len(mapping) * 2 > nodes - len(pending):
+                raise ValueError("finding JSON exceeds the node budget")
+            nodes -= len(mapping)
+            for key, child in mapping.items():
+                if type(key) is not str:
+                    raise ValueError("canonical JSON object keys must be strings")
+                characters -= len(key)
+                if characters < 0:
+                    raise ValueError("finding JSON exceeds the text budget")
+                pending.append((child, depth + 1))
+        elif type(item) is list:
+            items = cast(list[object], item)
+            if len(items) > nodes - len(pending):
+                raise ValueError("finding JSON exceeds the node budget")
+            pending.extend((child, depth + 1) for child in items)
+        elif item is not None and type(item) not in (bool, int, float):
+            raise ValueError("canonical JSON contains an unsupported value")
+        if characters < 0:
+            raise ValueError("finding JSON exceeds the text budget")
+
+
 def _number(value: int | float) -> str:
     if isinstance(value, int):
         if abs(value) > 9_007_199_254_740_991:
@@ -17,7 +52,7 @@ def _number(value: int | float) -> str:
         return str(value)
     if not math.isfinite(value):
         raise ValueError("canonical JSON requires finite numbers")
-    if value == 0:
+    if value == 0.0:
         return "0"
     # orjson supplies shortest-round-trip digits. ECMAScript uses fixed notation
     # from 1e-6 through values below 1e21; its exponent has no leading zeroes.
@@ -89,9 +124,11 @@ def _render(value: object, *, pretty: bool, depth: int = 0) -> str:
 
 def canonical_bytes(value: object) -> bytes:
     """Serialize a JSON value with JCS key ordering and ECMAScript number formatting."""
+    check_json_budget(value)
     return _render(value, pretty=False).encode("utf-8")
 
 
 def stable_bytes(value: object) -> bytes:
     """Match the producer's two-space, sorted JSON file convention plus one LF."""
+    check_json_budget(value)
     return (_render(value, pretty=True) + "\n").encode("utf-8")
