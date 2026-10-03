@@ -247,8 +247,7 @@ def sync_method_trial_view_contract(
         or schema.get("additionalProperties") is not False
         or not isinstance(schema.get("properties"), dict)
         or not isinstance(schema["properties"].get("schema_version"), dict)
-        or schema["properties"]["schema_version"].get("const")
-        != "DeveloperLensMethodTrialView.v1"
+        or schema["properties"]["schema_version"].get("const") != "DeveloperLensMethodTrialView.v1"
     ):
         raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
     if destination_root.exists() and _is_link_like(destination_root):
