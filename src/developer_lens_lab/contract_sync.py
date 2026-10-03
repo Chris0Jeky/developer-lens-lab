@@ -15,8 +15,9 @@ from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 from jsonschema.exceptions import ValidationError as SchemaValidationError
 from pydantic import ValidationError
-from referencing import Registry
+from referencing import Registry, Resource
 from referencing.exceptions import Unresolvable
+from referencing.jsonschema import DRAFT202012
 
 from developer_lens_lab.contracts import ResearchPack
 
@@ -130,7 +131,37 @@ def _load_schema(payload: bytes, label: str) -> dict[str, Any]:
         Draft202012Validator.check_schema(schema)
     except SchemaError as exc:
         raise ContractSyncError(f"{label} schema is not valid Draft 2020-12") from exc
+    try:
+        _validate_reference_closure(schema)
+    except (Unresolvable, SchemaError, ValueError, TypeError) as exc:
+        raise ContractSyncError(f"{label} schema references must resolve locally") from exc
     return schema
+
+
+def _validate_reference_closure(schema: dict[str, Any]) -> None:
+    """Check schema subresources, not ref-shaped instance examples or constants."""
+    resource = Resource.from_contents(schema, default_specification=DRAFT202012)
+    pending = [(resource, Registry[Any]().resolver_with_root(resource))]
+    seen: set[int] = set()
+    while pending:
+        current, resolver = pending.pop()
+        contents = current.contents
+        if isinstance(contents, bool) or id(contents) in seen:
+            continue
+        seen.add(id(contents))
+        for keyword in ("$ref", "$dynamicRef"):
+            reference = contents.get(keyword)
+            if reference is None:
+                continue
+            if not isinstance(reference, str) or not reference.startswith("#"):
+                raise ValueError("nonlocal schema reference")
+            resolved = resolver.lookup(reference)
+            Draft202012Validator.check_schema(resolved.contents)
+            target = Resource.from_contents(resolved.contents, default_specification=DRAFT202012)
+            pending.append((target, resolved.resolver))
+        pending.extend(
+            (child, resolver.in_subresource(child)) for child in current.subresources()
+        )
 
 
 def _validate_producer_schema(value: object) -> None:

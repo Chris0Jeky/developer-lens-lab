@@ -107,3 +107,38 @@ def test_method_trial_sync_checks_complete_schema_before_writing(
     with pytest.raises(ContractSyncError):
         sync_method_trial_view_contract(destination, product, _commit(product))
     assert not destination.exists()
+
+
+@pytest.mark.parametrize("contract", ["research-pack", "method-trial-view"])
+@pytest.mark.parametrize("keyword", ["$ref", "$dynamicRef"])
+@pytest.mark.parametrize("reference", ["#/$defs/missing", "https://example.invalid/missing"])
+def test_sync_refuses_unresolved_references_in_unused_subschemas(
+    tmp_path: Path, contract: str, keyword: str, reference: str
+) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts" / contract / "v1/schema.json"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    vendor = Path(__file__).resolve().parents[1] / "vendor/developer-lens" / contract / "v1"
+    schema = json.loads((vendor / "schema.json").read_bytes())
+    schema["properties"]["unused"] = {keyword: reference}
+    source.write_text(json.dumps(schema), encoding="utf-8")
+    destination = tmp_path / "lab"
+    sync = sync_product_contract if contract == "research-pack" else sync_method_trial_view_contract
+    with pytest.raises(ContractSyncError):
+        sync(destination, product, _commit(product))
+    assert not destination.exists()
+
+
+def test_sync_accepts_local_reference_closure_without_scanning_instance_data(tmp_path: Path) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts/research-pack/v1/schema.json"
+    schema = json.loads(source.read_bytes())
+    schema.setdefault("$defs", {})["packId"] = schema["properties"]["pack_id"]
+    schema["properties"]["pack_id"] = {"$ref": "#/$defs/packId"}
+    schema["examples"] = [{"$ref": "https://example.invalid/instance-not-schema"}]
+    source.write_text(json.dumps(schema), encoding="utf-8")
+    destination = tmp_path / "lab"
+    sync_product_contract(destination, product, _commit(product))
+    assert (destination / "vendor/developer-lens/research-pack/v1/schema.json").read_bytes() == (
+        source.read_bytes()
+    )
