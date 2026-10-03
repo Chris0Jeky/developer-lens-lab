@@ -16,6 +16,8 @@ from developer_lens_lab.contract_sync import (
     sync_method_trial_view_contract,
     sync_product_contract,
 )
+from developer_lens_lab.contracts.research_finding import FindingError
+from developer_lens_lab.finding_export import export_finding
 from developer_lens_lab.schemas import check_schemas, render_schemas
 from developer_lens_lab.validation import (
     ManifestError,
@@ -289,6 +291,21 @@ def export_method_trial_command(
         typer.echo(f"ERROR: MethodTrialView export failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"exported {result.output_path} sha256={result.sha256}")
+
+
+@export_app.command("finding")
+def export_finding_command(
+    run_id: Annotated[str, typer.Argument()],
+    output: Annotated[Path | None, typer.Option("--out", "--output")] = None,
+    artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+) -> None:
+    """Export a ResearchFinding from stored C0 evidence without running analysis."""
+    try:
+        result = export_finding(run_id, root=_repo_root(), output=output, artifact_root=artifact_root)
+    except FindingError as exc:
+        typer.echo(f"ERROR: finding export failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"exported finding sha256={result.sha256} bundle_hash={result.bundle_hash}")
 
 
 @demo_app.command("export")

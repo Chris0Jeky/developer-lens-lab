@@ -1,0 +1,252 @@
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from developer_lens_lab.artifacts import ArtifactStore, canonical_json_bytes
+from developer_lens_lab.contracts import EvaluationBundle
+from developer_lens_lab.contracts.research_finding import FindingError
+from developer_lens_lab.finding_canonical import stable_bytes
+from developer_lens_lab.finding_export import compose_finding, export_finding
+
+from .factories import evaluation_bundle
+
+ROOT = Path(__file__).resolve().parents[1]
+VENDOR = ROOT / "vendor/developer-lens/research-finding/v1"
+PIN = "b48fea579936671397a0486ae7a0342197ee6e4b"
+RUN_ID = "wbc1_demo"
+
+
+def source_evidence() -> tuple[dict[str, Any], dict[str, Any]]:
+    """Invent a linked bundle; do not claim to reconstruct the historical bundle bytes."""
+    view_path = ROOT / "release-assets/v0.1.0/method-trial-v1/method-trial-view.v1.json"
+    view = json.loads(view_path.read_bytes())
+    bundle = evaluation_bundle()
+    bundle["bundle_id"] = RUN_ID
+    bundle["created_at"] = "2026-08-30T00:00:00Z"
+    bundle["run_manifest"]["run_id"] = RUN_ID
+    bundle["run_manifest"]["lab_commit"] = view["reproducibility"]["lab_commit"]
+    bundle["research_pack_sha256"] = view["reproducibility"]["digests"]["research_pack"]
+    bundle["preregistration"]["primary_metric_code"] = "false_alerts_per_year"
+    bundle["dataset_card"]["system_count"] = 54
+    bundle["dataset_card"]["observation_count"] = 5616
+    bundle["dataset_card"]["coverage_counts"] = [
+        {"status": "present", "count": 5346},
+        {"status": "absent", "count": 270},
+    ]
+    for side in ("baseline", "candidate"):
+        bundle[f"{side}_results"]["metrics"] = [
+            {
+                "domain_code": domain,
+                "metric_code": code,
+                "state": "present",
+                "value": view["scorecard"][side][code]["value"],
+                "reason_code": None,
+            }
+            for code, domain in (
+                ("false_alerts_per_year", "primary"),
+                ("detection_rate", "detection"),
+            )
+        ]
+    bundle["decision"] = {
+        "outcome": "reject",
+        "acceptance_gate_passed": False,
+        "reason_codes": view["decision"]["reason_codes"],
+    }
+    EvaluationBundle.model_validate_json(json.dumps(bundle))
+    link_view(bundle, view)
+    return bundle, view
+
+
+def link_view(bundle: dict[str, Any], view: dict[str, Any]) -> None:
+    view["reproducibility"]["digests"]["evaluation_bundle"] = (
+        "sha256:" + hashlib.sha256(canonical_json_bytes(bundle)).hexdigest()
+    )
+
+
+def compose(bundle: dict[str, Any], view: dict[str, Any] | None = None) -> dict[str, Any]:
+    return compose_finding(
+        canonical_json_bytes(bundle), root=ROOT, product_contract_commit=PIN, source_view=view
+    )
+
+
+def seed_store(tmp_path: Path, *, with_view: bool = True) -> tuple[ArtifactStore, dict[str, Any]]:
+    bundle, view = source_evidence()
+    store = ArtifactStore(tmp_path / "store")
+    bundle_ref = store.put_json(RUN_ID, bundle)
+    manifest = {
+        "schema_version": "DeveloperLensWbc1Run.v1",
+        "run_id": RUN_ID,
+        "lab_commit": bundle["run_manifest"]["lab_commit"],
+        "product_contract_commit": PIN,
+        "bundle": bundle_ref.model_dump(mode="json"),
+        "deterministic_bundle_sha256": bundle_ref.sha256,
+    }
+    if with_view:
+        manifest["method_trial_view"] = store.put_json(RUN_ID, view).model_dump(mode="json")
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    return store, manifest
+
+
+def test_projection_matches_pinned_fixture_and_preserves_sources() -> None:
+    bundle, view = source_evidence()
+    before = copy.deepcopy((bundle, view))
+    assert stable_bytes(compose(bundle, view)) == (VENDOR / "wbc1.fixture.json").read_bytes()
+    assert (bundle, view) == before
+
+
+def test_bundle_only_export_does_not_invent_delay_confound_or_selection() -> None:
+    bundle, _ = source_evidence()
+    value = compose(bundle)
+    assert "threshold_viability" not in value
+    assert "public_url" not in value["provenance"]
+    assert value["metrics"][2]["candidate"] == {"status": "unavailable"}
+    assert value["metrics"][3]["baseline"] == {"status": "unavailable"}
+    assert [gate["passed"] for gate in value["gates"]] == [
+        None,
+        None,
+        True,
+        None,
+        False,
+        True,
+        None,
+    ]
+    assert [item["code"] for item in value["limitations"]] == ["c0_synthetic_only"]
+
+
+@pytest.mark.parametrize(
+    "defect",
+    ["bundle_hash", "run_id", "lab_commit", "product_commit", "pack_hash", "dataset"],
+)
+def test_linked_view_must_belong_to_the_same_evidence(defect: str) -> None:
+    bundle, view = source_evidence()
+    if defect == "bundle_hash":
+        view["reproducibility"]["digests"]["evaluation_bundle"] = "sha256:" + "a" * 64
+    elif defect == "pack_hash":
+        view["reproducibility"]["digests"]["research_pack"] = "sha256:" + "a" * 64
+    elif defect == "dataset":
+        bundle["dataset_card"]["system_count"] = 53
+        link_view(bundle, view)
+    else:
+        key = "product_contract_commit" if defect == "product_commit" else defect
+        view["reproducibility"][key] = "different_run" if key == "run_id" else "a" * 40
+    with pytest.raises(FindingError):
+        compose(bundle, view)
+
+
+@pytest.mark.parametrize(
+    "defect",
+    ["wrong_domain", "conflicting_value", "explicit_missing", "unknown_study", "unknown_method"],
+)
+def test_source_incompatibility_is_refused_not_repaired(defect: str) -> None:
+    bundle, view = source_evidence()
+    if defect == "wrong_domain":
+        bundle["baseline_results"]["metrics"][0]["domain_code"] = "other"
+    elif defect == "conflicting_value":
+        bundle["baseline_results"]["metrics"][1]["value"] = 0.5
+    elif defect == "explicit_missing":
+        bundle["baseline_results"]["metrics"][1].update(
+            state="absent", value=None, reason_code="NO_SUPPORT"
+        )
+    elif defect == "unknown_study":
+        bundle["preregistration"]["question_code"] = "UNKNOWN.STUDY"
+    else:
+        bundle["preregistration"]["candidate_method_code"] = "unknown"
+        bundle["candidate_model_card"]["method_code"] = "unknown"
+    link_view(bundle, view)
+    with pytest.raises(FindingError):
+        compose(bundle, view)
+
+
+@pytest.mark.parametrize("outcome", ["revise_once", "benchmarked"])
+def test_closed_nonreject_states_are_transported_without_promotion(outcome: str) -> None:
+    bundle, _ = source_evidence()
+    bundle["decision"].update(outcome=outcome, acceptance_gate_passed=outcome == "benchmarked")
+    value = compose(bundle)
+    assert value["decision"]["outcome"] == outcome
+    assert value["decision"]["retained_fallback"] is None
+    assert any(item["code"] == "model_promotion" for item in value["unsupported_claims"])
+
+
+def test_atomic_export_is_repeatable_and_does_not_change_stored_evidence(tmp_path: Path) -> None:
+    store, _ = seed_store(tmp_path)
+    before = {
+        p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
+    }
+    destination = tmp_path / "published/finding.json"
+    first = export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    payload = destination.read_bytes()
+    second = export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert first == second
+    assert payload == destination.read_bytes() == (VENDOR / "wbc1.fixture.json").read_bytes()
+    assert before == {
+        p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
+    }
+    assert list(destination.parent.iterdir()) == [destination]
+
+
+@pytest.mark.parametrize(
+    "defect",
+    ["digest", "size", "media", "manifest_id", "manifest_commit", "manifest_hash", "json"],
+)
+def test_source_refusal_preserves_existing_output(tmp_path: Path, defect: str) -> None:
+    store, manifest = seed_store(tmp_path)
+    if defect == "digest":
+        manifest["bundle"]["sha256"] = "sha256:" + "a" * 64
+    elif defect == "size":
+        manifest["bundle"]["size_bytes"] += 1
+    elif defect == "media":
+        manifest["bundle"]["media_type"] = "application/x-parquet"
+    elif defect == "manifest_id":
+        manifest["run_id"] = "different_run"
+    elif defect == "manifest_commit":
+        manifest["lab_commit"] = "a" * 40
+    elif defect == "manifest_hash":
+        manifest["deterministic_bundle_sha256"] = "sha256:" + "a" * 64
+    store.write_scope_file(
+        RUN_ID, "run.json", b"{" if defect == "json" else canonical_json_bytes(manifest)
+    )
+    destination = tmp_path / "existing.json"
+    destination.write_bytes(b"untouched")
+    with pytest.raises(FindingError):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert destination.read_bytes() == b"untouched"
+
+
+def test_output_cannot_overwrite_source_manifest(tmp_path: Path) -> None:
+    store, _ = seed_store(tmp_path)
+    destination = store.scope_root(RUN_ID) / "run.json"
+    before = destination.read_bytes()
+    with pytest.raises(FindingError):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert destination.read_bytes() == before
+
+
+def test_final_output_symlink_is_replaced_without_following_target(tmp_path: Path) -> None:
+    store, _ = seed_store(tmp_path)
+    target = tmp_path / "keep.txt"
+    target.write_bytes(b"untouched")
+    destination = tmp_path / "finding.json"
+    destination.symlink_to(target)
+    export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert not destination.is_symlink()
+    assert target.read_bytes() == b"untouched"
+
+
+def test_manifest_symlink_and_oversized_json_are_refused_without_output(tmp_path: Path) -> None:
+    store, _ = seed_store(tmp_path)
+    manifest = store.scope_root(RUN_ID) / "run.json"
+    moved = tmp_path / "moved.json"
+    manifest.rename(moved)
+    manifest.symlink_to(moved)
+    destination = tmp_path / "absent/finding.json"
+    with pytest.raises(FindingError):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert not destination.parent.exists()
+    with pytest.raises(FindingError):
+        compose_finding(b" " * 1_048_577, root=ROOT, product_contract_commit=PIN)
