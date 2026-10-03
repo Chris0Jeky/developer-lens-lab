@@ -84,9 +84,7 @@ def _verified_producer_snapshots(root: Path) -> dict[str, dict[str, Any]]:
     ):
         directory = root / "vendor/developer-lens" / name / "v1"
         provenance = _json_object(_read_confined(directory / "provenance.json", root))
-        payloads = {
-            filename: _read_confined(directory / filename, root) for filename in filenames
-        }
+        payloads = {filename: _read_confined(directory / filename, root) for filename in filenames}
         try:
             validate_snapshot(provenance, payloads)
         except (ArtifactError, ValueError) as exc:

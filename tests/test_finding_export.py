@@ -273,9 +273,7 @@ def test_manifest_symlink_and_oversized_json_are_refused_without_output(tmp_path
         ("candidate_model_card", "parameter_sha256", "sha256:" + "a" * 64),
     ],
 )
-def test_composer_enforces_full_study_identity(
-    section: str, field: str, replacement: str
-) -> None:
+def test_composer_enforces_full_study_identity(section: str, field: str, replacement: str) -> None:
     bundle, _ = source_evidence()
     bundle[section][field] = replacement
     with pytest.raises(FindingError, match="study semantics"):

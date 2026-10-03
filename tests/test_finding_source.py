@@ -94,7 +94,9 @@ def test_snapshot_is_validated_against_fixed_file_bytes(name: str) -> None:
     directory = ROOT / "vendor/developer-lens" / name / "v1"
     provenance = json.loads((directory / "provenance.json").read_bytes())
     names = (
-        ("schema.json",) if name == "method-trial-view" else ("invented.fixture.json", "schema.json")
+        ("schema.json",)
+        if name == "method-trial-view"
+        else ("invented.fixture.json", "schema.json")
     )
     payloads = {filename: (directory / filename).read_bytes() for filename in names}
     validate_snapshot(provenance, payloads)
