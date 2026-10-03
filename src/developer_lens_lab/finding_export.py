@@ -323,7 +323,9 @@ def export_finding(
         if view is not None:
             receipt = _json_object(_artifact_json(store, run_id, manifest.get("custody")))
             custody = ArtifactRef.model_validate_json(json.dumps(manifest.get("custody")))
-            validate_view_lineage(bundle, view["reproducibility"], manifest["product_commit"], custody)
+            validate_view_lineage(
+                bundle, view["reproducibility"], manifest["product_commit"], custody
+            )
             validate_custody_record(bundle, manifest, receipt)
         destination = output if output is not None else root / "research-finding.json"
         # Resolve the parent only: replacing a final symlink must not overwrite its target.
