@@ -1,3 +1,5 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false
+
 from __future__ import annotations
 
 import hashlib
@@ -8,6 +10,13 @@ import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any, cast
+
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
+from jsonschema.exceptions import ValidationError as SchemaValidationError
+from pydantic import ValidationError
+from referencing import Registry
+from referencing.exceptions import Unresolvable
 
 from developer_lens_lab.contracts import ResearchPack
 
@@ -109,6 +118,21 @@ def _atomic_write(path: Path, payload: bytes, root: Path) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _load_schema(payload: bytes, label: str) -> dict[str, Any]:
+    try:
+        value = json.loads(payload)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ContractSyncError(f"{label} schema is not valid JSON") from exc
+    if not isinstance(value, dict):
+        raise ContractSyncError(f"{label} schema must be a JSON Schema object")
+    schema = cast(dict[str, Any], value)
+    try:
+        Draft202012Validator.check_schema(schema)
+    except SchemaError as exc:
+        raise ContractSyncError(f"{label} schema is not valid Draft 2020-12") from exc
+    return schema
+
+
 def _validate_producer_schema(value: object) -> None:
     if not isinstance(value, dict):
         raise ContractSyncError("producer schema must be a JSON Schema object")
@@ -153,9 +177,23 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
     for target_name, source_path in PRODUCT_FILES.items():
         snapshots[target_name] = _git(checkout, "show", f"{commit}:{source_path}")
 
-    schema_raw = json.loads(snapshots["schema.json"])
+    schema_raw = _load_schema(snapshots["schema.json"], "ResearchPack")
     _validate_producer_schema(schema_raw)
-    fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
+    try:
+        fixture_raw = json.loads(snapshots["invented.fixture.json"])
+        # An empty registry refuses external retrieval. Sync must remain offline.
+        Draft202012Validator(schema_raw, registry=Registry[Any]()).validate(fixture_raw)
+        fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError,
+        SchemaValidationError,
+        ValidationError,
+        Unresolvable,
+    ) as exc:
+        raise ContractSyncError(
+            "producer fixture does not satisfy the ResearchPack contracts"
+        ) from exc
     if fixture.classification != "C0":
         raise ContractSyncError("producer fixture must remain C0 invented data")
 
@@ -201,19 +239,15 @@ def sync_method_trial_view_contract(
     if resolved.decode("ascii").strip() != commit:
         raise ContractSyncError("--ref did not resolve to the exact requested commit")
     payload = _git(checkout, "show", f"{commit}:{METHOD_TRIAL_SCHEMA_PATH}")
-    try:
-        schema = json.loads(payload)
-    except json.JSONDecodeError as exc:
-        raise ContractSyncError("MethodTrialView schema is not valid JSON") from exc
-    if not isinstance(schema, dict):
-        raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
-    schema = cast(dict[str, Any], schema)
+    schema = _load_schema(payload, "MethodTrialView")
     if (
         schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
         or "Structural transport validation only" not in str(schema.get("$comment", ""))
         or schema.get("type") != "object"
         or schema.get("additionalProperties") is not False
-        or schema.get("properties", {}).get("schema_version", {}).get("const")
+        or not isinstance(schema.get("properties"), dict)
+        or not isinstance(schema["properties"].get("schema_version"), dict)
+        or schema["properties"]["schema_version"].get("const")
         != "DeveloperLensMethodTrialView.v1"
     ):
         raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
@@ -229,7 +263,7 @@ def sync_method_trial_view_contract(
             _ensure_confined_parent(provenance_path, destination_root, create=False)
             vendored = schema_path.read_bytes()
             provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
             raise ContractSyncError("vendored MethodTrialView snapshot is unavailable") from exc
         if vendored != payload:
             raise ContractSyncError("vendored MethodTrialView schema differs from producer bytes")
