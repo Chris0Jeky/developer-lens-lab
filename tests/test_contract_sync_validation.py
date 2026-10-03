@@ -13,7 +13,10 @@ from developer_lens_lab.contract_sync import (
     sync_product_contract,
 )
 
-from .test_contract_sync import _invented_product_repo, _run_git
+from .test_contract_sync import (
+    _invented_product_repo,  # pyright: ignore[reportPrivateUsage] - shared C0 test fixture
+    _run_git,  # pyright: ignore[reportPrivateUsage] - shared pinned-commit test helper
+)
 
 
 def _commit(root: Path) -> str:
