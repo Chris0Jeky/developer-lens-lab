@@ -301,7 +301,9 @@ def export_finding_command(
 ) -> None:
     """Export a ResearchFinding from stored C0 evidence without running analysis."""
     try:
-        result = export_finding(run_id, root=_repo_root(), output=output, artifact_root=artifact_root)
+        result = export_finding(
+            run_id, root=_repo_root(), output=output, artifact_root=artifact_root
+        )
     except FindingError as exc:
         typer.echo(f"ERROR: finding export failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc

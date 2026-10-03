@@ -14,7 +14,7 @@ from developer_lens_lab.contracts.research_finding import FindingError
 from developer_lens_lab.finding_canonical import stable_bytes
 from developer_lens_lab.finding_export import compose_finding, export_finding
 
-from .factories import evaluation_bundle
+from .test_finding_source import registered_bundle, snapshots
 
 ROOT = Path(__file__).resolve().parents[1]
 VENDOR = ROOT / "vendor/developer-lens/research-finding/v1"
@@ -26,7 +26,7 @@ def source_evidence() -> tuple[dict[str, Any], dict[str, Any]]:
     """Invent a linked bundle; do not claim to reconstruct the historical bundle bytes."""
     view_path = ROOT / "release-assets/v0.1.0/method-trial-v1/method-trial-view.v1.json"
     view = json.loads(view_path.read_bytes())
-    bundle = evaluation_bundle()
+    bundle = registered_bundle()
     bundle["bundle_id"] = RUN_ID
     bundle["created_at"] = "2026-08-30T00:00:00Z"
     bundle["run_manifest"]["run_id"] = RUN_ID
@@ -79,11 +79,19 @@ def seed_store(tmp_path: Path, *, with_view: bool = True) -> tuple[ArtifactStore
     bundle, view = source_evidence()
     store = ArtifactStore(tmp_path / "store")
     bundle_ref = store.put_json(RUN_ID, bundle)
+    provenance = snapshots()
     manifest = {
         "schema_version": "DeveloperLensWbc1Run.v1",
         "run_id": RUN_ID,
         "lab_commit": bundle["run_manifest"]["lab_commit"],
         "product_contract_commit": PIN,
+        "product_commit": provenance["research_pack"]["product_commit"],
+        "producer_schema_sha256": next(
+            item["sha256"]
+            for item in provenance["research_pack"]["files"]
+            if item["name"] == "schema.json"
+        ),
+        "provenance": provenance,
         "bundle": bundle_ref.model_dump(mode="json"),
         "deterministic_bundle_sha256": bundle_ref.sha256,
     }
@@ -250,3 +258,67 @@ def test_manifest_symlink_and_oversized_json_are_refused_without_output(tmp_path
     assert not destination.parent.exists()
     with pytest.raises(FindingError):
         compose_finding(b" " * 1_048_577, root=ROOT, product_contract_commit=PIN)
+
+
+@pytest.mark.parametrize(
+    ("section", "field", "replacement"),
+    [
+        ("preregistration", "acceptance_rule_code", "different_acceptance"),
+        ("preregistration", "abstention_rule_code", "different_abstention"),
+        ("dataset_card", "generator_code", "different_generator"),
+        ("dataset_card", "generator_revision", "wbc1.generator.v2"),
+        ("baseline_model_card", "method_revision", "wbc1.methods.v2"),
+        ("candidate_model_card", "method_revision", "wbc1.methods.v2"),
+        ("baseline_model_card", "parameter_sha256", "sha256:" + "a" * 64),
+        ("candidate_model_card", "parameter_sha256", "sha256:" + "a" * 64),
+    ],
+)
+def test_composer_enforces_full_study_identity(
+    section: str, field: str, replacement: str
+) -> None:
+    bundle, _ = source_evidence()
+    bundle[section][field] = replacement
+    with pytest.raises(FindingError, match="study semantics"):
+        compose(bundle)
+
+
+def test_bundle_identity_mismatch_refuses_a_rehashed_artifact(tmp_path: Path) -> None:
+    store, manifest = seed_store(tmp_path, with_view=False)
+    bundle, _ = source_evidence()
+    bundle["bundle_id"] = "another_bundle"
+    reference = store.put_json(RUN_ID, bundle)
+    manifest["bundle"] = reference.model_dump(mode="json")
+    manifest["deterministic_bundle_sha256"] = reference.sha256
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    destination = tmp_path / "absent/finding.json"
+    with pytest.raises(FindingError, match="provenance disagree"):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert not destination.parent.exists()
+
+
+@pytest.mark.parametrize("with_view", [False, True])
+@pytest.mark.parametrize("defect", ["missing", "contract_pin", "recorded_pin", "schema_digest"])
+def test_recorded_provenance_is_checked_on_both_export_paths(
+    tmp_path: Path, with_view: bool, defect: str
+) -> None:
+    store, manifest = seed_store(tmp_path, with_view=with_view)
+    if defect == "missing":
+        manifest.pop("provenance")
+    elif defect == "contract_pin":
+        manifest["product_contract_commit"] = "a" * 40
+    elif defect == "recorded_pin":
+        manifest["provenance"]["research_pack"]["product_commit"] = "a" * 40
+    else:
+        manifest["producer_schema_sha256"] = "sha256:" + "a" * 64
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    destination = tmp_path / "existing.json"
+    destination.write_bytes(b"untouched")
+    with pytest.raises(FindingError):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert destination.read_bytes() == b"untouched"
+
+
+def test_bundle_only_composition_refuses_an_unverified_contract_pin() -> None:
+    bundle, _ = source_evidence()
+    with pytest.raises(FindingError, match="verified pin"):
+        compose_finding(canonical_json_bytes(bundle), root=ROOT, product_contract_commit="a" * 40)

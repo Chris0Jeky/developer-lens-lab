@@ -5,7 +5,6 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import re
 import stat
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,9 +21,13 @@ from developer_lens_lab.contracts.research_finding import (
     validate_research_finding,
 )
 from developer_lens_lab.finding_canonical import stable_bytes
+from developer_lens_lab.finding_source import (
+    validate_recorded_provenance,
+    validate_snapshot,
+    validate_study_identity,
+)
 
 _MAX_JSON_BYTES = 1_048_576
-_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _METRIC_DOMAINS = {
     "detection_rate": "detection",
     "false_alerts_per_year": "primary",
@@ -71,6 +74,25 @@ def _source_bundle(payload: bytes) -> EvaluationBundle:
         return EvaluationBundle.model_validate_json(json.dumps(value, allow_nan=False))
     except (ValueError, RecursionError) as exc:
         raise FindingError("stored EvaluationBundle does not satisfy its contract") from exc
+
+
+def _verified_producer_snapshots(root: Path) -> dict[str, dict[str, Any]]:
+    snapshots: dict[str, dict[str, Any]] = {}
+    for key, name, filenames in (
+        ("method_trial_view", "method-trial-view", ("schema.json",)),
+        ("research_pack", "research-pack", ("invented.fixture.json", "schema.json")),
+    ):
+        directory = root / "vendor/developer-lens" / name / "v1"
+        provenance = _json_object(_read_confined(directory / "provenance.json", root))
+        payloads = {
+            filename: _read_confined(directory / filename, root) for filename in filenames
+        }
+        try:
+            validate_snapshot(provenance, payloads)
+        except (ArtifactError, ValueError) as exc:
+            raise FindingError("source contract provenance does not match verified bytes") from exc
+        snapshots[key] = provenance
+    return snapshots
 
 
 def _validated_view(
@@ -132,19 +154,15 @@ def compose_finding(
 ) -> dict[str, Any]:
     """Project stored evidence only. No generator, method, runner, or holdout is invoked."""
     bundle = _source_bundle(bundle_payload)
-    if not _COMMIT.fullmatch(product_contract_commit):
-        raise FindingError("finding source contract commit must be a full immutable pin")
-    if (
-        bundle.preregistration.question_code != "WB.C1.CHANGE_POINT"
-        or bundle.preregistration.primary_metric_code != "false_alerts_per_year"
-        or bundle.baseline_model_card.method_code != "rolling_median_mad"
-        or bundle.candidate_model_card.method_code != "bocpd_gaussian"
-        or not bundle.run_manifest.deterministic
-        or not bundle.baseline_model_card.deterministic
-        or not bundle.candidate_model_card.deterministic
-        or bundle.candidate_model_card.no_model_fallback_code != "rolling_median_mad"
-    ):
-        raise FindingError("no finding adapter is registered for these source study semantics")
+    try:
+        validate_study_identity(bundle)
+    except ValueError as exc:
+        raise FindingError(
+            "no finding adapter is registered for these source study semantics"
+        ) from exc
+    snapshots = _verified_producer_snapshots(root)
+    if product_contract_commit != snapshots["method_trial_view"]["product_commit"]:
+        raise FindingError("finding source contract commit differs from its verified pin")
     view = (
         None
         if source_view is None
@@ -277,14 +295,13 @@ def export_finding(
         bundle_payload = _artifact_json(store, run_id, manifest.get("bundle"))
         bundle = _source_bundle(bundle_payload)
         if (
-            bundle.run_manifest.run_id != run_id
+            bundle.bundle_id != run_id
+            or bundle.run_manifest.run_id != run_id
             or manifest.get("lab_commit") != bundle.run_manifest.lab_commit
             or manifest.get("deterministic_bundle_sha256") != _digest(bundle_payload)
         ):
             raise FindingError("stored run manifest and bundle provenance disagree")
-        product_commit = manifest.get("product_contract_commit")
-        if not isinstance(product_commit, str):
-            raise FindingError("stored run manifest lacks its source contract pin")
+        product_commit = validate_recorded_provenance(manifest, _verified_producer_snapshots(root))
         view = None
         if "method_trial_view" in manifest:
             view = _json_object(_artifact_json(store, run_id, manifest["method_trial_view"]))
