@@ -1,0 +1,1073 @@
+{
+  "$comment": "Structural validation is necessary but not sufficient. Consumers must also run ResearchFindingSchema semantic checks and the published privacy policy.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "classification": {
+      "enum": [
+        "C0",
+        "C1"
+      ],
+      "type": "string"
+    },
+    "decision": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "reject",
+            "revise_once",
+            "benchmarked"
+          ],
+          "type": "string"
+        },
+        "retained_fallback": {
+          "anyOf": [
+            {
+              "enum": [
+                "rolling_median_mad",
+                "bocpd_gaussian",
+                "pelt_offline"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "outcome",
+        "retained_fallback",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "finding": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$",
+          "type": "string"
+        },
+        "question": {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "question"
+      ],
+      "type": "object"
+    },
+    "gates": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "baseline_selection",
+                "type": "string"
+              },
+              "label": {
+                "const": "Baseline selection is viable",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "candidate_selection",
+                "type": "string"
+              },
+              "label": {
+                "const": "Candidate selection is viable",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "detection_floor",
+                "type": "string"
+              },
+              "label": {
+                "const": "Candidate meets detection floor",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "delay_budget",
+                "type": "string"
+              },
+              "label": {
+                "const": "Candidate meets delay budget",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "false_alert_improvement",
+                "type": "string"
+              },
+              "label": {
+                "const": "Candidate false alerts are lower than baseline",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "not_worse_detection",
+                "type": "string"
+              },
+              "label": {
+                "const": "Candidate detection is not worse",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "confound_guard",
+                "type": "string"
+              },
+              "label": {
+                "const": "Candidate confound guard is measured",
+                "type": "string"
+              },
+              "passed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "label",
+              "passed"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 8,
+      "type": "array"
+    },
+    "generated_at": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+      "type": "string"
+    },
+    "limitations": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "c0_synthetic_only",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "Evidence is limited to invented C0 weekly system series.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "bounded_three_case_selection",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "Only three bounded representative windows are exported.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "missingness_and_confound",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "Missing observations and instrumentation confounds are explicit.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "thresholds_nonviable",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "Both threshold selections are nonviable.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "type": "array"
+    },
+    "methods": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "display_name": {
+                  "const": "Rolling median and MAD",
+                  "type": "string"
+                },
+                "method_code": {
+                  "const": "rolling_median_mad",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "method_code",
+                "display_name"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "display_name": {
+                  "const": "Gaussian BOCPD",
+                  "type": "string"
+                },
+                "method_code": {
+                  "const": "bocpd_gaussian",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "method_code",
+                "display_name"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "display_name": {
+                  "const": "PELT descriptive marker",
+                  "type": "string"
+                },
+                "method_code": {
+                  "const": "pelt_offline",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "method_code",
+                "display_name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "candidate": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "display_name": {
+                  "const": "Rolling median and MAD",
+                  "type": "string"
+                },
+                "method_code": {
+                  "const": "rolling_median_mad",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "method_code",
+                "display_name"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "display_name": {
+                  "const": "Gaussian BOCPD",
+                  "type": "string"
+                },
+                "method_code": {
+                  "const": "bocpd_gaussian",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "method_code",
+                "display_name"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "display_name": {
+                  "const": "PELT descriptive marker",
+                  "type": "string"
+                },
+                "method_code": {
+                  "const": "pelt_offline",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "method_code",
+                "display_name"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "type": "object"
+    },
+    "metrics": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "baseline": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "better_when": {
+                "const": "higher",
+                "type": "string"
+              },
+              "candidate": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "key": {
+                "const": "detection_rate",
+                "type": "string"
+              },
+              "label": {
+                "const": "Detection rate",
+                "type": "string"
+              },
+              "unit": {
+                "const": "rate",
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "unit",
+              "better_when",
+              "baseline",
+              "candidate"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "baseline": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 10000,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "better_when": {
+                "const": "lower",
+                "type": "string"
+              },
+              "candidate": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 10000,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "key": {
+                "const": "false_alerts_per_year",
+                "type": "string"
+              },
+              "label": {
+                "const": "False alerts per year",
+                "type": "string"
+              },
+              "unit": {
+                "const": "count_per_year",
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "unit",
+              "better_when",
+              "baseline",
+              "candidate"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "baseline": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 1000000,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "better_when": {
+                "const": "lower",
+                "type": "string"
+              },
+              "candidate": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 1000000,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "key": {
+                "const": "median_detection_delay_weeks",
+                "type": "string"
+              },
+              "label": {
+                "const": "Median detection delay",
+                "type": "string"
+              },
+              "unit": {
+                "const": "weeks",
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "unit",
+              "better_when",
+              "baseline",
+              "candidate"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "baseline": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "better_when": {
+                "const": "lower",
+                "type": "string"
+              },
+              "candidate": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "measured",
+                        "type": "string"
+                      },
+                      "value": {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "key": {
+                "const": "coverage_confound_false_alert_rate",
+                "type": "string"
+              },
+              "label": {
+                "const": "Coverage-confound false-alert rate",
+                "type": "string"
+              },
+              "unit": {
+                "const": "rate",
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "unit",
+              "better_when",
+              "baseline",
+              "candidate"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 6,
+      "minItems": 1,
+      "type": "array"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "bundle_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "producer": {
+          "const": "developer-lens-lab",
+          "type": "string"
+        },
+        "public_url": {
+          "const": "https://chris0jeky.github.io/developer-lens/?view=method-trial",
+          "type": "string"
+        },
+        "source_lab_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "source_product_contract_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "producer",
+        "source_lab_commit",
+        "source_product_contract_commit",
+        "bundle_hash"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "ResearchFindingProjection.v1",
+      "type": "string"
+    },
+    "subject_class": {
+      "enum": [
+        "software-system",
+        "repository",
+        "instrument",
+        "aggregate-window"
+      ],
+      "type": "string"
+    },
+    "threshold_viability": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "type": "boolean"
+        },
+        "candidate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "type": "object"
+    },
+    "unsupported_claims": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "real_repository_validity",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "This result does not establish validity on real repositories.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "person_level_inference",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "No person-level inference is supported or attempted.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "model_promotion",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "This trial does not promote a model.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "online_pelt_performance",
+                "type": "string"
+              },
+              "display_text": {
+                "const": "Offline PELT markers do not establish online performance.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "display_text"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "classification",
+    "subject_class",
+    "generated_at",
+    "finding",
+    "methods",
+    "decision",
+    "metrics",
+    "limitations",
+    "unsupported_claims",
+    "provenance"
+  ],
+  "type": "object"
+}
