@@ -21,6 +21,11 @@ from developer_lens_lab.contracts.research_finding import (
     validate_research_finding,
 )
 from developer_lens_lab.finding_canonical import stable_bytes
+from developer_lens_lab.finding_evidence import (
+    validate_custody_record,
+    validate_decision_evidence,
+    validate_view_lineage,
+)
 from developer_lens_lab.finding_source import (
     validate_recorded_provenance,
     validate_snapshot,
@@ -115,6 +120,11 @@ def _validated_view(
         or view["decision"]["reason_codes"] != list(bundle.decision.reason_codes)
     ):
         raise FindingError("stored MethodTrialView is not linked to the same bundle evidence")
+    try:
+        snapshots = _verified_producer_snapshots(root)
+        validate_view_lineage(bundle, reproduction, snapshots["research_pack"]["product_commit"])
+    except ValueError as exc:
+        raise FindingError("stored view producer or custody evidence is not linked") from exc
     schema_root = root / "vendor/developer-lens/method-trial-view/v1"
     provenance = _json_object(_read_confined(schema_root / "provenance.json", root))
     schema_payload = _read_confined(schema_root / "schema.json", root)
@@ -168,6 +178,10 @@ def compose_finding(
             source_view, bundle, _digest(bundle_payload), product_contract_commit, root
         )
     )
+    try:
+        validate_decision_evidence(bundle, view)
+    except ValueError as exc:
+        raise FindingError("stored decision lacks consistent supporting gate evidence") from exc
     value = copy.deepcopy(load_finding_contract(root)["fixture"])
     value["generated_at"] = bundle.created_at
     value["provenance"]["source_lab_commit"] = bundle.run_manifest.lab_commit
@@ -175,8 +189,8 @@ def compose_finding(
     outcome = bundle.decision.outcome
     summaries = {
         "reject": "The candidate is rejected; the deterministic baseline is retained.",
-        "revise_once": "The stored trial permits one revision; no method is promoted.",
-        "benchmarked": "The stored trial is benchmarked; this does not promote a model.",
+        "revise_once": "The stored trial permits one revision; this is not product acceptance.",
+        "benchmarked": "The stored trial is benchmarked; this is not product acceptance.",
     }
     value["decision"] = {
         "outcome": outcome,
@@ -306,6 +320,11 @@ def export_finding(
         value = compose_finding(
             bundle_payload, root=root, product_contract_commit=product_commit, source_view=view
         )
+        if view is not None:
+            receipt = _json_object(_artifact_json(store, run_id, manifest.get("custody")))
+            custody = ArtifactRef.model_validate_json(json.dumps(manifest.get("custody")))
+            validate_view_lineage(bundle, view["reproducibility"], manifest["product_commit"], custody)
+            validate_custody_record(bundle, manifest, receipt)
         destination = output if output is not None else root / "research-finding.json"
         # Resolve the parent only: replacing a final symlink must not overwrite its target.
         destination = destination.parent.resolve() / destination.name

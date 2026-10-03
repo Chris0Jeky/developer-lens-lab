@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 from developer_lens_lab.artifacts import ArtifactStore, canonical_json_bytes
-from developer_lens_lab.contracts import EvaluationBundle
+from developer_lens_lab.contracts import ArtifactRef, EvaluationBundle
 from developer_lens_lab.contracts.research_finding import FindingError
 from developer_lens_lab.finding_canonical import stable_bytes
 from developer_lens_lab.finding_export import compose_finding, export_finding
@@ -22,8 +22,22 @@ PIN = "b48fea579936671397a0486ae7a0342197ee6e4b"
 RUN_ID = "wbc1_demo"
 
 
+def custody_evidence(bundle: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "event": "final_holdout_custody",
+        "run_id": bundle["run_manifest"]["run_id"],
+        "generator_revision": "wbc1.generator.v1",
+        "dataset_sha256": "sha256:" + "d" * 64,
+        "evaluation_plan_sha256": "sha256:" + "e" * 64,
+        "baseline_threshold": 2.5,
+        "candidate_threshold": 0.05,
+        "baseline_parameters_sha256": bundle["baseline_model_card"]["parameter_sha256"],
+        "candidate_parameters_sha256": bundle["candidate_model_card"]["parameter_sha256"],
+    }
+
+
 def source_evidence() -> tuple[dict[str, Any], dict[str, Any]]:
-    """Invent a linked bundle; do not claim to reconstruct the historical bundle bytes."""
+    """Invent linked evidence; never claim to reconstruct historical bundle or receipt bytes."""
     view_path = ROOT / "release-assets/v0.1.0/method-trial-v1/method-trial-view.v1.json"
     view = json.loads(view_path.read_bytes())
     bundle = registered_bundle()
@@ -58,6 +72,14 @@ def source_evidence() -> tuple[dict[str, Any], dict[str, Any]]:
         "acceptance_gate_passed": False,
         "reason_codes": view["decision"]["reason_codes"],
     }
+    payload = canonical_json_bytes(custody_evidence(bundle))
+    receipt = ArtifactRef(
+        sha256="sha256:" + hashlib.sha256(payload).hexdigest(),
+        size_bytes=len(payload),
+        media_type="application/json",
+    )
+    bundle["artifact_manifest"].append(receipt.model_dump(mode="json"))
+    view["reproducibility"]["digests"]["custody"] = receipt.sha256
     EvaluationBundle.model_validate_json(json.dumps(bundle))
     link_view(bundle, view)
     return bundle, view
@@ -79,6 +101,8 @@ def seed_store(tmp_path: Path, *, with_view: bool = True) -> tuple[ArtifactStore
     bundle, view = source_evidence()
     store = ArtifactStore(tmp_path / "store")
     bundle_ref = store.put_json(RUN_ID, bundle)
+    custody = custody_evidence(bundle)
+    custody_ref = store.put_json(RUN_ID, custody)
     provenance = snapshots()
     manifest = {
         "schema_version": "DeveloperLensWbc1Run.v1",
@@ -93,6 +117,8 @@ def seed_store(tmp_path: Path, *, with_view: bool = True) -> tuple[ArtifactStore
         ),
         "provenance": provenance,
         "bundle": bundle_ref.model_dump(mode="json"),
+        "custody": custody_ref.model_dump(mode="json"),
+        "dataset_sha256": custody["dataset_sha256"],
         "deterministic_bundle_sha256": bundle_ref.sha256,
     }
     if with_view:
@@ -110,6 +136,7 @@ def test_projection_matches_pinned_fixture_and_preserves_sources() -> None:
 
 def test_bundle_only_export_does_not_invent_delay_confound_or_selection() -> None:
     bundle, _ = source_evidence()
+    bundle["decision"]["reason_codes"] = ["CANDIDATE_FALSE_ALERT_IMPROVEMENT"]
     value = compose(bundle)
     assert "threshold_viability" not in value
     assert "public_url" not in value["provenance"]
@@ -172,13 +199,11 @@ def test_source_incompatibility_is_refused_not_repaired(defect: str) -> None:
 
 
 @pytest.mark.parametrize("outcome", ["revise_once", "benchmarked"])
-def test_closed_nonreject_states_are_transported_without_promotion(outcome: str) -> None:
+def test_nonreject_states_without_supporting_evidence_are_refused(outcome: str) -> None:
     bundle, _ = source_evidence()
     bundle["decision"].update(outcome=outcome, acceptance_gate_passed=outcome == "benchmarked")
-    value = compose(bundle)
-    assert value["decision"]["outcome"] == outcome
-    assert value["decision"]["retained_fallback"] is None
-    assert any(item["code"] == "model_promotion" for item in value["unsupported_claims"])
+    with pytest.raises(FindingError, match="supporting gate evidence"):
+        compose(bundle)
 
 
 def test_atomic_export_is_repeatable_and_does_not_change_stored_evidence(tmp_path: Path) -> None:
@@ -320,3 +345,57 @@ def test_bundle_only_composition_refuses_an_unverified_contract_pin() -> None:
     bundle, _ = source_evidence()
     with pytest.raises(FindingError, match="verified pin"):
         compose_finding(canonical_json_bytes(bundle), root=ROOT, product_contract_commit="a" * 40)
+
+
+@pytest.mark.parametrize("field", ["product_research_pack_commit", "custody"])
+def test_rehashed_view_cannot_change_producer_or_custody(tmp_path: Path, field: str) -> None:
+    store, manifest = seed_store(tmp_path)
+    _, view = source_evidence()
+    if field == "custody":
+        view["reproducibility"]["digests"]["custody"] = "sha256:" + "a" * 64
+    else:
+        view["reproducibility"][field] = "a" * 40
+    manifest["method_trial_view"] = store.put_json(RUN_ID, view).model_dump(mode="json")
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    destination = tmp_path / "existing.json"
+    destination.write_bytes(b"untouched")
+    with pytest.raises(FindingError):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert destination.read_bytes() == b"untouched"
+
+
+@pytest.mark.parametrize("defect", ["missing", "different_ref", "missing_object", "dataset"])
+def test_recorded_custody_is_verified_before_publication(tmp_path: Path, defect: str) -> None:
+    store, manifest = seed_store(tmp_path)
+    if defect == "missing":
+        manifest.pop("custody")
+    elif defect == "different_ref":
+        manifest["custody"] = store.put_json(RUN_ID, {"event": "other"}).model_dump(mode="json")
+    elif defect == "missing_object":
+        digest = manifest["custody"]["sha256"].removeprefix("sha256:")
+        (store.scope_root(RUN_ID) / "objects" / digest[:2] / digest).unlink()
+    else:
+        manifest["dataset_sha256"] = "sha256:" + "a" * 64
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    destination = tmp_path / "absent/finding.json"
+    with pytest.raises(FindingError):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert not destination.parent.exists()
+
+
+def test_rehashed_losing_bundle_cannot_claim_benchmarked(tmp_path: Path) -> None:
+    store, manifest = seed_store(tmp_path, with_view=False)
+    bundle, _ = source_evidence()
+    bundle["decision"] = {
+        "outcome": "benchmarked",
+        "acceptance_gate_passed": True,
+        "reason_codes": ["ALL_PREREGISTERED_GATES_PASSED"],
+    }
+    ref = store.put_json(RUN_ID, bundle)
+    manifest["bundle"] = ref.model_dump(mode="json")
+    manifest["deterministic_bundle_sha256"] = ref.sha256
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    destination = tmp_path / "absent/finding.json"
+    with pytest.raises(FindingError, match="supporting gate evidence"):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert not destination.parent.exists()
