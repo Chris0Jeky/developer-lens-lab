@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Any
+from typing import Any, cast
 
 from developer_lens_lab.contracts import ArtifactRef, EvaluationBundle
 
@@ -51,7 +51,7 @@ def validate_decision_evidence(bundle: EvaluationBundle, view: dict[str, Any] | 
     alerts = measured("candidate", "false_alerts_per_year")
     baseline_confound = measured("baseline", "coverage_confound_false_alert_rate")
     confound = measured("candidate", "coverage_confound_false_alert_rate")
-    selection = {} if view is None else view["scorecard"]["threshold_selection"]
+    selection: dict[str, Any] = {} if view is None else view["scorecard"]["threshold_selection"]
     outcomes: tuple[bool | None, ...] = (
         baseline_detection is not None and detection is not None,
         None if view is None else bool(selection["baseline"]["viable"]),
@@ -121,5 +121,6 @@ def validate_custody_record(
             raise ValueError("stored custody receipt lacks an immutable evidence digest")
     for key in ("baseline_threshold", "candidate_threshold"):
         value = receipt.get(key)
-        if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+        threshold = cast(int | float, value)
+        if type(value) not in (int, float) or not math.isfinite(threshold) or threshold < 0:
             raise ValueError("stored custody receipt contains an invalid selected threshold")
