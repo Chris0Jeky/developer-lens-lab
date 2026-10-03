@@ -31,8 +31,8 @@ def test_ecmascript_number_vectors(value: float, expected: str) -> None:
 
 
 def test_utf16_key_order_and_json_escaping() -> None:
-    assert canonical_bytes({"\ue000": 1, "😀": "\n\t\"\\", "a": [True, None]}) == (
-        '{"a":[true,null],"😀":"\\n\\t\\\"\\\\","\ue000":1}'.encode()
+    assert canonical_bytes({"\ue000": 1, "😀": '\n\t"\\', "a": [True, None]}) == (
+        '{"a":[true,null],"😀":"\\n\\t\\"\\\\","\ue000":1}'.encode()
     )
 
 

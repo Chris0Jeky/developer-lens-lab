@@ -75,7 +75,9 @@ def _render(value: object, *, pretty: bool, depth: int = 0) -> str:
         ]
         left, right = "{", "}"
     else:
-        parts = [_render(item, pretty=pretty, depth=depth + 1) for item in cast(list[object], value)]
+        parts = [
+            _render(item, pretty=pretty, depth=depth + 1) for item in cast(list[object], value)
+        ]
         left, right = "[", "]"
     if not parts:
         return left + right

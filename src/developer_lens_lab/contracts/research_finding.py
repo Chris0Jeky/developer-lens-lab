@@ -131,9 +131,7 @@ def _validate_privacy(value: object, path: tuple[str, ...] = ()) -> None:
     if isinstance(value, str):
         if path == ("provenance", "public_url") and value == FINDING_PUBLIC_URL:
             return
-        if _DENIED_TOKEN.search(value) or (
-            path != ("generated_at",) and _DATE_TOKEN.search(value)
-        ):
+        if _DENIED_TOKEN.search(value) or (path != ("generated_at",) and _DATE_TOKEN.search(value)):
             raise FindingError("finding contains a denied identity, date, or path token")
     elif isinstance(value, list):
         for item in cast(list[Any], value):
