@@ -159,9 +159,7 @@ def _validate_reference_closure(schema: dict[str, Any]) -> None:
             Draft202012Validator.check_schema(resolved.contents)
             target = Resource.from_contents(resolved.contents, default_specification=DRAFT202012)
             pending.append((target, resolved.resolver))
-        pending.extend(
-            (child, resolver.in_subresource(child)) for child in current.subresources()
-        )
+        pending.extend((child, resolver.in_subresource(child)) for child in current.subresources())
 
 
 def _validate_producer_schema(value: object) -> None:

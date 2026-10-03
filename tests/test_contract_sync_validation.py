@@ -129,7 +129,9 @@ def test_sync_refuses_unresolved_references_in_unused_subschemas(
     assert not destination.exists()
 
 
-def test_sync_accepts_local_reference_closure_without_scanning_instance_data(tmp_path: Path) -> None:
+def test_sync_accepts_local_reference_closure_without_scanning_instance_data(
+    tmp_path: Path,
+) -> None:
     product, _ = _invented_product_repo(tmp_path)
     source = product / "research-contracts/research-pack/v1/schema.json"
     schema = json.loads(source.read_bytes())
