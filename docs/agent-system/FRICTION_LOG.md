@@ -2796,7 +2796,16 @@ retry, content inspection, or deletion was attempted.
 - **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
 - **promotion:** Environment repair only; no dependency version, policy, or gate change.
 
-### FR-095 - Package-smoke redaction draft failed hosted formatting
+### FR-095 - Manifest decoding draft missed the type-check gate
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #134 hosted proof ran and failed with sixteen type errors in the new tests because the fixture parameters lacked annotations.
+- **workaround:** Annotate the fixtures and run the declared type-check gate in the owned locked environment.
+- **task:** Swarm finding `f-45128d8644`, PR #134.
+- **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-096 - Package-smoke redaction draft failed hosted formatting
 
 - **first-seen:** 2026-10-04
 - **status:** workaround-verified

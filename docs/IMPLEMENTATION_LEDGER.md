@@ -1697,6 +1697,12 @@ hashed package bytes only; the joint tag remains blocked on product
 - Coverage pins permission/parser missing reasons, unavailable scores, and absent alerts. Production implementation is unchanged.
 - Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093b). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
 
+## 2026-10-04 - Controlled non-UTF-8 manifest errors
+
+- Swarm finding `f-45128d8644`, PR #134: Muse drafted controlled decode errors for pack and bundle manifests; the land coordinator reproduced and fixed the review-reported parent-directory disclosure. Errors name only the manifest filename.
+- Five focused invented-fixture tests pass, including two parent-path regressions that failed before the fix. Test fixture annotations address the hosted type-check failure.
+- This preserves the C0 contract and CLI validation boundary; no data lane, release, or human gate is activated. Full gate evidence belongs in the PR.
+
 ## 2026-10-04 - Preserve short-secret redaction in package diagnostics
 
 - PR #135, swarm finding `f-0e22cbe6b3`: coordinator reproduced seven short-secret diagnostic leaks introduced by whole-token matching, using invented values only.
