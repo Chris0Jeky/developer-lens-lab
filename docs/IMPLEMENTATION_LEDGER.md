@@ -1702,3 +1702,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-45128d8644`, PR #134: Muse drafted controlled decode errors for pack and bundle manifests; the land coordinator reproduced and fixed the review-reported parent-directory disclosure. Errors name only the manifest filename.
 - Five focused invented-fixture tests pass, including two parent-path regressions that failed before the fix. Test fixture annotations address the hosted type-check failure.
 - This preserves the C0 contract and CLI validation boundary; no data lane, release, or human gate is activated. Full gate evidence belongs in the PR.
+
+## 2026-10-04 - False-alert report direction wording
+
+- Swarm finding `f-2fed8bf74c`, PR #137: Muse drafted fewer/more/unchanged wording and two focused tests. The land coordinator refreshed main and corrected the hosted import-order failure (FR-096).
+- The signed reduction magnitude remains a confirmed MEDIUM presentation concern, declined on the review thread under the bounded review rule. Numeric scorecards and decisions are unchanged.
+- This remains invented-data report presentation only; no data lane, release, or human gate is activated. Final-head proof belongs in the PR.

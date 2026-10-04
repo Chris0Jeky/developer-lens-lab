@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Any
 from collections.abc import Mapping
+from typing import Any
 
 from developer_lens_lab.wbc1.report import _false_alert_delta  # pyright: ignore[reportPrivateUsage]
 

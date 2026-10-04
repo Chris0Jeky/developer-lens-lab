@@ -2804,3 +2804,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Annotate the fixtures and run the declared type-check gate in the owned locked environment.
 - **task:** Swarm finding `f-45128d8644`, PR #134.
 - **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-096 - False-alert wording draft missed the import-order gate
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #137 hosted proof ran and failed Ruff I001 in the new regression test.
+- **workaround:** Sort the test imports and re-run the declared locked-environment gate.
+- **task:** Swarm finding `f-2fed8bf74c`, PR #137.
+- **promotion:** Verification correction only; no gate or runner policy change.
