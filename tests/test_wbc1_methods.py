@@ -12,6 +12,7 @@ from developer_lens_lab.wbc1.methods import (
     alerts_from_scores,
     bocpd_scores,
     parameters_sha256,
+    pelt_segments,
     rolling_median_mad_scores,
 )
 
@@ -234,3 +235,20 @@ def test_eligible_rejects_coverage_just_below_threshold() -> None:
     assert int(series.observed.sum()) == 41
     assert float(series.observed.mean()) < 0.8
     assert _eligible(series) is False
+
+
+def test_pelt_refuses_censored_series() -> None:
+    censored = np.zeros(104, dtype=np.float64)
+    censored[50] = np.nan
+    assert pelt_segments(censored) == ()
+
+    assert pelt_segments(np.zeros(11, dtype=np.float64)) == ()
+    mostly_censored = np.full(104, np.nan, dtype=np.float64)
+    mostly_censored[:5] = 0.0
+    assert pelt_segments(mostly_censored) == ()
+
+    rng = np.random.default_rng(0)
+    control = np.concatenate(
+        (rng.normal(0.0, 1.0, size=52), rng.normal(10.0, 1.0, size=52))
+    ).astype(np.float64)
+    assert pelt_segments(control) != ()
