@@ -21,7 +21,9 @@ def test_build_smoke_environment_second_call_reuses_or_raises_runtime_error(
     try:
         second = build_smoke_environment(tmp_path)
     except FileExistsError:
-        raise AssertionError("second build_smoke_environment call raised raw FileExistsError")
+        raise AssertionError(
+            "second build_smoke_environment call raised raw FileExistsError"
+        ) from None
     except RuntimeError as exc:
         assert "already initi" in str(exc).lower()
         return

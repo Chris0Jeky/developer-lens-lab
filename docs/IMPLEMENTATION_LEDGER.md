@@ -1696,3 +1696,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-d5bd9dc4a3`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory reason-branch swap failure.
 - Coverage pins permission/parser missing reasons, unavailable scores, and absent alerts. Production implementation is unchanged.
 - Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093b). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
+
+## 2026-10-04 - Package-smoke environment reuse review fix
+
+- PR #136, swarm finding `f-ea9bc1bfe6`: reproduced the new regression test's B904 lint failure and added explicit `from None` to its replacement assertion. Smoke environment reuse behavior is unchanged by this review fix.
+- Locked local full gate passed: doctor, context, formatting, lint, type checking, 465 tests with six host symlink skips, strict docs build, and hygiene. The focused reuse test also passed through the host's requested runner.
+- FR-095 records the focused-proof gap. Hosted checks for the fix remain unverified; no merge, release, data-lane activation, or human-gate completion is claimed.

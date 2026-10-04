@@ -2795,3 +2795,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Reinstall and refresh only the locked Babel dependency in the owned environment. Locale `en` then resolved, 1082 locale identifiers were present, and strict docs build and hygiene passed.
 - **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
 - **promotion:** Environment repair only; no dependency version, policy, or gate change.
+
+### FR-095 - Focused swarm proof missed a required lint rule
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #136's focused test passed, but hosted lint rejected its exception handler under Ruff B904.
+- **workaround:** Reproduce with the locked Ruff check, then explicitly suppress exception chaining with `from None`; retain the regression assertion.
+- **task:** PR #136, swarm finding `f-ea9bc1bfe6`.
+- **promotion:** Run the existing full gate before publication; no gate or policy change.
