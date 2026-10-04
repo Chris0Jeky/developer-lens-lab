@@ -210,8 +210,8 @@ def build_smoke_environment(smoke_root: Path) -> dict[str, str]:
     """Return an environment whose uv cache and temporary files stay in smoke_root."""
     cache_root = smoke_root / "uv-cache"
     temp_root = smoke_root / "tmp"
-    cache_root.mkdir()
-    temp_root.mkdir()
+    cache_root.mkdir(parents=True, exist_ok=True)
+    temp_root.mkdir(parents=True, exist_ok=True)
     environment = os.environ.copy()
     environment.update(
         {

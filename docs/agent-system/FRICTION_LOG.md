@@ -2813,3 +2813,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Format the bounded redaction fix with the locked Ruff version and verify formatting locally.
 - **task:** Swarm finding `f-0e22cbe6b3`, PR #135 review fix.
 - **promotion:** Keep formatting in the existing publication gate; no gate or policy changes.
+
+### FR-097 - Focused swarm proof missed a required lint rule
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #136's focused test passed, but hosted lint rejected its exception handler under Ruff B904.
+- **workaround:** Reproduce with the locked Ruff check, then explicitly suppress exception chaining with `from None`; retain the regression assertion.
+- **task:** PR #136, swarm finding `f-ea9bc1bfe6`.
+- **promotion:** Run the existing full gate before publication; no gate or policy change.
