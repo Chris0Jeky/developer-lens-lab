@@ -66,7 +66,12 @@ def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
         if value
         and (
             len(value) >= 4
-            or any(marker in name.lower() for marker in sensitive_names)
+            or any(
+                marker in token
+                for token in re.split(r"[^a-z0-9]+", name.lower())
+                if token != "keyboard"
+                for marker in sensitive_names
+            )
             or any(
                 marker in re.split(r"[^a-z0-9]+", name.lower()) for marker in short_secret_markers
             )
@@ -205,8 +210,8 @@ def build_smoke_environment(smoke_root: Path) -> dict[str, str]:
     """Return an environment whose uv cache and temporary files stay in smoke_root."""
     cache_root = smoke_root / "uv-cache"
     temp_root = smoke_root / "tmp"
-    cache_root.mkdir()
-    temp_root.mkdir()
+    cache_root.mkdir(parents=True, exist_ok=True)
+    temp_root.mkdir(parents=True, exist_ok=True)
     environment = os.environ.copy()
     environment.update(
         {

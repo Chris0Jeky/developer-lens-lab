@@ -2805,7 +2805,25 @@ retry, content inspection, or deletion was attempted.
 - **task:** Swarm finding `f-45128d8644`, PR #134.
 - **promotion:** Verification correction only; no gate or runner policy change.
 
-### FR-096 - False-alert wording draft missed the import-order gate
+### FR-096 - Package-smoke redaction draft failed hosted formatting
+
+- **first-seen:** 2026-10-04
+- **status:** workaround-verified
+- **symptom:** PR #135 hosted Prove the lab job ran and failed the formatter on the changed matcher; this was not a billing refusal.
+- **workaround:** Format the bounded redaction fix with the locked Ruff version and verify formatting locally.
+- **task:** Swarm finding `f-0e22cbe6b3`, PR #135 review fix.
+- **promotion:** Keep formatting in the existing publication gate; no gate or policy changes.
+
+### FR-097 - Focused swarm proof missed a required lint rule
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #136's focused test passed, but hosted lint rejected its exception handler under Ruff B904.
+- **workaround:** Reproduce with the locked Ruff check, then explicitly suppress exception chaining with `from None`; retain the regression assertion.
+- **task:** PR #136, swarm finding `f-ea9bc1bfe6`.
+- **promotion:** Run the existing full gate before publication; no gate or policy change.
+
+### FR-098 - False-alert wording draft missed the import-order gate
 
 - **first-seen:** 2026-10-04
 - **status:** fixed
