@@ -98,7 +98,7 @@ def _load_json(path: Path) -> object:
     try:
         text = path.read_text(encoding="utf-8")
     except (UnicodeDecodeError, UnicodeError) as exc:
-        raise ManifestError(f"manifest {path} is not valid UTF-8") from exc
+        raise ManifestError(f"manifest {path.name} is not valid UTF-8") from exc
     return json.loads(text)
 
 
