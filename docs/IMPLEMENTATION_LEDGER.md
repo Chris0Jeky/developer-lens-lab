@@ -1702,3 +1702,10 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-45128d8644`, PR #134: Muse drafted controlled decode errors for pack and bundle manifests; the land coordinator reproduced and fixed the review-reported parent-directory disclosure. Errors name only the manifest filename.
 - Five focused invented-fixture tests pass, including two parent-path regressions that failed before the fix. Test fixture annotations address the hosted type-check failure.
 - This preserves the C0 contract and CLI validation boundary; no data lane, release, or human gate is activated. Full gate evidence belongs in the PR.
+
+## 2026-10-04 - Preserve short-secret redaction in package diagnostics
+
+- PR #135, swarm finding `f-0e22cbe6b3`: coordinator reproduced seven short-secret diagnostic leaks introduced by whole-token matching, using invented values only.
+- Restore sensitive substring matching inside name tokens, exempting only the exact keyboard token; APIKEY, numbered names, and plural credentials remain redacted.
+- Seven diagnostic regression cases fail before the fix and pass afterward; the original KEYBOARD/API_KEY boundary test remains green. The first draft was written by Muse; this is the coordinator's bounded review fix.
+- No data lane, schema, release, or human gate changes. Local full-gate and hosted evidence are recorded on the PR, without a merge claim.

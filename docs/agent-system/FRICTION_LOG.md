@@ -2804,3 +2804,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Annotate the fixtures and run the declared type-check gate in the owned locked environment.
 - **task:** Swarm finding `f-45128d8644`, PR #134.
 - **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-096 - Package-smoke redaction draft failed hosted formatting
+
+- **first-seen:** 2026-10-04
+- **status:** workaround-verified
+- **symptom:** PR #135 hosted Prove the lab job ran and failed the formatter on the changed matcher; this was not a billing refusal.
+- **workaround:** Format the bounded redaction fix with the locked Ruff version and verify formatting locally.
+- **task:** Swarm finding `f-0e22cbe6b3`, PR #135 review fix.
+- **promotion:** Keep formatting in the existing publication gate; no gate or policy changes.
