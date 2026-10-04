@@ -2795,3 +2795,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Reinstall and refresh only the locked Babel dependency in the owned environment. Locale `en` then resolved, 1082 locale identifiers were present, and strict docs build and hygiene passed.
 - **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
 - **promotion:** Environment repair only; no dependency version, policy, or gate change.
+
+### FR-095 - Manifest decoding draft missed the type-check gate
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #134 hosted proof ran and failed with sixteen type errors in the new tests because the fixture parameters lacked annotations.
+- **workaround:** Annotate the fixtures and run the declared type-check gate in the owned locked environment.
+- **task:** Swarm finding `f-45128d8644`, PR #134.
+- **promotion:** Verification correction only; no gate or runner policy change.
