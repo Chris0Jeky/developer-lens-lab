@@ -1696,3 +1696,10 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-d5bd9dc4a3`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory reason-branch swap failure.
 - Coverage pins permission/parser missing reasons, unavailable scores, and absent alerts. Production implementation is unchanged.
 - Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093b). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
+
+## 2026-10-04 - Preserve short-secret redaction in package diagnostics
+
+- PR #135, swarm finding `f-0e22cbe6b3`: coordinator reproduced seven short-secret diagnostic leaks introduced by whole-token matching, using invented values only.
+- Restore sensitive substring matching inside name tokens, exempting only the exact keyboard token; APIKEY, numbered names, and plural credentials remain redacted.
+- Seven diagnostic regression cases fail before the fix and pass afterward; the original KEYBOARD/API_KEY boundary test remains green. The first draft was written by Muse; this is the coordinator's bounded review fix.
+- No data lane, schema, release, or human gate changes. Local full-gate and hosted evidence are recorded on the PR, without a merge claim.

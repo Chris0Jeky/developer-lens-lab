@@ -2795,3 +2795,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Reinstall and refresh only the locked Babel dependency in the owned environment. Locale `en` then resolved, 1082 locale identifiers were present, and strict docs build and hygiene passed.
 - **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
 - **promotion:** Environment repair only; no dependency version, policy, or gate change.
+
+### FR-095 - Package-smoke redaction draft failed hosted formatting
+
+- **first-seen:** 2026-10-04
+- **status:** workaround-verified
+- **symptom:** PR #135 hosted Prove the lab job ran and failed the formatter on the changed matcher; this was not a billing refusal.
+- **workaround:** Format the bounded redaction fix with the locked Ruff version and verify formatting locally.
+- **task:** Swarm finding `f-0e22cbe6b3`, PR #135 review fix.
+- **promotion:** Keep formatting in the existing publication gate; no gate or policy changes.

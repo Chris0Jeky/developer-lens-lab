@@ -67,7 +67,10 @@ def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
         and (
             len(value) >= 4
             or any(
-                marker in re.split(r"[^a-z0-9]+", name.lower()) for marker in sensitive_names
+                marker in token
+                for token in re.split(r"[^a-z0-9]+", name.lower())
+                if token != "keyboard"
+                for marker in sensitive_names
             )
             or any(
                 marker in re.split(r"[^a-z0-9]+", name.lower()) for marker in short_secret_markers
