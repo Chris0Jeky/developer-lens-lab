@@ -1715,3 +1715,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - PR #136, swarm finding `f-ea9bc1bfe6`: reproduced the new regression test's B904 lint failure and added explicit `from None` to its replacement assertion. Smoke environment reuse behavior is unchanged by this review fix.
 - Locked local full gate passed: doctor, context, formatting, lint, type checking, 465 tests with six host symlink skips, strict docs build, and hygiene. The focused reuse test also passed through the host's requested runner.
 - FR-097 records the focused-proof gap. Hosted checks for the fix remain unverified; no merge, release, data-lane activation, or human-gate completion is claimed.
+
+## 2026-10-04 - False-alert report direction wording
+
+- Swarm finding `f-2fed8bf74c`, PR #137: Muse drafted fewer/more/unchanged wording and two focused tests. The land coordinator refreshed main and corrected the hosted import-order failure (FR-098).
+- The signed reduction magnitude remains a confirmed MEDIUM presentation concern, declined on the review thread under the bounded review rule. Numeric scorecards and decisions are unchanged.
+- This remains invented-data report presentation only; no data lane, release, or human gate is activated. Final-head proof belongs in the PR.
