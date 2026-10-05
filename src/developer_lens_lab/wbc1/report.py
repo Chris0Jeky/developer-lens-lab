@@ -138,7 +138,12 @@ def _false_alert_delta(view: Mapping[str, Any]) -> str:
     )
     if before is None or after is None or before == 0:
         return "unavailable"
-    return f"{(after - before) / before * 100:.1f}% more false alerts"
+    delta = (after - before) / before * 100
+    if delta < 0:
+        return f"{delta:.1f}% fewer false alerts"
+    if delta > 0:
+        return f"{delta:.1f}% more false alerts"
+    return "0.0% change in false alerts"
 
 
 def _safe_html(value: Any, default: str = "") -> str:
