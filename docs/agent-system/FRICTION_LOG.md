@@ -2831,3 +2831,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Sort the test imports and re-run the declared locked-environment gate.
 - **task:** Swarm finding `f-2fed8bf74c`, PR #137.
 - **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-099 - Swarm proof used an uninstalled unsupported interpreter
+
+- **first-seen:** 2026-10-05
+- **status:** worked around
+- **symptom:** Raw swarm pytest commands use Python 3.14 and cannot import the uninstalled lab; the project declares Python 3.12-3.13. The partial-file test also had a different name from the host selector.
+- **workaround:** Use the locked Python 3.12 uv environment and align the regression name with the host selector; retain failure-before-fix evidence.
+- **task:** Swarm finding `f-0bfc2b16a8`.
+- **promotion:** No runner, gate, or policy change in this slice.

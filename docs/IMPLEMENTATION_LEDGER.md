@@ -1721,3 +1721,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-2fed8bf74c`, PR #137: Muse drafted fewer/more/unchanged wording and two focused tests. The land coordinator refreshed main and corrected the hosted import-order failure (FR-098).
 - The signed reduction magnitude remains a confirmed MEDIUM presentation concern, declined on the review thread under the bounded review rule. Numeric scorecards and decisions are unchanged.
 - This remains invented-data report presentation only; no data lane, release, or human gate is activated. Final-head proof belongs in the PR.
+
+## 2026-10-05 - Failed append-only writes permit retry
+
+- Swarm finding `f-0bfc2b16a8`: Muse drafted cleanup for an exclusively created scope file when writing, flushing, or syncing fails. The coordinator retained the success-path append-only guarantee and corrected descriptor ownership during cleanup.
+- Fault-injected fsync failure leaves no partial record; a repeated failure preserves the original error, and a subsequent successful retry stores the complete payload. The focused regression fails against the original method and passes with the fix; all five artifact tests pass.
+- FR-099 records the host-runner mismatch. Final-head full-gate and independent-review results belong in the PR. No data lane, custody policy, release, or human gate changes.

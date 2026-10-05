@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -56,3 +57,25 @@ def test_scope_reservation_and_append_only_records_refuse_reuse(tmp_path: Path) 
     with pytest.raises(ArtifactError, match="scope file already exists"):
         store.write_scope_file_once("scope_demo", "custody.json", b"changed\n")
     assert custody.read_bytes() == b"{}\n"
+
+
+def test_write_scope_file_once_cleans_partial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = ArtifactStore(tmp_path / ".dllab")
+    store.reserve_scope("scope_demo")
+    target = store.scope_root("scope_demo") / "custody.json"
+
+    def _failing_fsync(fd: int) -> None:
+        raise OSError("injected fsync failure")
+
+    monkeypatch.setattr(os, "fsync", _failing_fsync)
+    with pytest.raises(OSError, match="injected fsync failure"):
+        store.write_scope_file_once("scope_demo", "custody.json", b"{}\n")
+    assert not target.exists()
+    with pytest.raises(OSError, match="injected fsync failure"):
+        store.write_scope_file_once("scope_demo", "custody.json", b"{}\n")
+    assert not target.exists()
+    monkeypatch.undo()
+    assert store.write_scope_file_once("scope_demo", "custody.json", b"complete\n") == target
+    assert target.read_bytes() == b"complete\n"
