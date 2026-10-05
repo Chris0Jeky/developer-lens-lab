@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import tempfile
+from contextlib import suppress
 from pathlib import Path
 from typing import Any, Literal
 
@@ -111,10 +112,19 @@ class ArtifactStore:
             handle = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         except FileExistsError as exc:
             raise ArtifactError(f"scope file already exists: {name}") from exc
-        with os.fdopen(handle, "wb") as stream:
-            stream.write(payload)
-            stream.flush()
-            os.fsync(stream.fileno())
+        try:
+            with os.fdopen(handle, "wb") as stream:
+                handle = -1  # The stream now owns and closes the descriptor.
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+        except BaseException:
+            if handle != -1:
+                with suppress(OSError):
+                    os.close(handle)
+            with suppress(OSError):
+                path.unlink(missing_ok=True)
+            raise
         return path
 
     def put_bytes(
