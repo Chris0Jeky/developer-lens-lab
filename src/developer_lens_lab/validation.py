@@ -127,11 +127,7 @@ def assert_path_free_manifest(value: object) -> None:
                 or "../" in candidate
                 or "..\\" in candidate
                 or candidate == ".."
-                or candidate == "."
-                or candidate.startswith("./")
-                or candidate.startswith(".\\")
-                or "/./" in candidate
-                or "\\.\\" in candidate
+                or "." in re.split(r"[\\/]", candidate)
                 or candidate.endswith("/..")
                 or candidate.endswith("\\..")
             ):
