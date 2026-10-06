@@ -2,6 +2,16 @@
 
 Append milestone evidence. Live GitHub facts are snapshots and must be refreshed.
 
+## 2026-10-06 - Manifest current-directory segments
+
+- Swarm finding `f-2f0571dd9d`: reject a standalone `.` segment at any position with
+  either separator, including trailing and mixed-separator forms, in scalar and nested manifests.
+- Preserve benign dotted filenames, hidden filenames, and ordinary relative artifact names.
+- Reproduced the original four accepted dot-segment inputs against the baseline and five failing
+  regression cases against the worker draft. The completed focused suite passes all 17 cases.
+- Publication evidence and the full milestone gate are recorded in the PR. No real-data lane,
+  release asset, tag, or human decision is activated by this change.
+
 ## 2026-08-06 — Repository commission and M0 start
 
 - Owner commissioned repository `Chris0Jeky/developer-lens-lab` and invented-data bootstrap, then
