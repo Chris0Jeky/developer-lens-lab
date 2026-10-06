@@ -1712,3 +1712,28 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-45128d8644`, PR #134: Muse drafted controlled decode errors for pack and bundle manifests; the land coordinator reproduced and fixed the review-reported parent-directory disclosure. Errors name only the manifest filename.
 - Five focused invented-fixture tests pass, including two parent-path regressions that failed before the fix. Test fixture annotations address the hosted type-check failure.
 - This preserves the C0 contract and CLI validation boundary; no data lane, release, or human gate is activated. Full gate evidence belongs in the PR.
+
+## 2026-10-04 - Preserve short-secret redaction in package diagnostics
+
+- PR #135, swarm finding `f-0e22cbe6b3`: coordinator reproduced seven short-secret diagnostic leaks introduced by whole-token matching, using invented values only.
+- Restore sensitive substring matching inside name tokens, exempting only the exact keyboard token; APIKEY, numbered names, and plural credentials remain redacted.
+- Seven diagnostic regression cases fail before the fix and pass afterward; the original KEYBOARD/API_KEY boundary test remains green. The first draft was written by Muse; this is the coordinator's bounded review fix.
+- No data lane, schema, release, or human gate changes. Local full-gate and hosted evidence are recorded on the PR, without a merge claim.
+
+## 2026-10-04 - Package-smoke environment reuse review fix
+
+- PR #136, swarm finding `f-ea9bc1bfe6`: reproduced the new regression test's B904 lint failure and added explicit `from None` to its replacement assertion. Smoke environment reuse behavior is unchanged by this review fix.
+- Locked local full gate passed: doctor, context, formatting, lint, type checking, 465 tests with six host symlink skips, strict docs build, and hygiene. The focused reuse test also passed through the host's requested runner.
+- FR-097 records the focused-proof gap. Hosted checks for the fix remain unverified; no merge, release, data-lane activation, or human-gate completion is claimed.
+
+## 2026-10-04 - False-alert report direction wording
+
+- Swarm finding `f-2fed8bf74c`, PR #137: Muse drafted fewer/more/unchanged wording and two focused tests. The land coordinator refreshed main and corrected the hosted import-order failure (FR-098).
+- The signed reduction magnitude remains a confirmed MEDIUM presentation concern, declined on the review thread under the bounded review rule. Numeric scorecards and decisions are unchanged.
+- This remains invented-data report presentation only; no data lane, release, or human gate is activated. Final-head proof belongs in the PR.
+
+## 2026-10-05 - Failed append-only writes permit retry
+
+- Swarm finding `f-0bfc2b16a8`: Muse drafted cleanup for an exclusively created scope file when writing, flushing, or syncing fails. The coordinator retained the success-path append-only guarantee and corrected descriptor ownership during cleanup.
+- Fault-injected fsync failure leaves no partial record; a repeated failure preserves the original error, and a subsequent successful retry stores the complete payload. The focused regression fails against the original method and passes with the fix; all five artifact tests pass.
+- FR-099 records the host-runner mismatch. Final-head full-gate and independent-review results belong in the PR. No data lane, custody policy, release, or human gate changes.

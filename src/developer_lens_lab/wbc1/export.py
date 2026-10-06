@@ -87,11 +87,23 @@ def _unavailable(reason: str = "not_measured") -> dict[str, str]:
 def load_provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     method_path = root / "vendor" / "developer-lens" / "method-trial-view" / "v1"
     research_path = root / "vendor" / "developer-lens" / "research-pack" / "v1"
-    method = cast(dict[str, Any], json.loads((method_path / "provenance.json").read_text()))
-    research = cast(dict[str, Any], json.loads((research_path / "provenance.json").read_text()))
+    method_text = (method_path / "provenance.json").read_text(encoding="utf-8")
+    research_text = (research_path / "provenance.json").read_text(encoding="utf-8")
+    method = cast(dict[str, Any], json.loads(method_text))
+    research = cast(dict[str, Any], json.loads(research_text))
     for directory, provenance in ((method_path, method), (research_path, research)):
         for entry in cast(list[dict[str, Any]], provenance.get("files", [])):
-            payload = (directory / str(entry["name"])).read_bytes()
+            name = entry.get("name")
+            if (
+                not isinstance(name, str)
+                or not name
+                or name in (".", "..")
+                or "/" in name
+                or "\\" in name
+                or Path(name).name != name
+            ):
+                raise ValueError("vendored contract provenance names an unsafe file")
+            payload = (directory / name).read_bytes()
             if entry.get("sha256") != _sha256(payload) or entry.get("size_bytes") != len(payload):
                 raise ValueError("vendored contract provenance does not match file bytes")
     return method, research

@@ -2804,3 +2804,39 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Annotate the fixtures and run the declared type-check gate in the owned locked environment.
 - **task:** Swarm finding `f-45128d8644`, PR #134.
 - **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-096 - Package-smoke redaction draft failed hosted formatting
+
+- **first-seen:** 2026-10-04
+- **status:** workaround-verified
+- **symptom:** PR #135 hosted Prove the lab job ran and failed the formatter on the changed matcher; this was not a billing refusal.
+- **workaround:** Format the bounded redaction fix with the locked Ruff version and verify formatting locally.
+- **task:** Swarm finding `f-0e22cbe6b3`, PR #135 review fix.
+- **promotion:** Keep formatting in the existing publication gate; no gate or policy changes.
+
+### FR-097 - Focused swarm proof missed a required lint rule
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #136's focused test passed, but hosted lint rejected its exception handler under Ruff B904.
+- **workaround:** Reproduce with the locked Ruff check, then explicitly suppress exception chaining with `from None`; retain the regression assertion.
+- **task:** PR #136, swarm finding `f-ea9bc1bfe6`.
+- **promotion:** Run the existing full gate before publication; no gate or policy change.
+
+### FR-098 - False-alert wording draft missed the import-order gate
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #137 hosted proof ran and failed Ruff I001 in the new regression test.
+- **workaround:** Sort the test imports and re-run the declared locked-environment gate.
+- **task:** Swarm finding `f-2fed8bf74c`, PR #137.
+- **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-099 - Swarm proof used an uninstalled unsupported interpreter
+
+- **first-seen:** 2026-10-05
+- **status:** worked around
+- **symptom:** Raw swarm pytest commands use Python 3.14 and cannot import the uninstalled lab; the project declares Python 3.12-3.13. The partial-file test also had a different name from the host selector.
+- **workaround:** Use the locked Python 3.12 uv environment and align the regression name with the host selector; retain failure-before-fix evidence.
+- **task:** Swarm finding `f-0bfc2b16a8`.
+- **promotion:** No runner, gate, or policy change in this slice.
