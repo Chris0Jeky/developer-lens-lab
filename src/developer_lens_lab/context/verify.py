@@ -885,6 +885,7 @@ P03_DELIVERY_CONTRACT_CLAUSES = (
 )
 ALLOWED_PROMPT_CLASSIFICATIONS = ("redirect", "historical")
 
+PROMPT_STATUS_ACTIVE = "active"
 PROMPT_MARKER_RE = re.compile(r"<!-- prompt-id: (\S+) status: (\S+) -->")
 TEXT_FENCE_RE = re.compile(r"^```text$", re.M)
 PROMPT_CLASSIFICATION_RE = re.compile(r"<!-- prompt-classification: (\S+) -->")
@@ -1072,7 +1073,13 @@ def verify_prompt_library(library_text: str, digests: dict[str, str]) -> list[st
         )
 
     for prompt_id, status, body in entries:
-        if status != "active":
+        # The vocabulary is closed: every code-pinned ID must stay active, so a mistyped or retired
+        # status is a failure instead of silently skipping that prompt's body checks.
+        if status != PROMPT_STATUS_ACTIVE:
+            failures.append(
+                f"{PROMPT_LIBRARY}: {prompt_id} status must be {PROMPT_STATUS_ACTIVE!r}, "
+                f"not {status!r}"
+            )
             continue
         if not body:
             failures.append(f"{PROMPT_LIBRARY}: {prompt_id} has no fenced text body")

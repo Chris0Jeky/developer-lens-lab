@@ -894,6 +894,22 @@ def test_prompt_library_digest_drift_fails() -> None:
     )
 
 
+def test_prompt_library_non_active_status_fails() -> None:
+    # A mistyped status used to skip the body checks for that prompt without any failure.
+    blocks = _real_blocks()
+    text = _library(blocks)
+    target = _ALL_PROMPT_IDS[0]
+    mutated = text.replace(
+        f"<!-- prompt-id: {target} status: active -->",
+        f"<!-- prompt-id: {target} status: actve -->",
+    )
+    assert mutated != text
+    failures = verify_prompt_library(mutated, _real_digests())
+    assert any(
+        target in failure and "status must be 'active'" in failure for failure in failures
+    ), failures
+
+
 def test_prompt_library_missing_id_fails() -> None:
     blocks = _real_blocks()
     failures = verify_prompt_library(_library(blocks, _ALL_PROMPT_IDS[:-1]), _real_digests())
