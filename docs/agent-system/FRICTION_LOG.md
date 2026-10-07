@@ -2840,3 +2840,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Use the locked Python 3.12 uv environment and align the regression name with the host selector; retain failure-before-fix evidence.
 - **task:** Swarm finding `f-0bfc2b16a8`.
 - **promotion:** No runner, gate, or policy change in this slice.
+
+### FR-100 - Timeline-gap publication runner mismatch
+
+- **first-seen:** 2026-10-07
+- **status:** workaround-verified
+- **symptom:** The requested raw pytest runner selected unsupported Python 3.14 and failed collection because ruptures was unavailable; previous publication attempts also reported silent stalls.
+- **workaround:** Created the declared locked Python 3.12 environment inside the worker worktree; all three focused tests passed, and an in-memory gap-joining mutation was rejected by the new test. Gate completion is recorded in the PR or coordinator closeout.
+- **task:** Swarm finding `f-02e7322a2e`, timeline-gap regression coverage.
+- **promotion:** No interpreter, gate, policy, or primary-checkout change.
