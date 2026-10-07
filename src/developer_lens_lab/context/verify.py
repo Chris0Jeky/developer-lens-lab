@@ -88,6 +88,9 @@ SKIPPED_MARKDOWN_PARTS = {
     "htmlcov",
     "site",
 }
+# Gitignored run output; skipped by relative path because `generated` alone also names a
+# tracked top-level directory.
+SKIPPED_MARKDOWN_RELATIVE_PATHS = frozenset({Path("reports") / "generated"})
 
 CURRENT_STATE_REQUIRED_KEYS = (
     "updated",
@@ -121,10 +124,13 @@ class VerificationReport:
 def _markdown_files(root: Path) -> list[Path]:
     paths: list[Path] = []
     for directory, dirnames, filenames in os.walk(root, topdown=True):
-        dirnames[:] = sorted(
-            dirname for dirname in dirnames if dirname not in SKIPPED_MARKDOWN_PARTS
-        )
         directory_path = Path(directory)
+        dirnames[:] = sorted(
+            dirname
+            for dirname in dirnames
+            if dirname not in SKIPPED_MARKDOWN_PARTS
+            and (directory_path / dirname).relative_to(root) not in SKIPPED_MARKDOWN_RELATIVE_PATHS
+        )
         paths.extend(
             directory_path / filename
             for filename in filenames
@@ -985,7 +991,7 @@ def verify_parity_manifest(payload: object) -> list[str]:
                 )
                 continue
             block_ids.append(block_id)
-        if block_ids and tuple(block_ids) != SHARED_BLOCK_IDS:
+        if tuple(block_ids) != SHARED_BLOCK_IDS:
             failures.append(
                 "prompt-parity.json: shared_blocks must declare the code-pinned block IDs, in order"
             )
