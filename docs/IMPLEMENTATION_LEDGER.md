@@ -1737,3 +1737,10 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-0bfc2b16a8`: Muse drafted cleanup for an exclusively created scope file when writing, flushing, or syncing fails. The coordinator retained the success-path append-only guarantee and corrected descriptor ownership during cleanup.
 - Fault-injected fsync failure leaves no partial record; a repeated failure preserves the original error, and a subsequent successful retry stores the complete payload. The focused regression fails against the original method and passes with the fix; all five artifact tests pass.
 - FR-099 records the host-runner mismatch. Final-head full-gate and independent-review results belong in the PR. No data lane, custody policy, release, or human gate changes.
+
+## 2026-10-07 - Pin visible missing-week gaps in timeline reports
+
+- Swarm finding `f-02e7322a2e`: Muse drafted a synthetic timeline regression requiring two separate observed-signal polylines around one missing week, with the missing marker retained.
+- The coordinator reproduced all three focused report tests passing in the locked Python 3.12 environment. An in-memory mutation that joined observed runs across the missing week made the new regression fail.
+- FR-100 records the unsupported raw-runner failure and isolated-environment workaround. Full-gate and publication evidence belong in the PR; no merge is claimed.
+- No renderer behavior, contract, data lane, custody decision, release, or human gate changes. Current state and the experiment ledger remain unchanged because this is a coverage-only milestone.
