@@ -88,6 +88,9 @@ SKIPPED_MARKDOWN_PARTS = {
     "htmlcov",
     "site",
 }
+# Gitignored run output; skipped by relative path because `generated` alone also names a
+# tracked top-level directory.
+SKIPPED_MARKDOWN_RELATIVE_PATHS = frozenset({Path("reports") / "generated"})
 
 CURRENT_STATE_REQUIRED_KEYS = (
     "updated",
@@ -121,10 +124,13 @@ class VerificationReport:
 def _markdown_files(root: Path) -> list[Path]:
     paths: list[Path] = []
     for directory, dirnames, filenames in os.walk(root, topdown=True):
-        dirnames[:] = sorted(
-            dirname for dirname in dirnames if dirname not in SKIPPED_MARKDOWN_PARTS
-        )
         directory_path = Path(directory)
+        dirnames[:] = sorted(
+            dirname
+            for dirname in dirnames
+            if dirname not in SKIPPED_MARKDOWN_PARTS
+            and (directory_path / dirname).relative_to(root) not in SKIPPED_MARKDOWN_RELATIVE_PATHS
+        )
         paths.extend(
             directory_path / filename
             for filename in filenames
@@ -885,6 +891,7 @@ P03_DELIVERY_CONTRACT_CLAUSES = (
 )
 ALLOWED_PROMPT_CLASSIFICATIONS = ("redirect", "historical")
 
+PROMPT_STATUS_ACTIVE = "active"
 PROMPT_MARKER_RE = re.compile(r"<!-- prompt-id: (\S+) status: (\S+) -->")
 TEXT_FENCE_RE = re.compile(r"^```text$", re.M)
 PROMPT_CLASSIFICATION_RE = re.compile(r"<!-- prompt-classification: (\S+) -->")
@@ -985,7 +992,7 @@ def verify_parity_manifest(payload: object) -> list[str]:
                 )
                 continue
             block_ids.append(block_id)
-        if block_ids and tuple(block_ids) != SHARED_BLOCK_IDS:
+        if tuple(block_ids) != SHARED_BLOCK_IDS:
             failures.append(
                 "prompt-parity.json: shared_blocks must declare the code-pinned block IDs, in order"
             )
@@ -1072,7 +1079,13 @@ def verify_prompt_library(library_text: str, digests: dict[str, str]) -> list[st
         )
 
     for prompt_id, status, body in entries:
-        if status != "active":
+        # The vocabulary is closed: every code-pinned ID must stay active, so a mistyped or retired
+        # status is a failure instead of silently skipping that prompt's body checks.
+        if status != PROMPT_STATUS_ACTIVE:
+            failures.append(
+                f"{PROMPT_LIBRARY}: {prompt_id} status must be {PROMPT_STATUS_ACTIVE!r}, "
+                f"not {status!r}"
+            )
             continue
         if not body:
             failures.append(f"{PROMPT_LIBRARY}: {prompt_id} has no fenced text body")
