@@ -1053,6 +1053,12 @@ def test_parity_manifest_reordered_shared_blocks_fail() -> None:
     assert any("shared_blocks" in failure for failure in verify_parity_manifest(payload))
 
 
+def test_parity_manifest_empty_shared_blocks_fail() -> None:
+    payload = _load_manifest()
+    payload["shared_blocks"] = []
+    assert any("shared_blocks" in failure for failure in verify_parity_manifest(payload))
+
+
 def test_parity_manifest_missing_lab_repository_entry_fails() -> None:
     payload = _load_manifest()
     payload["repositories"] = [
@@ -1245,6 +1251,27 @@ def test_prompt_classification_rejects_an_unsupported_value(tmp_path: Path) -> N
     )
     failures = verify_prompt_classifications(tmp_path)
     assert any("prompt-classification 'active'" in failure for failure in failures), failures
+
+
+def test_prompt_classification_scan_skips_gitignored_run_output(tmp_path: Path) -> None:
+    marker = "# Run output\n\n<!-- prompt-classification: active -->\n"
+    generated = tmp_path / "reports" / "generated"
+    generated.mkdir(parents=True)
+    (generated / "run.md").write_text(marker, encoding="utf-8")
+    assert verify_prompt_classifications(tmp_path) == []
+
+    # A tracked directory that merely shares the name `generated` is still scanned.
+    tracked = tmp_path / "generated"
+    tracked.mkdir()
+    (tracked / "doc.md").write_text(marker, encoding="utf-8")
+    failures = verify_prompt_classifications(tmp_path)
+    assert any("prompt-classification 'active'" in failure for failure in failures), failures
+
+
+def test_prompt_classification_scan_reports_non_utf8_markdown(tmp_path: Path) -> None:
+    (tmp_path / "bad.md").write_bytes(bytes([0xFF, 0xFE, 0x20, 0x80]))
+    failures = verify_prompt_classifications(tmp_path)
+    assert any("bad.md" in failure and "unreadable" in failure for failure in failures), failures
 
 
 def test_prompt_parity_reports_a_malformed_manifest(tmp_path: Path) -> None:
