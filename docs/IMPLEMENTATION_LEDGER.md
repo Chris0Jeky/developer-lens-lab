@@ -1753,3 +1753,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - The coordinator reproduced all three focused report tests passing in the locked Python 3.12 environment. An in-memory mutation that joined observed runs across the missing week made the new regression fail.
 - FR-100 records the unsupported raw-runner failure and isolated-environment workaround. Full-gate and publication evidence belong in the PR; no merge is claimed.
 - No renderer behavior, contract, data lane, custody decision, release, or human gate changes. Current state and the experiment ledger remain unchanged because this is a coverage-only milestone.
+## 2026-10-08 - Schema render snapshot failure safety
+
+- Swarm finding `f-c4f1ebf56b`, PR #147: Muse drafted staged schema replacement and CLI write-error reporting. The land coordinator reproduced a snapshot read error followed by a replacement fault, which could delete an existing schema during rollback.
+- Snapshot failures now abort before replacement unless the file is absent. The regression failed before the fix and passes with it, preserving both original files and leaving no temporary files.
+- Corrected hosted SIM105 lint failures without changing cleanup behavior. FR-102 records gate friction. Final-head checks belong in the PR; POSIX permission preservation remains a non-blocking limitation.
+- No contract bytes, data lane, release, policy, or human gate changes. Current state and experiment ledger stay unchanged outside a phase boundary.

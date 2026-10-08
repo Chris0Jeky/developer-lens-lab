@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import tempfile
@@ -42,7 +43,7 @@ def render_schemas(root: Path) -> None:
     for path in outputs:
         try:
             originals[path] = path.read_bytes()
-        except OSError:
+        except FileNotFoundError:
             originals[path] = None
     staged: list[tuple[Path, Path]] = []
     try:
@@ -55,10 +56,8 @@ def render_schemas(root: Path) -> None:
                 with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
                     handle.write(content)
             except BaseException:
-                try:
+                with contextlib.suppress(OSError):
                     tmp.unlink(missing_ok=True)
-                except OSError:
-                    pass
                 raise
             staged.append((path, tmp))
         for path in outputs:
@@ -87,20 +86,16 @@ def render_schemas(root: Path) -> None:
                                 handle.write(original)
                             os.replace(tmp_name, done)
                         except OSError:
-                            try:
+                            with contextlib.suppress(OSError):
                                 Path(tmp_name).unlink(missing_ok=True)
-                            except OSError:
-                                pass
                             raise
                 except OSError:
                     pass
             raise
     finally:
         for _, tmp in staged:
-            try:
+            with contextlib.suppress(OSError):
                 tmp.unlink(missing_ok=True)
-            except OSError:
-                pass
 
 
 def check_schemas(root: Path) -> tuple[str, ...]:
