@@ -47,6 +47,14 @@ jobs:
           uv run dllab benchmark wb-c1 --smoke
           uv run dllab run reproduce wbc1_smoke
           uv run dllab report build wbc1_smoke
+      - name: Prove stored finding export and source immutability
+        run: |
+          find .dllab -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/finding-before.sha256"
+          uv run dllab export finding wbc1_smoke --out "$RUNNER_TEMP/research-finding-a.json"
+          uv run dllab export finding wbc1_smoke --out "$RUNNER_TEMP/research-finding-b.json"
+          cmp "$RUNNER_TEMP/research-finding-a.json" "$RUNNER_TEMP/research-finding-b.json"
+          find .dllab -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/finding-after.sha256"
+          cmp "$RUNNER_TEMP/finding-before.sha256" "$RUNNER_TEMP/finding-after.sha256"
       - name: Build documentation
         run: uv run mkdocs build --strict
       - name: Verify repository hygiene
