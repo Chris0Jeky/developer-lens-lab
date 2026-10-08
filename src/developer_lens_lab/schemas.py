@@ -41,8 +41,11 @@ def render_schemas(root: Path) -> None:
 def check_schemas(root: Path) -> tuple[str, ...]:
     failures: list[str] = []
     for path, expected in rendered_schemas(root).items():
-        if not path.is_file():
-            failures.append(f"missing generated schema: {path.relative_to(root)}")
-        elif path.read_text(encoding="utf-8") != expected:
-            failures.append(f"drifted generated schema: {path.relative_to(root)}")
+        try:
+            actual = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            failures.append(f"missing/unreadable generated schema: {path.relative_to(root)}")
+        else:
+            if actual != expected:
+                failures.append(f"drifted generated schema: {path.relative_to(root)}")
     return tuple(failures)

@@ -2849,3 +2849,16 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Created the declared locked Python 3.12 environment inside the worker worktree; all three focused tests passed, and an in-memory gap-joining mutation was rejected by the new test. Gate completion is recorded in the PR or coordinator closeout.
 - **task:** Swarm finding `f-02e7322a2e`, timeline-gap regression coverage.
 - **promotion:** No interpreter, gate, policy, or primary-checkout change.
+
+### FR-101 - Schema publication proof runner mismatch
+
+- **first-seen:** 2026-10-08
+- **status:** workaround-verified
+- **symptom:** The raw pytest runner selected unsupported Python 3.14 without Typer; the locked
+  environment then exposed a test assertion that assumed forward-slash diagnostic paths on Windows.
+- **impact:** Host proof failed collection and did not exercise the schema change.
+- **workaround:** Use the declared locked Python 3.12 environment and compare the platform-native
+  relative path; twelve focused regression cases pass.
+- **occurrences:** One publication attempt, 2026-10-08.
+- **task:** Swarm finding `f-3a788486bf`, generated-schema diagnostic slice.
+- **promotion:** No runner or policy change; retain platform-independent tests and locked proof.

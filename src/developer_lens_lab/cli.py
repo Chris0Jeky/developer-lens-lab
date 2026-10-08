@@ -81,7 +81,7 @@ def doctor(as_json: Annotated[bool, typer.Option("--json")] = False) -> None:
         typer.echo(str(payload["artifact_root"]))
         typer.echo("network collection: disabled")
         for failure in report.failures:
-            typer.echo(f"- {failure}")
+            typer.echo(f"ERROR: {failure}", err=True)
     if not report.ok:
         raise typer.Exit(code=1)
 

@@ -2,6 +2,15 @@
 
 Append milestone evidence. Live GitHub facts are snapshots and must be refreshed.
 
+## 2026-10-08 - Unreadable generated-schema diagnostics
+
+- Swarm finding `f-3a788486bf`: return controlled failures for missing, unreadable, or invalid
+  UTF-8 generated schemas instead of leaking filesystem/decode exceptions from schema checks.
+- Doctor now prints failure diagnostics with `ERROR` on stderr, matching context and contracts checks.
+- Twelve focused cases cover missing/invalid/directory inputs across the three CLI paths, plus
+  valid and drifted schemas. Baseline failures and publication gate evidence are recorded in the PR.
+- C0-only fixtures; no schema, data-lane, release, or owner-gate change.
+
 ## 2026-10-06 - Manifest current-directory segments
 
 - Swarm finding `f-2f0571dd9d`: reject a standalone `.` segment at any position with
