@@ -124,7 +124,11 @@ def tasks_render() -> None:
 @contracts_app.command("render")
 def contracts_render() -> None:
     """Render deterministic lab-owned and consumer-mirror JSON Schemas."""
-    render_schemas(_repo_root())
+    try:
+        render_schemas(_repo_root())
+    except OSError as exc:
+        typer.echo(f"ERROR: contract render failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     typer.echo("rendered contract schemas")
 
 

@@ -2862,3 +2862,12 @@ retry, content inspection, or deletion was attempted.
 - **occurrences:** One publication attempt, 2026-10-08.
 - **task:** Swarm finding `f-3a788486bf`, generated-schema diagnostic slice.
 - **promotion:** No runner or policy change; retain platform-independent tests and locked proof.
+
+### FR-102 - Schema render land lint failures
+
+- **first-seen:** 2026-10-08
+- **status:** corrected
+- **symptom:** The published draft failed hosted lint on three SIM105 cleanup blocks; local pyright also rejected object-typed replace test doubles. Focused tests alone had passed.
+- **workaround:** Replace equivalent cleanup blocks with contextlib.suppress, type the path arguments accurately, and run the declared full gate in the isolated locked Python environment.
+- **task:** Swarm finding `f-c4f1ebf56b`, PR #147.
+- **promotion:** No gate or runner changes; keep hosted and focused proof distinct.
