@@ -299,9 +299,15 @@ def _reference(payload: bytes, media_type: MediaType) -> ArtifactRef:
 
 
 def _git_commit(root: Path) -> str:
-    result = subprocess.run(
-        ["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-    )
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, OSError) as exc:
+        raise RunnerError("benchmark requires a readable Git commit") from exc
     return result.stdout.strip()
 
 
