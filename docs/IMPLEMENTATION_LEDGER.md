@@ -1,5 +1,11 @@
 # Implementation ledger
 
+## 2026-10-09 - Contract destination confinement
+
+- Swarm finding `f-424db46598`: Muse drafted link-aware parent creation. The coordinator reproduced eight fresh-root regressions, restored automatic root creation, and preserved unavailable-snapshot errors for read-only checks.
+- Both sync entry points now reject dangling destination-root links before resolution. Two invented Windows junction regressions failed before that correction; rejected syncs leave the outside directory empty. Junction coverage runs where directory symlinks are unavailable.
+- FR-104 records the worker regression and local platform workaround. Final-head proof belongs in the PR. No contract bytes, data lane, release, or human gate changes; current state and experiment ledger remain unchanged outside a phase boundary.
+
 Append milestone evidence. Live GitHub facts are snapshots and must be refreshed.
 
 ## 2026-10-08 - Unreadable generated-schema diagnostics
