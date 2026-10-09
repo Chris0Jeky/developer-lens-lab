@@ -55,19 +55,55 @@ def _is_link_like(path: Path) -> bool:
 
 
 def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> None:
-    current = path.parent
-    while current != root:
-        if current.exists() and _is_link_like(current):
-            raise ContractSyncError("contract destination traverses a symlink or junction")
-        current = current.parent
-    if root.exists() and _is_link_like(root):
-        raise ContractSyncError("contract destination root must not be a symlink or junction")
-    if path.exists() and _is_link_like(path):
-        raise ContractSyncError("contract destination must not be a symlink or junction")
-    if create:
-        path.parent.mkdir(parents=True, exist_ok=True)
-    if path.parent.exists() and not path.parent.resolve().is_relative_to(root.resolve()):
-        raise ContractSyncError("contract destination escaped the repository root")
+    root_resolved = root.resolve()
+    if _is_link_like(root):
+        raise ContractSyncError(
+            "contract destination escapes the repository root through a symlink or junction"
+        )
+    if not root.exists() or not root.is_dir():
+        raise ContractSyncError("contract destination escapes the repository root")
+    if _is_link_like(path):
+        raise ContractSyncError(
+            "contract destination escapes the repository root through a symlink or junction"
+        )
+    parent = path.parent
+    parent_lexical = Path(os.path.abspath(parent))
+    root_lexical = Path(os.path.abspath(root))
+    try:
+        relative = parent_lexical.relative_to(root_lexical)
+    except ValueError:
+        relative = None
+    if relative is not None:
+        current = root_resolved
+        for part in relative.parts:
+            current = current / part
+            if _is_link_like(current):
+                raise ContractSyncError(
+                    "contract destination escapes the repository root through a symlink or junction"
+                )
+            if not current.exists():
+                if not create:
+                    raise ContractSyncError(
+                        "contract destination escapes the repository root"
+                    )
+                try:
+                    current.mkdir()
+                except FileExistsError:
+                    pass
+                if _is_link_like(current):
+                    raise ContractSyncError(
+                        "contract destination escapes the repository root through a symlink or junction"
+                    )
+                if not current.is_dir():
+                    raise ContractSyncError(
+                        "contract destination escapes the repository root"
+                    )
+            elif not current.is_dir():
+                raise ContractSyncError(
+                    "contract destination escapes the repository root"
+                )
+    if not parent.resolve().is_relative_to(root_resolved):
+        raise ContractSyncError("contract destination escapes the repository root")
 
 
 def _validate_method_trial_provenance(provenance: object, payload: bytes) -> dict[str, Any]:
