@@ -8,7 +8,7 @@ import pytest
 from developer_lens_lab.validation import (
     MAX_MANIFEST_BYTES,
     ManifestError,
-    _load_json,
+    _load_json,  # pyright: ignore[reportPrivateUsage]
 )
 
 
@@ -26,7 +26,10 @@ def test_oversize_at_read_rejected_when_stat_reports_small(
     class _SmallStat:
         st_size = 2
 
-    monkeypatch.setattr(Path, "stat", lambda self: _SmallStat())
+    def small_stat(self: Path) -> _SmallStat:
+        return _SmallStat()
+
+    monkeypatch.setattr(Path, "stat", small_stat)
 
     with pytest.raises(ManifestError, match="exceeds"):
         _load_json(manifest)
