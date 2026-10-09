@@ -4,8 +4,8 @@
 
 - **first-seen:** 2026-10-09
 - **status:** corrected
-- **symptom:** The worker's narrow check passed but eight existing sync tests rejected fresh roots. Native directory symlink tests skipped on Windows.
-- **workaround:** Restore fresh-root creation and read-only unavailable errors; use invented directory junctions when symlink creation is unavailable. Reject dangling root links before resolving either sync destination.
+- **symptom:** The worker's narrow check passed but eight existing sync tests rejected fresh roots. Native directory symlink tests skipped on Windows; the redundant private-helper test also failed the declared type check.
+- **workaround:** Restore fresh-root creation and read-only unavailable errors; use invented directory junctions when symlink creation is unavailable. Reject dangling root links before resolving either sync destination; cover missing snapshots through the public API instead of importing a private helper.
 - **task:** Swarm finding `f-424db46598`, contract destination confinement.
 - **promotion:** No runner or policy changes; full proof uses the worktree's locked supported Python environment.
 
