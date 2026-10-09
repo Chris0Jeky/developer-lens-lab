@@ -92,11 +92,12 @@ class ManifestError(ValueError):
 
 
 def _load_json(path: Path) -> object:
-    size = path.stat().st_size
-    if size > MAX_MANIFEST_BYTES:
+    with path.open("rb") as stream:
+        payload = stream.read(MAX_MANIFEST_BYTES + 1)
+    if len(payload) > MAX_MANIFEST_BYTES:
         raise ManifestError(f"manifest exceeds {MAX_MANIFEST_BYTES} bytes")
     try:
-        text = path.read_text(encoding="utf-8")
+        text = payload.decode("utf-8")
     except (UnicodeDecodeError, UnicodeError) as exc:
         raise ManifestError(f"manifest {path.name} is not valid UTF-8") from exc
     return json.loads(text)
