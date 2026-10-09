@@ -9,6 +9,9 @@ import tempfile
 from pathlib import Path
 from typing import Any, cast
 
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError, ValidationError
+
 from developer_lens_lab.contracts import ResearchPack
 
 PRODUCT_FILES = {
@@ -137,6 +140,28 @@ def _validate_producer_schema(value: object) -> None:
     raw_version = cast(dict[object, object], version)
     if raw_version.get("const") != "DeveloperLensResearchPack.v1":
         raise ContractSyncError("producer schema has the wrong ResearchPack version")
+    for name in REQUIRED_SCHEMA_PROPERTIES - {"schema_version"}:
+        sub_schema = raw_properties.get(name)
+        if not isinstance(sub_schema, dict) or not sub_schema:
+            raise ContractSyncError(
+                "producer schema leaves a required ResearchPack field unconstrained"
+            )
+
+
+def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes) -> None:
+    schema_doc = cast(dict[str, Any], schema)
+    try:
+        fixture = json.loads(fixture_raw)
+    except json.JSONDecodeError as exc:
+        raise ContractSyncError("producer fixture is not valid JSON") from exc
+    try:
+        Draft202012Validator.check_schema(schema_doc)
+    except SchemaError as exc:
+        raise ContractSyncError("producer schema is not a valid JSON Schema") from exc
+    try:
+        Draft202012Validator(schema_doc).validate(fixture)  # pyright: ignore[reportUnknownMemberType]
+    except ValidationError as exc:
+        raise ContractSyncError("producer fixture does not conform to the producer schema") from exc
 
 
 def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -> Path:
@@ -155,6 +180,7 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
 
     schema_raw = json.loads(snapshots["schema.json"])
     _validate_producer_schema(schema_raw)
+    _validate_fixture_against_producer_schema(schema_raw, snapshots["invented.fixture.json"])
     fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
     if fixture.classification != "C0":
         raise ContractSyncError("producer fixture must remain C0 invented data")
