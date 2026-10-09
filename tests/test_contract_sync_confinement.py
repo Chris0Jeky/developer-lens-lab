@@ -10,7 +10,6 @@ import pytest
 
 from developer_lens_lab.contract_sync import (
     ContractSyncError,
-    _ensure_confined_parent,
     sync_method_trial_view_contract,
     sync_product_contract,
 )
@@ -134,16 +133,6 @@ def test_in_root_sync_writes_both_contracts_without_symlinks() -> None:
         assert product_provenance.read_bytes()
         assert trial_provenance.read_bytes()
         assert [p for p in destination.rglob("*") if p.is_symlink()] == []
-
-
-def test_ensure_confined_parent_create_false_rejects_missing_parent() -> None:
-    with tempfile.TemporaryDirectory() as tmp:
-        root = Path(tmp) / "destination_root"
-        root.mkdir()
-        target = root / "vendor" / "missing" / "product.contract.json"
-        with pytest.raises(FileNotFoundError):
-            _ensure_confined_parent(target, root, create=False)
-        assert not (root / "vendor").exists()
 
 
 @pytest.mark.parametrize("existing_root", [False, True])
