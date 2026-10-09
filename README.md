@@ -77,5 +77,5 @@ EvaluationBundle reports and replay path; it does not record a smoke-only Method
 - `.dllab` stores scope-local content-addressed objects. Manifests contain digests and controlled
   metadata, not filesystem paths.
 
-See `docs/PRODUCT_BOUNDARY.md`, `docs/DATA_POLICY.md`, and `docs/CONTRACTS.md` before changing a
+See [`docs/PRODUCT_BOUNDARY.md`](docs/PRODUCT_BOUNDARY.md), [`docs/DATA_POLICY.md`](docs/DATA_POLICY.md), and [`docs/CONTRACTS.md`](docs/CONTRACTS.md) before changing a
 contract, artifact, corpus, persistence, or evaluation seam.
