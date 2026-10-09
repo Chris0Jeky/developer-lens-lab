@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import tempfile
+from contextlib import suppress
 from pathlib import Path
 from typing import Any, cast
 
@@ -60,8 +61,6 @@ def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> N
         raise ContractSyncError(
             "contract destination escapes the repository root through a symlink or junction"
         )
-    if not root.exists() or not root.is_dir():
-        raise ContractSyncError("contract destination escapes the repository root")
     if _is_link_like(path):
         raise ContractSyncError(
             "contract destination escapes the repository root through a symlink or junction"
@@ -71,37 +70,34 @@ def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> N
     root_lexical = Path(os.path.abspath(root))
     try:
         relative = parent_lexical.relative_to(root_lexical)
-    except ValueError:
-        relative = None
-    if relative is not None:
-        current = root_resolved
-        for part in relative.parts:
-            current = current / part
+    except ValueError as exc:
+        raise ContractSyncError("contract destination escapes the repository root") from exc
+    if not root.exists():
+        if not create:
+            raise FileNotFoundError("contract destination root is unavailable")
+        root.mkdir(parents=True, exist_ok=True)
+    if not root.is_dir():
+        raise ContractSyncError("contract destination root is not a directory")
+    current = root_resolved
+    for part in relative.parts:
+        current = current / part
+        if _is_link_like(current):
+            raise ContractSyncError(
+                "contract destination escapes the repository root through a symlink or junction"
+            )
+        if not current.exists():
+            if not create:
+                raise FileNotFoundError("contract destination parent is unavailable")
+            with suppress(FileExistsError):
+                current.mkdir()
             if _is_link_like(current):
                 raise ContractSyncError(
                     "contract destination escapes the repository root through a symlink or junction"
                 )
-            if not current.exists():
-                if not create:
-                    raise ContractSyncError(
-                        "contract destination escapes the repository root"
-                    )
-                try:
-                    current.mkdir()
-                except FileExistsError:
-                    pass
-                if _is_link_like(current):
-                    raise ContractSyncError(
-                        "contract destination escapes the repository root through a symlink or junction"
-                    )
-                if not current.is_dir():
-                    raise ContractSyncError(
-                        "contract destination escapes the repository root"
-                    )
-            elif not current.is_dir():
-                raise ContractSyncError(
-                    "contract destination escapes the repository root"
-                )
+            if not current.is_dir():
+                raise ContractSyncError("contract destination escapes the repository root")
+        elif not current.is_dir():
+            raise ContractSyncError("contract destination escapes the repository root")
     if not parent.resolve().is_relative_to(root_resolved):
         raise ContractSyncError("contract destination escapes the repository root")
 
@@ -221,7 +217,7 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
     if fixture.classification != "C0":
         raise ContractSyncError("producer fixture must remain C0 invented data")
 
-    if destination_root.exists() and _is_link_like(destination_root):
+    if _is_link_like(destination_root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
     destination_root = destination_root.resolve()
     destination = destination_root / VENDOR_ROOT
@@ -279,7 +275,7 @@ def sync_method_trial_view_contract(
         != "DeveloperLensMethodTrialView.v1"
     ):
         raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
-    if destination_root.exists() and _is_link_like(destination_root):
+    if _is_link_like(destination_root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
     destination_root = destination_root.resolve()
     destination = destination_root / METHOD_TRIAL_VENDOR_ROOT

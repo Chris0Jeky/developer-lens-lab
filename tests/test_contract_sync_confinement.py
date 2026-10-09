@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -67,7 +68,14 @@ def _symlink_or_skip(link: Path, target: Path) -> None:
     try:
         link.symlink_to(target, target_is_directory=True)
     except OSError:
-        pytest.skip("directory symlinks are unavailable on this host")
+        if os.name != "nt":
+            pytest.skip("directory symlinks are unavailable on this host")
+        subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(link), str(target)],
+            capture_output=True,
+            check=True,
+        )
+        assert link.is_junction()
 
 
 def test_product_sync_rejects_symlinked_vendor_without_outside_write() -> None:
@@ -80,7 +88,7 @@ def test_product_sync_rejects_symlinked_vendor_without_outside_write() -> None:
         outside.mkdir()
         target = outside / "missing"
         _symlink_or_skip(destination / "vendor", target)
-        with pytest.raises(ContractSyncError, match="escapes"):
+        with pytest.raises(ContractSyncError, match="escape"):
             sync_product_contract(destination, product, commit)
         assert list(outside.iterdir()) == []
         assert list(outside.rglob("*")) == []
@@ -100,7 +108,7 @@ def test_method_trial_sync_rejects_symlinked_vendor_without_outside_write() -> N
         outside.mkdir()
         target = outside / "missing"
         _symlink_or_skip(destination / "vendor", target)
-        with pytest.raises(ContractSyncError, match="escapes"):
+        with pytest.raises(ContractSyncError, match="escape"):
             sync_method_trial_view_contract(destination, product, commit)
         assert list(outside.iterdir()) == []
         assert list(outside.rglob("*")) == []
@@ -115,11 +123,9 @@ def test_in_root_sync_writes_both_contracts_without_symlinks() -> None:
         base = Path(tmp)
         product, commit = _invented_product_repo(base / "product-src")
         destination = base / "destination_root"
-        destination.mkdir()
-        (destination / "vendor").mkdir()
-        (destination / "vendor" / "method-trial-views").mkdir()
         product_provenance = sync_product_contract(destination, product, commit)
-        trial_provenance = sync_method_trial_view_contract(destination, product, commit)
+        trial_destination = base / "trial_destination_root"
+        trial_provenance = sync_method_trial_view_contract(trial_destination, product, commit)
         assert (product_provenance.parent / "schema.json").is_file()
         assert (product_provenance.parent / "invented.fixture.json").is_file()
         assert (trial_provenance.parent / "schema.json").is_file()
@@ -135,6 +141,35 @@ def test_ensure_confined_parent_create_false_rejects_missing_parent() -> None:
         root = Path(tmp) / "destination_root"
         root.mkdir()
         target = root / "vendor" / "missing" / "product.contract.json"
-        with pytest.raises(ContractSyncError):
+        with pytest.raises(FileNotFoundError):
             _ensure_confined_parent(target, root, create=False)
         assert not (root / "vendor").exists()
+
+
+@pytest.mark.parametrize("existing_root", [False, True])
+def test_check_only_missing_snapshot_is_unavailable_without_writes(existing_root: bool) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        product, commit = _invented_product_repo(base / "product-src")
+        destination = base / "destination_root"
+        if existing_root:
+            destination.mkdir()
+        with pytest.raises(ContractSyncError, match="unavailable"):
+            sync_method_trial_view_contract(destination, product, commit, check_only=True)
+        assert destination.exists() == existing_root
+        assert not (destination / "vendor").exists()
+
+
+@pytest.mark.parametrize("method_trial", [False, True])
+def test_sync_rejects_dangling_destination_root_without_outside_writes(method_trial: bool) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        product, commit = _invented_product_repo(base / "product-src")
+        outside = base / "outside"
+        outside.mkdir()
+        destination = base / "destination_root"
+        _symlink_or_skip(destination, outside / "missing")
+        sync = sync_method_trial_view_contract if method_trial else sync_product_contract
+        with pytest.raises(ContractSyncError, match="symlink or junction"):
+            sync(destination, product, commit)
+        assert list(outside.iterdir()) == []

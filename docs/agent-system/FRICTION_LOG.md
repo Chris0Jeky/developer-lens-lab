@@ -1,5 +1,14 @@
 # Friction log
 
+### FR-104 - Contract confinement draft regression and Windows link coverage
+
+- **first-seen:** 2026-10-09
+- **status:** corrected
+- **symptom:** The worker's narrow check passed but eight existing sync tests rejected fresh roots. Native directory symlink tests skipped on Windows.
+- **workaround:** Restore fresh-root creation and read-only unavailable errors; use invented directory junctions when symlink creation is unavailable. Reject dangling root links before resolving either sync destination.
+- **task:** Swarm finding `f-424db46598`, contract destination confinement.
+- **promotion:** No runner or policy changes; full proof uses the worktree's locked supported Python environment.
+
 The repository's record of what keeps costing sessions time. It exists because a workaround that is
 only remembered is a workaround that will be rediscovered — expensively — by the next session.
 
