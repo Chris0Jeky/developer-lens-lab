@@ -1,5 +1,11 @@
 # Implementation ledger
 
+## 2026-10-09 - Controlled corrupt contract snapshot errors
+
+- Swarm finding `f-bf46e9bfcf`: wrap schema JSON/decode failures and ResearchPack runtime validation errors as `ContractSyncError` before destination writes.
+- The coordinator reproduced the team's fixture decode gap and extended the existing JSON error handler to cover invalid encoding. Seven invented snapshot cases cover both input files and runtime-only window ordering; five fail against the baseline, and the fixture decode case also fails against the draft.
+- FR-105 records the runner parity workaround. Exact publication proof is recorded in the PR; no contract bytes, data lane, release, or owner gate changes. Current state and experiment ledger remain unchanged outside a phase boundary.
+
 ## 2026-10-09 - Contract destination confinement
 
 - Swarm finding `f-424db46598`: Muse drafted link-aware parent creation. The coordinator reproduced eight fresh-root regressions, restored automatic root creation, and preserved unavailable-snapshot errors for read-only checks.

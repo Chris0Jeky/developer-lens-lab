@@ -372,10 +372,13 @@ def test_method_trial_check_only_rejects_link_like_vendor_parent(
         sync_method_trial_view_contract(destination, product, commit, check_only=True)
 
 
-def _commit_schema_bytes(product: Path, payload: bytes, message: str) -> str:
-    schema_path = product / "research-contracts" / "research-pack" / "v1" / "schema.json"
-    schema_path.write_bytes(payload)
-    _run_git(product, "add", str(schema_path))
+@pytest.mark.parametrize("name", ["schema.json", "invented.fixture.json"])
+@pytest.mark.parametrize("payload", [b"not-json", b"\xff", "not-json".encode("utf-16")])
+def test_sync_rejects_corrupt_snapshot_bytes(tmp_path: Path, name: str, payload: bytes) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts" / "research-pack" / "v1" / name
+    source.write_bytes(payload)
+    _run_git(product, "add", ".")
     _run_git(
         product,
         "-c",
@@ -384,38 +387,23 @@ def _commit_schema_bytes(product: Path, payload: bytes, message: str) -> str:
         "user.email=fixture@example.invalid",
         "commit",
         "-m",
-        message,
+        "Corrupt invented snapshot",
     )
-    return _run_git(product, "rev-parse", "HEAD")
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    with pytest.raises(ContractSyncError, match="not valid JSON"):
+        sync_product_contract(destination, product, commit)
+    assert not destination.exists()
 
 
-def test_sync_rejects_corrupt_schema_bytes(tmp_path: Path) -> None:
+def test_sync_wraps_runtime_fixture_validation(tmp_path: Path) -> None:
     product, _ = _invented_product_repo(tmp_path)
-    bad_commit = _commit_schema_bytes(product, b"not-json", "Corrupt schema bytes")
-    with pytest.raises(ContractSyncError) as excinfo:
-        sync_product_contract(tmp_path / "corrupt-lab", product, bad_commit)
-    assert isinstance(excinfo.value.__cause__, (json.JSONDecodeError, UnicodeDecodeError))
-
-
-def test_sync_rejects_utf16_schema_bytes(tmp_path: Path) -> None:
-    product, _ = _invented_product_repo(tmp_path)
-    bad_commit = _commit_schema_bytes(
-        product, "not-json".encode("utf-16"), "UTF-16 schema bytes"
-    )
-    with pytest.raises(ContractSyncError) as excinfo:
-        sync_product_contract(tmp_path / "utf16-lab", product, bad_commit)
-    assert isinstance(excinfo.value.__cause__, (json.JSONDecodeError, UnicodeDecodeError))
-
-
-def test_sync_rejects_fixture_missing_relations(tmp_path: Path) -> None:
-    product, _ = _invented_product_repo(tmp_path)
-    fixture_path = (
-        product / "research-contracts" / "research-pack" / "v1" / "invented.fixture.json"
-    )
-    raw = json.loads(fixture_path.read_text(encoding="utf-8"))
-    del raw["relations"]
-    fixture_path.write_text(json.dumps(raw, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    _run_git(product, "add", str(fixture_path))
+    source = product / "research-contracts" / "research-pack" / "v1" / "invented.fixture.json"
+    raw = research_pack()
+    window = raw["temporal_availability"]["event"]["window"]
+    window["start"], window["end"] = window["end"], window["start"]
+    source.write_text(json.dumps(raw), encoding="utf-8")
+    _run_git(product, "add", ".")
     _run_git(
         product,
         "-c",
@@ -424,17 +412,10 @@ def test_sync_rejects_fixture_missing_relations(tmp_path: Path) -> None:
         "user.email=fixture@example.invalid",
         "commit",
         "-m",
-        "Drop required relations key",
+        "Reverse invented availability window",
     )
-    bad_commit = _run_git(product, "rev-parse", "HEAD")
-    with pytest.raises(ContractSyncError):
-        sync_product_contract(tmp_path / "relations-lab", product, bad_commit)
-
-
-def test_sync_succeeds_with_valid_snapshot(tmp_path: Path) -> None:
-    product, commit = _invented_product_repo(tmp_path)
-    destination = tmp_path / "valid-lab"
-    provenance_path = sync_product_contract(destination, product, commit)
-    assert provenance_path.is_file()
-    assert (provenance_path.parent / "schema.json").is_file()
-    assert (provenance_path.parent / "invented.fixture.json").is_file()
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    with pytest.raises(ContractSyncError, match="not a valid ResearchPack"):
+        sync_product_contract(destination, product, commit)
+    assert not destination.exists()

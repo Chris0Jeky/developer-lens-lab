@@ -1,5 +1,14 @@
 # Friction log
 
+### FR-105 - Swarm verify interpreter parity
+
+- **first-seen:** 2026-10-09
+- **status:** worked-around
+- **symptom:** The supplied launcher command selects unsupported Python 3.14 without the Lab package, causing collection errors despite the host's supported-environment proof.
+- **workaround:** Install the locked groups in the produced worktree and run the same pytest selection through its supported Python 3.12 environment with `uv run python -m pytest tests -k contract_sync`.
+- **task:** Swarm finding `f-bf46e9bfcf`, controlled corrupt contract snapshot errors.
+- **promotion:** No runner, policy, or gate changes; report the actual proof command and interpreter.
+
 ### FR-104 - Contract confinement draft regression and Windows link coverage
 
 - **first-seen:** 2026-10-09

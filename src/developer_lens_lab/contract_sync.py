@@ -185,7 +185,7 @@ def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes
     schema_doc = cast(dict[str, Any], schema)
     try:
         fixture = json.loads(fixture_raw)
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ContractSyncError("producer fixture is not valid JSON") from exc
     try:
         Draft202012Validator.check_schema(schema_doc)
@@ -213,16 +213,16 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
 
     try:
         schema_raw = json.loads(snapshots["schema.json"])
-        _validate_producer_schema(schema_raw)
-    except (json.JSONDecodeError, UnicodeDecodeError, PydanticValidationError) as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ContractSyncError("producer schema is not valid JSON") from exc
+    _validate_producer_schema(schema_raw)
     _validate_fixture_against_producer_schema(schema_raw, snapshots["invented.fixture.json"])
     try:
         fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
-        if fixture.classification != "C0":
-            raise ContractSyncError("producer fixture must remain C0 invented data")
-    except (json.JSONDecodeError, UnicodeDecodeError, PydanticValidationError) as exc:
+    except PydanticValidationError as exc:
         raise ContractSyncError("producer fixture is not a valid ResearchPack") from exc
+    if fixture.classification != "C0":
+        raise ContractSyncError("producer fixture must remain C0 invented data")
 
     if _is_link_like(destination_root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
