@@ -370,3 +370,52 @@ def test_method_trial_check_only_rejects_link_like_vendor_parent(
     )
     with pytest.raises(ContractSyncError, match="symlink or junction"):
         sync_method_trial_view_contract(destination, product, commit, check_only=True)
+
+
+@pytest.mark.parametrize("name", ["schema.json", "invented.fixture.json"])
+@pytest.mark.parametrize("payload", [b"not-json", b"\xff", "not-json".encode("utf-16")])
+def test_sync_rejects_corrupt_snapshot_bytes(tmp_path: Path, name: str, payload: bytes) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts" / "research-pack" / "v1" / name
+    source.write_bytes(payload)
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Invented Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "Corrupt invented snapshot",
+    )
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    with pytest.raises(ContractSyncError, match="not valid JSON"):
+        sync_product_contract(destination, product, commit)
+    assert not destination.exists()
+
+
+def test_sync_wraps_runtime_fixture_validation(tmp_path: Path) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts" / "research-pack" / "v1" / "invented.fixture.json"
+    raw = research_pack()
+    window = raw["temporal_availability"]["event"]["window"]
+    window["start"], window["end"] = window["end"], window["start"]
+    source.write_text(json.dumps(raw), encoding="utf-8")
+    _run_git(product, "add", ".")
+    _run_git(
+        product,
+        "-c",
+        "user.name=Invented Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "Reverse invented availability window",
+    )
+    commit = _run_git(product, "rev-parse", "HEAD")
+    destination = tmp_path / "lab"
+    with pytest.raises(ContractSyncError, match="not a valid ResearchPack"):
+        sync_product_contract(destination, product, commit)
+    assert not destination.exists()
