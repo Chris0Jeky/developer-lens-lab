@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -31,15 +32,23 @@ def test_oversize_at_read_rejected_when_stat_reports_small(
         _load_json(manifest)
 
 
-def test_load_does_not_trust_stat(
+@pytest.mark.parametrize("size", [MAX_MANIFEST_BYTES - 1, MAX_MANIFEST_BYTES])
+def test_load_accepts_manifest_within_byte_limit(tmp_path: Path, size: int) -> None:
+    manifest = tmp_path / "manifest.json"
+    payload = b'{"ok": true}'
+    manifest.write_bytes(payload + b" " * (size - len(payload)))
+    assert _load_json(manifest) == {"ok": True}
+
+
+def test_load_bounds_read_before_rejecting_oversize(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    manifest = tmp_path / "manifest.json"
-    manifest.write_bytes(b'{"ok": true}')
+    def read(size: int = -1) -> bytes:
+        assert 0 <= size <= MAX_MANIFEST_BYTES + 1, "unbounded manifest read"
+        return b"x" * size
 
-    def _forbidden_stat(self: Path):  # pragma: no cover
-        raise AssertionError("stat must not be consulted")
-
-    monkeypatch.setattr(Path, "stat", _forbidden_stat)
-
-    assert _load_json(manifest) == {"ok": True}
+    opened = MagicMock()
+    opened.return_value.__enter__.return_value.read.side_effect = read
+    monkeypatch.setattr(Path, "open", opened)
+    with pytest.raises(ManifestError, match="exceeds"):
+        _load_json(tmp_path / "manifest.json")

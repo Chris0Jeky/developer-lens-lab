@@ -2871,3 +2871,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Replace equivalent cleanup blocks with contextlib.suppress, type the path arguments accurately, and run the declared full gate in the isolated locked Python environment.
 - **task:** Swarm finding `f-c4f1ebf56b`, PR #147.
 - **promotion:** No gate or runner changes; keep hosted and focused proof distinct.
+
+### FR-103 - Manifest size raw-runner import failure
+
+- **first-seen:** 2026-10-09
+- **status:** worked around
+- **symptom:** The host-style raw pytest command selected an unsupported global Python and failed collection because the lab package was not installed there.
+- **workaround:** Install the worktree's locked development environment and run the focused and full gates with uv on supported Python 3.12.
+- **task:** Swarm finding `f-5ba1ec335b`, manifest byte-limit slice.
+- **promotion:** No runner or policy changes; publication proof names the actual supported-environment command.

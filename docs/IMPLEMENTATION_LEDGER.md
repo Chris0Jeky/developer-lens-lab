@@ -1759,3 +1759,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - Snapshot failures now abort before replacement unless the file is absent. The regression failed before the fix and passes with it, preserving both original files and leaving no temporary files.
 - Corrected hosted SIM105 lint failures without changing cleanup behavior. FR-102 records gate friction. Final-head checks belong in the PR; POSIX permission preservation remains a non-blocking limitation.
 - No contract bytes, data lane, release, policy, or human gate changes. Current state and experiment ledger stay unchanged outside a phase boundary.
+
+## 2026-10-09 - Bound manifest reads before parsing
+
+- Swarm finding `f-5ba1ec335b`: Muse drafted a byte-count check replacing the racy stat check. The coordinator reproduced the team's unbounded-read finding with a guarded synthetic stream, then limited the read to the manifest cap plus one byte.
+- Oversize input is rejected before decoding, including when stat understates its size. Valid JSON at and below the cap remains accepted. The guarded-read regression fails on the worker draft; final-head checks and publication evidence belong in the PR.
+- FR-103 records the raw-runner import failure and isolated locked environment. No contract, data lane, release, or human gate changes; current state and experiment ledger remain unchanged outside a phase boundary.

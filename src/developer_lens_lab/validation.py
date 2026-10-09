@@ -92,7 +92,8 @@ class ManifestError(ValueError):
 
 
 def _load_json(path: Path) -> object:
-    payload = path.read_bytes()
+    with path.open("rb") as stream:
+        payload = stream.read(MAX_MANIFEST_BYTES + 1)
     if len(payload) > MAX_MANIFEST_BYTES:
         raise ManifestError(f"manifest exceeds {MAX_MANIFEST_BYTES} bytes")
     try:
