@@ -12,6 +12,7 @@ from typing import Any, cast
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from developer_lens_lab.contracts import ResearchPack
 
@@ -210,12 +211,18 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
     for target_name, source_path in PRODUCT_FILES.items():
         snapshots[target_name] = _git(checkout, "show", f"{commit}:{source_path}")
 
-    schema_raw = json.loads(snapshots["schema.json"])
-    _validate_producer_schema(schema_raw)
+    try:
+        schema_raw = json.loads(snapshots["schema.json"])
+        _validate_producer_schema(schema_raw)
+    except (json.JSONDecodeError, UnicodeDecodeError, PydanticValidationError) as exc:
+        raise ContractSyncError("producer schema is not valid JSON") from exc
     _validate_fixture_against_producer_schema(schema_raw, snapshots["invented.fixture.json"])
-    fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
-    if fixture.classification != "C0":
-        raise ContractSyncError("producer fixture must remain C0 invented data")
+    try:
+        fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
+        if fixture.classification != "C0":
+            raise ContractSyncError("producer fixture must remain C0 invented data")
+    except (json.JSONDecodeError, UnicodeDecodeError, PydanticValidationError) as exc:
+        raise ContractSyncError("producer fixture is not a valid ResearchPack") from exc
 
     if _is_link_like(destination_root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
