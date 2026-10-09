@@ -2878,5 +2878,6 @@ retry, content inspection, or deletion was attempted.
 - **status:** worked around
 - **symptom:** The host-style raw pytest command selected an unsupported global Python and failed collection because the lab package was not installed there.
 - **workaround:** Install the worktree's locked development environment and run the focused and full gates with uv on supported Python 3.12.
+- **reproduction:** The baseline mutation exposed a global stat mock leaking into pytest failure reporting; confine that mock to the loader call so a regression reports normally.
 - **task:** Swarm finding `f-5ba1ec335b`, manifest byte-limit slice.
 - **promotion:** No runner or policy changes; publication proof names the actual supported-environment command.

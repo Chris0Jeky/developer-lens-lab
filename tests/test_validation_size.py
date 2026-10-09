@@ -29,10 +29,10 @@ def test_oversize_at_read_rejected_when_stat_reports_small(
     def small_stat(self: Path) -> _SmallStat:
         return _SmallStat()
 
-    monkeypatch.setattr(Path, "stat", small_stat)
-
-    with pytest.raises(ManifestError, match="exceeds"):
-        _load_json(manifest)
+    with monkeypatch.context() as scoped:
+        scoped.setattr(Path, "stat", small_stat)
+        with pytest.raises(ManifestError, match="exceeds"):
+            _load_json(manifest)
 
 
 @pytest.mark.parametrize("size", [MAX_MANIFEST_BYTES - 1, MAX_MANIFEST_BYTES])
