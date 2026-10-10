@@ -1,5 +1,12 @@
 # Implementation ledger
 
+## 2026-10-10 - Unique preregistration seed families
+
+- Swarm finding `f-e9c4e6398f`: reject duplicate preregistration seed families before bundle set comparisons discard their multiplicity, matching existing split-part validation.
+- Corrected the Muse draft tests to use strict JSON validation. The duplicate regression fails without the validator; distinct matching seeds and split-part duplicate rejection remain green.
+- Publication proof is recorded in the PR. C0 fixtures only; generated schema bytes and owner gates remain unchanged. No experiment or phase transition occurred.
+
+
 ## 2026-10-09 - Controlled corrupt contract snapshot errors
 
 - Swarm finding `f-bf46e9bfcf`: wrap schema JSON/decode failures and ResearchPack runtime validation errors as `ContractSyncError` before destination writes.
