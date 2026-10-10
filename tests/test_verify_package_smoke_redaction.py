@@ -27,3 +27,14 @@ def test_affixed_sensitive_names_redact_short_values(name: str, tmp_path: Path) 
         )
         == "value=<redacted>"
     )
+
+
+@pytest.mark.parametrize("name", ["MYPASS", "MYPWD", "PWD2", "DB_PASS"])
+def test_short_secret_markers_redact_affixed_names(name: str, tmp_path: Path) -> None:
+    assert _environment_values_to_redact({name: "ab"}) == ["ab"]
+    assert (
+        _bounded_diagnostic_stream(
+            "value=ab", cwd=tmp_path, command=["synthetic"], environment={name: "ab"}
+        )
+        == "value=<redacted>"
+    )

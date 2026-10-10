@@ -1,5 +1,11 @@
 # Implementation ledger
 
+## 2026-10-10 - Affixed short-secret redaction
+
+- Swarm finding `f-a1641dc08e`: redact short invented secret values under delimiter-less pass/pwd names, including MYPASS, MYPWD, and PWD2.
+- Reproduced the team finding against the existing diagnostic regression and preserved the benign bypass/compass token exceptions. New affixed-name cases and existing diagnostic coverage prove the shared redaction seam.
+- FR-107 records the draft regression. Exact publication proof belongs in the PR; no data lane, experiment, phase transition, or human gate changes.
+
 ## 2026-10-10 - Unique preregistration seed families
 
 - Swarm finding `f-e9c4e6398f`: reject duplicate preregistration seed families before bundle set comparisons discard their multiplicity, matching existing split-part validation.

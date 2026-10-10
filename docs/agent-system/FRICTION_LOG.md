@@ -1,5 +1,14 @@
 # Friction log
 
+### FR-107 - Short-secret redaction draft overmatching
+
+- **first-seen:** 2026-10-10
+- **status:** corrected
+- **symptom:** The supplied focused tests passed while the existing package-metadata regression failed because substring matching treated bypass/compass tokens as secret names.
+- **workaround:** Preserve the existing benign-token contract and run both redaction and package-metadata coverage before publication.
+- **task:** Swarm finding `f-a1641dc08e`, affixed short-secret redaction.
+- **promotion:** No runner, policy, or gate changes.
+
 ### FR-106 - Strict JSON fixture validation in swarm tests
 
 - **first-seen:** 2026-10-10
