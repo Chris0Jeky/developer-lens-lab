@@ -73,7 +73,9 @@ def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
                 for marker in sensitive_names
             )
             or any(
-                marker in re.split(r"[^a-z0-9]+", name.lower()) for marker in short_secret_markers
+                marker in token
+                for token in re.split(r"[^a-z0-9]+", name.lower())
+                for marker in short_secret_markers
             )
         )
     }
