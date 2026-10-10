@@ -75,6 +75,7 @@ def _environment_values_to_redact(environment: dict[str, str]) -> list[str]:
             or any(
                 marker in token
                 for token in re.split(r"[^a-z0-9]+", name.lower())
+                if token not in {"bypass", "compass"}
                 for marker in short_secret_markers
             )
         )
