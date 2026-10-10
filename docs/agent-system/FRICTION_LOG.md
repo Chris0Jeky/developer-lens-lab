@@ -1,5 +1,15 @@
 # Friction log
 
+### FR-106 - Strict JSON fixture validation in swarm tests
+
+- **first-seen:** 2026-10-10
+- **status:** corrected
+- **symptom:** The worker tests passed JSON-shaped lists to strict Python validation, failing on tuple types before reaching the intended duplicate check. The supplied launcher also repeated FR-105 interpreter parity failures.
+- **workaround:** Use the existing JSON validation convention and locked supported environment. Confirm the corrected regression fails without the validator and passes with it.
+- **task:** Swarm finding `f-e9c4e6398f`, preregistration seed-family uniqueness.
+- **promotion:** No runner, policy, or gate changes; report the supported-environment proof command.
+
+
 ### FR-105 - Swarm verify interpreter parity
 
 - **first-seen:** 2026-10-09
