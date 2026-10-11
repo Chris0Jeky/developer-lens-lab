@@ -1790,3 +1790,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-5ba1ec335b`: Muse drafted a byte-count check replacing the racy stat check. The coordinator reproduced the team's unbounded-read finding with a guarded synthetic stream, then limited the read to the manifest cap plus one byte.
 - Oversize input is rejected before decoding, including when stat understates its size. Valid JSON at and below the cap remains accepted. The guarded-read regression fails on the worker draft; final-head checks and publication evidence belong in the PR.
 - FR-103 records the raw-runner import failure and isolated locked environment. No contract, data lane, release, or human gate changes; current state and experiment ledger remain unchanged outside a phase boundary.
+
+## 2026-10-11 - Preserve existing standalone reports
+
+- Swarm finding `f-21b8727efc`, PR #158: report builds now refuse existing Markdown or HTML files unless `--force` is explicit. Force retains the store's symlink-safe replacement behavior.
+- The land coordinator reproduced concurrent creation of either report between preflight and publication; both regression cases failed on the draft. Non-force publication now reuses the store's exclusive-create method and preserves concurrent writers.
+- FR-104 records the hosted format failure and correction. Final-head focused/full-gate evidence belongs in the PR. No contract, data lane, experiment, release, or human gate changes; current state remains unchanged outside a phase boundary.

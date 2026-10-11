@@ -2918,3 +2918,12 @@ retry, content inspection, or deletion was attempted.
 - **reproduction:** The baseline mutation exposed a global stat mock leaking into pytest failure reporting; confine that mock to the loader call so a regression reports normally.
 - **task:** Swarm finding `f-5ba1ec335b`, manifest byte-limit slice.
 - **promotion:** No runner or policy changes; publication proof names the actual supported-environment command.
+
+### FR-104 - Report overwrite draft missed formatting gate
+
+- **first-seen:** 2026-10-11
+- **status:** corrected
+- **symptom:** Hosted Prove the lab ran and failed the format check on the new report overwrite tests; narrow worker proof did not exercise formatting.
+- **workaround:** Format and lint the test file with locked Ruff and run the full gate in the isolated worktree. The raw host pytest command selects unsupported Python 3.14 without dependencies and fails collection; use the locked uv Python 3.12 runner for actual proof.
+- **task:** Swarm finding `f-21b8727efc`, PR #158.
+- **promotion:** No gate or policy changes; retain focused and full proof as separate evidence.
