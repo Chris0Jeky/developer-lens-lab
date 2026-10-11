@@ -627,3 +627,72 @@ def test_decision_benchmarks_on_improvement_and_detection_boundaries() -> None:
     decision, reasons = decide_benchmark(baseline, candidate, plan)
     assert decision == "benchmarked"
     assert reasons == ("ALL_PREREGISTERED_GATES_PASSED",)
+
+
+def test_decision_uses_holdout_not_test(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Failing-first: the verdict must follow the holdout pair even when the
+    # test pair says the opposite on CANDIDATE_FALSE_ALERT_IMPROVEMENT.
+    plan = _plan(baseline_viable=True, candidate_viable=True)
+    train = Partition("train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (), ("f0",))
+    test = Partition("test", "2021-01-04T00:00:00Z", "2021-04-05T00:00:00Z", (), ("f0",))
+    holdout = Partition(
+        "final_holdout", "2021-04-05T00:00:00Z", "2021-07-05T00:00:00Z", (), ("f0",)
+    )
+
+    def _run_case(
+        test_candidate_alerts: float, holdout_candidate_alerts: float
+    ) -> evaluation_module.BenchmarkEvaluation:
+        scripted = {
+            ("test", "rolling_median_mad"): _agg(
+                "rolling_median_mad",
+                false_alerts_per_year=10.0,
+                detection_rate=0.80,
+                median_detection_delay=2.0,
+            ),
+            ("test", "bocpd_gaussian"): _agg(
+                "bocpd_gaussian",
+                false_alerts_per_year=test_candidate_alerts,
+                detection_rate=0.85,
+                median_detection_delay=1.0,
+            ),
+            ("final_holdout", "rolling_median_mad"): _agg(
+                "rolling_median_mad",
+                false_alerts_per_year=10.0,
+                detection_rate=0.80,
+                median_detection_delay=2.0,
+            ),
+            ("final_holdout", "bocpd_gaussian"): _agg(
+                "bocpd_gaussian",
+                false_alerts_per_year=holdout_candidate_alerts,
+                detection_rate=0.85,
+                median_detection_delay=1.0,
+            ),
+        }
+
+        def fake_evaluate(
+            partition: Partition, method: MethodCode, threshold: float
+        ) -> AggregateMetrics:
+            return dataclasses.replace(scripted[(partition.code, method)], threshold=threshold)
+
+        monkeypatch.setattr(evaluation_module, "evaluate_partition", fake_evaluate)
+        return run_evaluation(train, test, holdout, plan)
+
+    # Test passes improvement (2.0 <= 8.0) but holdout fails (8.1 > 8.0).
+    failing_holdout = _run_case(test_candidate_alerts=2.0, holdout_candidate_alerts=10.0 * 0.81)
+    assert failing_holdout.candidate_holdout.false_alerts_per_year == pytest.approx(10.0 * 0.81)
+    assert failing_holdout.decision == "reject"
+    assert "CANDIDATE_FALSE_ALERT_IMPROVEMENT" in failing_holdout.decision_reasons
+    test_decision, _ = decide_benchmark(
+        failing_holdout.baseline_test, failing_holdout.candidate_test, plan
+    )
+    assert test_decision == "benchmarked"
+
+    # Test fails improvement but holdout passes; verdict must flip to benchmarked.
+    passing_holdout = _run_case(test_candidate_alerts=10.0 * 0.81, holdout_candidate_alerts=2.0)
+    assert passing_holdout.candidate_holdout.false_alerts_per_year == pytest.approx(2.0)
+    assert passing_holdout.decision == "benchmarked"
+    assert passing_holdout.decision_reasons == ("ALL_PREREGISTERED_GATES_PASSED",)
+    test_decision, _ = decide_benchmark(
+        passing_holdout.baseline_test, passing_holdout.candidate_test, plan
+    )
+    assert test_decision == "reject"
