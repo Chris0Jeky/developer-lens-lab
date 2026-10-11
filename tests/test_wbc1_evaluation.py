@@ -696,3 +696,61 @@ def test_decision_uses_holdout_not_test(monkeypatch: pytest.MonkeyPatch) -> None
         passing_holdout.baseline_test, passing_holdout.candidate_test, plan
     )
     assert test_decision == "reject"
+
+
+def test_bocpd_calibration_brier_matches_observed_labels(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Failing-first: the BOCPD Brier score must equal the mean-squared error
+    # between the reported scores and the 3-week post-change labels, computed
+    # only over observed weeks.  Unobserved weeks carry large errors here so
+    # ignoring the observed mask (or using a different label window) changes
+    # the independent value.
+    n_weeks = 52
+    change_index = 10
+    scores = np.array([(index % 5) / 5.0 for index in range(n_weeks)], dtype=np.float64)
+    observed = np.ones(n_weeks, dtype=np.bool_)
+    observed[11] = False  # inside the 3-week label window [10, 11, 12]
+    observed[20] = False  # outside the label window
+    scores[11] = 0.0  # wrong vs label 1.0, but unobserved so must not count
+    scores[20] = 1.0  # wrong vs label 0.0, but unobserved so must not count
+
+    def fake_scores(_series: WeeklySeries, _method: MethodCode) -> NDArray[np.float64]:
+        return scores
+
+    monkeypatch.setattr(evaluation_module, "_scores", fake_scores)
+
+    week_starts = tuple(f"2021-01-{index + 1:02d}W{index:02d}" for index in range(n_weeks))
+    series = WeeklySeries(
+        system_alias="system_calibration",
+        seed_family="family_cal",
+        scenario_code="level",
+        noise_family="gaussian",
+        week_starts=week_starts,
+        values=np.zeros(n_weeks, dtype=np.float64),
+        observed=observed,
+        confound=np.zeros(n_weeks, dtype=np.bool_),
+        change_index=change_index,
+        change_kind="level",
+        confound_kind=None,
+        coverage_id="coverage_cal",
+    )
+    partition = Partition(
+        "test",
+        week_starts[0],
+        week_starts[-1],
+        (series,),
+        ("family_cal",),
+    )
+
+    metrics = evaluate_partition(partition, "bocpd_gaussian", 0.5)
+
+    labels = np.zeros(n_weeks, dtype=np.float64)
+    labels[change_index : change_index + 3] = 1.0
+    expected = float(np.mean((scores[observed] - labels[observed]) ** 2))
+
+    assert metrics.calibration_brier is not None
+    assert math.isclose(metrics.calibration_brier, expected)
+
+    baseline_metrics = evaluate_partition(partition, "rolling_median_mad", 2.5)
+    assert baseline_metrics.calibration_brier is None
