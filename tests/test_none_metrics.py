@@ -1,12 +1,13 @@
+# pyright: reportPrivateUsage=false, reportUnknownArgumentType=false, reportUnknownMemberType=false, reportUnknownVariableType=false
 """None metrics propagate as unavailable instead of 0.0."""
 
 from __future__ import annotations
 
 import numpy as np
-import pyarrow.parquet as pq
 import pyarrow as pa
+import pyarrow.parquet as pq
+import pytest
 
-from developer_lens_lab.wbc1 import evaluation as evaluation_mod
 from developer_lens_lab.wbc1 import runner as runner_mod
 from developer_lens_lab.wbc1.evaluation import (
     AggregateMetrics,
@@ -18,17 +19,13 @@ from developer_lens_lab.wbc1.evaluation import (
     evaluate_partition,
 )
 from developer_lens_lab.wbc1.export import _acceptance_gates, _maybe_value, _unavailable
-from developer_lens_lab.wbc1.generator import Partition
+from developer_lens_lab.wbc1.generator import Partition, WeeklySeries
 
 
 def _no_change_partition() -> Partition:
     week_starts = tuple(f"2021-01-{index + 1:02d}" for index in range(52))
     values = np.asarray([10.0 + (index % 7) * 0.1 for index in range(52)], dtype=np.float64)
     observed = np.ones(52, dtype=np.bool_)
-    series = evaluation_mod.__dict__  # placeholder to keep imports honest
-    assert series is not None
-    from developer_lens_lab.wbc1.generator import WeeklySeries
-
     one = WeeklySeries(
         system_alias="system_no_change",
         seed_family="family_00",
@@ -98,8 +95,8 @@ def test_gates_do_not_pass_on_absent_detection() -> None:
         None,
     )
     by_code = {gate["code"]: gate for gate in gates}
-    assert by_code["detection_floor"]["outcome"] != "pass"
-    assert by_code["not_worse_detection"]["outcome"] != "pass"
+    assert by_code["detection_floor"]["outcome"] == "not_applicable"
+    assert by_code["not_worse_detection"]["outcome"] == "not_applicable"
     assert by_code["detection_floor"]["relevant_values"]["candidate"] == _unavailable()
     assert by_code["detection_floor"]["relevant_values"]["baseline"] == _unavailable()
     assert by_code["not_worse_detection"]["relevant_values"]["candidate"] == _unavailable()
@@ -177,3 +174,23 @@ def test_runner_parquet_preserves_none_rate() -> None:
     rows = pq.read_table(pa.BufferReader(payload)).to_pylist()
     by_code = {row["metric_code"]: row["value"] for row in rows}
     assert by_code["detection_rate"] is None
+
+
+@pytest.mark.parametrize(
+    ("baseline", "candidate", "floor", "not_worse"),
+    [
+        (None, 0.8, "pass", "not_applicable"),
+        (0.8, None, "not_applicable", "not_applicable"),
+        (0.0, 0.0, "fail", "pass"),
+        (0.8, 0.0, "fail", "fail"),
+    ],
+)
+def test_none_metrics_detection_gates(
+    baseline: float | None, candidate: float | None, floor: str, not_worse: str
+) -> None:
+    gates = _acceptance_gates(
+        _holdout_evaluation(), 1.0, baseline, None, None, 1.0, candidate, None, None
+    )
+    by_code = {gate["code"]: gate for gate in gates}
+    assert by_code["detection_floor"]["outcome"] == floor
+    assert by_code["not_worse_detection"]["outcome"] == not_worse

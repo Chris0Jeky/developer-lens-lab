@@ -260,11 +260,7 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
     fit_selected, validation_selected = min(
         candidates,
         key=lambda metrics: (
-            -(
-                metrics[1].detection_rate
-                if metrics[1].detection_rate is not None
-                else 0.0
-            ),
+            -(metrics[1].detection_rate if metrics[1].detection_rate is not None else 0.0),
             metrics[1].false_alerts_per_year,
             # A genuine median detection delay of 0 (instant detection) is the
             # best possible tie-break, not a missing value.  `x or inf` would

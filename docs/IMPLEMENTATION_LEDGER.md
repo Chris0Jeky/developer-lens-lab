@@ -1,5 +1,11 @@
 # Implementation ledger
 
+## 2026-10-11 - Preserve unavailable benchmark metrics
+
+- Swarm finding `f-76bae218cf`: preserve absent detection and calibration in bundle/Parquet storage and MethodTrial scorecards instead of reporting zero. Acceptance predicates require measured inputs.
+- Reproduced the team blocker with three failing detection-gate regressions; unavailable detection now derives `not_applicable` gates under the pinned presentation contract. Measured zero remains distinct.
+- FR-108 records the draft gate mismatch and launcher parity workaround. Exact local proof is recorded in the PR. No experiment, phase transition, data lane, release, or human gate changed.
+
 ## 2026-10-10 - Affixed short-secret redaction
 
 - Swarm finding `f-a1641dc08e`: redact short invented secret values under delimiter-less pass/pwd names, including MYPASS, MYPWD, and PWD2.

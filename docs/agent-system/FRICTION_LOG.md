@@ -1,5 +1,14 @@
 # Friction log
 
+### FR-108 - Unavailable detection draft gate mismatch
+
+- **first-seen:** 2026-10-11
+- **status:** corrected
+- **symptom:** Worker tests accepted any non-pass gate, masking a fail versus not-applicable contract mismatch. The supplied global Python launcher also failed collection without the lab dependencies.
+- **workaround:** Assert exact missing-data outcomes, align the exporter with the pinned semantic validator, and use the locked supported worktree environment for proof as in FR-105.
+- **task:** Swarm finding `f-76bae218cf`, unavailable benchmark metrics.
+- **promotion:** No runner, policy, or gate changes.
+
 ### FR-107 - Short-secret redaction draft overmatching
 
 - **first-seen:** 2026-10-10

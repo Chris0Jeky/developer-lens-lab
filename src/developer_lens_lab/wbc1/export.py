@@ -86,7 +86,7 @@ def _unavailable(reason: str = "not_measured") -> dict[str, str]:
     return {"status": "unavailable", "reason": reason}
 
 
-def _maybe_value(value: float | None) -> dict[str, object]:
+def _maybe_value(value: float | None) -> dict[str, object] | dict[str, str]:
     if value is None:
         return _unavailable()
     return _value(value)
@@ -391,7 +391,10 @@ def _acceptance_gates(
     candidate_outcome, candidate_reason = _selection_gate(
         full_evaluation.candidate_selection.viable, "Candidate"
     )
-    if candidate_detection is not None and candidate_detection >= 0.75:
+    if candidate_detection is None:
+        floor_outcome = "not_applicable"
+        floor_reason = "Candidate detection was not measured."
+    elif candidate_detection >= 0.75:
         floor_outcome = "pass"
         floor_reason = "Candidate detection meets the preregistered floor."
     else:
@@ -412,11 +415,10 @@ def _acceptance_gates(
     else:
         false_outcome = "fail"
         false_reason = "Candidate false alerts per year exceed the baseline."
-    if (
-        baseline_detection is not None
-        and candidate_detection is not None
-        and candidate_detection >= baseline_detection
-    ):
+    if baseline_detection is None or candidate_detection is None:
+        not_worse_outcome = "not_applicable"
+        not_worse_reason = "Detection comparison requires both measurements."
+    elif candidate_detection >= baseline_detection:
         not_worse_outcome = "pass"
         not_worse_reason = "Candidate detection is not worse than baseline."
     else:
