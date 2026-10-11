@@ -2927,3 +2927,12 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Format and lint the test file with locked Ruff and run the full gate in the isolated worktree. The raw host pytest command selects unsupported Python 3.14 without dependencies and fails collection; use the locked uv Python 3.12 runner for actual proof.
 - **task:** Swarm finding `f-21b8727efc`, PR #158.
 - **promotion:** No gate or policy changes; retain focused and full proof as separate evidence.
+
+### FR-105 - Method-trial gate draft proving failures
+
+- **first-seen:** 2026-10-11
+- **status:** worked around
+- **symptom:** The host's raw pytest command uses unsupported global Python 3.14 without the lab dependencies and fails collection. The worker draft also failed Ruff formatting and import ordering; its regression fixture accessed an unopened synthetic holdout and used a broad callback type.
+- **workaround:** Prepare the isolated locked Python 3.12 environment and correct formatting, import ordering, test holdout setup, and the callback annotation before proving the draft.
+- **task:** Swarm finding `f-6828cc4a5a`, method-trial gate derivation.
+- **promotion:** No runner, policy, or contract changes; report only completed checks as proof.

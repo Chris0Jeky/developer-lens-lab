@@ -1796,3 +1796,10 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-21b8727efc`, PR #158: report builds now refuse existing Markdown or HTML files unless `--force` is explicit. Force retains the store's symlink-safe replacement behavior.
 - The land coordinator reproduced concurrent creation of either report between preflight and publication; both regression cases failed on the draft. Non-force publication now reuses the store's exclusive-create method and preserves concurrent writers.
 - FR-104 records the hosted format failure and correction. Final-head focused/full-gate evidence belongs in the PR. No contract, data lane, experiment, release, or human gate changes; current state remains unchanged outside a phase boundary.
+
+## 2026-10-11 - Method-trial gate derivation
+
+- Swarm finding `f-6828cc4a5a`: derive the seven presentation gates and rejection reasons from recomputed selection and final-holdout metrics instead of fixed smoke-run outcomes.
+- Muse wrote the first draft; the coordinator corrected test holdout setup, formatting, and import ordering. Synthetic regressions exercise improved false alerts and a missed detection floor.
+- FR-105 records the raw-runner failure and locked-environment workaround. Completed proving results and publication state belong in the PR; this entry claims no merge.
+- No schema, product contract, data lane, real holdout custody, release, or human decision changes. `HUMAN_TODO.md` stays unchanged; current state and the experiment ledger are unchanged because this is not a phase boundary or experiment decision.
