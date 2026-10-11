@@ -790,10 +790,16 @@ def compose_method_trial_view(
                     "code": "same_detection_on_c0",
                     "display_text": "Baseline and candidate detection match on this C0 run.",
                 },
-                {
-                    "code": "candidate_more_false_alerts_on_c0",
-                    "display_text": "Candidate false alerts are higher on this C0 run.",
-                },
+                *(
+                    [
+                        {
+                            "code": "candidate_more_false_alerts_on_c0",
+                            "display_text": "Candidate false alerts are higher on this C0 run.",
+                        }
+                    ]
+                    if candidate_false > baseline_false
+                    else []
+                ),
                 {
                     "code": "deterministic_case_windows",
                     "display_text": "Three case windows are selected by fixed deterministic rules.",

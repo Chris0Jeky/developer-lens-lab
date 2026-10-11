@@ -1801,5 +1801,6 @@ hashed package bytes only; the joint tag remains blocked on product
 
 - Swarm finding `f-6828cc4a5a`: derive the seven presentation gates and rejection reasons from recomputed selection and final-holdout metrics instead of fixed smoke-run outcomes.
 - Muse wrote the first draft; the coordinator corrected test holdout setup, formatting, and import ordering. Synthetic regressions exercise improved false alerts and a missed detection floor.
+- PR #159 review: the coordinator reproduced contradictory supported false-alert claims for improved and equal rates. The exporter now emits the higher-rate claim only when the recomputed candidate rate is strictly higher; regressions cover improved, equal, and higher rates without changing the product schema.
 - FR-105 records the raw-runner failure and locked-environment workaround. Completed proving results and publication state belong in the PR; this entry claims no merge.
 - No schema, product contract, data lane, real holdout custody, release, or human decision changes. `HUMAN_TODO.md` stays unchanged; current state and the experiment ledger are unchanged because this is not a phase boundary or experiment decision.

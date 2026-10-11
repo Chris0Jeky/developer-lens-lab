@@ -16,6 +16,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from developer_lens_lab.wbc1 import export as export_module
 from developer_lens_lab.wbc1.evaluation import (
     EvaluationPlan,
@@ -173,6 +175,18 @@ def test_gate5_passes_when_candidate_false_alerts_improve(tmp_path: Path, monkey
     assert gates[4]["outcome"] == "pass"
     assert view["decision"]["outcome"] == "reject"
     assert "CANDIDATE_FALSE_ALERT_IMPROVEMENT" not in view["decision"]["reason_codes"]
+    assert "candidate_more_false_alerts_on_c0" not in {
+        claim["code"] for claim in view["claims"]["supported"]
+    }
+
+
+@pytest.mark.parametrize("factor", [1.0, 1.5])
+def test_false_alert_claim_requires_strictly_higher_rate(
+    tmp_path: Path, monkeypatch: Any, factor: float
+) -> None:
+    view = _crafted_view(monkeypatch, tmp_path, "method_trial_claim", candidate_false_factor=factor)
+    codes = {claim["code"] for claim in view["claims"]["supported"]}
+    assert ("candidate_more_false_alerts_on_c0" in codes) == (factor > 1.0)
 
 
 def test_gate3_fails_when_candidate_misses_detection_floor(
