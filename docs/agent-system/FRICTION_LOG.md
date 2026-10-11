@@ -2947,3 +2947,14 @@ retry, content inspection, or deletion was attempted.
 - **promotion:** No runner, policy, or contract changes; report only completed checks as proof.
 - **publication checkpoint:** The full local suite ran 572 tests: 565 passed, six host symlink cases skipped, and the Windows child/grandchild timeout fixture failed because its readiness marker was absent after the two-second deadline. A scoped rerun failed in the same process-tree test with cleanup confirmation unavailable, while both new gate regressions passed again. The process-tree fixture and runner are outside this diff; the cause is unproven, and publication is deferred rather than changing a gate or broadening the slice.
 - **publish-turn recheck:** The locked-environment export checks passed (eight passed, one host symlink case skipped), and the isolated Windows process-tree case passed. The full suite then again reported 565 passed, six skipped, and the same readiness-marker failure. Doctor, context, formatting, lint, type checking, and strict documentation build passed. The isolated pass does not explain the full-suite failure; publication stays deferred with no push or PR and no change to the unrelated process runner.
+
+### FR-109 - Holdout verdict regression draft corrections
+
+- **first-seen:** 2026-10-11
+- **status:** workaround-verified
+- **symptom:** The raw host runner failed collection under unsupported Python 3.14 without the lab package. Locked proof exposed an invalid holdout partition code and nonexistent result attributes in the worker draft.
+- **impact:** Draft verification could not establish the requested holdout decision guarantee.
+- **workaround:** Use the locked Python 3.12 environment; correct the test to use final_holdout and decision_reasons, and type its helper. All 26 evaluation tests pass; an in-memory mutation to use test metrics makes the new regression fail.
+- **occurrences:** One publication turn on 2026-10-11.
+- **task:** Swarm finding `f-46c3df9341`.
+- **promotion:** Runner parity remains existing task debt; no gate or production changes.

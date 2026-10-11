@@ -1,5 +1,11 @@
 # Implementation ledger
 
+## 2026-10-11 - Holdout decision caller regression
+
+- Swarm finding `f-46c3df9341`: pin both disagreement directions between test and final-holdout metrics; run_evaluation must base its verdict on final holdout.
+- Corrected draft test names and result attributes (FR-109). The evaluation suite passes, and an in-memory mutation using the test pair fails the new regression. Production behavior is unchanged.
+- Exact publication proof belongs in the PR. No experiment, phase transition, data lane, release, or human gate changed.
+
 ## 2026-10-11 - Preserve unavailable benchmark metrics
 
 - Swarm finding `f-76bae218cf`: preserve absent detection and calibration in bundle/Parquet storage and MethodTrial scorecards instead of reporting zero. Acceptance predicates require measured inputs.
