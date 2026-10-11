@@ -959,6 +959,7 @@ def build_report(
         raise RunnerError(
             f"report file(s) already exist: {', '.join(existing)}; pass --force to overwrite"
         )
-    store.write_scope_file(run_id, "report.md", store.get_bytes(run_id, markdown))
-    store.write_scope_file(run_id, "report.html", store.get_bytes(run_id, html_ref))
+    write_report = store.write_scope_file if force else store.write_scope_file_once
+    write_report(run_id, "report.md", store.get_bytes(run_id, markdown))
+    write_report(run_id, "report.html", store.get_bytes(run_id, html_ref))
     return markdown, html_ref
