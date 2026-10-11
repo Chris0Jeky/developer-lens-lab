@@ -345,6 +345,14 @@ def _partition_part(partition: Partition) -> SplitPart:
 
 
 def _metric(code: str, value: float | None, domain: str = "primary") -> dict[str, Any]:
+    if value is None:
+        return {
+            "metric_code": code,
+            "domain_code": domain,
+            "state": "absent",
+            "value": None,
+            "reason_code": "NOT_MEASURED",
+        }
     return {
         "metric_code": code,
         "domain_code": domain,
@@ -361,7 +369,7 @@ def _result_parquet_bytes(metrics: Any) -> bytes:
                 "metric_code": "false_alerts_per_year",
                 "value": metrics.false_alerts_per_year,
             },
-            {"metric_code": "detection_rate", "value": metrics.detection_rate or 0.0},
+            {"metric_code": "detection_rate", "value": metrics.detection_rate},
         ]
     )
 
@@ -508,7 +516,7 @@ def _build_bundle(
                 _metric("false_alerts_per_year", baseline.false_alerts_per_year)
             ),
             MetricValue.model_validate(
-                _metric("detection_rate", baseline.detection_rate or 0.0, "detection")
+                _metric("detection_rate", baseline.detection_rate, "detection")
             ),
         ),
         artifact=bundle_refs[0],
@@ -520,7 +528,7 @@ def _build_bundle(
                 _metric("false_alerts_per_year", candidate.false_alerts_per_year)
             ),
             MetricValue.model_validate(
-                _metric("detection_rate", candidate.detection_rate or 0.0, "detection")
+                _metric("detection_rate", candidate.detection_rate, "detection")
             ),
         ),
         artifact=bundle_refs[1],
@@ -554,10 +562,12 @@ def _build_bundle(
         baseline_results=baseline_results,
         candidate_results=candidate_results,
         calibration=CalibrationReport(
-            status="measured",
+            status="measured"
+            if candidate.calibration_brier is not None
+            else "insufficient_support",
             metrics=(
                 MetricValue.model_validate(
-                    _metric("brier", candidate.calibration_brier or 0.0, "calibration")
+                    _metric("brier", candidate.calibration_brier, "calibration")
                 ),
             ),
         ),
