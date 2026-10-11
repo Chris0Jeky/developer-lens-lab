@@ -244,7 +244,9 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
             viable,
             key=lambda metrics: (
                 metrics[1].false_alerts_per_year,
-                metrics[1].coverage_confound_false_alert_rate or 0.0,
+                metrics[1].coverage_confound_false_alert_rate
+                if metrics[1].coverage_confound_false_alert_rate is not None
+                else 0.0,
                 -metrics[1].threshold,
             ),
         )
@@ -258,7 +260,7 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
     fit_selected, validation_selected = min(
         candidates,
         key=lambda metrics: (
-            -(metrics[1].detection_rate or 0.0),
+            -(metrics[1].detection_rate if metrics[1].detection_rate is not None else 0.0),
             metrics[1].false_alerts_per_year,
             # A genuine median detection delay of 0 (instant detection) is the
             # best possible tie-break, not a missing value.  `x or inf` would
@@ -325,7 +327,10 @@ def decide_benchmark(
             "CANDIDATE_SELECTION_VIABLE",
             lambda: plan.candidate_selection.viable,
         ),
-        ("CANDIDATE_DETECTION_FLOOR", lambda: (candidate.detection_rate or 0.0) >= 0.75),
+        (
+            "CANDIDATE_DETECTION_FLOOR",
+            lambda: candidate.detection_rate is not None and candidate.detection_rate >= 0.75,
+        ),
         (
             "CANDIDATE_DELAY_BUDGET",
             lambda: (
@@ -342,13 +347,19 @@ def decide_benchmark(
         ),
         (
             "CANDIDATE_NOT_WORSE_DETECTION",
-            lambda: (candidate.detection_rate or 0.0) >= (baseline.detection_rate or 0.0),
+            lambda: (
+                baseline.detection_rate is not None
+                and candidate.detection_rate is not None
+                and candidate.detection_rate >= baseline.detection_rate
+            ),
         ),
         (
             "CANDIDATE_CONFOUND_GUARD",
             lambda: (
-                (candidate.coverage_confound_false_alert_rate or 0.0)
-                <= (baseline.coverage_confound_false_alert_rate or 0.0)
+                baseline.coverage_confound_false_alert_rate is not None
+                and candidate.coverage_confound_false_alert_rate is not None
+                and candidate.coverage_confound_false_alert_rate
+                <= baseline.coverage_confound_false_alert_rate
             ),
         ),
     )

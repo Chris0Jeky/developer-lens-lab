@@ -86,6 +86,20 @@ def _unavailable(reason: str = "not_measured") -> dict[str, str]:
     return {"status": "unavailable", "reason": reason}
 
 
+def _maybe_value(value: float | None) -> dict[str, object] | dict[str, str]:
+    if value is None:
+        return _unavailable()
+    return _value(value)
+
+
+def _optional_metric(bundle: EvaluationBundle, role: str, code: str) -> float | None:
+    result = bundle.baseline_results if role == "baseline" else bundle.candidate_results
+    for metric in result.metrics:
+        if metric.metric_code == code:
+            return float(metric.value) if metric.value is not None else None
+    raise ValueError(f"{role} metric is unavailable: {code}")
+
+
 def load_provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     method_path = root / "vendor" / "developer-lens" / "method-trial-view" / "v1"
     research_path = root / "vendor" / "developer-lens" / "research-pack" / "v1"
@@ -356,11 +370,11 @@ def _selection_gate(viable: bool, role: str) -> tuple[str, str]:
 def _acceptance_gates(
     full_evaluation: BenchmarkEvaluation,
     baseline_false: float,
-    baseline_detection: float,
+    baseline_detection: float | None,
     baseline_delay: float | None,
     baseline_confound: float | None,
     candidate_false: float,
-    candidate_detection: float,
+    candidate_detection: float | None,
     candidate_delay: float | None,
     candidate_confound: float | None,
 ) -> list[dict[str, Any]]:
@@ -377,7 +391,10 @@ def _acceptance_gates(
     candidate_outcome, candidate_reason = _selection_gate(
         full_evaluation.candidate_selection.viable, "Candidate"
     )
-    if candidate_detection >= 0.75:
+    if candidate_detection is None:
+        floor_outcome = "not_applicable"
+        floor_reason = "Candidate detection was not measured."
+    elif candidate_detection >= 0.75:
         floor_outcome = "pass"
         floor_reason = "Candidate detection meets the preregistered floor."
     else:
@@ -398,7 +415,10 @@ def _acceptance_gates(
     else:
         false_outcome = "fail"
         false_reason = "Candidate false alerts per year exceed the baseline."
-    if candidate_detection >= baseline_detection:
+    if baseline_detection is None or candidate_detection is None:
+        not_worse_outcome = "not_applicable"
+        not_worse_reason = "Detection comparison requires both measurements."
+    elif candidate_detection >= baseline_detection:
         not_worse_outcome = "pass"
         not_worse_reason = "Candidate detection is not worse than baseline."
     else:
@@ -413,16 +433,12 @@ def _acceptance_gates(
     else:
         confound_outcome = "fail"
         confound_reason = "Candidate confound false-alert rate is compared with baseline."
-    baseline_delay_value = _value(baseline_delay) if baseline_delay is not None else _unavailable()
-    candidate_delay_value = (
-        _value(candidate_delay) if candidate_delay is not None else _unavailable()
-    )
-    baseline_confound_value = (
-        _value(baseline_confound) if baseline_confound is not None else _unavailable()
-    )
-    candidate_confound_value = (
-        _value(candidate_confound) if candidate_confound is not None else _unavailable()
-    )
+    baseline_delay_value = _maybe_value(baseline_delay)
+    candidate_delay_value = _maybe_value(candidate_delay)
+    baseline_confound_value = _maybe_value(baseline_confound)
+    candidate_confound_value = _maybe_value(candidate_confound)
+    baseline_detection_value = _maybe_value(baseline_detection)
+    candidate_detection_value = _maybe_value(candidate_detection)
     return [
         {
             "order": 1,
@@ -448,8 +464,8 @@ def _acceptance_gates(
             "reason_code": "CANDIDATE_DETECTION_FLOOR",
             "reason": floor_reason,
             "relevant_values": {
-                "baseline": _value(baseline_detection),
-                "candidate": _value(candidate_detection),
+                "baseline": baseline_detection_value,
+                "candidate": candidate_detection_value,
             },
         },
         {
@@ -484,8 +500,8 @@ def _acceptance_gates(
             "reason_code": "CANDIDATE_NOT_WORSE_DETECTION",
             "reason": not_worse_reason,
             "relevant_values": {
-                "baseline": _value(baseline_detection),
-                "candidate": _value(candidate_detection),
+                "baseline": baseline_detection_value,
+                "candidate": candidate_detection_value,
             },
         },
         {
@@ -513,11 +529,11 @@ def _trial_decision(full_evaluation: BenchmarkEvaluation) -> dict[str, Any]:
     gates = _acceptance_gates(
         full_evaluation,
         full_evaluation.baseline_holdout.false_alerts_per_year,
-        full_evaluation.baseline_holdout.detection_rate or 0.0,
+        full_evaluation.baseline_holdout.detection_rate,
         full_evaluation.baseline_holdout.median_detection_delay,
         full_evaluation.baseline_holdout.coverage_confound_false_alert_rate,
         full_evaluation.candidate_holdout.false_alerts_per_year,
-        full_evaluation.candidate_holdout.detection_rate or 0.0,
+        full_evaluation.candidate_holdout.detection_rate,
         full_evaluation.candidate_holdout.median_detection_delay,
         full_evaluation.candidate_holdout.coverage_confound_false_alert_rate,
     )
@@ -628,27 +644,26 @@ def compose_method_trial_view(
         dataset.final_holdout_metadata, "bocpd_gaussian", candidate_threshold
     )
     baseline_false = baseline_eval.false_alerts_per_year
-    baseline_detection = baseline_eval.detection_rate or 0.0
+    baseline_detection = baseline_eval.detection_rate
     baseline_delay = baseline_eval.median_detection_delay
     baseline_confound = baseline_eval.coverage_confound_false_alert_rate
     candidate_false = candidate_eval.false_alerts_per_year
-    candidate_detection = candidate_eval.detection_rate or 0.0
+    candidate_detection = candidate_eval.detection_rate
     candidate_delay = candidate_eval.median_detection_delay
     candidate_confound = candidate_eval.coverage_confound_false_alert_rate
     candidate_brier = candidate_eval.calibration_brier
     if _metric(bundle, "baseline", "false_alerts_per_year") != baseline_false:
         raise ValueError("baseline metric differs from recomputed final holdout")
-    if _metric(bundle, "baseline", "detection_rate") != baseline_detection:
+    if _optional_metric(bundle, "baseline", "detection_rate") != baseline_detection:
         raise ValueError("baseline detection differs from recomputed final holdout")
     if _metric(bundle, "candidate", "false_alerts_per_year") != candidate_false:
         raise ValueError("candidate metric differs from recomputed final holdout")
-    if _metric(bundle, "candidate", "detection_rate") != candidate_detection:
+    if _optional_metric(bundle, "candidate", "detection_rate") != candidate_detection:
         raise ValueError("candidate detection differs from recomputed final holdout")
-    bundle_brier = next(
-        float(metric.value)
-        for metric in bundle.calibration.metrics
-        if metric.metric_code == "brier" and metric.value is not None
-    )
+    brier_values = [
+        metric.value for metric in bundle.calibration.metrics if metric.metric_code == "brier"
+    ]
+    bundle_brier = float(brier_values[0]) if brier_values and brier_values[0] is not None else None
     if bundle_brier != candidate_brier:
         raise ValueError("candidate calibration differs from recomputed final holdout")
     payload: dict[str, Any] = {
@@ -728,7 +743,7 @@ def compose_method_trial_view(
         "scorecard": {
             "baseline": {
                 "false_alerts_per_year": _value(baseline_false),
-                "detection_rate": _value(baseline_detection),
+                "detection_rate": _maybe_value(baseline_detection),
                 "median_detection_delay_weeks": _value(baseline_delay)
                 if baseline_delay is not None
                 else _unavailable(),
@@ -739,7 +754,7 @@ def compose_method_trial_view(
             },
             "candidate": {
                 "false_alerts_per_year": _value(candidate_false),
-                "detection_rate": _value(candidate_detection),
+                "detection_rate": _maybe_value(candidate_detection),
                 "median_detection_delay_weeks": _value(candidate_delay)
                 if candidate_delay is not None
                 else _unavailable(),
