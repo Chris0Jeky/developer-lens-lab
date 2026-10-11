@@ -914,7 +914,9 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     return reproduced == expected and _sha256(reproduced) == expected_digest
 
 
-def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, ArtifactRef]:
+def build_report(
+    run_id: str, *, artifact_root: Path, force: bool = False
+) -> tuple[ArtifactRef, ArtifactRef]:
     store = ArtifactStore(artifact_root)
     manifest_path = store.scope_root(run_id) / "run.json"
     if not manifest_path.is_file():
@@ -947,6 +949,16 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
         manifest, "markdown"
     ) or html_ref.model_dump(mode="json") != _require_field(manifest, "html"):
         raise RunnerError("report bytes differ from the recorded deterministic report")
+    scope_root = store.scope_root(run_id)
+    existing = [
+        name
+        for name in ("report.md", "report.html")
+        if (scope_root / name).is_symlink() or (scope_root / name).exists()
+    ]
+    if existing and not force:
+        raise RunnerError(
+            f"report file(s) already exist: {', '.join(existing)}; pass --force to overwrite"
+        )
     store.write_scope_file(run_id, "report.md", store.get_bytes(run_id, markdown))
     store.write_scope_file(run_id, "report.html", store.get_bytes(run_id, html_ref))
     return markdown, html_ref

@@ -262,11 +262,12 @@ def run_reproduce(
 def report_build(
     run_id: Annotated[str, typer.Argument()],
     artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+    force: Annotated[bool, typer.Option("--force")] = False,
 ) -> None:
     """Build and verify standalone Markdown and HTML reports for a run."""
     try:
         markdown, html_ref = build_report(
-            run_id, artifact_root=artifact_root or (_repo_root() / ".dllab")
+            run_id, artifact_root=artifact_root or (_repo_root() / ".dllab"), force=force
         )
     except (RunnerError, ArtifactError, OSError, ValidationError, json.JSONDecodeError) as exc:
         typer.echo(f"ERROR: report build failed: {exc}", err=True)

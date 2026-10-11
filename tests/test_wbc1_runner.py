@@ -186,7 +186,7 @@ def test_build_report_replaces_symlink_without_following_it(
     except OSError:
         pytest.skip("file symlinks are unavailable on this host")
 
-    build_report(result.run_id, artifact_root=tmp_path)
+    build_report(result.run_id, artifact_root=tmp_path, force=True)
 
     assert outside.read_bytes() == b"outside sentinel\n"
     assert not report_path.is_symlink()
