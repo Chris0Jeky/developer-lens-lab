@@ -2927,3 +2927,14 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Format and lint the test file with locked Ruff and run the full gate in the isolated worktree. The raw host pytest command selects unsupported Python 3.14 without dependencies and fails collection; use the locked uv Python 3.12 runner for actual proof.
 - **task:** Swarm finding `f-21b8727efc`, PR #158.
 - **promotion:** No gate or policy changes; retain focused and full proof as separate evidence.
+
+### FR-105 - Method-trial gate draft proving failures
+
+- **first-seen:** 2026-10-11
+- **status:** worked around
+- **symptom:** The host's raw pytest command uses unsupported global Python 3.14 without the lab dependencies and fails collection. The worker draft also failed Ruff formatting and import ordering; its regression fixture accessed an unopened synthetic holdout and used a broad callback type.
+- **workaround:** Prepare the isolated locked Python 3.12 environment and correct formatting, import ordering, test holdout setup, and the callback annotation before proving the draft.
+- **task:** Swarm finding `f-6828cc4a5a`, method-trial gate derivation.
+- **promotion:** No runner, policy, or contract changes; report only completed checks as proof.
+- **publication checkpoint:** The full local suite ran 572 tests: 565 passed, six host symlink cases skipped, and the Windows child/grandchild timeout fixture failed because its readiness marker was absent after the two-second deadline. A scoped rerun failed in the same process-tree test with cleanup confirmation unavailable, while both new gate regressions passed again. The process-tree fixture and runner are outside this diff; the cause is unproven, and publication is deferred rather than changing a gate or broadening the slice.
+- **publish-turn recheck:** The locked-environment export checks passed (eight passed, one host symlink case skipped), and the isolated Windows process-tree case passed. The full suite then again reported 565 passed, six skipped, and the same readiness-marker failure. Doctor, context, formatting, lint, type checking, and strict documentation build passed. The isolated pass does not explain the full-suite failure; publication stays deferred with no push or PR and no change to the unrelated process runner.
