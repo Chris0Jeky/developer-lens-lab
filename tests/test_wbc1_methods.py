@@ -151,9 +151,7 @@ def test_bocpd_missing_block_is_observed_sample_equivalent() -> None:
 
 def test_bocpd_warmup_scores_are_zero() -> None:
     parameters = BocpdParameters(warmup=12)
-    step = np.concatenate(
-        (np.full(12, 20.0), np.full(12, 30.0))
-    ).astype(np.float64)
+    step = np.concatenate((np.full(12, 20.0), np.full(12, 30.0))).astype(np.float64)
     output = bocpd_scores(step, parameters)
     assert (output.change_probability[: parameters.warmup] == 0.0).all()
     assert (output.surprise[: parameters.warmup] == 0.0).all()
