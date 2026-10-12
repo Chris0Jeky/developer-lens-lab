@@ -2958,3 +2958,12 @@ retry, content inspection, or deletion was attempted.
 - **occurrences:** One publication turn on 2026-10-11.
 - **task:** Swarm finding `f-46c3df9341`.
 - **promotion:** Runner parity remains existing task debt; no gate or production changes.
+
+### FR-110 - BOCPD warmup draft missed formatting gate
+
+- **first-seen:** 2026-10-12
+- **status:** worked around
+- **symptom:** PR #163 hosted proof failed Ruff formatting of the added synthetic warmup test.
+- **workaround:** Apply Ruff formatting to the test and run the declared local checks in the locked Python 3.12 environment.
+- **task:** Swarm finding `f-dcfe44aa16`, PR #163.
+- **promotion:** No production logic, runner, policy, or gate changes. Two additional-coverage review suggestions were classified non-blocking and declined on their threads.

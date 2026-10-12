@@ -149,6 +149,24 @@ def test_bocpd_missing_block_is_observed_sample_equivalent() -> None:
     )
 
 
+def test_bocpd_warmup_scores_are_zero() -> None:
+    parameters = BocpdParameters(warmup=12)
+    step = np.concatenate((np.full(12, 20.0), np.full(12, 30.0))).astype(np.float64)
+    output = bocpd_scores(step, parameters)
+    assert (output.change_probability[: parameters.warmup] == 0.0).all()
+    assert (output.surprise[: parameters.warmup] == 0.0).all()
+    assert float(output.change_probability[parameters.warmup :].max()) > 0.0
+    assert np.isfinite(output.change_probability).all()
+    assert np.isfinite(output.surprise).all()
+
+    constant = np.full(24, 20.0, dtype=np.float64)
+    reset = bocpd_scores(constant, parameters)
+    assert (reset.change_probability[: parameters.warmup] == 0.0).all()
+    assert (reset.surprise[: parameters.warmup] == 0.0).all()
+    assert np.isfinite(reset.change_probability).all()
+    assert np.isfinite(reset.surprise).all()
+
+
 def test_alerts_from_scores_threshold_is_inclusive() -> None:
     scores = np.asarray([0.5, 0.4999999, 0.5000001], dtype=np.float64)
     observed = np.asarray([True, True, True], dtype=np.bool_)
