@@ -297,3 +297,39 @@ def test_benchmark_requires_a_synchronized_vendor_snapshot(
 
     with pytest.raises(RunnerError, match="vendor producer snapshot absent"):
         run_benchmark(root=tmp_path, artifact_root=tmp_path / "objects")
+
+
+def test_reproduce_rejects_lab_and_schema_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_drift")
+    original = _manifest(result.manifest_path)
+
+    def mismatched(field: str, sentinel: str) -> str:
+        recorded = original[field]
+        assert isinstance(recorded, str)
+        if recorded != sentinel:
+            return sentinel
+        return sentinel + "-tampered"
+
+    cases = [
+        ("lab_commit", "b" * 40, "current lab commit differs"),
+        ("environment_sha256", "sha256:" + "0" * 64, "current uv.lock differs"),
+        ("dataset_sha256", "sha256:" + "0" * 64, "reproduced dataset recipe differs"),
+        (
+            "producer_schema_sha256",
+            "sha256:" + "0" * 64,
+            "pinned producer schema differs",
+        ),
+    ]
+    for field, sentinel, match in cases:
+        tampered = dict(original)
+        tampered[field] = mismatched(field, sentinel)
+        assert tampered[field] != original[field]
+        result.manifest_path.write_text(json.dumps(tampered), encoding="utf-8")
+        try:
+            with pytest.raises(RunnerError, match=match):
+                reproduce_run(result.manifest_path, root=ROOT)
+        finally:
+            result.manifest_path.write_text(json.dumps(original), encoding="utf-8")
