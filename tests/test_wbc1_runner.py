@@ -375,7 +375,7 @@ def test_method_trial_view_rejects_threshold_and_metric_drift(
         )
 
     tampered_decision = result.bundle.decision.model_copy(
-        update={"reason_codes": tuple(result.bundle.decision.reason_codes) + ("TAMPERED",)}
+        update={"reason_codes": (*result.bundle.decision.reason_codes, "TAMPERED")}
     )
     tampered_bundle = result.bundle.model_copy(update={"decision": tampered_decision})
     with pytest.raises(ValueError, match="EvaluationBundle decision differs"):
