@@ -79,3 +79,35 @@ def test_write_scope_file_once_cleans_partial(
     monkeypatch.undo()
     assert store.write_scope_file_once("scope_demo", "custody.json", b"complete\n") == target
     assert target.read_bytes() == b"complete\n"
+
+
+def test_invalidate_scope_removes_only_target(tmp_path: Path) -> None:
+    store = ArtifactStore(tmp_path / ".dllab")
+    target_root = store.reserve_scope("scope_target")
+    sibling_root = store.reserve_scope("scope_sibling")
+    target_ref = store.put_bytes("scope_target", b"target payload", "application/json")
+    sibling_ref = store.put_bytes("scope_sibling", b"sibling payload", "application/json")
+    store.write_scope_file("scope_target", "target.txt", b"target file")
+    store.write_scope_file("scope_sibling", "sibling.txt", b"sibling file")
+    assert store.get_bytes("scope_target", target_ref) == b"target payload"
+    assert store.get_bytes("scope_sibling", sibling_ref) == b"sibling payload"
+
+    assert store.invalidate_scope("scope_target") is True
+    assert not target_root.exists()
+    assert sibling_root.is_dir()
+    assert store.get_bytes("scope_sibling", sibling_ref) == b"sibling payload"
+    assert (sibling_root / "sibling.txt").read_bytes() == b"sibling file"
+    assert store.invalidate_scope("scope_target") is False
+
+    target_root = store.reserve_scope("scope_target")
+    recreated_ref = store.put_bytes("scope_target", b"target payload v2", "application/json")
+    store.write_scope_file("scope_target", "target.txt", b"target file v2")
+    quarantine = target_root.with_name(".deleting-scope_target")
+    quarantine.mkdir()
+    with pytest.raises(ArtifactError, match="quarantine"):
+        store.invalidate_scope("scope_target")
+    assert target_root.is_dir()
+    assert store.get_bytes("scope_target", recreated_ref) == b"target payload v2"
+    assert (target_root / "target.txt").read_bytes() == b"target file v2"
+    assert store.get_bytes("scope_sibling", sibling_ref) == b"sibling payload"
+    assert (sibling_root / "sibling.txt").read_bytes() == b"sibling file"
