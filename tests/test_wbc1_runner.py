@@ -393,8 +393,9 @@ def test_method_trial_view_rejects_threshold_and_metric_drift(
         for position, metric in enumerate(metrics)
         if metric.metric_code == "false_alerts_per_year"
     )
-    assert metrics[index].value is not None
-    tampered_metric = metrics[index].model_copy(update={"value": float(metrics[index].value) + 1.0})
+    original_value = metrics[index].value
+    assert original_value is not None
+    tampered_metric = metrics[index].model_copy(update={"value": float(original_value) + 1.0})
     tampered_results = result.bundle.candidate_results.model_copy(
         update={
             "metrics": tuple(
