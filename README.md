@@ -44,7 +44,7 @@ flowchart TB
   subgraph product["Developer Lens — contract and promotion authority"]
     RPS["ResearchPack.v1 schema"]
     MTVS["MethodTrialView.v1 schema"]
-    RFS["ResearchFinding.v1 schema"]
+    RFS["ResearchFindingProjection.v1 schema"]
     UI["hosted Method Trial view"]
   end
 
@@ -81,8 +81,8 @@ flowchart TB
   RUN --> STORE
   REPRO --> STORE
   RPT --> STORE
-  EXP --> STORE
-  STORE -->|"C0 Method Trial JSON"| UI
+  STORE --> EXP
+  EXP -->|"writes ignored local file"| OUT["method-trial-view.json"]
 ```
 
 WB-C1 smoke is the runnable vertical. The runner materialises invented `coverage` and `repository_week` Parquet relations under the pinned product schema, evaluates the online arms, records PELT only as offline evidence, and emits an EvaluationBundle. The reviewed C0 exhibit decided `reject`: the candidate did not beat the baseline on false alerts per year, both threshold selections were nonviable, and the deterministic fallback stayed complete. That is mechanics evidence, not a claim about real repositories. See [`docs/EXPERIMENT_LEDGER.md`](docs/EXPERIMENT_LEDGER.md) and [`CHANGELOG.md`](CHANGELOG.md).
@@ -156,7 +156,7 @@ Runtime and tracked inputs remain C0 invented. The current cards (`tools/cards.p
 | State | Card | Meaning |
 | --- | --- | --- |
 | ACTIVE | `LAB-REL-01` ([issue #29](https://github.com/Chris0Jeky/developer-lens-lab/issues/29)) | v0.1.0 release wave. Lab-side prep is in-tree; the joint tag waits on product visual QA and `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c)`. |
-| BACKLOG | `LAB-ACT-01` | Real-data activation preconditions. Closed until `.agent-harness/governor.json` is mechanically true plus owner scope at `HUMAN_TODO.md` q-9. |
+| BACKLOG | `LAB-ACT-01` | Real-data activation preconditions. Closed until `.agent-harness/governor.json` is mechanically true plus owner scope at `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-9`. |
 | BACKLOG | `LAB-SURV-01` ([issue #30](https://github.com/Chris0Jeky/developer-lens-lab/issues/30)) | Integration-tail survival study. Depends on a later product-owned view. |
 | BACKLOG | `LAB-CONTRACT-03` ([issue #23](https://github.com/Chris0Jeky/developer-lens-lab/issues/23)) | MethodTrialView representative-preference reconcile. Product-owned schema change. |
 | BACKLOG | `LAB-CORPUS-01` … `03` | Public-metadata corpus. Parked behind `LAB-ACT-01`. |
@@ -164,7 +164,7 @@ Runtime and tracked inputs remain C0 invented. The current cards (`tools/cards.p
 
 Milestones M0–M2 (repository OS, contracts, WB-C1 smoke) are implemented. M3 corpus, M4 empirical candidate, and M5 product proposal stay gated. Deferred security and operational debt lives in [`docs/HARDENING_BACKLOG.md`](docs/HARDENING_BACKLOG.md); it does not block the runnable C0 loop.
 
-Owner-only gates that remain open are listed in [`HUMAN_TODO.md`](HUMAN_TODO.md): AGPL/CLA legal review (q-7), any real-study public transformation (q-8), real-data scopes (q-9), remote telemetry destination (q-10), umbrella brand (q-12), and two escaped-environment cleanups (q-13). Small fixes and issue discussion may proceed. Substantial external code waits on q-7. There is no CLA in this repository.
+Owner-only gates that remain open are listed in [`HUMAN_TODO.md`](HUMAN_TODO.md): AGPL/CLA legal review (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7), any real-study public transformation (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8), real-data scopes (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-9), remote telemetry destination (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-10), umbrella brand (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-12), and two escaped-environment cleanups (Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13). Small fixes and issue discussion may proceed. Substantial external code waits on Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7. There is no CLA in this repository.
 
 ## Boundaries
 
@@ -184,7 +184,7 @@ Developer Lens Lab is copyright (C) 2026 Cristian Tcaci and is released under th
 
 A future commercial option may be considered. None is offered today, and there is no public dual-licensing promise. See [`COMMERCIAL_OPTION.md`](COMMERCIAL_OPTION.md).
 
-Contribution rules, invented-data requirements, and the q-7 external-code gate are in [`CONTRIBUTING.md`](CONTRIBUTING.md). Conduct expectations and the content-free private-contact request are in [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). The Lab has no dedicated conduct inbox and no published incident address.
+Contribution rules, invented-data requirements, and the Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7 external-code gate are in [`CONTRIBUTING.md`](CONTRIBUTING.md). Conduct expectations and the content-free private-contact request are in [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). The Lab has no dedicated conduct inbox and no published incident address.
 
 Staged C0 Method Trial bytes under [`release-assets/v0.1.0/method-trial-v1/`](release-assets/v0.1.0/method-trial-v1/) are tracked for release review only (`staged_for_release_review_only`). Staging is not publication.
 
