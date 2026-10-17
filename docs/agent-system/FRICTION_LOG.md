@@ -2967,3 +2967,18 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Apply Ruff formatting to the test and run the declared local checks in the locked Python 3.12 environment.
 - **task:** Swarm finding `f-dcfe44aa16`, PR #163.
 - **promotion:** No production logic, runner, policy, or gate changes. Two additional-coverage review suggestions were classified non-blocking and declined on their threads.
+
+### FR-111 - Sandboxed focused issue checks lack the supported toolchain
+
+- **first-seen:** 2026-10-17
+- **status:** worked around for focused checks only
+- **symptom:** Git refused worktree ownership, the default uv cache and Python 3.13 launcher were
+  inaccessible, no managed Python 3.12 was available, and pytest's default temporary root was denied.
+- **workaround:** Read Git with a per-command ownership exception; run only the two affected pytest
+  files with workspace-local temporary fixtures and third-party plugin autoload disabled. The
+  available Python 3.14.3/PyArrow 24.0.0 toolchain is outside the locked project versions, so these
+  results do not establish the supported-toolchain/full-gate proof. Native symlink cases skip;
+  existing, dangling, and chained Windows junctions are exercised directly.
+- **task:** Lab issues #148 and #149.
+- **promotion:** No runner, configuration, authority, or gate changes. Driver retains publication
+  and supported-toolchain verification under the explicit edit-only, narrow-test brief.
