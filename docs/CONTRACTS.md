@@ -15,7 +15,12 @@ ResearchPack has exactly seven relation slots: `coverage`, `repository_week`, `p
 `ci_attempt`, `release_episode`, `collection_probe`, and `system_event`. A present relation names a
 closed schema ID, observed row count, and content-addressed Parquet object. Every other state has a
 controlled reason and no count or artifact. The bootstrap validator accepts C0 only. Parquet
-validation checks the exact allowlisted column order for each relation.
+validation checks each versioned relation's exact column order and Arrow types: strings for
+identifiers/codes and canonical UTC instants (including week/window boundaries), `int64` for counts,
+and `float64` for metric values. Values must be finite and counts non-negative. Only `expected_units`,
+`ready_at`, `merged_at`, and `completed_at` allow nulls; required fields reject null values even when
+the producer's inferred Parquet schema marks them optional. Type/value errors name only the trusted
+relation and field, never the rejected value or local path.
 
 `schemas/research-pack/v1/consumer.schema.json` is the lab's generated strict-reader mirror, not the
 canonical producer schema. Developer Lens publishes its canonical schema and invented fixture at
@@ -59,8 +64,10 @@ not claimed during bootstrap.
 Manifests carry `{sha256, size_bytes, media_type}` only. `.dllab/scopes/<opaque scope>/objects/`
 derives the storage location from the digest, so no path enters a portable manifest. Writes publish
 through a same-directory temporary file and atomic replace; reads verify digest and size. Scope
-invalidation is confined to the validated scope root. Crash durability, hostile same-user races,
-Windows reparse points, quotas, and artifact signing remain explicitly deferred in
+invalidation is confined to the validated scope root. Store admission and operations reject existing
+or dangling symlinks and Windows junctions along the lexical root/parent chain before following them.
+Crash durability, hostile same-user races between checks and filesystem operations, other Windows
+reparse-point handling, quotas, and artifact signing remain explicitly deferred in
 `HARDENING_BACKLOG.md` while all inputs are regenerable C0.
 
 The current Developer Lens AnalysisPack 1.0 and proposed Pack 2.0 disagreement is outside this seam.

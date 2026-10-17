@@ -1,5 +1,25 @@
 # Implementation ledger
 
+## 2026-10-17 - ResearchPack Arrow schema validation (issue #148)
+
+- Pin all seven v1 relation layouts, reject incompatible Arrow types and required nulls, and validate
+  finite metrics, non-negative counts, and canonical UTC text without exposing rejected values.
+- `test_relation_arrow_schema` covers valid layouts, optional nulls, wrong types (including the
+  reported string metric), required nulls, non-finite metrics, negative counts, and invalid instants.
+  All seven cases failed before the fix; focused proof and toolchain limits are recorded in the handoff.
+- Contract documentation reflects the consumer checks. No generated producer snapshot, experiment,
+  data lane, phase, release, or human gate changed.
+
+## 2026-10-17 - Lexical artifact-root link refusal (issue #149)
+
+- Reject dangling/existing symlinks and Windows junctions before root normalization, retain the
+  lexical root, and recheck every parent before store operations.
+- Existing/dangling/chained Windows junction regressions failed before the fix and pass afterward;
+  native symlink cases skip when host privileges are unavailable. Focused checks also cover lexical
+  root/ancestor replacement before scope reservation, object publication, and metadata writes.
+- Contract documentation retains the deferred hostile concurrent-race boundary. No experiment,
+  data lane, phase, release, or human gate changed.
+
 ## 2026-10-11 - Holdout decision caller regression
 
 - Swarm finding `f-46c3df9341`: pin both disagreement directions between test and final-holdout metrics; run_evaluation must base its verdict on final holdout.
