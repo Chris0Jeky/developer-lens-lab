@@ -1,11 +1,87 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path
 
 import pytest
 
 from developer_lens_lab.artifacts import ArtifactError, ArtifactStore
+
+
+@pytest.mark.parametrize("state", ["existing", "dangling", "chained"])
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "symlink",
+        pytest.param("junction", marks=pytest.mark.skipif(os.name != "nt", reason="Windows")),
+    ],
+)
+def test_store_rejects_link_roots_without_outside_writes(
+    tmp_path: Path, state: str, kind: str
+) -> None:
+    outside = tmp_path / "outside"
+    if state == "existing":
+        outside.mkdir()
+
+    def link(path: Path, target: Path) -> None:
+        if kind == "junction":
+            result = subprocess.run(
+                ["cmd", "/c", "mklink", "/J", str(path), str(target)],
+                capture_output=True,
+                check=False,
+            )
+            if result.returncode:
+                pytest.skip("directory junctions are unavailable on this host")
+            assert path.is_junction()
+        else:
+            try:
+                path.symlink_to(target, target_is_directory=True)
+            except OSError:
+                pytest.skip("directory symlinks are unavailable on this host")
+            assert path.is_symlink()
+
+    target = outside
+    if state == "chained":
+        target = tmp_path / "intermediate"
+        link(target, outside)
+    requested = tmp_path / ".dllab"
+    link(requested, target)
+
+    with pytest.raises(ArtifactError, match=r"symlink|junction"):
+        store = ArtifactStore(requested)
+        store.reserve_scope("scope_demo")
+        store.put_bytes("scope_demo", b"data", "application/json")
+        store.write_scope_file("scope_demo", "record.json", b"{}")
+    if state == "existing":
+        assert list(outside.iterdir()) == []
+    else:
+        assert not outside.exists()
+
+
+@pytest.mark.parametrize("boundary", ["root", "ancestor"])
+@pytest.mark.parametrize("operation", ["reserve", "put", "write"])
+def test_store_rechecks_lexical_root_before_writes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, boundary: str, operation: str
+) -> None:
+    requested = tmp_path / ".dllab"
+    store = ArtifactStore(requested)
+    original = Path.is_symlink
+    unsafe = requested if boundary == "root" else tmp_path
+
+    def is_symlink(path: Path) -> bool:
+        return path == unsafe or original(path)
+
+    monkeypatch.setattr(Path, "is_symlink", is_symlink)
+
+    with pytest.raises(ArtifactError, match="symlink"):
+        if operation == "reserve":
+            store.reserve_scope("scope_demo")
+        elif operation == "put":
+            store.put_bytes("scope_demo", b"data", "application/json")
+        else:
+            store.write_scope_file("scope_demo", "record.json", b"{}")
+    assert not requested.exists()
 
 
 def test_scope_store_roundtrip_deduplicates_and_invalidates(tmp_path: Path) -> None:
