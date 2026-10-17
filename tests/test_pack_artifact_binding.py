@@ -155,7 +155,7 @@ def test_relation_arrow_schema(
 
     store = ArtifactStore(tmp_path / ".dllab")
 
-    def validate(table: pa.Table) -> None:
+    def validate(table: object) -> None:  # pyarrow ships no type stubs
         sink = pa.BufferOutputStream()
         pq.write_table(table, sink)
         reference = store.put_bytes(SCOPE, sink.getvalue().to_pybytes(), "application/x-parquet")
