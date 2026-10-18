@@ -132,6 +132,23 @@ def test_sync_refuses_unresolved_references_in_unused_subschemas(
     assert not destination.exists()
 
 
+@pytest.mark.parametrize("contract", ["research-pack", "method-trial-view"])
+def test_sync_refuses_a_reference_to_a_non_schema_value(tmp_path: Path, contract: str) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = product / "research-contracts" / contract / "v1/schema.json"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    vendor = Path(__file__).resolve().parents[1] / "vendor/developer-lens" / contract / "v1"
+    schema = json.loads((vendor / "schema.json").read_bytes())
+    schema["examples"] = ["not a schema"]
+    schema["properties"]["unused"] = {"$ref": "#/examples/0"}
+    source.write_text(json.dumps(schema), encoding="utf-8")
+    destination = tmp_path / "lab"
+    sync = sync_product_contract if contract == "research-pack" else sync_method_trial_view_contract
+    with pytest.raises(ContractSyncError):
+        sync(destination, product, _commit(product))
+    assert not destination.exists()
+
+
 def test_sync_accepts_local_reference_closure_without_scanning_instance_data(
     tmp_path: Path,
 ) -> None:

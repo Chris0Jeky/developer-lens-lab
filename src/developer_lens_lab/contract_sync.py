@@ -245,7 +245,7 @@ def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes
         Draft202012Validator(schema_doc, registry=Registry()).validate(fixture)
     except ValidationError as exc:
         raise ContractSyncError("producer fixture does not conform to the producer schema") from exc
-    except Unresolvable as exc:
+    except (Unresolvable, SchemaError, ValueError, TypeError) as exc:
         raise ContractSyncError("producer schema has an unresolvable reference") from exc
 
 
