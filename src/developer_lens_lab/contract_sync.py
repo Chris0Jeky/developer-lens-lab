@@ -1,3 +1,5 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false
+
 from __future__ import annotations
 
 import hashlib
@@ -13,6 +15,9 @@ from typing import Any, cast
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 from pydantic import ValidationError as PydanticValidationError
+from referencing import Registry, Resource
+from referencing.exceptions import Unresolvable
+from referencing.jsonschema import DRAFT202012
 
 from developer_lens_lab.contracts import ResearchPack
 
@@ -145,6 +150,49 @@ def _atomic_write(path: Path, payload: bytes, root: Path) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _load_schema(payload: bytes, label: str) -> dict[str, Any]:
+    try:
+        value = json.loads(payload)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ContractSyncError(f"{label} schema is not valid JSON") from exc
+    if not isinstance(value, dict):
+        raise ContractSyncError(f"{label} schema must be a JSON Schema object")
+    schema = cast(dict[str, Any], value)
+    try:
+        Draft202012Validator.check_schema(schema)
+    except SchemaError as exc:
+        raise ContractSyncError(f"{label} schema is not valid Draft 2020-12") from exc
+    try:
+        _validate_reference_closure(schema)
+    except (Unresolvable, SchemaError, ValueError, TypeError) as exc:
+        raise ContractSyncError(f"{label} schema references must resolve locally") from exc
+    return schema
+
+
+def _validate_reference_closure(schema: dict[str, Any]) -> None:
+    """Check schema subresources, not ref-shaped instance examples or constants."""
+    resource = Resource.from_contents(schema, default_specification=DRAFT202012)
+    pending = [(resource, Registry[Any]().resolver_with_root(resource))]
+    seen: set[int] = set()
+    while pending:
+        current, resolver = pending.pop()
+        contents = current.contents
+        if isinstance(contents, bool) or id(contents) in seen:
+            continue
+        seen.add(id(contents))
+        for keyword in ("$ref", "$dynamicRef"):
+            reference = contents.get(keyword)
+            if reference is None:
+                continue
+            if not isinstance(reference, str):
+                raise ValueError("schema reference must be a URI string")
+            resolved = resolver.lookup(reference)
+            Draft202012Validator.check_schema(resolved.contents)
+            target = Resource.from_contents(resolved.contents, default_specification=DRAFT202012)
+            pending.append((target, resolved.resolver))
+        pending.extend((child, resolver.in_subresource(child)) for child in current.subresources())
+
+
 def _validate_producer_schema(value: object) -> None:
     if not isinstance(value, dict):
         raise ContractSyncError("producer schema must be a JSON Schema object")
@@ -192,9 +240,13 @@ def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes
     except SchemaError as exc:
         raise ContractSyncError("producer schema is not a valid JSON Schema") from exc
     try:
-        Draft202012Validator(schema_doc).validate(fixture)  # pyright: ignore[reportUnknownMemberType]
+        _validate_reference_closure(schema_doc)
+        # An empty registry refuses external retrieval. Sync must remain offline.
+        Draft202012Validator(schema_doc, registry=Registry()).validate(fixture)
     except ValidationError as exc:
         raise ContractSyncError("producer fixture does not conform to the producer schema") from exc
+    except (Unresolvable, SchemaError, ValueError, TypeError) as exc:
+        raise ContractSyncError("producer schema has an unresolvable reference") from exc
 
 
 def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -> Path:
@@ -266,20 +318,15 @@ def sync_method_trial_view_contract(
     if resolved.decode("ascii").strip() != commit:
         raise ContractSyncError("--ref did not resolve to the exact requested commit")
     payload = _git(checkout, "show", f"{commit}:{METHOD_TRIAL_SCHEMA_PATH}")
-    try:
-        schema = json.loads(payload)
-    except json.JSONDecodeError as exc:
-        raise ContractSyncError("MethodTrialView schema is not valid JSON") from exc
-    if not isinstance(schema, dict):
-        raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
-    schema = cast(dict[str, Any], schema)
+    schema = _load_schema(payload, "MethodTrialView")
     if (
         schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
         or "Structural transport validation only" not in str(schema.get("$comment", ""))
         or schema.get("type") != "object"
         or schema.get("additionalProperties") is not False
-        or schema.get("properties", {}).get("schema_version", {}).get("const")
-        != "DeveloperLensMethodTrialView.v1"
+        or not isinstance(schema.get("properties"), dict)
+        or not isinstance(schema["properties"].get("schema_version"), dict)
+        or schema["properties"]["schema_version"].get("const") != "DeveloperLensMethodTrialView.v1"
     ):
         raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
     if _is_link_like(destination_root):
@@ -294,7 +341,7 @@ def sync_method_trial_view_contract(
             _ensure_confined_parent(provenance_path, destination_root, create=False)
             vendored = schema_path.read_bytes()
             provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
             raise ContractSyncError("vendored MethodTrialView snapshot is unavailable") from exc
         if vendored != payload:
             raise ContractSyncError("vendored MethodTrialView schema differs from producer bytes")
