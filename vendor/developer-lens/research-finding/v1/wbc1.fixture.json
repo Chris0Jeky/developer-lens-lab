@@ -1,0 +1,168 @@
+{
+  "classification": "C0",
+  "decision": {
+    "outcome": "reject",
+    "retained_fallback": "rolling_median_mad",
+    "summary": "The candidate is rejected because both selections are nonviable and false alerts are higher."
+  },
+  "finding": {
+    "id": "wbc1",
+    "question": "Can the BOCPD candidate reduce false alerts per year versus the rolling median and MAD baseline without worsening detection or calibration?",
+    "title": "WB-C1 method trial: why the simple baseline won"
+  },
+  "gates": [
+    {
+      "code": "baseline_selection",
+      "label": "Baseline selection is viable",
+      "passed": false
+    },
+    {
+      "code": "candidate_selection",
+      "label": "Candidate selection is viable",
+      "passed": false
+    },
+    {
+      "code": "detection_floor",
+      "label": "Candidate meets detection floor",
+      "passed": true
+    },
+    {
+      "code": "delay_budget",
+      "label": "Candidate meets delay budget",
+      "passed": true
+    },
+    {
+      "code": "false_alert_improvement",
+      "label": "Candidate false alerts are lower than baseline",
+      "passed": false
+    },
+    {
+      "code": "not_worse_detection",
+      "label": "Candidate detection is not worse",
+      "passed": true
+    },
+    {
+      "code": "confound_guard",
+      "label": "Candidate confound guard is measured",
+      "passed": true
+    }
+  ],
+  "generated_at": "2026-08-30T00:00:00Z",
+  "limitations": [
+    {
+      "code": "c0_synthetic_only",
+      "display_text": "Evidence is limited to invented C0 weekly system series."
+    },
+    {
+      "code": "bounded_three_case_selection",
+      "display_text": "Only three bounded representative windows are exported."
+    },
+    {
+      "code": "missingness_and_confound",
+      "display_text": "Missing observations and instrumentation confounds are explicit."
+    },
+    {
+      "code": "thresholds_nonviable",
+      "display_text": "Both threshold selections are nonviable."
+    }
+  ],
+  "methods": {
+    "baseline": {
+      "display_name": "Rolling median and MAD",
+      "method_code": "rolling_median_mad"
+    },
+    "candidate": {
+      "display_name": "Gaussian BOCPD",
+      "method_code": "bocpd_gaussian"
+    }
+  },
+  "metrics": [
+    {
+      "baseline": {
+        "status": "measured",
+        "value": 0.75
+      },
+      "better_when": "higher",
+      "candidate": {
+        "status": "measured",
+        "value": 0.75
+      },
+      "key": "detection_rate",
+      "label": "Detection rate",
+      "unit": "rate"
+    },
+    {
+      "baseline": {
+        "status": "measured",
+        "value": 2.966666666666667
+      },
+      "better_when": "lower",
+      "candidate": {
+        "status": "measured",
+        "value": 4.2
+      },
+      "key": "false_alerts_per_year",
+      "label": "False alerts per year",
+      "unit": "count_per_year"
+    },
+    {
+      "baseline": {
+        "status": "measured",
+        "value": 2
+      },
+      "better_when": "lower",
+      "candidate": {
+        "status": "measured",
+        "value": 1
+      },
+      "key": "median_detection_delay_weeks",
+      "label": "Median detection delay",
+      "unit": "weeks"
+    },
+    {
+      "baseline": {
+        "status": "measured",
+        "value": 0.5
+      },
+      "better_when": "lower",
+      "candidate": {
+        "status": "measured",
+        "value": 0.5
+      },
+      "key": "coverage_confound_false_alert_rate",
+      "label": "Coverage-confound false-alert rate",
+      "unit": "rate"
+    }
+  ],
+  "provenance": {
+    "bundle_hash": "sha256:070bf161dbd7fa5bcb858d484024de69f315550ce8692776b241899d54c4cf35",
+    "producer": "developer-lens-lab",
+    "public_url": "https://chris0jeky.github.io/developer-lens/?view=method-trial",
+    "source_lab_commit": "0ef193070a9b80b81cef5a1710a1d65e0b271c15",
+    "source_product_contract_commit": "b48fea579936671397a0486ae7a0342197ee6e4b"
+  },
+  "schema_version": "ResearchFindingProjection.v1",
+  "subject_class": "software-system",
+  "threshold_viability": {
+    "baseline": false,
+    "candidate": false
+  },
+  "unsupported_claims": [
+    {
+      "code": "real_repository_validity",
+      "display_text": "This result does not establish validity on real repositories."
+    },
+    {
+      "code": "person_level_inference",
+      "display_text": "No person-level inference is supported or attempted."
+    },
+    {
+      "code": "model_promotion",
+      "display_text": "This trial does not promote a model."
+    },
+    {
+      "code": "online_pelt_performance",
+      "display_text": "Offline PELT markers do not establish online performance."
+    }
+  ]
+}

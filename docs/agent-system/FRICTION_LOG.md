@@ -1,5 +1,51 @@
 # Friction log
 
+### FR-108 - Unavailable detection draft gate mismatch
+
+- **first-seen:** 2026-10-11
+- **status:** corrected
+- **symptom:** Worker tests accepted any non-pass gate, masking a fail versus not-applicable contract mismatch. The supplied global Python launcher also failed collection without the lab dependencies.
+- **workaround:** Assert exact missing-data outcomes, align the exporter with the pinned semantic validator, and use the locked supported worktree environment for proof as in FR-105.
+- **task:** Swarm finding `f-76bae218cf`, unavailable benchmark metrics.
+- **promotion:** No runner, policy, or gate changes.
+
+### FR-107 - Short-secret redaction draft overmatching
+
+- **first-seen:** 2026-10-10
+- **status:** corrected
+- **symptom:** The supplied focused tests passed while the existing package-metadata regression failed because substring matching treated bypass/compass tokens as secret names.
+- **workaround:** Preserve the existing benign-token contract and run both redaction and package-metadata coverage before publication.
+- **task:** Swarm finding `f-a1641dc08e`, affixed short-secret redaction.
+- **promotion:** No runner, policy, or gate changes.
+
+### FR-106 - Strict JSON fixture validation in swarm tests
+
+- **first-seen:** 2026-10-10
+- **status:** corrected
+- **symptom:** The worker tests passed JSON-shaped lists to strict Python validation, failing on tuple types before reaching the intended duplicate check. The supplied launcher also repeated FR-105 interpreter parity failures.
+- **workaround:** Use the existing JSON validation convention and locked supported environment. Confirm the corrected regression fails without the validator and passes with it.
+- **task:** Swarm finding `f-e9c4e6398f`, preregistration seed-family uniqueness.
+- **promotion:** No runner, policy, or gate changes; report the supported-environment proof command.
+
+
+### FR-105 - Swarm verify interpreter parity
+
+- **first-seen:** 2026-10-09
+- **status:** worked-around
+- **symptom:** The supplied launcher command selects unsupported Python 3.14 without the Lab package, causing collection errors despite the host's supported-environment proof.
+- **workaround:** Install the locked groups in the produced worktree and run the same pytest selection through its supported Python 3.12 environment with `uv run python -m pytest tests -k contract_sync`.
+- **task:** Swarm finding `f-bf46e9bfcf`, controlled corrupt contract snapshot errors.
+- **promotion:** No runner, policy, or gate changes; report the actual proof command and interpreter.
+
+### FR-104 - Contract confinement draft regression and Windows link coverage
+
+- **first-seen:** 2026-10-09
+- **status:** corrected
+- **symptom:** The worker's narrow check passed but eight existing sync tests rejected fresh roots. Native directory symlink tests skipped on Windows; the redundant private-helper test also failed the declared type check.
+- **workaround:** Restore fresh-root creation and read-only unavailable errors; use invented directory junctions when symlink creation is unavailable. Reject dangling root links before resolving either sync destination; cover missing snapshots through the public API instead of importing a private helper.
+- **task:** Swarm finding `f-424db46598`, contract destination confinement.
+- **promotion:** No runner or policy changes; full proof uses the worktree's locked supported Python environment.
+
 The repository's record of what keeps costing sessions time. It exists because a workaround that is
 only remembered is a workaround that will be rediscovered — expensively — by the next session.
 
@@ -2795,3 +2841,144 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Reinstall and refresh only the locked Babel dependency in the owned environment. Locale `en` then resolved, 1082 locale identifiers were present, and strict docs build and hygiene passed.
 - **task:** Swarm finding `f-26a1b58788`, PR #125 land-turn verification.
 - **promotion:** Environment repair only; no dependency version, policy, or gate change.
+
+### FR-095 - Manifest decoding draft missed the type-check gate
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #134 hosted proof ran and failed with sixteen type errors in the new tests because the fixture parameters lacked annotations.
+- **workaround:** Annotate the fixtures and run the declared type-check gate in the owned locked environment.
+- **task:** Swarm finding `f-45128d8644`, PR #134.
+- **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-096 - Package-smoke redaction draft failed hosted formatting
+
+- **first-seen:** 2026-10-04
+- **status:** workaround-verified
+- **symptom:** PR #135 hosted Prove the lab job ran and failed the formatter on the changed matcher; this was not a billing refusal.
+- **workaround:** Format the bounded redaction fix with the locked Ruff version and verify formatting locally.
+- **task:** Swarm finding `f-0e22cbe6b3`, PR #135 review fix.
+- **promotion:** Keep formatting in the existing publication gate; no gate or policy changes.
+
+### FR-097 - Focused swarm proof missed a required lint rule
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #136's focused test passed, but hosted lint rejected its exception handler under Ruff B904.
+- **workaround:** Reproduce with the locked Ruff check, then explicitly suppress exception chaining with `from None`; retain the regression assertion.
+- **task:** PR #136, swarm finding `f-ea9bc1bfe6`.
+- **promotion:** Run the existing full gate before publication; no gate or policy change.
+
+### FR-098 - False-alert wording draft missed the import-order gate
+
+- **first-seen:** 2026-10-04
+- **status:** fixed
+- **symptom:** PR #137 hosted proof ran and failed Ruff I001 in the new regression test.
+- **workaround:** Sort the test imports and re-run the declared locked-environment gate.
+- **task:** Swarm finding `f-2fed8bf74c`, PR #137.
+- **promotion:** Verification correction only; no gate or runner policy change.
+
+### FR-099 - Swarm proof used an uninstalled unsupported interpreter
+
+- **first-seen:** 2026-10-05
+- **status:** worked around
+- **symptom:** Raw swarm pytest commands use Python 3.14 and cannot import the uninstalled lab; the project declares Python 3.12-3.13. The partial-file test also had a different name from the host selector.
+- **workaround:** Use the locked Python 3.12 uv environment and align the regression name with the host selector; retain failure-before-fix evidence.
+- **task:** Swarm finding `f-0bfc2b16a8`.
+- **promotion:** No runner, gate, or policy change in this slice.
+
+### FR-100 - Timeline-gap publication runner mismatch
+
+- **first-seen:** 2026-10-07
+- **status:** workaround-verified
+- **symptom:** The requested raw pytest runner selected unsupported Python 3.14 and failed collection because ruptures was unavailable; previous publication attempts also reported silent stalls.
+- **workaround:** Created the declared locked Python 3.12 environment inside the worker worktree; all three focused tests passed, and an in-memory gap-joining mutation was rejected by the new test. Gate completion is recorded in the PR or coordinator closeout.
+- **task:** Swarm finding `f-02e7322a2e`, timeline-gap regression coverage.
+- **promotion:** No interpreter, gate, policy, or primary-checkout change.
+
+### FR-101 - Schema publication proof runner mismatch
+
+- **first-seen:** 2026-10-08
+- **status:** workaround-verified
+- **symptom:** The raw pytest runner selected unsupported Python 3.14 without Typer; the locked
+  environment then exposed a test assertion that assumed forward-slash diagnostic paths on Windows.
+- **impact:** Host proof failed collection and did not exercise the schema change.
+- **workaround:** Use the declared locked Python 3.12 environment and compare the platform-native
+  relative path; twelve focused regression cases pass.
+- **occurrences:** One publication attempt, 2026-10-08.
+- **task:** Swarm finding `f-3a788486bf`, generated-schema diagnostic slice.
+- **promotion:** No runner or policy change; retain platform-independent tests and locked proof.
+
+### FR-102 - Schema render land lint failures
+
+- **first-seen:** 2026-10-08
+- **status:** corrected
+- **symptom:** The published draft failed hosted lint on three SIM105 cleanup blocks; local pyright also rejected object-typed replace test doubles. Focused tests alone had passed.
+- **workaround:** Replace equivalent cleanup blocks with contextlib.suppress, type the path arguments accurately, and run the declared full gate in the isolated locked Python environment.
+- **task:** Swarm finding `f-c4f1ebf56b`, PR #147.
+- **promotion:** No gate or runner changes; keep hosted and focused proof distinct.
+
+### FR-103 - Manifest size raw-runner import failure
+
+- **first-seen:** 2026-10-09
+- **status:** worked around
+- **symptom:** The host-style raw pytest command selected an unsupported global Python and failed collection because the lab package was not installed there.
+- **workaround:** Install the worktree's locked development environment and run the focused and full gates with uv on supported Python 3.12.
+- **reproduction:** The baseline mutation exposed a global stat mock leaking into pytest failure reporting; confine that mock to the loader call so a regression reports normally.
+- **task:** Swarm finding `f-5ba1ec335b`, manifest byte-limit slice.
+- **promotion:** No runner or policy changes; publication proof names the actual supported-environment command.
+
+### FR-104 - Report overwrite draft missed formatting gate
+
+- **first-seen:** 2026-10-11
+- **status:** corrected
+- **symptom:** Hosted Prove the lab ran and failed the format check on the new report overwrite tests; narrow worker proof did not exercise formatting.
+- **workaround:** Format and lint the test file with locked Ruff and run the full gate in the isolated worktree. The raw host pytest command selects unsupported Python 3.14 without dependencies and fails collection; use the locked uv Python 3.12 runner for actual proof.
+- **task:** Swarm finding `f-21b8727efc`, PR #158.
+- **promotion:** No gate or policy changes; retain focused and full proof as separate evidence.
+
+### FR-105 - Method-trial gate draft proving failures
+
+- **first-seen:** 2026-10-11
+- **status:** worked around
+- **symptom:** The host's raw pytest command uses unsupported global Python 3.14 without the lab dependencies and fails collection. The worker draft also failed Ruff formatting and import ordering; its regression fixture accessed an unopened synthetic holdout and used a broad callback type.
+- **workaround:** Prepare the isolated locked Python 3.12 environment and correct formatting, import ordering, test holdout setup, and the callback annotation before proving the draft.
+- **task:** Swarm finding `f-6828cc4a5a`, method-trial gate derivation.
+- **promotion:** No runner, policy, or contract changes; report only completed checks as proof.
+- **publication checkpoint:** The full local suite ran 572 tests: 565 passed, six host symlink cases skipped, and the Windows child/grandchild timeout fixture failed because its readiness marker was absent after the two-second deadline. A scoped rerun failed in the same process-tree test with cleanup confirmation unavailable, while both new gate regressions passed again. The process-tree fixture and runner are outside this diff; the cause is unproven, and publication is deferred rather than changing a gate or broadening the slice.
+- **publish-turn recheck:** The locked-environment export checks passed (eight passed, one host symlink case skipped), and the isolated Windows process-tree case passed. The full suite then again reported 565 passed, six skipped, and the same readiness-marker failure. Doctor, context, formatting, lint, type checking, and strict documentation build passed. The isolated pass does not explain the full-suite failure; publication stays deferred with no push or PR and no change to the unrelated process runner.
+
+### FR-109 - Holdout verdict regression draft corrections
+
+- **first-seen:** 2026-10-11
+- **status:** workaround-verified
+- **symptom:** The raw host runner failed collection under unsupported Python 3.14 without the lab package. Locked proof exposed an invalid holdout partition code and nonexistent result attributes in the worker draft.
+- **impact:** Draft verification could not establish the requested holdout decision guarantee.
+- **workaround:** Use the locked Python 3.12 environment; correct the test to use final_holdout and decision_reasons, and type its helper. All 26 evaluation tests pass; an in-memory mutation to use test metrics makes the new regression fail.
+- **occurrences:** One publication turn on 2026-10-11.
+- **task:** Swarm finding `f-46c3df9341`.
+- **promotion:** Runner parity remains existing task debt; no gate or production changes.
+
+### FR-110 - BOCPD warmup draft missed formatting gate
+
+- **first-seen:** 2026-10-12
+- **status:** worked around
+- **symptom:** PR #163 hosted proof failed Ruff formatting of the added synthetic warmup test.
+- **workaround:** Apply Ruff formatting to the test and run the declared local checks in the locked Python 3.12 environment.
+- **task:** Swarm finding `f-dcfe44aa16`, PR #163.
+- **promotion:** No production logic, runner, policy, or gate changes. Two additional-coverage review suggestions were classified non-blocking and declined on their threads.
+
+### FR-111 - Sandboxed focused issue checks lack the supported toolchain
+
+- **first-seen:** 2026-10-17
+- **status:** worked around for focused checks only
+- **symptom:** Git refused worktree ownership, the default uv cache and Python 3.13 launcher were
+  inaccessible, no managed Python 3.12 was available, and pytest's default temporary root was denied.
+- **workaround:** Read Git with a per-command ownership exception; run only the two affected pytest
+  files with workspace-local temporary fixtures and third-party plugin autoload disabled. The
+  available Python 3.14.3/PyArrow 24.0.0 toolchain is outside the locked project versions, so these
+  results do not establish the supported-toolchain/full-gate proof. Native symlink cases skip;
+  existing, dangling, and chained Windows junctions are exercised directly.
+- **task:** Lab issues #148 and #149.
+- **promotion:** No runner, configuration, authority, or gate changes. Driver retains publication
+  and supported-toolchain verification under the explicit edit-only, narrow-test brief.

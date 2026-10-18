@@ -16,6 +16,8 @@ import pyarrow.parquet as pq
 from developer_lens_lab.artifacts import ArtifactRef, ArtifactStore, canonical_json_bytes
 from developer_lens_lab.contracts import EvaluationBundle, validate_method_trial_view
 from developer_lens_lab.wbc1.evaluation import (
+    DETECTION_DELAY_BUDGET,
+    BenchmarkEvaluation,
     evaluate_partition,
     prepare_evaluation,
     run_evaluation,
@@ -84,14 +86,40 @@ def _unavailable(reason: str = "not_measured") -> dict[str, str]:
     return {"status": "unavailable", "reason": reason}
 
 
+def _maybe_value(value: float | None) -> dict[str, object] | dict[str, str]:
+    if value is None:
+        return _unavailable()
+    return _value(value)
+
+
+def _optional_metric(bundle: EvaluationBundle, role: str, code: str) -> float | None:
+    result = bundle.baseline_results if role == "baseline" else bundle.candidate_results
+    for metric in result.metrics:
+        if metric.metric_code == code:
+            return float(metric.value) if metric.value is not None else None
+    raise ValueError(f"{role} metric is unavailable: {code}")
+
+
 def load_provenance(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     method_path = root / "vendor" / "developer-lens" / "method-trial-view" / "v1"
     research_path = root / "vendor" / "developer-lens" / "research-pack" / "v1"
-    method = cast(dict[str, Any], json.loads((method_path / "provenance.json").read_text()))
-    research = cast(dict[str, Any], json.loads((research_path / "provenance.json").read_text()))
+    method_text = (method_path / "provenance.json").read_text(encoding="utf-8")
+    research_text = (research_path / "provenance.json").read_text(encoding="utf-8")
+    method = cast(dict[str, Any], json.loads(method_text))
+    research = cast(dict[str, Any], json.loads(research_text))
     for directory, provenance in ((method_path, method), (research_path, research)):
         for entry in cast(list[dict[str, Any]], provenance.get("files", [])):
-            payload = (directory / str(entry["name"])).read_bytes()
+            name = entry.get("name")
+            if (
+                not isinstance(name, str)
+                or not name
+                or name in (".", "..")
+                or "/" in name
+                or "\\" in name
+                or Path(name).name != name
+            ):
+                raise ValueError("vendored contract provenance names an unsafe file")
+            payload = (directory / name).read_bytes()
             if entry.get("sha256") != _sha256(payload) or entry.get("size_bytes") != len(payload):
                 raise ValueError("vendored contract provenance does not match file bytes")
     return method, research
@@ -333,6 +361,198 @@ def _build_cases(
     ]
 
 
+def _selection_gate(viable: bool, role: str) -> tuple[str, str]:
+    if viable:
+        return "pass", f"{role} selection is viable"
+    return "fail", f"{role} train and validation selection is nonviable."
+
+
+def _acceptance_gates(
+    full_evaluation: BenchmarkEvaluation,
+    baseline_false: float,
+    baseline_detection: float | None,
+    baseline_delay: float | None,
+    baseline_confound: float | None,
+    candidate_false: float,
+    candidate_detection: float | None,
+    candidate_delay: float | None,
+    candidate_confound: float | None,
+) -> list[dict[str, Any]]:
+    """Derive each acceptance gate from the recomputed final-holdout metrics.
+
+    Outcomes mirror the preregistered benchmark predicates evaluated on the
+    recomputed ``full_evaluation`` and the recomputed baseline/candidate
+    partition metrics, including the measured/unavailable scorecard encoding
+    the contract validator expects.
+    """
+    baseline_outcome, baseline_reason = _selection_gate(
+        full_evaluation.baseline_selection.viable, "Baseline"
+    )
+    candidate_outcome, candidate_reason = _selection_gate(
+        full_evaluation.candidate_selection.viable, "Candidate"
+    )
+    if candidate_detection is None:
+        floor_outcome = "not_applicable"
+        floor_reason = "Candidate detection was not measured."
+    elif candidate_detection >= 0.75:
+        floor_outcome = "pass"
+        floor_reason = "Candidate detection meets the preregistered floor."
+    else:
+        floor_outcome = "fail"
+        floor_reason = "Candidate detection is evaluated against the preregistered floor."
+    if candidate_delay is None:
+        delay_outcome = "not_applicable"
+        delay_reason = "Candidate median delay is evaluated against the eight-week budget."
+    elif candidate_delay <= DETECTION_DELAY_BUDGET:
+        delay_outcome = "pass"
+        delay_reason = "Candidate median detection delay meets the preregistered budget."
+    else:
+        delay_outcome = "fail"
+        delay_reason = "Candidate median delay is evaluated against the eight-week budget."
+    if candidate_false <= baseline_false * 0.8:
+        false_outcome = "pass"
+        false_reason = "Candidate false alerts improve"
+    else:
+        false_outcome = "fail"
+        false_reason = "Candidate false alerts per year exceed the baseline."
+    if baseline_detection is None or candidate_detection is None:
+        not_worse_outcome = "not_applicable"
+        not_worse_reason = "Detection comparison requires both measurements."
+    elif candidate_detection >= baseline_detection:
+        not_worse_outcome = "pass"
+        not_worse_reason = "Candidate detection is not worse than baseline."
+    else:
+        not_worse_outcome = "fail"
+        not_worse_reason = "Candidate detection is compared directly with baseline detection."
+    if baseline_confound is None or candidate_confound is None:
+        confound_outcome = "not_applicable"
+        confound_reason = "Candidate confound false-alert rate is compared with baseline."
+    elif candidate_confound <= baseline_confound:
+        confound_outcome = "pass"
+        confound_reason = "Candidate confound false-alert rate is measured within the guard."
+    else:
+        confound_outcome = "fail"
+        confound_reason = "Candidate confound false-alert rate is compared with baseline."
+    baseline_delay_value = _maybe_value(baseline_delay)
+    candidate_delay_value = _maybe_value(candidate_delay)
+    baseline_confound_value = _maybe_value(baseline_confound)
+    candidate_confound_value = _maybe_value(candidate_confound)
+    baseline_detection_value = _maybe_value(baseline_detection)
+    candidate_detection_value = _maybe_value(candidate_detection)
+    return [
+        {
+            "order": 1,
+            "code": "baseline_selection",
+            "label": "Baseline selection is viable",
+            "outcome": baseline_outcome,
+            "reason_code": "BASELINE_SELECTION_VIABLE",
+            "reason": baseline_reason,
+        },
+        {
+            "order": 2,
+            "code": "candidate_selection",
+            "label": "Candidate selection is viable",
+            "outcome": candidate_outcome,
+            "reason_code": "CANDIDATE_SELECTION_VIABLE",
+            "reason": candidate_reason,
+        },
+        {
+            "order": 3,
+            "code": "detection_floor",
+            "label": "Candidate meets detection floor",
+            "outcome": floor_outcome,
+            "reason_code": "CANDIDATE_DETECTION_FLOOR",
+            "reason": floor_reason,
+            "relevant_values": {
+                "baseline": baseline_detection_value,
+                "candidate": candidate_detection_value,
+            },
+        },
+        {
+            "order": 4,
+            "code": "delay_budget",
+            "label": "Candidate meets delay budget",
+            "outcome": delay_outcome,
+            "reason_code": "CANDIDATE_DELAY_BUDGET",
+            "reason": delay_reason,
+            "relevant_values": {
+                "baseline": baseline_delay_value,
+                "candidate": candidate_delay_value,
+            },
+        },
+        {
+            "order": 5,
+            "code": "false_alert_improvement",
+            "label": "Candidate false alerts improve",
+            "outcome": false_outcome,
+            "reason_code": "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
+            "reason": false_reason,
+            "relevant_values": {
+                "baseline": _value(baseline_false),
+                "candidate": _value(candidate_false),
+            },
+        },
+        {
+            "order": 6,
+            "code": "not_worse_detection",
+            "label": "Candidate detection is not worse",
+            "outcome": not_worse_outcome,
+            "reason_code": "CANDIDATE_NOT_WORSE_DETECTION",
+            "reason": not_worse_reason,
+            "relevant_values": {
+                "baseline": baseline_detection_value,
+                "candidate": candidate_detection_value,
+            },
+        },
+        {
+            "order": 7,
+            "code": "confound_guard",
+            "label": "Candidate confound guard is measured",
+            "outcome": confound_outcome,
+            "reason_code": "CANDIDATE_CONFOUND_GUARD",
+            "reason": confound_reason,
+            "relevant_values": {
+                "baseline": baseline_confound_value,
+                "candidate": candidate_confound_value,
+            },
+        },
+    ]
+
+
+def _trial_decision(full_evaluation: BenchmarkEvaluation) -> dict[str, Any]:
+    """Derive the trial decision from the recomputed evaluation.
+
+    The bundle decision is verified against the same recomputed evaluation by
+    the caller; the exported outcome tracks the recomputed verdict while the
+    reason codes list exactly the derived gates that fail.
+    """
+    gates = _acceptance_gates(
+        full_evaluation,
+        full_evaluation.baseline_holdout.false_alerts_per_year,
+        full_evaluation.baseline_holdout.detection_rate,
+        full_evaluation.baseline_holdout.median_detection_delay,
+        full_evaluation.baseline_holdout.coverage_confound_false_alert_rate,
+        full_evaluation.candidate_holdout.false_alerts_per_year,
+        full_evaluation.candidate_holdout.detection_rate,
+        full_evaluation.candidate_holdout.median_detection_delay,
+        full_evaluation.candidate_holdout.coverage_confound_false_alert_rate,
+    )
+    reason_codes = [str(gate["reason_code"]) for gate in gates if gate["outcome"] == "fail"]
+    return {
+        "outcome": full_evaluation.decision,
+        "candidate_promoted": False,
+        "fallback": {"method_code": "rolling_median_mad", "retained": True},
+        "reason_codes": reason_codes,
+        "summary": (
+            "The candidate is rejected because the recorded acceptance gates do not all pass."
+        ),
+        "why_simple_baseline_won": (
+            "The complete deterministic baseline remains the retained fallback under the "
+            "recorded gate outcomes."
+        ),
+    }
+
+
 def compose_method_trial_view(
     run_id: str,
     *,
@@ -424,27 +644,26 @@ def compose_method_trial_view(
         dataset.final_holdout_metadata, "bocpd_gaussian", candidate_threshold
     )
     baseline_false = baseline_eval.false_alerts_per_year
-    baseline_detection = baseline_eval.detection_rate or 0.0
+    baseline_detection = baseline_eval.detection_rate
     baseline_delay = baseline_eval.median_detection_delay
     baseline_confound = baseline_eval.coverage_confound_false_alert_rate
     candidate_false = candidate_eval.false_alerts_per_year
-    candidate_detection = candidate_eval.detection_rate or 0.0
+    candidate_detection = candidate_eval.detection_rate
     candidate_delay = candidate_eval.median_detection_delay
     candidate_confound = candidate_eval.coverage_confound_false_alert_rate
     candidate_brier = candidate_eval.calibration_brier
     if _metric(bundle, "baseline", "false_alerts_per_year") != baseline_false:
         raise ValueError("baseline metric differs from recomputed final holdout")
-    if _metric(bundle, "baseline", "detection_rate") != baseline_detection:
+    if _optional_metric(bundle, "baseline", "detection_rate") != baseline_detection:
         raise ValueError("baseline detection differs from recomputed final holdout")
     if _metric(bundle, "candidate", "false_alerts_per_year") != candidate_false:
         raise ValueError("candidate metric differs from recomputed final holdout")
-    if _metric(bundle, "candidate", "detection_rate") != candidate_detection:
+    if _optional_metric(bundle, "candidate", "detection_rate") != candidate_detection:
         raise ValueError("candidate detection differs from recomputed final holdout")
-    bundle_brier = next(
-        float(metric.value)
-        for metric in bundle.calibration.metrics
-        if metric.metric_code == "brier" and metric.value is not None
-    )
+    brier_values = [
+        metric.value for metric in bundle.calibration.metrics if metric.metric_code == "brier"
+    ]
+    bundle_brier = float(brier_values[0]) if brier_values and brier_values[0] is not None else None
     if bundle_brier != candidate_brier:
         raise ValueError("candidate calibration differs from recomputed final holdout")
     payload: dict[str, Any] = {
@@ -524,7 +743,7 @@ def compose_method_trial_view(
         "scorecard": {
             "baseline": {
                 "false_alerts_per_year": _value(baseline_false),
-                "detection_rate": _value(baseline_detection),
+                "detection_rate": _maybe_value(baseline_detection),
                 "median_detection_delay_weeks": _value(baseline_delay)
                 if baseline_delay is not None
                 else _unavailable(),
@@ -535,7 +754,7 @@ def compose_method_trial_view(
             },
             "candidate": {
                 "false_alerts_per_year": _value(candidate_false),
-                "detection_rate": _value(candidate_detection),
+                "detection_rate": _maybe_value(candidate_detection),
                 "median_detection_delay_weeks": _value(candidate_delay)
                 if candidate_delay is not None
                 else _unavailable(),
@@ -565,98 +784,18 @@ def compose_method_trial_view(
                 },
             },
         },
-        "acceptance_gates": [
-            {
-                "order": 1,
-                "code": "baseline_selection",
-                "label": "Baseline selection is viable",
-                "outcome": "fail",
-                "reason_code": "BASELINE_SELECTION_VIABLE",
-                "reason": "Baseline train and validation selection is nonviable.",
-            },
-            {
-                "order": 2,
-                "code": "candidate_selection",
-                "label": "Candidate selection is viable",
-                "outcome": "fail",
-                "reason_code": "CANDIDATE_SELECTION_VIABLE",
-                "reason": "Candidate train and validation selection is nonviable.",
-            },
-            {
-                "order": 3,
-                "code": "detection_floor",
-                "label": "Candidate meets detection floor",
-                "outcome": "pass",
-                "reason_code": "CANDIDATE_DETECTION_FLOOR",
-                "reason": "Candidate detection meets the preregistered floor.",
-                "relevant_values": {
-                    "baseline": _value(baseline_detection),
-                    "candidate": _value(candidate_detection),
-                },
-            },
-            {
-                "order": 4,
-                "code": "delay_budget",
-                "label": "Candidate meets delay budget",
-                "outcome": "pass",
-                "reason_code": "CANDIDATE_DELAY_BUDGET",
-                "reason": "Candidate median detection delay meets the preregistered budget.",
-                "relevant_values": {
-                    "baseline": _value(baseline_delay or 0.0),
-                    "candidate": _value(candidate_delay or 0.0),
-                },
-            },
-            {
-                "order": 5,
-                "code": "false_alert_improvement",
-                "label": "Candidate false alerts improve",
-                "outcome": "fail",
-                "reason_code": "CANDIDATE_FALSE_ALERT_IMPROVEMENT",
-                "reason": "Candidate false alerts per year exceed the baseline.",
-                "relevant_values": {
-                    "baseline": _value(baseline_false),
-                    "candidate": _value(candidate_false),
-                },
-            },
-            {
-                "order": 6,
-                "code": "not_worse_detection",
-                "label": "Candidate detection is not worse",
-                "outcome": "pass",
-                "reason_code": "CANDIDATE_NOT_WORSE_DETECTION",
-                "reason": "Candidate and baseline detection rates are equal.",
-                "relevant_values": {
-                    "baseline": _value(baseline_detection),
-                    "candidate": _value(candidate_detection),
-                },
-            },
-            {
-                "order": 7,
-                "code": "confound_guard",
-                "label": "Candidate confound guard is measured",
-                "outcome": "pass",
-                "reason_code": "CANDIDATE_CONFOUND_GUARD",
-                "reason": "Candidate confound false-alert rate is measured within the guard.",
-                "relevant_values": {
-                    "baseline": _value(baseline_confound or 0.0),
-                    "candidate": _value(candidate_confound or 0.0),
-                },
-            },
-        ],
-        "decision": {
-            "outcome": "reject",
-            "candidate_promoted": False,
-            "fallback": {"method_code": "rolling_median_mad", "retained": True},
-            "reason_codes": list(bundle.decision.reason_codes),
-            "summary": (
-                "The candidate is rejected because both selections are nonviable and false "
-                "alerts are higher."
-            ),
-            "why_simple_baseline_won": (
-                "The complete deterministic baseline has fewer false alerts with the same "
-                "detection rate and no candidate promotion evidence."
-            ),
-        },
+        "acceptance_gates": _acceptance_gates(
+            full_evaluation,
+            baseline_false,
+            baseline_detection,
+            baseline_delay,
+            baseline_confound,
+            candidate_false,
+            candidate_detection,
+            candidate_delay,
+            candidate_confound,
+        ),
+        "decision": _trial_decision(full_evaluation),
         "representative_cases": _build_cases(
             dataset, values, baseline_threshold, candidate_threshold
         ),
@@ -666,10 +805,16 @@ def compose_method_trial_view(
                     "code": "same_detection_on_c0",
                     "display_text": "Baseline and candidate detection match on this C0 run.",
                 },
-                {
-                    "code": "candidate_more_false_alerts_on_c0",
-                    "display_text": "Candidate false alerts are higher on this C0 run.",
-                },
+                *(
+                    [
+                        {
+                            "code": "candidate_more_false_alerts_on_c0",
+                            "display_text": "Candidate false alerts are higher on this C0 run.",
+                        }
+                    ]
+                    if candidate_false > baseline_false
+                    else []
+                ),
                 {
                     "code": "deterministic_case_windows",
                     "display_text": "Three case windows are selected by fixed deterministic rules.",

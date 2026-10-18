@@ -16,6 +16,8 @@ from developer_lens_lab.contract_sync import (
     sync_method_trial_view_contract,
     sync_product_contract,
 )
+from developer_lens_lab.contracts.research_finding import FindingError
+from developer_lens_lab.finding_export import export_finding
 from developer_lens_lab.schemas import check_schemas, render_schemas
 from developer_lens_lab.validation import (
     ManifestError,
@@ -81,7 +83,7 @@ def doctor(as_json: Annotated[bool, typer.Option("--json")] = False) -> None:
         typer.echo(str(payload["artifact_root"]))
         typer.echo("network collection: disabled")
         for failure in report.failures:
-            typer.echo(f"- {failure}")
+            typer.echo(f"ERROR: {failure}", err=True)
     if not report.ok:
         raise typer.Exit(code=1)
 
@@ -124,7 +126,11 @@ def tasks_render() -> None:
 @contracts_app.command("render")
 def contracts_render() -> None:
     """Render deterministic lab-owned and consumer-mirror JSON Schemas."""
-    render_schemas(_repo_root())
+    try:
+        render_schemas(_repo_root())
+    except OSError as exc:
+        typer.echo(f"ERROR: contract render failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     typer.echo("rendered contract schemas")
 
 
@@ -258,11 +264,12 @@ def run_reproduce(
 def report_build(
     run_id: Annotated[str, typer.Argument()],
     artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+    force: Annotated[bool, typer.Option("--force")] = False,
 ) -> None:
     """Build and verify standalone Markdown and HTML reports for a run."""
     try:
         markdown, html_ref = build_report(
-            run_id, artifact_root=artifact_root or (_repo_root() / ".dllab")
+            run_id, artifact_root=artifact_root or (_repo_root() / ".dllab"), force=force
         )
     except (RunnerError, ArtifactError, OSError, ValidationError, json.JSONDecodeError) as exc:
         typer.echo(f"ERROR: report build failed: {exc}", err=True)
@@ -289,6 +296,23 @@ def export_method_trial_command(
         typer.echo(f"ERROR: MethodTrialView export failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"exported {result.output_path} sha256={result.sha256}")
+
+
+@export_app.command("finding")
+def export_finding_command(
+    run_id: Annotated[str, typer.Argument()],
+    output: Annotated[Path | None, typer.Option("--out", "--output")] = None,
+    artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+) -> None:
+    """Export a ResearchFinding from stored C0 evidence without running analysis."""
+    try:
+        result = export_finding(
+            run_id, root=_repo_root(), output=output, artifact_root=artifact_root
+        )
+    except FindingError as exc:
+        typer.echo(f"ERROR: finding export failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"exported finding sha256={result.sha256} bundle_hash={result.bundle_hash}")
 
 
 @demo_app.command("export")

@@ -8,13 +8,13 @@ import os
 import re
 import subprocess
 import tempfile
+from contextlib import suppress
 from pathlib import Path
 from typing import Any, cast
 
 from jsonschema import Draft202012Validator
-from jsonschema.exceptions import SchemaError
-from jsonschema.exceptions import ValidationError as SchemaValidationError
-from pydantic import ValidationError
+from jsonschema.exceptions import SchemaError, ValidationError
+from pydantic import ValidationError as PydanticValidationError
 from referencing import Registry, Resource
 from referencing.exceptions import Unresolvable
 from referencing.jsonschema import DRAFT202012
@@ -62,19 +62,50 @@ def _is_link_like(path: Path) -> bool:
 
 
 def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> None:
-    current = path.parent
-    while current != root:
-        if current.exists() and _is_link_like(current):
-            raise ContractSyncError("contract destination traverses a symlink or junction")
-        current = current.parent
-    if root.exists() and _is_link_like(root):
-        raise ContractSyncError("contract destination root must not be a symlink or junction")
-    if path.exists() and _is_link_like(path):
-        raise ContractSyncError("contract destination must not be a symlink or junction")
-    if create:
-        path.parent.mkdir(parents=True, exist_ok=True)
-    if path.parent.exists() and not path.parent.resolve().is_relative_to(root.resolve()):
-        raise ContractSyncError("contract destination escaped the repository root")
+    root_resolved = root.resolve()
+    if _is_link_like(root):
+        raise ContractSyncError(
+            "contract destination escapes the repository root through a symlink or junction"
+        )
+    if _is_link_like(path):
+        raise ContractSyncError(
+            "contract destination escapes the repository root through a symlink or junction"
+        )
+    parent = path.parent
+    parent_lexical = Path(os.path.abspath(parent))
+    root_lexical = Path(os.path.abspath(root))
+    try:
+        relative = parent_lexical.relative_to(root_lexical)
+    except ValueError as exc:
+        raise ContractSyncError("contract destination escapes the repository root") from exc
+    if not root.exists():
+        if not create:
+            raise FileNotFoundError("contract destination root is unavailable")
+        root.mkdir(parents=True, exist_ok=True)
+    if not root.is_dir():
+        raise ContractSyncError("contract destination root is not a directory")
+    current = root_resolved
+    for part in relative.parts:
+        current = current / part
+        if _is_link_like(current):
+            raise ContractSyncError(
+                "contract destination escapes the repository root through a symlink or junction"
+            )
+        if not current.exists():
+            if not create:
+                raise FileNotFoundError("contract destination parent is unavailable")
+            with suppress(FileExistsError):
+                current.mkdir()
+            if _is_link_like(current):
+                raise ContractSyncError(
+                    "contract destination escapes the repository root through a symlink or junction"
+                )
+            if not current.is_dir():
+                raise ContractSyncError("contract destination escapes the repository root")
+        elif not current.is_dir():
+            raise ContractSyncError("contract destination escapes the repository root")
+    if not parent.resolve().is_relative_to(root_resolved):
+        raise ContractSyncError("contract destination escapes the repository root")
 
 
 def _validate_method_trial_provenance(provenance: object, payload: bytes) -> dict[str, Any]:
@@ -190,6 +221,32 @@ def _validate_producer_schema(value: object) -> None:
     raw_version = cast(dict[object, object], version)
     if raw_version.get("const") != "DeveloperLensResearchPack.v1":
         raise ContractSyncError("producer schema has the wrong ResearchPack version")
+    for name in REQUIRED_SCHEMA_PROPERTIES - {"schema_version"}:
+        sub_schema = raw_properties.get(name)
+        if not isinstance(sub_schema, dict) or not sub_schema:
+            raise ContractSyncError(
+                "producer schema leaves a required ResearchPack field unconstrained"
+            )
+
+
+def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes) -> None:
+    schema_doc = cast(dict[str, Any], schema)
+    try:
+        fixture = json.loads(fixture_raw)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ContractSyncError("producer fixture is not valid JSON") from exc
+    try:
+        Draft202012Validator.check_schema(schema_doc)
+    except SchemaError as exc:
+        raise ContractSyncError("producer schema is not a valid JSON Schema") from exc
+    try:
+        _validate_reference_closure(schema_doc)
+        # An empty registry refuses external retrieval. Sync must remain offline.
+        Draft202012Validator(schema_doc, registry=Registry()).validate(fixture)
+    except ValidationError as exc:
+        raise ContractSyncError("producer fixture does not conform to the producer schema") from exc
+    except Unresolvable as exc:
+        raise ContractSyncError("producer schema has an unresolvable reference") from exc
 
 
 def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -> Path:
@@ -206,27 +263,20 @@ def sync_product_contract(destination_root: Path, checkout: Path, commit: str) -
     for target_name, source_path in PRODUCT_FILES.items():
         snapshots[target_name] = _git(checkout, "show", f"{commit}:{source_path}")
 
-    schema_raw = _load_schema(snapshots["schema.json"], "ResearchPack")
-    _validate_producer_schema(schema_raw)
     try:
-        fixture_raw = json.loads(snapshots["invented.fixture.json"])
-        # An empty registry refuses external retrieval. Sync must remain offline.
-        Draft202012Validator(schema_raw, registry=Registry[Any]()).validate(fixture_raw)
+        schema_raw = json.loads(snapshots["schema.json"])
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ContractSyncError("producer schema is not valid JSON") from exc
+    _validate_producer_schema(schema_raw)
+    _validate_fixture_against_producer_schema(schema_raw, snapshots["invented.fixture.json"])
+    try:
         fixture = ResearchPack.model_validate_json(snapshots["invented.fixture.json"])
-    except (
-        json.JSONDecodeError,
-        UnicodeDecodeError,
-        SchemaValidationError,
-        ValidationError,
-        Unresolvable,
-    ) as exc:
-        raise ContractSyncError(
-            "producer fixture does not satisfy the ResearchPack contracts"
-        ) from exc
+    except PydanticValidationError as exc:
+        raise ContractSyncError("producer fixture is not a valid ResearchPack") from exc
     if fixture.classification != "C0":
         raise ContractSyncError("producer fixture must remain C0 invented data")
 
-    if destination_root.exists() and _is_link_like(destination_root):
+    if _is_link_like(destination_root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
     destination_root = destination_root.resolve()
     destination = destination_root / VENDOR_ROOT
@@ -279,7 +329,7 @@ def sync_method_trial_view_contract(
         or schema["properties"]["schema_version"].get("const") != "DeveloperLensMethodTrialView.v1"
     ):
         raise ContractSyncError("producer MethodTrialView schema is not a strict v1 object")
-    if destination_root.exists() and _is_link_like(destination_root):
+    if _is_link_like(destination_root):
         raise ContractSyncError("contract destination root must not be a symlink or junction")
     destination_root = destination_root.resolve()
     destination = destination_root / METHOD_TRIAL_VENDOR_ROOT

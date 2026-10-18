@@ -1,0 +1,17 @@
+{
+  "files": [
+    {
+      "name": "schema.json",
+      "sha256": "sha256:7339ee2e85d5337f0fa1977396569aa866c4a7dc94cbdf324af05ec26f9b14ef",
+      "size_bytes": 29342
+    },
+    {
+      "name": "wbc1.fixture.json",
+      "sha256": "sha256:64f759894e92c72931bcdc19b726dfd0264aa1ddf2da3e9b328f2f266e47b84d",
+      "size_bytes": 4566
+    }
+  ],
+  "identity_semantics": "provenance_only_not_a_join_key",
+  "product_commit": "d8961cdbe794edb40d2ca221a267fe2728ade5d6",
+  "schema_version": "DeveloperLensContractSnapshot.v1"
+}

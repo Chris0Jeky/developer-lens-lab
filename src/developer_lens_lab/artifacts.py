@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import tempfile
+from contextlib import suppress
 from pathlib import Path
 from typing import Any, Literal
 
@@ -37,9 +38,9 @@ class ArtifactStore:
     """Scope-confined content-addressed objects with atomic same-directory publication."""
 
     def __init__(self, root: Path) -> None:
-        if root.exists() and root.is_symlink():
-            raise ArtifactError("artifact root must not be a symlink")
-        self.root = root.resolve()
+        self._ensure_no_symlink_parents(root)
+        self.root = root.absolute()
+        self._ensure_no_symlink_parents(self.root)
 
     def _scope_root(self, scope_id: str) -> Path:
         if not _SCOPE_RE.fullmatch(scope_id):
@@ -54,7 +55,7 @@ class ArtifactStore:
         """Create one new scope and refuse reuse of an existing run identity."""
         scope_root = self._scope_root(scope_id)
         scopes_root = scope_root.parent
-        self._ensure_no_symlink_parents(scopes_root, self.root)
+        self._ensure_no_symlink_parents(scopes_root)
         scopes_root.mkdir(parents=True, exist_ok=True)
         try:
             scope_root.mkdir()
@@ -70,14 +71,10 @@ class ArtifactStore:
         return self._scope_root(scope_id) / "objects" / hex_digest[:2] / hex_digest
 
     @staticmethod
-    def _ensure_no_symlink_parents(path: Path, stop: Path) -> None:
-        current = path
-        while current != stop:
-            if current.exists() and current.is_symlink():
-                raise ArtifactError("artifact path traverses a symlink")
-            current = current.parent
-        if stop.exists() and stop.is_symlink():
-            raise ArtifactError("artifact root must not be a symlink")
+    def _ensure_no_symlink_parents(path: Path) -> None:
+        for current in (path, *path.parents):
+            if current.is_symlink() or current.is_junction():
+                raise ArtifactError("artifact path traverses a symlink or junction")
 
     @staticmethod
     def _atomic_write(path: Path, payload: bytes) -> None:
@@ -96,7 +93,7 @@ class ArtifactStore:
         if Path(name).name != name or not name:
             raise ArtifactError("scope file name must be a simple file name")
         path = self._scope_root(scope_id) / name
-        self._ensure_no_symlink_parents(path.parent, self.root)
+        self._ensure_no_symlink_parents(path.parent)
         self._atomic_write(path, payload)
         return path
 
@@ -105,16 +102,25 @@ class ArtifactStore:
         if Path(name).name != name or not name:
             raise ArtifactError("scope file name must be a simple file name")
         path = self._scope_root(scope_id) / name
-        self._ensure_no_symlink_parents(path.parent, self.root)
+        self._ensure_no_symlink_parents(path.parent)
         path.parent.mkdir(parents=True, exist_ok=True)
         try:
             handle = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         except FileExistsError as exc:
             raise ArtifactError(f"scope file already exists: {name}") from exc
-        with os.fdopen(handle, "wb") as stream:
-            stream.write(payload)
-            stream.flush()
-            os.fsync(stream.fileno())
+        try:
+            with os.fdopen(handle, "wb") as stream:
+                handle = -1  # The stream now owns and closes the descriptor.
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+        except BaseException:
+            if handle != -1:
+                with suppress(OSError):
+                    os.close(handle)
+            with suppress(OSError):
+                path.unlink(missing_ok=True)
+            raise
         return path
 
     def put_bytes(
@@ -128,7 +134,7 @@ class ArtifactStore:
         digest = "sha256:" + hashlib.sha256(payload).hexdigest()
         reference = ArtifactRef(sha256=digest, size_bytes=len(payload), media_type=media_type)
         path = self._object_path(scope_id, digest)
-        self._ensure_no_symlink_parents(path.parent, self.root)
+        self._ensure_no_symlink_parents(path.parent)
         if path.exists():
             existing = path.read_bytes()
             if existing != payload:
@@ -149,7 +155,7 @@ class ArtifactStore:
 
     def get_bytes(self, scope_id: str, reference: ArtifactRef) -> bytes:
         path = self._object_path(scope_id, reference.sha256)
-        self._ensure_no_symlink_parents(path.parent, self.root)
+        self._ensure_no_symlink_parents(path.parent)
         try:
             payload = path.read_bytes()
         except FileNotFoundError as exc:
@@ -162,7 +168,7 @@ class ArtifactStore:
     def write_scope_manifest(self, scope_id: str, references: tuple[ArtifactRef, ...]) -> Path:
         scope_root = self._scope_root(scope_id)
         manifest = scope_root / "manifest.json"
-        self._ensure_no_symlink_parents(manifest.parent, self.root)
+        self._ensure_no_symlink_parents(manifest.parent)
         payload = canonical_json_bytes(
             {
                 "schema_version": "DeveloperLensArtifactScope.v1",
@@ -175,7 +181,7 @@ class ArtifactStore:
 
     def invalidate_scope(self, scope_id: str) -> bool:
         scope_root = self._scope_root(scope_id)
-        self._ensure_no_symlink_parents(scope_root, self.root)
+        self._ensure_no_symlink_parents(scope_root)
         if not scope_root.exists():
             return False
         quarantine = scope_root.with_name(f".deleting-{scope_id}")

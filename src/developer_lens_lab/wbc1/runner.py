@@ -299,9 +299,15 @@ def _reference(payload: bytes, media_type: MediaType) -> ArtifactRef:
 
 
 def _git_commit(root: Path) -> str:
-    result = subprocess.run(
-        ["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-    )
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, OSError) as exc:
+        raise RunnerError("benchmark requires a readable Git commit") from exc
     return result.stdout.strip()
 
 
@@ -339,6 +345,14 @@ def _partition_part(partition: Partition) -> SplitPart:
 
 
 def _metric(code: str, value: float | None, domain: str = "primary") -> dict[str, Any]:
+    if value is None:
+        return {
+            "metric_code": code,
+            "domain_code": domain,
+            "state": "absent",
+            "value": None,
+            "reason_code": "NOT_MEASURED",
+        }
     return {
         "metric_code": code,
         "domain_code": domain,
@@ -355,7 +369,7 @@ def _result_parquet_bytes(metrics: Any) -> bytes:
                 "metric_code": "false_alerts_per_year",
                 "value": metrics.false_alerts_per_year,
             },
-            {"metric_code": "detection_rate", "value": metrics.detection_rate or 0.0},
+            {"metric_code": "detection_rate", "value": metrics.detection_rate},
         ]
     )
 
@@ -502,7 +516,7 @@ def _build_bundle(
                 _metric("false_alerts_per_year", baseline.false_alerts_per_year)
             ),
             MetricValue.model_validate(
-                _metric("detection_rate", baseline.detection_rate or 0.0, "detection")
+                _metric("detection_rate", baseline.detection_rate, "detection")
             ),
         ),
         artifact=bundle_refs[0],
@@ -514,7 +528,7 @@ def _build_bundle(
                 _metric("false_alerts_per_year", candidate.false_alerts_per_year)
             ),
             MetricValue.model_validate(
-                _metric("detection_rate", candidate.detection_rate or 0.0, "detection")
+                _metric("detection_rate", candidate.detection_rate, "detection")
             ),
         ),
         artifact=bundle_refs[1],
@@ -548,10 +562,12 @@ def _build_bundle(
         baseline_results=baseline_results,
         candidate_results=candidate_results,
         calibration=CalibrationReport(
-            status="measured",
+            status="measured"
+            if candidate.calibration_brier is not None
+            else "insufficient_support",
             metrics=(
                 MetricValue.model_validate(
-                    _metric("brier", candidate.calibration_brier or 0.0, "calibration")
+                    _metric("brier", candidate.calibration_brier, "calibration")
                 ),
             ),
         ),
@@ -908,7 +924,9 @@ def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     return reproduced == expected and _sha256(reproduced) == expected_digest
 
 
-def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, ArtifactRef]:
+def build_report(
+    run_id: str, *, artifact_root: Path, force: bool = False
+) -> tuple[ArtifactRef, ArtifactRef]:
     store = ArtifactStore(artifact_root)
     manifest_path = store.scope_root(run_id) / "run.json"
     if not manifest_path.is_file():
@@ -941,6 +959,17 @@ def build_report(run_id: str, *, artifact_root: Path) -> tuple[ArtifactRef, Arti
         manifest, "markdown"
     ) or html_ref.model_dump(mode="json") != _require_field(manifest, "html"):
         raise RunnerError("report bytes differ from the recorded deterministic report")
-    store.write_scope_file(run_id, "report.md", store.get_bytes(run_id, markdown))
-    store.write_scope_file(run_id, "report.html", store.get_bytes(run_id, html_ref))
+    scope_root = store.scope_root(run_id)
+    existing = [
+        name
+        for name in ("report.md", "report.html")
+        if (scope_root / name).is_symlink() or (scope_root / name).exists()
+    ]
+    if existing and not force:
+        raise RunnerError(
+            f"report file(s) already exist: {', '.join(existing)}; pass --force to overwrite"
+        )
+    write_report = store.write_scope_file if force else store.write_scope_file_once
+    write_report(run_id, "report.md", store.get_bytes(run_id, markdown))
+    write_report(run_id, "report.html", store.get_bytes(run_id, html_ref))
     return markdown, html_ref

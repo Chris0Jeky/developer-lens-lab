@@ -27,6 +27,12 @@ class Preregistration(StrictModel):
     abstention_rule_code: Code
     seed_families: Annotated[tuple[Code, ...], Field(min_length=1, max_length=32)]
 
+    @model_validator(mode="after")
+    def entries_are_unique(self) -> Self:
+        if len(self.seed_families) != len(set(self.seed_families)):
+            raise ValueError("preregistration contains duplicate seed_families")
+        return self
+
 
 class CoverageCount(StrictModel):
     status: Literal["present", "absent", "unsupported", "intentionally_omitted"]

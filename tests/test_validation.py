@@ -13,10 +13,12 @@ from developer_lens_lab.artifacts import ArtifactStore
 from developer_lens_lab.cli import app
 from developer_lens_lab.contracts import ResearchPack
 from developer_lens_lab.validation import (
+    MAX_MANIFEST_BYTES,
     ManifestError,
     assert_path_free_manifest,
     profile_research_pack,
     validate_pack_artifacts,
+    validate_research_pack,
 )
 
 from .factories import evaluation_bundle, research_pack
@@ -172,3 +174,13 @@ def test_cli_sanitizes_unknown_input_and_malformed_parquet(tmp_path: Path) -> No
     )
     assert malformed.exit_code == 1
     assert "ERROR: relation repository_week is not valid Parquet" in malformed.output
+
+
+def test_load_json_rejects_oversize_manifest(tmp_path: Path) -> None:
+    base = '{"note": "plain text"}'
+    padding = " " * (MAX_MANIFEST_BYTES + 1 - len(base.encode("utf-8")))
+    manifest = tmp_path / "oversize.json"
+    manifest.write_text(base + padding, encoding="utf-8")
+    assert manifest.stat().st_size == MAX_MANIFEST_BYTES + 1
+    with pytest.raises(ManifestError, match=str(MAX_MANIFEST_BYTES)):
+        validate_research_pack(manifest)

@@ -627,3 +627,130 @@ def test_decision_benchmarks_on_improvement_and_detection_boundaries() -> None:
     decision, reasons = decide_benchmark(baseline, candidate, plan)
     assert decision == "benchmarked"
     assert reasons == ("ALL_PREREGISTERED_GATES_PASSED",)
+
+
+def test_decision_uses_holdout_not_test(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Failing-first: the verdict must follow the holdout pair even when the
+    # test pair says the opposite on CANDIDATE_FALSE_ALERT_IMPROVEMENT.
+    plan = _plan(baseline_viable=True, candidate_viable=True)
+    train = Partition("train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (), ("f0",))
+    test = Partition("test", "2021-01-04T00:00:00Z", "2021-04-05T00:00:00Z", (), ("f0",))
+    holdout = Partition(
+        "final_holdout", "2021-04-05T00:00:00Z", "2021-07-05T00:00:00Z", (), ("f0",)
+    )
+
+    def _run_case(
+        test_candidate_alerts: float, holdout_candidate_alerts: float
+    ) -> evaluation_module.BenchmarkEvaluation:
+        scripted = {
+            ("test", "rolling_median_mad"): _agg(
+                "rolling_median_mad",
+                false_alerts_per_year=10.0,
+                detection_rate=0.80,
+                median_detection_delay=2.0,
+            ),
+            ("test", "bocpd_gaussian"): _agg(
+                "bocpd_gaussian",
+                false_alerts_per_year=test_candidate_alerts,
+                detection_rate=0.85,
+                median_detection_delay=1.0,
+            ),
+            ("final_holdout", "rolling_median_mad"): _agg(
+                "rolling_median_mad",
+                false_alerts_per_year=10.0,
+                detection_rate=0.80,
+                median_detection_delay=2.0,
+            ),
+            ("final_holdout", "bocpd_gaussian"): _agg(
+                "bocpd_gaussian",
+                false_alerts_per_year=holdout_candidate_alerts,
+                detection_rate=0.85,
+                median_detection_delay=1.0,
+            ),
+        }
+
+        def fake_evaluate(
+            partition: Partition, method: MethodCode, threshold: float
+        ) -> AggregateMetrics:
+            return dataclasses.replace(scripted[(partition.code, method)], threshold=threshold)
+
+        monkeypatch.setattr(evaluation_module, "evaluate_partition", fake_evaluate)
+        return run_evaluation(train, test, holdout, plan)
+
+    # Test passes improvement (2.0 <= 8.0) but holdout fails (8.1 > 8.0).
+    failing_holdout = _run_case(test_candidate_alerts=2.0, holdout_candidate_alerts=10.0 * 0.81)
+    assert failing_holdout.candidate_holdout.false_alerts_per_year == pytest.approx(10.0 * 0.81)
+    assert failing_holdout.decision == "reject"
+    assert "CANDIDATE_FALSE_ALERT_IMPROVEMENT" in failing_holdout.decision_reasons
+    test_decision, _ = decide_benchmark(
+        failing_holdout.baseline_test, failing_holdout.candidate_test, plan
+    )
+    assert test_decision == "benchmarked"
+
+    # Test fails improvement but holdout passes; verdict must flip to benchmarked.
+    passing_holdout = _run_case(test_candidate_alerts=10.0 * 0.81, holdout_candidate_alerts=2.0)
+    assert passing_holdout.candidate_holdout.false_alerts_per_year == pytest.approx(2.0)
+    assert passing_holdout.decision == "benchmarked"
+    assert passing_holdout.decision_reasons == ("ALL_PREREGISTERED_GATES_PASSED",)
+    test_decision, _ = decide_benchmark(
+        passing_holdout.baseline_test, passing_holdout.candidate_test, plan
+    )
+    assert test_decision == "reject"
+
+
+def test_bocpd_calibration_brier_matches_observed_labels(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Failing-first: the BOCPD Brier score must equal the mean-squared error
+    # between the reported scores and the 3-week post-change labels, computed
+    # only over observed weeks.  Unobserved weeks carry large errors here so
+    # ignoring the observed mask (or using a different label window) changes
+    # the independent value.
+    n_weeks = 52
+    change_index = 10
+    scores = np.array([(index % 5) / 5.0 for index in range(n_weeks)], dtype=np.float64)
+    observed = np.ones(n_weeks, dtype=np.bool_)
+    observed[11] = False  # inside the 3-week label window [10, 11, 12]
+    observed[20] = False  # outside the label window
+    scores[11] = 0.0  # wrong vs label 1.0, but unobserved so must not count
+    scores[20] = 1.0  # wrong vs label 0.0, but unobserved so must not count
+
+    def fake_scores(_series: WeeklySeries, _method: MethodCode) -> NDArray[np.float64]:
+        return scores
+
+    monkeypatch.setattr(evaluation_module, "_scores", fake_scores)
+
+    week_starts = tuple(f"2021-01-{index + 1:02d}W{index:02d}" for index in range(n_weeks))
+    series = WeeklySeries(
+        system_alias="system_calibration",
+        seed_family="family_cal",
+        scenario_code="level",
+        noise_family="gaussian",
+        week_starts=week_starts,
+        values=np.zeros(n_weeks, dtype=np.float64),
+        observed=observed,
+        confound=np.zeros(n_weeks, dtype=np.bool_),
+        change_index=change_index,
+        change_kind="level",
+        confound_kind=None,
+        coverage_id="coverage_cal",
+    )
+    partition = Partition(
+        "test",
+        week_starts[0],
+        week_starts[-1],
+        (series,),
+        ("family_cal",),
+    )
+
+    metrics = evaluate_partition(partition, "bocpd_gaussian", 0.5)
+
+    labels = np.zeros(n_weeks, dtype=np.float64)
+    labels[change_index : change_index + 3] = 1.0
+    expected = float(np.mean((scores[observed] - labels[observed]) ** 2))
+
+    assert metrics.calibration_brier is not None
+    assert math.isclose(metrics.calibration_brier, expected)
+
+    baseline_metrics = evaluate_partition(partition, "rolling_median_mad", 2.5)
+    assert baseline_metrics.calibration_brier is None

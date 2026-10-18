@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits",
     "deny": [
       "Read(./.dllab/**)",
       "Read(./artifacts/**)",

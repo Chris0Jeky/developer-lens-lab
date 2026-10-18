@@ -1,6 +1,82 @@
 # Implementation ledger
 
+## 2026-10-17 - ResearchPack Arrow schema validation (issue #148)
+
+- Pin all seven v1 relation layouts, reject incompatible Arrow types and required nulls, and validate
+  finite metrics, non-negative counts, and canonical UTC text without exposing rejected values.
+- `test_relation_arrow_schema` covers valid layouts, optional nulls, wrong types (including the
+  reported string metric), required nulls, non-finite metrics, negative counts, and invalid instants.
+  All seven cases failed before the fix; focused proof and toolchain limits are recorded in the handoff.
+- Contract documentation reflects the consumer checks. No generated producer snapshot, experiment,
+  data lane, phase, release, or human gate changed.
+
+## 2026-10-17 - Lexical artifact-root link refusal (issue #149)
+
+- Reject dangling/existing symlinks and Windows junctions before root normalization, retain the
+  lexical root, and recheck every parent before store operations.
+- Existing/dangling/chained Windows junction regressions failed before the fix and pass afterward;
+  native symlink cases skip when host privileges are unavailable. Focused checks also cover lexical
+  root/ancestor replacement before scope reservation, object publication, and metadata writes.
+- Contract documentation retains the deferred hostile concurrent-race boundary. No experiment,
+  data lane, phase, release, or human gate changed.
+
+## 2026-10-11 - Holdout decision caller regression
+
+- Swarm finding `f-46c3df9341`: pin both disagreement directions between test and final-holdout metrics; run_evaluation must base its verdict on final holdout.
+- Corrected draft test names and result attributes (FR-109). The evaluation suite passes, and an in-memory mutation using the test pair fails the new regression. Production behavior is unchanged.
+- Exact publication proof belongs in the PR. No experiment, phase transition, data lane, release, or human gate changed.
+
+## 2026-10-11 - Preserve unavailable benchmark metrics
+
+- Swarm finding `f-76bae218cf`: preserve absent detection and calibration in bundle/Parquet storage and MethodTrial scorecards instead of reporting zero. Acceptance predicates require measured inputs.
+- Reproduced the team blocker with three failing detection-gate regressions; unavailable detection now derives `not_applicable` gates under the pinned presentation contract. Measured zero remains distinct.
+- FR-108 records the draft gate mismatch and launcher parity workaround. Exact local proof is recorded in the PR. No experiment, phase transition, data lane, release, or human gate changed.
+
+## 2026-10-10 - Affixed short-secret redaction
+
+- Swarm finding `f-a1641dc08e`: redact short invented secret values under delimiter-less pass/pwd names, including MYPASS, MYPWD, and PWD2.
+- Reproduced the team finding against the existing diagnostic regression and preserved the benign bypass/compass token exceptions. New affixed-name cases and existing diagnostic coverage prove the shared redaction seam.
+- FR-107 records the draft regression. Exact publication proof belongs in the PR; no data lane, experiment, phase transition, or human gate changes.
+
+## 2026-10-10 - Unique preregistration seed families
+
+- Swarm finding `f-e9c4e6398f`: reject duplicate preregistration seed families before bundle set comparisons discard their multiplicity, matching existing split-part validation.
+- Corrected the Muse draft tests to use strict JSON validation. The duplicate regression fails without the validator; distinct matching seeds and split-part duplicate rejection remain green.
+- Publication proof is recorded in the PR. C0 fixtures only; generated schema bytes and owner gates remain unchanged. No experiment or phase transition occurred.
+
+
+## 2026-10-09 - Controlled corrupt contract snapshot errors
+
+- Swarm finding `f-bf46e9bfcf`: wrap schema JSON/decode failures and ResearchPack runtime validation errors as `ContractSyncError` before destination writes.
+- The coordinator reproduced the team's fixture decode gap and extended the existing JSON error handler to cover invalid encoding. Seven invented snapshot cases cover both input files and runtime-only window ordering; five fail against the baseline, and the fixture decode case also fails against the draft.
+- FR-105 records the runner parity workaround. Exact publication proof is recorded in the PR; no contract bytes, data lane, release, or owner gate changes. Current state and experiment ledger remain unchanged outside a phase boundary.
+
+## 2026-10-09 - Contract destination confinement
+
+- Swarm finding `f-424db46598`: Muse drafted link-aware parent creation. The coordinator reproduced eight fresh-root regressions, restored automatic root creation, and preserved unavailable-snapshot errors for read-only checks.
+- Both sync entry points now reject dangling destination-root links before resolution. Two invented Windows junction regressions failed before that correction; rejected syncs leave the outside directory empty. Junction coverage runs where directory symlinks are unavailable.
+- FR-104 records the worker regression and local platform workaround. Final-head proof belongs in the PR. No contract bytes, data lane, release, or human gate changes; current state and experiment ledger remain unchanged outside a phase boundary.
+
 Append milestone evidence. Live GitHub facts are snapshots and must be refreshed.
+
+## 2026-10-08 - Unreadable generated-schema diagnostics
+
+- Swarm finding `f-3a788486bf`: return controlled failures for missing, unreadable, or invalid
+  UTF-8 generated schemas instead of leaking filesystem/decode exceptions from schema checks.
+- Doctor now prints failure diagnostics with `ERROR` on stderr, matching context and contracts checks.
+- Twelve focused cases cover missing/invalid/directory inputs across the three CLI paths, plus
+  valid and drifted schemas. Baseline failures and publication gate evidence are recorded in the PR.
+- C0-only fixtures; no schema, data-lane, release, or owner-gate change.
+
+## 2026-10-06 - Manifest current-directory segments
+
+- Swarm finding `f-2f0571dd9d`: reject a standalone `.` segment at any position with
+  either separator, including trailing and mixed-separator forms, in scalar and nested manifests.
+- Preserve benign dotted filenames, hidden filenames, and ordinary relative artifact names.
+- Reproduced the original four accepted dot-segment inputs against the baseline and five failing
+  regression cases against the worker draft. The completed focused suite passes all 17 cases.
+- Publication evidence and the full milestone gate are recorded in the PR. No real-data lane,
+  release asset, tag, or human decision is activated by this change.
 
 ## 2026-08-06 — Repository commission and M0 start
 
@@ -1696,3 +1772,67 @@ hashed package bytes only; the joint tag remains blocked on product
 - Swarm finding `f-d5bd9dc4a3`: Muse wrote the initial test draft; the coordinator reproduced the focused test and in-memory reason-branch swap failure.
 - Coverage pins permission/parser missing reasons, unavailable scores, and absent alerts. Production implementation is unchanged.
 - Locked supported uv environment replaces the host's uninstalled/default Python check (FR-093b). Full gate evidence belongs in the publishing PR; no hosted, merge, empirical-validity, or release claim is made here.
+
+## 2026-10-04 - Controlled non-UTF-8 manifest errors
+
+- Swarm finding `f-45128d8644`, PR #134: Muse drafted controlled decode errors for pack and bundle manifests; the land coordinator reproduced and fixed the review-reported parent-directory disclosure. Errors name only the manifest filename.
+- Five focused invented-fixture tests pass, including two parent-path regressions that failed before the fix. Test fixture annotations address the hosted type-check failure.
+- This preserves the C0 contract and CLI validation boundary; no data lane, release, or human gate is activated. Full gate evidence belongs in the PR.
+
+## 2026-10-04 - Preserve short-secret redaction in package diagnostics
+
+- PR #135, swarm finding `f-0e22cbe6b3`: coordinator reproduced seven short-secret diagnostic leaks introduced by whole-token matching, using invented values only.
+- Restore sensitive substring matching inside name tokens, exempting only the exact keyboard token; APIKEY, numbered names, and plural credentials remain redacted.
+- Seven diagnostic regression cases fail before the fix and pass afterward; the original KEYBOARD/API_KEY boundary test remains green. The first draft was written by Muse; this is the coordinator's bounded review fix.
+- No data lane, schema, release, or human gate changes. Local full-gate and hosted evidence are recorded on the PR, without a merge claim.
+
+## 2026-10-04 - Package-smoke environment reuse review fix
+
+- PR #136, swarm finding `f-ea9bc1bfe6`: reproduced the new regression test's B904 lint failure and added explicit `from None` to its replacement assertion. Smoke environment reuse behavior is unchanged by this review fix.
+- Locked local full gate passed: doctor, context, formatting, lint, type checking, 465 tests with six host symlink skips, strict docs build, and hygiene. The focused reuse test also passed through the host's requested runner.
+- FR-097 records the focused-proof gap. Hosted checks for the fix remain unverified; no merge, release, data-lane activation, or human-gate completion is claimed.
+
+## 2026-10-04 - False-alert report direction wording
+
+- Swarm finding `f-2fed8bf74c`, PR #137: Muse drafted fewer/more/unchanged wording and two focused tests. The land coordinator refreshed main and corrected the hosted import-order failure (FR-098).
+- The signed reduction magnitude remains a confirmed MEDIUM presentation concern, declined on the review thread under the bounded review rule. Numeric scorecards and decisions are unchanged.
+- This remains invented-data report presentation only; no data lane, release, or human gate is activated. Final-head proof belongs in the PR.
+
+## 2026-10-05 - Failed append-only writes permit retry
+
+- Swarm finding `f-0bfc2b16a8`: Muse drafted cleanup for an exclusively created scope file when writing, flushing, or syncing fails. The coordinator retained the success-path append-only guarantee and corrected descriptor ownership during cleanup.
+- Fault-injected fsync failure leaves no partial record; a repeated failure preserves the original error, and a subsequent successful retry stores the complete payload. The focused regression fails against the original method and passes with the fix; all five artifact tests pass.
+- FR-099 records the host-runner mismatch. Final-head full-gate and independent-review results belong in the PR. No data lane, custody policy, release, or human gate changes.
+
+## 2026-10-07 - Pin visible missing-week gaps in timeline reports
+
+- Swarm finding `f-02e7322a2e`: Muse drafted a synthetic timeline regression requiring two separate observed-signal polylines around one missing week, with the missing marker retained.
+- The coordinator reproduced all three focused report tests passing in the locked Python 3.12 environment. An in-memory mutation that joined observed runs across the missing week made the new regression fail.
+- FR-100 records the unsupported raw-runner failure and isolated-environment workaround. Full-gate and publication evidence belong in the PR; no merge is claimed.
+- No renderer behavior, contract, data lane, custody decision, release, or human gate changes. Current state and the experiment ledger remain unchanged because this is a coverage-only milestone.
+## 2026-10-08 - Schema render snapshot failure safety
+
+- Swarm finding `f-c4f1ebf56b`, PR #147: Muse drafted staged schema replacement and CLI write-error reporting. The land coordinator reproduced a snapshot read error followed by a replacement fault, which could delete an existing schema during rollback.
+- Snapshot failures now abort before replacement unless the file is absent. The regression failed before the fix and passes with it, preserving both original files and leaving no temporary files.
+- Corrected hosted SIM105 lint failures without changing cleanup behavior. FR-102 records gate friction. Final-head checks belong in the PR; POSIX permission preservation remains a non-blocking limitation.
+- No contract bytes, data lane, release, policy, or human gate changes. Current state and experiment ledger stay unchanged outside a phase boundary.
+
+## 2026-10-09 - Bound manifest reads before parsing
+
+- Swarm finding `f-5ba1ec335b`: Muse drafted a byte-count check replacing the racy stat check. The coordinator reproduced the team's unbounded-read finding with a guarded synthetic stream, then limited the read to the manifest cap plus one byte.
+- Oversize input is rejected before decoding, including when stat understates its size. Valid JSON at and below the cap remains accepted. The guarded-read regression fails on the worker draft; final-head checks and publication evidence belong in the PR.
+- FR-103 records the raw-runner import failure and isolated locked environment. No contract, data lane, release, or human gate changes; current state and experiment ledger remain unchanged outside a phase boundary.
+
+## 2026-10-11 - Preserve existing standalone reports
+
+- Swarm finding `f-21b8727efc`, PR #158: report builds now refuse existing Markdown or HTML files unless `--force` is explicit. Force retains the store's symlink-safe replacement behavior.
+- The land coordinator reproduced concurrent creation of either report between preflight and publication; both regression cases failed on the draft. Non-force publication now reuses the store's exclusive-create method and preserves concurrent writers.
+- FR-104 records the hosted format failure and correction. Final-head focused/full-gate evidence belongs in the PR. No contract, data lane, experiment, release, or human gate changes; current state remains unchanged outside a phase boundary.
+
+## 2026-10-11 - Method-trial gate derivation
+
+- Swarm finding `f-6828cc4a5a`: derive the seven presentation gates and rejection reasons from recomputed selection and final-holdout metrics instead of fixed smoke-run outcomes.
+- Muse wrote the first draft; the coordinator corrected test holdout setup, formatting, and import ordering. Synthetic regressions exercise improved false alerts and a missed detection floor.
+- PR #159 review: the coordinator reproduced contradictory supported false-alert claims for improved and equal rates. The exporter now emits the higher-rate claim only when the recomputed candidate rate is strictly higher; regressions cover improved, equal, and higher rates without changing the product schema.
+- FR-105 records the raw-runner failure and locked-environment workaround. Completed proving results and publication state belong in the PR; this entry claims no merge.
+- No schema, product contract, data lane, real holdout custody, release, or human decision changes. `HUMAN_TODO.md` stays unchanged; current state and the experiment ledger are unchanged because this is not a phase boundary or experiment decision.

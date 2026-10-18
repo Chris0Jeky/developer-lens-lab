@@ -10,6 +10,7 @@ from developer_lens_lab.wbc1.export import (
 )
 from developer_lens_lab.wbc1.generator import WeeklySeries
 from developer_lens_lab.wbc1.report import (
+    _svg_timeline,  # pyright: ignore[reportPrivateUsage] - direct gap-split coverage
     build_method_trial_html,
     build_method_trial_markdown,
 )
@@ -294,3 +295,18 @@ def test_method_trial_reports_are_deterministic_and_complete() -> None:
     assert baseline_marker_y and candidate_marker_y
     assert all(24 <= value <= 188 for value in baseline_marker_y)
     assert all(24 <= value <= 188 for value in candidate_marker_y)
+
+
+def test_svg_timeline_splits_at_missing() -> None:
+    case: dict[str, Any] = {
+        "title": "Gap case",
+        "summary": "Observed gap coverage.",
+        "points": [
+            {"observed": {"state": "observed", "value": 10.0}},
+            {"observed": {"state": "missing", "reason": "instrumentation_gap"}},
+            {"observed": {"state": "observed", "value": 12.0}},
+        ],
+    }
+    svg = _svg_timeline(case, 1)
+    assert svg.count('<polyline class="signal"') == 2
+    assert svg.count('<line class="missing"') == 1

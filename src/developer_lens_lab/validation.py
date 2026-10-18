@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from collections import Counter
 from pathlib import Path
@@ -9,11 +10,12 @@ from typing import cast
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from developer_lens_lab.artifacts import ArtifactStore
 from developer_lens_lab.contracts import EvaluationBundle, ResearchPack
-from developer_lens_lab.contracts.research_pack import RelationDescriptor
+from developer_lens_lab.contracts.common import CanonicalUtc
+from developer_lens_lab.contracts.research_pack import RELATION_SCHEMA_IDS, RelationDescriptor
 
 MAX_MANIFEST_BYTES = 1_000_000
 FORBIDDEN_KEY_FRAGMENTS = {
@@ -29,60 +31,74 @@ ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\|/|~[\\/]|file://)", re.I
 ROOTED_PATH_RE = re.compile(r"^\\(?!\\)")
 LETTER_COLON_RE = re.compile(r"^[A-Za-z]:")
 
-RELATION_COLUMNS: dict[str, tuple[str, ...]] = {
-    "coverage": (
-        "coverage_id",
-        "capability_code",
-        "status",
-        "observed_units",
-        "expected_units",
-        "window_start",
-        "window_end",
+RELATION_SCHEMAS: dict[str, pa.Schema] = {
+    "developer-lens.coverage.v1": pa.schema(
+        [
+            pa.field("coverage_id", pa.string(), nullable=False),
+            pa.field("capability_code", pa.string(), nullable=False),
+            pa.field("status", pa.string(), nullable=False),
+            pa.field("observed_units", pa.int64(), nullable=False),
+            pa.field("expected_units", pa.int64()),
+            pa.field("window_start", pa.string(), nullable=False),
+            pa.field("window_end", pa.string(), nullable=False),
+        ]
     ),
-    "repository_week": (
-        "repository_alias",
-        "week_start",
-        "metric_code",
-        "value",
-        "coverage_id",
+    "developer-lens.repository-week.v1": pa.schema(
+        [
+            pa.field("repository_alias", pa.string(), nullable=False),
+            pa.field("week_start", pa.string(), nullable=False),
+            pa.field("metric_code", pa.string(), nullable=False),
+            pa.field("value", pa.float64(), nullable=False),
+            pa.field("coverage_id", pa.string(), nullable=False),
+        ]
     ),
-    "pr_episode": (
-        "episode_id",
-        "repository_alias",
-        "opened_at",
-        "ready_at",
-        "merged_at",
-        "status",
-        "coverage_id",
+    "developer-lens.pr-episode.v1": pa.schema(
+        [
+            pa.field("episode_id", pa.string(), nullable=False),
+            pa.field("repository_alias", pa.string(), nullable=False),
+            pa.field("opened_at", pa.string(), nullable=False),
+            pa.field("ready_at", pa.string()),
+            pa.field("merged_at", pa.string()),
+            pa.field("status", pa.string(), nullable=False),
+            pa.field("coverage_id", pa.string(), nullable=False),
+        ]
     ),
-    "ci_attempt": (
-        "attempt_id",
-        "repository_alias",
-        "started_at",
-        "completed_at",
-        "outcome_code",
-        "coverage_id",
+    "developer-lens.ci-attempt.v1": pa.schema(
+        [
+            pa.field("attempt_id", pa.string(), nullable=False),
+            pa.field("repository_alias", pa.string(), nullable=False),
+            pa.field("started_at", pa.string(), nullable=False),
+            pa.field("completed_at", pa.string()),
+            pa.field("outcome_code", pa.string(), nullable=False),
+            pa.field("coverage_id", pa.string(), nullable=False),
+        ]
     ),
-    "release_episode": (
-        "release_id",
-        "repository_alias",
-        "week_start",
-        "change_count",
-        "coverage_id",
+    "developer-lens.release-episode.v1": pa.schema(
+        [
+            pa.field("release_id", pa.string(), nullable=False),
+            pa.field("repository_alias", pa.string(), nullable=False),
+            pa.field("week_start", pa.string(), nullable=False),
+            pa.field("change_count", pa.int64(), nullable=False),
+            pa.field("coverage_id", pa.string(), nullable=False),
+        ]
     ),
-    "collection_probe": (
-        "probe_id",
-        "repository_alias",
-        "observed_at",
-        "status",
-        "coverage_id",
+    "developer-lens.collection-probe.v1": pa.schema(
+        [
+            pa.field("probe_id", pa.string(), nullable=False),
+            pa.field("repository_alias", pa.string(), nullable=False),
+            pa.field("observed_at", pa.string(), nullable=False),
+            pa.field("status", pa.string(), nullable=False),
+            pa.field("coverage_id", pa.string(), nullable=False),
+        ]
     ),
-    "system_event": (
-        "event_id",
-        "repository_alias",
-        "occurred_at",
-        "event_code",
-        "coverage_id",
+    "developer-lens.system-event.v1": pa.schema(
+        [
+            pa.field("event_id", pa.string(), nullable=False),
+            pa.field("repository_alias", pa.string(), nullable=False),
+            pa.field("occurred_at", pa.string(), nullable=False),
+            pa.field("event_code", pa.string(), nullable=False),
+            pa.field("coverage_id", pa.string(), nullable=False),
+        ]
     ),
 }
 
@@ -92,10 +108,15 @@ class ManifestError(ValueError):
 
 
 def _load_json(path: Path) -> object:
-    size = path.stat().st_size
-    if size > MAX_MANIFEST_BYTES:
+    with path.open("rb") as stream:
+        payload = stream.read(MAX_MANIFEST_BYTES + 1)
+    if len(payload) > MAX_MANIFEST_BYTES:
         raise ManifestError(f"manifest exceeds {MAX_MANIFEST_BYTES} bytes")
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        text = payload.decode("utf-8")
+    except (UnicodeDecodeError, UnicodeError) as exc:
+        raise ManifestError(f"manifest {path.name} is not valid UTF-8") from exc
+    return json.loads(text)
 
 
 def assert_path_free_manifest(value: object) -> None:
@@ -123,6 +144,7 @@ def assert_path_free_manifest(value: object) -> None:
                 or "../" in candidate
                 or "..\\" in candidate
                 or candidate == ".."
+                or "." in re.split(r"[\\/]", candidate)
                 or candidate.endswith("/..")
                 or candidate.endswith("\\..")
             ):
@@ -198,11 +220,39 @@ def validate_pack_artifacts(
             if parquet.metadata.num_rows != descriptor.row_count:
                 raise ManifestError(f"relation {relation_name} row_count does not match Parquet")
             actual_columns = tuple(parquet.schema_arrow.names)
-            if actual_columns != RELATION_COLUMNS[relation_name]:
+            schema = RELATION_SCHEMAS[RELATION_SCHEMA_IDS[relation_name]]
+            if actual_columns != tuple(schema.names):
                 raise ManifestError(
                     f"relation {relation_name} columns differ: expected "
-                    f"{RELATION_COLUMNS[relation_name]}, got {actual_columns}"
+                    f"{tuple(schema.names)}, got {actual_columns}"
                 )
+            for actual, expected in zip(parquet.schema_arrow, schema, strict=True):
+                if actual.type != expected.type:
+                    raise ManifestError(
+                        f"relation {relation_name} field {expected.name} has incompatible type"
+                    )
+            timestamp = TypeAdapter(CanonicalUtc)
+            for batch in parquet.iter_batches():
+                for field, column in zip(schema, batch.columns, strict=True):
+                    label = f"relation {relation_name} field {field.name}"
+                    # Inferred producer schemas allow nulls; enforce required values directly.
+                    if not field.nullable and column.null_count:
+                        raise ManifestError(f"{label} must not contain nulls")
+                    values = [value for value in column.to_pylist() if value is not None]
+                    if pa.types.is_floating(field.type):
+                        if any(not math.isfinite(value) for value in values):
+                            raise ManifestError(f"{label} must contain finite numbers")
+                    elif pa.types.is_integer(field.type):
+                        if any(value < 0 for value in values):
+                            raise ManifestError(f"{label} must contain non-negative counts")
+                    elif field.name.endswith(("_at", "_start", "_end")):
+                        try:
+                            for value in values:
+                                timestamp.validate_python(value)
+                        except ValidationError:
+                            raise ManifestError(
+                                f"{label} must contain canonical UTC timestamps"
+                            ) from None
         except pa.ArrowException as exc:
             raise ManifestError(f"relation {relation_name} is not valid Parquet") from exc
 

@@ -186,7 +186,7 @@ def test_build_report_replaces_symlink_without_following_it(
     except OSError:
         pytest.skip("file symlinks are unavailable on this host")
 
-    build_report(result.run_id, artifact_root=tmp_path)
+    build_report(result.run_id, artifact_root=tmp_path, force=True)
 
     assert outside.read_bytes() == b"outside sentinel\n"
     assert not report_path.is_symlink()
@@ -297,3 +297,119 @@ def test_benchmark_requires_a_synchronized_vendor_snapshot(
 
     with pytest.raises(RunnerError, match="vendor producer snapshot absent"):
         run_benchmark(root=tmp_path, artifact_root=tmp_path / "objects")
+
+
+def test_reproduce_rejects_lab_and_schema_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_drift")
+    original = _manifest(result.manifest_path)
+
+    def mismatched(field: str, sentinel: str) -> str:
+        recorded = original[field]
+        assert isinstance(recorded, str)
+        if recorded != sentinel:
+            return sentinel
+        return sentinel + "-tampered"
+
+    cases = [
+        ("lab_commit", "b" * 40, "current lab commit differs"),
+        ("environment_sha256", "sha256:" + "0" * 64, "current uv.lock differs"),
+        ("dataset_sha256", "sha256:" + "0" * 64, "reproduced dataset recipe differs"),
+        (
+            "producer_schema_sha256",
+            "sha256:" + "0" * 64,
+            "pinned producer schema differs",
+        ),
+    ]
+    for field, sentinel, match in cases:
+        tampered = dict(original)
+        tampered[field] = mismatched(field, sentinel)
+        assert tampered[field] != original[field]
+        result.manifest_path.write_text(json.dumps(tampered), encoding="utf-8")
+        try:
+            with pytest.raises(RunnerError, match=match):
+                reproduce_run(result.manifest_path, root=ROOT)
+        finally:
+            result.manifest_path.write_text(json.dumps(original), encoding="utf-8")
+
+
+def test_method_trial_view_rejects_threshold_and_metric_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from developer_lens_lab.wbc1.export import compose_method_trial_view
+
+    _permit_test_tree(monkeypatch)
+    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="wbc1_view_tamper")
+    store = ArtifactStore(tmp_path)
+    manifest = _manifest(result.manifest_path)
+
+    compose_method_trial_view(
+        result.run_id, root=ROOT, store=store, bundle=result.bundle, manifest=dict(manifest)
+    )
+
+    custody_ref = ArtifactRef.model_validate(manifest["custody"])
+    custody = json.loads(store.get_bytes(result.scope, custody_ref))
+    tampered_custody = dict(custody)
+    tampered_custody["candidate_threshold"] = float(custody["candidate_threshold"]) + 1.0
+    assert tampered_custody["candidate_threshold"] != custody["candidate_threshold"]
+    tampered_custody_ref = store.put_json(result.scope, tampered_custody)
+    tampered_manifest = dict(manifest)
+    tampered_manifest["custody"] = tampered_custody_ref.model_dump(mode="json")
+    tampered_bundle = result.bundle.model_copy(
+        update={
+            "artifact_manifest": tuple(
+                tampered_custody_ref if ref.sha256 == custody_ref.sha256 else ref
+                for ref in result.bundle.artifact_manifest
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="custody thresholds or viability differ"):
+        compose_method_trial_view(
+            result.run_id,
+            root=ROOT,
+            store=store,
+            bundle=tampered_bundle,
+            manifest=tampered_manifest,
+        )
+
+    tampered_decision = result.bundle.decision.model_copy(
+        update={"reason_codes": (*result.bundle.decision.reason_codes, "TAMPERED")}
+    )
+    tampered_bundle = result.bundle.model_copy(update={"decision": tampered_decision})
+    with pytest.raises(ValueError, match="EvaluationBundle decision differs"):
+        compose_method_trial_view(
+            result.run_id,
+            root=ROOT,
+            store=store,
+            bundle=tampered_bundle,
+            manifest=dict(manifest),
+        )
+
+    metrics = result.bundle.candidate_results.metrics
+    index = next(
+        position
+        for position, metric in enumerate(metrics)
+        if metric.metric_code == "false_alerts_per_year"
+    )
+    original_value = metrics[index].value
+    assert original_value is not None
+    tampered_metric = metrics[index].model_copy(update={"value": float(original_value) + 1.0})
+    tampered_results = result.bundle.candidate_results.model_copy(
+        update={
+            "metrics": tuple(
+                tampered_metric if position == index else metric
+                for position, metric in enumerate(metrics)
+            )
+        }
+    )
+    tampered_bundle = result.bundle.model_copy(update={"candidate_results": tampered_results})
+    with pytest.raises(ValueError, match="candidate metric differs"):
+        compose_method_trial_view(
+            result.run_id,
+            root=ROOT,
+            store=store,
+            bundle=tampered_bundle,
+            manifest=dict(manifest),
+        )
