@@ -186,3 +186,87 @@ def test_sync_accepts_bundled_uri_references_without_retrieval(
     assert (destination / "vendor/developer-lens" / contract / "v1/schema.json").read_bytes() == (
         source.read_bytes()
     )
+
+
+def _embedded_contract_source(product: Path, contract: str) -> Path:
+    source = product / "research-contracts" / contract / "v1/schema.json"
+    if not source.exists():
+        source.parent.mkdir(parents=True)
+        vendor = Path(__file__).resolve().parents[1] / "vendor/developer-lens" / contract / "v1"
+        source.write_bytes((vendor / "schema.json").read_bytes())
+    return source
+
+
+@pytest.mark.parametrize("contract", ["research-pack", "method-trial-view"])
+@pytest.mark.parametrize("referenced", [False, True])
+@pytest.mark.parametrize(
+    "dialect",
+    ["http://json-schema.org/draft-07/schema#", "https://json-schema.org/draft/2019-09/schema"],
+)
+def test_sync_accepts_embedded_resources_in_their_declared_dialect(
+    tmp_path: Path, contract: str, referenced: bool, dialect: str
+) -> None:
+    product, _ = _invented_product_repo(tmp_path)
+    source = _embedded_contract_source(product, contract)
+    schema = json.loads(source.read_bytes())
+    schema["$id"] = "https://example.invalid/root/"
+    schema.setdefault("$defs", {})["legacy"] = {
+        "$id": "legacy",
+        "$schema": dialect,
+        "definitions": {"tuple": {"$id": "tuple", "type": "array", "items": [{"type": "string"}]}},
+        "anyOf": [{"type": "string"}, {"$ref": "tuple"}],
+    }
+    if referenced:
+        schema["properties"]["schema_version"]["$ref"] = "legacy"
+    # These are instance data, even when they resemble schema resources.
+    schema["examples"] = [{"$id": "example", "$schema": "https://example.invalid/dialect"}]
+    source.write_text(json.dumps(schema), encoding="utf-8")
+    destination = tmp_path / "lab"
+    sync = sync_product_contract if contract == "research-pack" else sync_method_trial_view_contract
+    sync(destination, product, _commit(product))
+    assert (destination / "vendor/developer-lens" / contract / "v1/schema.json").read_bytes() == (
+        source.read_bytes()
+    )
+
+
+@pytest.mark.parametrize("contract", ["research-pack", "method-trial-view"])
+@pytest.mark.parametrize("referenced", [False, True])
+@pytest.mark.parametrize("defect", ["draft7", "draft2019", "unknown", "malformed", "inherited2020"])
+def test_sync_checks_each_embedded_resource_before_replacing_destination(
+    tmp_path: Path, contract: str, referenced: bool, defect: str
+) -> None:
+    product, commit = _invented_product_repo(tmp_path)
+    source = _embedded_contract_source(product, contract)
+    if contract == "method-trial-view":
+        commit = _commit(product)
+    destination = tmp_path / "lab"
+    sync = sync_product_contract if contract == "research-pack" else sync_method_trial_view_contract
+    sync(destination, product, commit)
+    before = {
+        p.relative_to(destination): p.read_bytes() for p in destination.rglob("*") if p.is_file()
+    }
+    schema = json.loads(source.read_bytes())
+    schema["$id"] = "https://example.invalid/root/"
+    child: dict[str, object] = {"$id": "child"}
+    if defect == "draft7":
+        child.update({"$schema": "http://json-schema.org/draft-07/schema#", "additionalItems": 5})
+    elif defect == "draft2019":
+        child.update(
+            {"$schema": "https://json-schema.org/draft/2019-09/schema", "additionalItems": 5}
+        )
+    elif defect == "unknown":
+        child["$schema"] = "https://example.invalid/unsupported-dialect"
+    elif defect == "malformed":
+        child["$schema"] = []
+    else:
+        child["items"] = [{"type": "string"}]
+    schema.setdefault("$defs", {})["child"] = child
+    if referenced:
+        schema["properties"]["unused"] = {"$ref": "child"}
+    source.write_text(json.dumps(schema), encoding="utf-8")
+    with pytest.raises(ContractSyncError):
+        sync(destination, product, _commit(product))
+    after = {
+        p.relative_to(destination): p.read_bytes() for p in destination.rglob("*") if p.is_file()
+    }
+    assert after == before

@@ -9,15 +9,18 @@ import re
 import subprocess
 import tempfile
 from contextlib import suppress
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, cast
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
+from jsonschema.protocols import Validator
+from jsonschema.validators import validator_for
 from pydantic import ValidationError as PydanticValidationError
 from referencing import Registry, Resource
 from referencing.exceptions import Unresolvable
-from referencing.jsonschema import DRAFT202012
+from referencing.jsonschema import DRAFT202012, UnknownDialect, specification_with
 
 from developer_lens_lab.contracts import ResearchPack
 
@@ -159,19 +162,55 @@ def _load_schema(payload: bytes, label: str) -> dict[str, Any]:
         raise ContractSyncError(f"{label} schema must be a JSON Schema object")
     schema = cast(dict[str, Any], value)
     try:
-        Draft202012Validator.check_schema(schema)
-    except SchemaError as exc:
-        raise ContractSyncError(f"{label} schema is not valid Draft 2020-12") from exc
-    try:
         _validate_reference_closure(schema)
-    except (Unresolvable, SchemaError, ValueError, TypeError) as exc:
+    except SchemaError as exc:
+        raise ContractSyncError(f"{label} schema is not valid for its declared dialect") from exc
+    except (Unresolvable, ValueError, TypeError, AttributeError) as exc:
         raise ContractSyncError(f"{label} schema references must resolve locally") from exc
     return schema
+
+
+def _check_schema_resources(
+    resource: Resource[Any], default: type[Validator] = Draft202012Validator
+) -> dict[int, tuple[Resource[Any], type[Validator]]]:
+    """Check each resource without applying its parent's metaschema to its contents."""
+    resources: dict[int, tuple[Resource[Any], type[Validator]]] = {}
+
+    def visit(current: Resource[Any], inherited: type[Validator]) -> Any:
+        contents = current.contents
+        if isinstance(contents, dict):
+            contents = cast(dict[str, Any], contents)
+            if "$schema" in contents:
+                dialect = contents["$schema"]
+                if not isinstance(dialect, str):
+                    raise ValueError("schema dialect must be a URI string")
+                try:
+                    specification_with(dialect)
+                except UnknownDialect as exc:
+                    raise ValueError("unsupported schema dialect") from exc
+        validator = validator_for(contents, default=inherited)
+        resources[id(contents)] = (current, validator)
+        # Substitute checked resource boundaries only in the metaschema-check copy.
+        # Instance-valued keywords (examples, const, etc.) are never traversed as schemas.
+        replacements = {
+            id(child.contents): visit(child, validator) for child in current.subresources()
+        }
+        projected = deepcopy(contents, replacements)
+        if current is resource or (
+            isinstance(contents, dict) and ("$id" in contents or "$schema" in contents)
+        ):
+            validator.check_schema(projected)
+            return {}
+        return projected
+
+    visit(resource, default)
+    return resources
 
 
 def _validate_reference_closure(schema: dict[str, Any]) -> None:
     """Check schema subresources, not ref-shaped instance examples or constants."""
     resource = Resource.from_contents(schema, default_specification=DRAFT202012)
+    resources = _check_schema_resources(resource)
     pending = [(resource, Registry[Any]().resolver_with_root(resource))]
     seen: set[int] = set()
     while pending:
@@ -187,8 +226,16 @@ def _validate_reference_closure(schema: dict[str, Any]) -> None:
             if not isinstance(reference, str):
                 raise ValueError("schema reference must be a URI string")
             resolved = resolver.lookup(reference)
-            Draft202012Validator.check_schema(resolved.contents)
-            target = Resource.from_contents(resolved.contents, default_specification=DRAFT202012)
+            known = resources.get(id(resolved.contents))
+            if known is None:
+                validator = resources[id(contents)][1]
+                target = Resource.from_contents(
+                    resolved.contents,
+                    default_specification=specification_with(validator.META_SCHEMA["$id"]),
+                )
+                resources.update(_check_schema_resources(target, validator))
+            else:
+                target = known[0]
             pending.append((target, resolved.resolver))
         pending.extend((child, resolver.in_subresource(child)) for child in current.subresources())
 
@@ -236,16 +283,14 @@ def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ContractSyncError("producer fixture is not valid JSON") from exc
     try:
-        Draft202012Validator.check_schema(schema_doc)
-    except SchemaError as exc:
-        raise ContractSyncError("producer schema is not a valid JSON Schema") from exc
-    try:
         _validate_reference_closure(schema_doc)
         # An empty registry refuses external retrieval. Sync must remain offline.
         Draft202012Validator(schema_doc, registry=Registry()).validate(fixture)
     except ValidationError as exc:
         raise ContractSyncError("producer fixture does not conform to the producer schema") from exc
-    except (Unresolvable, SchemaError, ValueError, TypeError) as exc:
+    except SchemaError as exc:
+        raise ContractSyncError("producer schema is not a valid JSON Schema") from exc
+    except (Unresolvable, ValueError, TypeError, AttributeError) as exc:
         raise ContractSyncError("producer schema has an unresolvable reference") from exc
 
 
