@@ -50,8 +50,13 @@ into Developer Lens. Repository, time, and seed-family partitions are disjoint. 
 in every proving pass. Unknown fields, non-`Z` timestamps, paths, provider/person identifiers,
 unbounded counts, non-finite metrics, missing artifact references, and `ship` decisions fail closed.
 The resource record contains deterministic workload counts, a workload checksum, and declared
-budgets so byte-equivalent replay remains possible. Volatile observed wall-clock and RSS
-measurements belong in the run report and never participate in bundle identity.
+budgets so byte-equivalent replay remains possible. For WB-C1, `evaluation_points` counts input
+point opportunities across both methods: every train fit and inner-validation pass at every
+threshold, then the selected-threshold test and final-holdout passes. `candidate_steps` counts
+the BOCPD subset of those opportunities. Each pass counts all supplied series lengths, including
+missing observations and abstained series; the single-family fit/validation fallback counts twice
+because both passes execute. PELT is counted separately by `offline_series`. Volatile observed
+wall-clock and RSS measurements belong in the run report and never participate in bundle identity.
 
 The generated schemas encode closed object shapes, scalar bounds, canonical UTC patterns, and the
 present-versus-unavailable null rules. Runtime Pydantic/Zod validation remains required for
