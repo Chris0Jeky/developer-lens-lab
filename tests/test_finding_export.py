@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -381,6 +382,93 @@ def test_recorded_custody_is_verified_before_publication(tmp_path: Path, defect:
     with pytest.raises(FindingError):
         export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
     assert not destination.parent.exists()
+
+
+def rehash_custody_evidence(
+    store: ArtifactStore,
+    manifest: dict[str, Any],
+    bundle: dict[str, Any],
+    view: dict[str, Any],
+    receipt: dict[str, Any],
+) -> None:
+    """Keep every stored link valid while changing invented receipt/selection evidence."""
+    previous = manifest["custody"]
+    reference = store.put_json(RUN_ID, receipt).model_dump(mode="json")
+    bundle["artifact_manifest"] = [
+        reference if item == previous else item for item in bundle["artifact_manifest"]
+    ]
+    manifest["custody"] = reference
+    bundle_ref = store.put_json(RUN_ID, bundle)
+    manifest["bundle"] = bundle_ref.model_dump(mode="json")
+    manifest["deterministic_bundle_sha256"] = bundle_ref.sha256
+    view["reproducibility"]["digests"]["custody"] = reference["sha256"]
+    link_view(bundle, view)
+    manifest["method_trial_view"] = store.put_json(RUN_ID, view).model_dump(mode="json")
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize("existing_output", [False, True])
+@pytest.mark.parametrize("defect", ["mismatch", "zero", "unavailable", "adjacent", "oversized"])
+def test_rehashed_custody_threshold_refusal_preserves_output(
+    tmp_path: Path, side: str, existing_output: bool, defect: str
+) -> None:
+    store, manifest = seed_store(tmp_path)
+    bundle, view = source_evidence()
+    receipt = custody_evidence(bundle)
+    key = f"{side}_threshold"
+    if defect == "mismatch":
+        receipt[key] += 0.5
+    elif defect == "zero":
+        receipt[key] = 0
+    elif defect == "unavailable":
+        view["scorecard"]["threshold_selection"][side]["selected_value"] = {
+            "status": "unavailable",
+            "reason": "not_measured",
+        }
+        receipt[key] = 0
+    elif defect == "adjacent":
+        receipt[key] = math.nextafter(receipt[key], math.inf)
+    else:
+        receipt[key] = 10**400
+    rehash_custody_evidence(store, manifest, bundle, view, receipt)
+    # All view, schema, bundle and decision checks pass independently of the receipt.
+    compose(bundle, view)
+    before = {
+        p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
+    }
+    destination = tmp_path / "published/finding.json"
+    if existing_output:
+        destination.parent.mkdir()
+        destination.write_bytes(b"untouched")
+    with pytest.raises(FindingError, match="validate or publish") as caught:
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert isinstance(caught.value.__cause__, ValueError)
+    assert "threshold" in str(caught.value.__cause__)
+    if existing_output:
+        assert destination.read_bytes() == b"untouched"
+        assert list(destination.parent.iterdir()) == [destination]
+    else:
+        assert not destination.parent.exists()
+    assert before == {
+        p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
+    }
+
+
+@pytest.mark.parametrize("threshold", [0, 0.0, 0.05, 2.5, 1_000_000])
+def test_rehashed_matching_custody_thresholds_publish(
+    tmp_path: Path, threshold: int | float
+) -> None:
+    store, manifest = seed_store(tmp_path)
+    bundle, view = source_evidence()
+    receipt = custody_evidence(bundle)
+    for side in ("baseline", "candidate"):
+        receipt[f"{side}_threshold"] = threshold
+        view["scorecard"]["threshold_selection"][side]["selected_value"]["value"] = threshold
+    rehash_custody_evidence(store, manifest, bundle, view, receipt)
+    destination = tmp_path / "published/finding.json"
+    export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert destination.read_bytes() == stable_bytes(compose(bundle, view))
 
 
 def test_rehashed_losing_bundle_cannot_claim_benchmarked(tmp_path: Path) -> None:

@@ -102,9 +102,12 @@ def validate_view_lineage(
 
 
 def validate_custody_record(
-    bundle: EvaluationBundle, manifest: dict[str, Any], receipt: dict[str, Any]
+    bundle: EvaluationBundle,
+    manifest: dict[str, Any],
+    receipt: dict[str, Any],
+    view: dict[str, Any],
 ) -> None:
-    """Check the existing receipt only. Reading it does not open its held-out data."""
+    """Bind the existing receipt to its run and validated view without opening held-out data."""
     expected = {
         "event": "final_holdout_custody",
         "run_id": bundle.run_manifest.run_id,
@@ -119,8 +122,17 @@ def validate_custody_record(
         value = receipt.get(key)
         if not isinstance(value, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
             raise ValueError("stored custody receipt lacks an immutable evidence digest")
-    for key in ("baseline_threshold", "candidate_threshold"):
-        value = receipt.get(key)
+    for side in ("baseline", "candidate"):
+        value = receipt.get(f"{side}_threshold")
         threshold = cast(int | float, value)
-        if type(value) not in (int, float) or not math.isfinite(threshold) or threshold < 0:
+        try:
+            valid = type(value) in (int, float) and math.isfinite(threshold) and threshold >= 0
+        except OverflowError:
+            valid = False
+        if not valid:
             raise ValueError("stored custody receipt contains an invalid selected threshold")
+        selected = view["scorecard"]["threshold_selection"][side]["selected_value"]
+        if selected["status"] != "measured":
+            raise ValueError("stored view selected threshold is unavailable")
+        if threshold != selected["value"]:
+            raise ValueError("stored custody receipt threshold disagrees with its view selection")
