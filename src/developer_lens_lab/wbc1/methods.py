@@ -62,9 +62,13 @@ def parameters_sha256(value: BaselineParameters | BocpdParameters) -> str:
 
 
 def rolling_median_mad_scores(
-    values: FloatArray, parameters: BaselineParameters = DEFAULT_BASELINE_PARAMETERS
+    values: FloatArray,
+    parameters: BaselineParameters = DEFAULT_BASELINE_PARAMETERS,
+    *,
+    unavailable_as_nan: bool = False,
 ) -> FloatArray:
-    scores = np.zeros(len(values), dtype=np.float64)
+    """Opt into explicit missingness for presentation; keep legacy evaluation scores."""
+    scores = np.full(len(values), np.nan if unavailable_as_nan else 0.0, dtype=np.float64)
     for index in range(len(values)):
         value = values[index]
         if np.isnan(value):
@@ -97,8 +101,12 @@ def _student_t_pdf(
 
 
 def bocpd_scores(
-    values: FloatArray, parameters: BocpdParameters = DEFAULT_BOCPD_PARAMETERS
+    values: FloatArray,
+    parameters: BocpdParameters = DEFAULT_BOCPD_PARAMETERS,
+    *,
+    unavailable_as_nan: bool = False,
 ) -> BocpdOutput:
+    """Opt into explicit missingness without changing posterior or calibration behavior."""
     # Adams--MacKay Algorithm 1.  State arrays describe the posterior
     # sufficient statistics for each run length *before* the current value.
     # The r=0 state is always the fixed prior; only grown states incorporate
@@ -114,8 +122,10 @@ def bocpd_scores(
     kappas = np.asarray([prior_kappa], dtype=np.float64)
     alphas = np.asarray([prior_alpha], dtype=np.float64)
     betas = np.asarray([prior_beta], dtype=np.float64)
-    change_probability = np.zeros(len(values), dtype=np.float64)
-    surprise = np.zeros(len(values), dtype=np.float64)
+    change_probability = np.full(
+        len(values), np.nan if unavailable_as_nan else 0.0, dtype=np.float64
+    )
+    surprise = np.full(len(values), np.nan if unavailable_as_nan else 0.0, dtype=np.float64)
 
     for index, raw_value in enumerate(values):
         if not np.isfinite(raw_value):

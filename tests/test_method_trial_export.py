@@ -16,8 +16,14 @@ from developer_lens_lab.contracts.method_trial_view import (
     MethodTrialViewError,
     validate_method_trial_view,
 )
-from developer_lens_lab.wbc1.export import _build_cases, _select_series, export_method_trial
+from developer_lens_lab.wbc1.export import (
+    _build_cases,
+    _case_points,
+    _select_series,
+    export_method_trial,
+)
 from developer_lens_lab.wbc1.generator import WeeklySeries
+from developer_lens_lab.wbc1.methods import BocpdOutput, alerts_from_scores
 from developer_lens_lab.wbc1.runner import run_benchmark
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,6 +66,62 @@ def _permit_test_tree(monkeypatch) -> None:
         "developer_lens_lab.wbc1.runner._ensure_reproducible_tree", lambda _root: None
     )
     monkeypatch.setattr("developer_lens_lab.wbc1.runner._git_commit", lambda _root: "a" * 40)
+
+
+@pytest.mark.parametrize("start", [0, 2])
+@pytest.mark.parametrize("threshold", [0.0, 0.5])
+def test_method_trial_points_preserve_score_availability(monkeypatch, start, threshold) -> None:
+    series = _fabricated_series("no_change", "invented", eligible=True)
+    series.observed[5] = False
+    baseline = np.zeros(len(series.values), dtype=np.float64)
+    candidate = np.zeros(len(series.values), dtype=np.float64)
+    baseline[[0, 1, 6]] = np.nan
+    candidate[[0, 1, 2, 6]] = np.nan
+    baseline[3] = 4.0
+    candidate[3] = 0.8
+
+    def scripted_baseline(_values, *, unavailable_as_nan=False):
+        return (
+            baseline.copy() if unavailable_as_nan else np.where(np.isnan(baseline), 0.0, baseline)
+        )
+
+    def scripted_candidate(_values, *, unavailable_as_nan=False):
+        scores = (
+            candidate.copy()
+            if unavailable_as_nan
+            else np.where(np.isnan(candidate), 0.0, candidate)
+        )
+        return BocpdOutput(scores, np.zeros_like(scores))
+
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.export.rolling_median_mad_scores", scripted_baseline
+    )
+    monkeypatch.setattr("developer_lens_lab.wbc1.export.bocpd_scores", scripted_candidate)
+    monkeypatch.setattr("developer_lens_lab.wbc1.export.pelt_segments", lambda _values: ())
+    values = {
+        (series.system_alias, week): float(series.values[index])
+        for index, week in enumerate(series.week_starts)
+        if series.observed[index]
+    }
+    points = _case_points(series, values, threshold, threshold, start, 8 - start, "none", "none")
+
+    for role, field, scores in (
+        ("baseline", "score", baseline),
+        ("candidate", "probability", candidate),
+    ):
+        legacy_scores = np.where(np.isnan(scores), 0.0, scores)
+        expected_alerts = alerts_from_scores(legacy_scores, threshold, 6, series.observed)
+        for index, point in enumerate(points, start=start):
+            exported = point[role]
+            if not series.observed[index]:
+                expected = {"status": "unavailable", "reason": "missing_observation"}
+            elif np.isnan(scores[index]):
+                expected = {"status": "unavailable", "reason": "warmup"}
+            else:
+                expected = {"status": "measured", "value": float(scores[index])}
+            assert exported[field] == expected
+            assert exported["threshold"] == {"status": "measured", "value": threshold}
+            assert exported["alert"] == (index in expected_alerts)
 
 
 def test_method_trial_export_is_deterministic_and_schema_valid(tmp_path: Path, monkeypatch) -> None:
