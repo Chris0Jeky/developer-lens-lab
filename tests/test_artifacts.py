@@ -84,6 +84,60 @@ def test_store_rechecks_lexical_root_before_writes(
     assert not requested.exists()
 
 
+@pytest.mark.parametrize("operation", ["get", "put"])
+@pytest.mark.parametrize("state", ["existing", "dangling"])
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "symlink",
+        pytest.param("junction", marks=pytest.mark.skipif(os.name != "nt", reason="Windows")),
+    ],
+)
+def test_store_rejects_linked_object_leaves_before_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str, state: str, kind: str
+) -> None:
+    store = ArtifactStore(tmp_path / ".dllab")
+    payload = b"invented payload"
+    reference = store.put_bytes("scope_demo", payload, "application/json")
+    hex_digest = reference.sha256.removeprefix("sha256:")
+    leaf = store.scope_root("scope_demo") / "objects" / hex_digest[:2] / hex_digest
+    leaf.unlink()
+    target = tmp_path / "target"
+    if kind == "junction":
+        if state == "existing":
+            target.mkdir()
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(leaf), str(target)],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode:
+            pytest.skip("directory junctions are unavailable on this host")
+        assert leaf.is_junction()
+    else:
+        if state == "existing":
+            target.write_bytes(payload)
+        try:
+            leaf.symlink_to(target)
+        except OSError:
+            pytest.skip("file symlinks are unavailable on this host")
+        assert leaf.is_symlink()
+
+    original_read_bytes = Path.read_bytes
+
+    def read_bytes(path: Path) -> bytes:
+        assert path != leaf, "linked object leaf was opened"
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", read_bytes)
+    with pytest.raises(ArtifactError, match="artifact path traverses a symlink or junction"):
+        if operation == "get":
+            store.get_bytes("scope_demo", reference)
+        else:
+            store.put_bytes("scope_demo", payload, "application/json")
+    assert leaf.is_symlink() or leaf.is_junction()
+
+
 def test_scope_store_roundtrip_deduplicates_and_invalidates(tmp_path: Path) -> None:
     store = ArtifactStore(tmp_path / ".dllab")
     first = store.put_bytes("scope_demo", b"invented payload", "application/json")

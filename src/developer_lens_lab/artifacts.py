@@ -134,7 +134,7 @@ class ArtifactStore:
         digest = "sha256:" + hashlib.sha256(payload).hexdigest()
         reference = ArtifactRef(sha256=digest, size_bytes=len(payload), media_type=media_type)
         path = self._object_path(scope_id, digest)
-        self._ensure_no_symlink_parents(path.parent)
+        self._ensure_no_symlink_parents(path)
         if path.exists():
             existing = path.read_bytes()
             if existing != payload:
@@ -155,7 +155,7 @@ class ArtifactStore:
 
     def get_bytes(self, scope_id: str, reference: ArtifactRef) -> bytes:
         path = self._object_path(scope_id, reference.sha256)
-        self._ensure_no_symlink_parents(path.parent)
+        self._ensure_no_symlink_parents(path)
         try:
             payload = path.read_bytes()
         except FileNotFoundError as exc:
