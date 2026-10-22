@@ -10,6 +10,7 @@ import pytest
 
 from developer_lens_lab.artifacts import ArtifactStore, canonical_json_bytes
 from developer_lens_lab.contracts import ArtifactRef, EvaluationBundle
+from developer_lens_lab.contracts.method_trial_view import validate_method_trial_view
 from developer_lens_lab.contracts.research_finding import FindingError
 from developer_lens_lab.finding_canonical import stable_bytes
 from developer_lens_lab.finding_export import compose_finding, export_finding
@@ -132,6 +133,64 @@ def test_projection_matches_pinned_fixture_and_preserves_sources() -> None:
     before = copy.deepcopy((bundle, view))
     assert stable_bytes(compose(bundle, view)) == (VENDOR / "wbc1.fixture.json").read_bytes()
     assert (bundle, view) == before
+
+
+def test_schema_allowed_contradictory_summary_is_refused() -> None:
+    bundle, view = source_evidence()
+    view["decision"]["summary"] = "Candidate selection is viable"
+    assert validate_method_trial_view(view, root=ROOT) == view
+    assert view["scorecard"]["threshold_selection"]["candidate"]["viable"] is False
+    with pytest.raises(FindingError, match="summary"):
+        compose(bundle, view)
+
+
+def test_contradictory_stored_summary_preserves_existing_output(tmp_path: Path) -> None:
+    store, manifest = seed_store(tmp_path)
+    _, view = source_evidence()
+    view["decision"]["summary"] = "Candidate selection is viable"
+    manifest["method_trial_view"] = store.put_json(RUN_ID, view).model_dump(mode="json")
+    store.write_scope_file(RUN_ID, "run.json", canonical_json_bytes(manifest))
+    destination = tmp_path / "existing.json"
+    destination.write_bytes(b"untouched")
+    with pytest.raises(FindingError, match="summary"):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    assert destination.read_bytes() == b"untouched"
+
+
+def test_generic_stored_summary_is_replaced_with_evidence_derived_summary() -> None:
+    bundle, view = source_evidence()
+    expected = view["decision"]["summary"]
+    view["decision"]["summary"] = (
+        "The candidate is rejected because the recorded acceptance gates do not all pass."
+    )
+    assert compose(bundle, view)["decision"]["summary"] == expected
+
+
+@pytest.mark.parametrize("candidate_ratio", [0.9, 1.0])
+def test_frozen_summary_requires_evidence_of_higher_false_alerts(candidate_ratio: float) -> None:
+    bundle, view = source_evidence()
+    alerts = view["scorecard"]["baseline"]["false_alerts_per_year"]["value"] * candidate_ratio
+    measurement = {"status": "measured", "value": alerts}
+    view["scorecard"]["candidate"]["false_alerts_per_year"] = measurement
+    view["acceptance_gates"][4]["relevant_values"]["candidate"] = measurement
+    bundle["candidate_results"]["metrics"][0]["value"] = alerts
+    link_view(bundle, view)
+    assert validate_method_trial_view(view, root=ROOT) == view
+    with pytest.raises(FindingError, match="summary"):
+        compose(bundle, view)
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+def test_frozen_summary_requires_both_selections_to_be_nonviable(side: str) -> None:
+    bundle, view = source_evidence()
+    view["scorecard"]["threshold_selection"][side]["viable"] = True
+    view["acceptance_gates"][0 if side == "baseline" else 1]["outcome"] = "pass"
+    view["decision"]["reason_codes"].remove(f"{side.upper()}_SELECTION_VIABLE")
+    bundle["decision"]["reason_codes"] = view["decision"]["reason_codes"]
+    link_view(bundle, view)
+    assert validate_method_trial_view(view, root=ROOT) == view
+    with pytest.raises(FindingError, match="summary"):
+        compose(bundle, view)
 
 
 def test_bundle_only_export_does_not_invent_delay_confound_or_selection() -> None:
