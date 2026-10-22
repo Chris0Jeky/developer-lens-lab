@@ -239,7 +239,29 @@ def compose_finding(
         value["threshold_viability"] = {
             side: selection[side]["viable"] for side in ("baseline", "candidate")
         }
-        value["decision"]["summary"] = view["decision"]["summary"]
+        # Closed wording recipes keep stored free text out of the published decision.
+        summary = summaries[outcome]
+        supported_summaries = {summary}
+        if outcome == "reject":
+            supported_summaries.add(
+                "The candidate is rejected because the recorded acceptance gates do not all pass."
+            )
+            baseline_alerts = view["scorecard"]["baseline"]["false_alerts_per_year"]
+            candidate_alerts = view["scorecard"]["candidate"]["false_alerts_per_year"]
+            if (
+                not any(value["threshold_viability"].values())
+                and baseline_alerts["status"] == "measured"
+                and candidate_alerts["status"] == "measured"
+                and candidate_alerts["value"] > baseline_alerts["value"]
+            ):
+                summary = (
+                    "The candidate is rejected because both selections are nonviable "
+                    "and false alerts are higher."
+                )
+        supported_summaries.add(summary)
+        if view["decision"]["summary"] not in supported_summaries:
+            raise FindingError("stored decision summary is not supported by verified evidence")
+        value["decision"]["summary"] = summary
         if any(value["threshold_viability"].values()):
             value["limitations"] = [
                 item for item in value["limitations"] if item["code"] != "thresholds_nonviable"
