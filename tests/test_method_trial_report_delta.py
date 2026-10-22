@@ -36,9 +36,7 @@ def test_equal_values_use_no_change_wording() -> None:
     ("baseline", "candidate"),
     [(0.0, 0.0), (0.0, 1.0), (None, 1.0), (1.0, None), (None, None)],
 )
-def test_undefined_delta_stays_unavailable(
-    baseline: float | None, candidate: float | None
-) -> None:
+def test_undefined_delta_stays_unavailable(baseline: float | None, candidate: float | None) -> None:
     assert _false_alert_delta(_view(baseline, candidate)) == "unavailable"
 
 
