@@ -8,6 +8,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from developer_lens_lab.contract_sync import ensure_confined_parent
 from developer_lens_lab.contracts import EvaluationBundle, ResearchPack
 
 type SchemaModel = type[BaseModel]
@@ -38,7 +39,7 @@ def rendered_schemas(root: Path) -> dict[Path, str]:
 def render_schemas(root: Path) -> None:
     outputs = rendered_schemas(root)
     for path in outputs:
-        path.parent.mkdir(parents=True, exist_ok=True)
+        ensure_confined_parent(path, root)
     originals: dict[Path, bytes | None] = {}
     for path in outputs:
         try:
