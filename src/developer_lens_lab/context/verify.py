@@ -1319,18 +1319,25 @@ def verify_repository(root: Path) -> VerificationReport:
                     "it belongs in gitignored .claude/settings.local.json"
                 )
             failures.extend(verify_settings_deny(settings_payload))
-    tracked_local = subprocess.run(
-        ["git", "ls-files", "--cached", "--", ".claude/settings.local.json"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if tracked_local.returncode == 0 and tracked_local.stdout.strip():
-        failures.append(
-            ".claude/settings.local.json is tracked; machine-local trust settings must stay "
-            "gitignored"
+    try:
+        tracked_local = subprocess.run(
+            ["git", "ls-files", "--cached", "--", ".claude/settings.local.json"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
         )
+    except OSError:
+        failures.append(
+            "git trust probe unavailable: git ls-files could not run, so "
+            ".claude/settings.local.json cannot be verified as untracked"
+        )
+    else:
+        if tracked_local.returncode == 0 and tracked_local.stdout.strip():
+            failures.append(
+                ".claude/settings.local.json is tracked; machine-local trust settings must stay "
+                "gitignored"
+            )
     current = root / "docs" / "CURRENT_STATE.md"
     if current.is_file():
         text = current.read_text(encoding="utf-8")
