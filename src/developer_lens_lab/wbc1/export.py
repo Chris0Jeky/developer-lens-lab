@@ -591,6 +591,10 @@ def compose_method_trial_view(
     ):
         if _field not in manifest:
             raise ValueError(f"run manifest is missing required field: {_field}")
+    # The view records the smoke recipe and a --smoke reproduction command, so a full run
+    # would carry false provenance: refuse it before any projection.
+    if manifest.get("smoke") is not True:
+        raise ValueError("MethodTrialView export supports smoke runs only")
     _research_pack = manifest["research_pack"]
     if not isinstance(_research_pack, dict) or "sha256" not in _research_pack:
         raise ValueError("run manifest is missing required field: research_pack/sha256")
@@ -617,7 +621,7 @@ def compose_method_trial_view(
     values = _read_series_values(store, run_id, bundle, manifest)
     custody_ref = ArtifactRef.model_validate(manifest["custody"])
     custody = cast(dict[str, Any], json.loads(store.get_bytes(run_id, custody_ref)))
-    dataset = build_benchmark_dataset(smoke=bool(manifest.get("smoke", True)))
+    dataset = build_benchmark_dataset(smoke=True)
     dataset.replay_final_holdout(str(custody["dataset_sha256"]))
     if str(custody.get("run_id")) != run_id:
         raise ValueError("custody run_id does not match requested run")
