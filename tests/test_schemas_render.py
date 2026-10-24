@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
 from developer_lens_lab import cli
+from developer_lens_lab.contract_sync import ContractSyncError
 from developer_lens_lab.schemas import check_schemas, render_schemas, rendered_schemas
 
 
@@ -99,3 +101,122 @@ def test_render_aborts_when_existing_schema_snapshot_is_unreadable(
     for target in targets:
         assert real_read(target) == before[target]
     assert list(tmp_path.rglob("*.tmp")) == []
+
+
+def _seed_distinct_originals(root: Path) -> dict[Path, bytes]:
+    originals = {
+        target: f"original {index} {target.name}\n".encode()
+        for index, target in enumerate(_targets(root))
+    }
+    for target, content in originals.items():
+        target.parent.mkdir(parents=True)
+        target.write_bytes(content)
+    return originals
+
+
+def test_render_replaces_distinct_originals_byte_identically(tmp_path: Path) -> None:
+    _seed_distinct_originals(tmp_path)
+
+    render_schemas(tmp_path)
+
+    for target, expected in rendered_schemas(tmp_path).items():
+        assert target.read_bytes() == expected.encode()
+    assert check_schemas(tmp_path) == ()
+
+
+def test_second_replace_failure_restores_both_distinct_originals(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    originals = _seed_distinct_originals(tmp_path)
+    first, second = _targets(tmp_path)
+    real_replace = os.replace
+    first_replaced: list[bool] = []
+
+    def fail_second(src: str | Path, dst: str | Path) -> None:
+        if Path(dst) == second:
+            raise OSError("injected second replacement fault")
+        real_replace(src, dst)
+        first_replaced.append(Path(dst) == first)
+
+    monkeypatch.setattr(os, "replace", fail_second)
+    with pytest.raises(OSError, match="injected second replacement fault"):
+        render_schemas(tmp_path)
+
+    assert any(first_replaced)  # the first schema really was updated, then rolled back
+    for target, content in originals.items():
+        assert target.read_bytes() == content
+    assert list(tmp_path.rglob("*.tmp")) == []
+
+
+def _link(path: Path, target: Path, kind: str) -> None:
+    if kind == "junction":
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(path), str(target)],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode:
+            pytest.skip("directory junctions are unavailable on this host")
+        assert path.is_junction()
+        return
+    try:
+        path.symlink_to(target, target_is_directory=target.is_dir())
+    except OSError:
+        pytest.skip("symlinks are unavailable on this host")
+
+
+def test_render_refuses_linked_destination(tmp_path: Path) -> None:
+    root = tmp_path / "root"
+    originals = _seed_distinct_originals(root)
+    first, second = _targets(root)
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(b"outside bytes")
+    second.unlink()
+    _link(second, outside, "symlink")
+
+    with pytest.raises(ContractSyncError, match=r"symlink|junction"):
+        render_schemas(root)
+
+    assert outside.read_bytes() == b"outside bytes"
+    assert first.read_bytes() == originals[first]
+    assert list(root.rglob("*.tmp")) == []
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "symlink",
+        pytest.param("junction", marks=pytest.mark.skipif(os.name != "nt", reason="Windows")),
+    ],
+)
+def test_render_refuses_linked_parent_without_outside_writes(tmp_path: Path, kind: str) -> None:
+    root = tmp_path / "root"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (root / "schemas").mkdir(parents=True)
+    _link(root / "schemas/evaluation-bundle", outside, kind)
+
+    with pytest.raises(ContractSyncError, match=r"symlink|junction"):
+        render_schemas(root)
+
+    assert list(outside.iterdir()) == []
+    assert not _targets(root)[0].exists()
+
+
+def test_render_refuses_destination_reported_as_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    originals = _seed_distinct_originals(tmp_path)
+    linked = _targets(tmp_path)[1]
+    real_is_symlink = Path.is_symlink
+
+    def is_symlink(path: Path) -> bool:
+        return path == linked or real_is_symlink(path)
+
+    monkeypatch.setattr(Path, "is_symlink", is_symlink)
+
+    with pytest.raises(ContractSyncError, match=r"symlink|junction"):
+        render_schemas(tmp_path)
+
+    for target, content in originals.items():
+        assert target.read_bytes() == content
