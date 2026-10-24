@@ -248,6 +248,11 @@ class EvaluationBundle(StrictModel):
             raise ValueError("result artifacts must be present in artifact_manifest")
         if len(declared) != len(self.artifact_manifest):
             raise ValueError("artifact_manifest contains duplicate digests")
+        if any(
+            artifact not in self.artifact_manifest
+            for artifact in (self.baseline_results.artifact, self.candidate_results.artifact)
+        ):
+            raise ValueError("result artifact references must match artifact_manifest")
         split_seed_families = {
             *self.split_manifest.train.seed_families,
             *self.split_manifest.test.seed_families,
