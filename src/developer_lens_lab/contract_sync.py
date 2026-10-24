@@ -64,7 +64,7 @@ def _is_link_like(path: Path) -> bool:
     return path.is_symlink() or path.is_junction()
 
 
-def _ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> None:
+def ensure_confined_parent(path: Path, root: Path, *, create: bool = True) -> None:
     root_resolved = root.resolve()
     if _is_link_like(root):
         raise ContractSyncError(
@@ -141,7 +141,7 @@ def _validate_method_trial_provenance(provenance: object, payload: bytes) -> dic
 
 
 def _atomic_write(path: Path, payload: bytes, root: Path) -> None:
-    _ensure_confined_parent(path, root)
+    ensure_confined_parent(path, root)
     handle, temporary_name = tempfile.mkstemp(prefix=".sync-tmp-", dir=path.parent)
     temporary = Path(temporary_name)
     try:
@@ -382,8 +382,8 @@ def sync_method_trial_view_contract(
         schema_path = destination / "schema.json"
         provenance_path = destination / "provenance.json"
         try:
-            _ensure_confined_parent(schema_path, destination_root, create=False)
-            _ensure_confined_parent(provenance_path, destination_root, create=False)
+            ensure_confined_parent(schema_path, destination_root, create=False)
+            ensure_confined_parent(provenance_path, destination_root, create=False)
             vendored = schema_path.read_bytes()
             provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:

@@ -931,7 +931,13 @@ def build_report(
     manifest_path = store.scope_root(run_id) / "run.json"
     if not manifest_path.is_file():
         raise RunnerError(f"run manifest not found for {run_id}")
-    manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict):
+        raise RunnerError("run manifest must be an object")
+    if manifest.get("schema_version") != "DeveloperLensWbc1Run.v1":
+        raise RunnerError("unsupported WB-C1 run manifest")
+    if manifest.get("run_id") != run_id:
+        raise RunnerError("run manifest identity does not match the requested run")
     smoke = manifest.get("smoke")
     if not isinstance(smoke, bool):
         raise RunnerError("run manifest smoke flag must be Boolean")
@@ -951,6 +957,8 @@ def build_report(
             raise RunnerError("full run manifest must not declare a smoke-only MethodTrialView")
         bundle_ref = _require_ref(manifest, "bundle")
         bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
+        if bundle.run_manifest.run_id != run_id:
+            raise RunnerError("EvaluationBundle identity does not match the requested run")
         markdown_text = build_markdown(bundle)
         html_text = build_html(bundle)
     markdown = store.put_text(run_id, markdown_text, "text/markdown")
