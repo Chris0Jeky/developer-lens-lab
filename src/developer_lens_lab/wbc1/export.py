@@ -940,5 +940,8 @@ def export_method_trial(
     data = canonical_json_bytes(view) + b"\n"
     requested_output = output or (root / "method-trial-view.json")
     output_path = requested_output.parent.resolve() / requested_output.name
+    store_root = (artifact_root or (root / ".dllab")).resolve()
+    if output_path.is_relative_to(store_root):
+        raise ValueError("MethodTrial output must not overwrite the source artifact store")
     _publish_export(output_path, data)
     return MethodTrialExport(run_id, data, output_path, _sha256(data))
