@@ -1836,3 +1836,9 @@ hashed package bytes only; the joint tag remains blocked on product
 - PR #159 review: the coordinator reproduced contradictory supported false-alert claims for improved and equal rates. The exporter now emits the higher-rate claim only when the recomputed candidate rate is strictly higher; regressions cover improved, equal, and higher rates without changing the product schema.
 - FR-105 records the raw-runner failure and locked-environment workaround. Completed proving results and publication state belong in the PR; this entry claims no merge.
 - No schema, product contract, data lane, real holdout custody, release, or human decision changes. `HUMAN_TODO.md` stays unchanged; current state and the experiment ledger are unchanged because this is not a phase boundary or experiment decision.
+
+## 2026-10-22 - Bound artifact object reads (F6)
+
+- Retrieval and existing-object comparison now read at most the expected payload length plus one byte, preserving digest/size verification and link refusal without adding quota policy.
+- Twelve invented guarded-stream cases failed on unbounded `read(-1)` before the fix and pass afterward, covering oversized, truncated, wrong-digest, exact, and empty objects. Existing artifact/binding tests pass (28 passed, seven host symlink skips); frozen evidence and human gates remain unchanged.
+- Full suite: 811 passed, 13 skipped, three failed. Two symlink-privilege failures reproduce with committed and patched artifact code; the package-smoke cleanup assertion passes in both isolated comparisons, so its full-suite failure remains unresolved. Formatting, lint, types, context, contracts, strict docs, and hygiene pass.
