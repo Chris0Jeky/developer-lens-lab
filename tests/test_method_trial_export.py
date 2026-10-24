@@ -126,12 +126,13 @@ def test_method_trial_points_preserve_score_availability(monkeypatch, start, thr
 
 def test_method_trial_export_is_deterministic_and_schema_valid(tmp_path: Path, monkeypatch) -> None:
     _permit_test_tree(monkeypatch)
-    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_export")
+    store = tmp_path / "artifacts"
+    result = run_benchmark(root=ROOT, artifact_root=store, run_id="method_trial_export")
     first = export_method_trial(
-        result.run_id, root=ROOT, artifact_root=tmp_path, output=tmp_path / "view.json"
+        result.run_id, root=ROOT, artifact_root=store, output=tmp_path / "view.json"
     )
     second = export_method_trial(
-        result.run_id, root=ROOT, artifact_root=tmp_path, output=tmp_path / "view-2.json"
+        result.run_id, root=ROOT, artifact_root=store, output=tmp_path / "view-2.json"
     )
     assert first.payload == second.payload
     assert first.sha256 == "sha256:" + hashlib.sha256(first.payload).hexdigest()
@@ -191,7 +192,8 @@ def test_method_trial_export_replaces_final_symlink_without_following_it(
     tmp_path: Path, monkeypatch
 ) -> None:
     _permit_test_tree(monkeypatch)
-    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_symlink")
+    store = tmp_path / "artifacts"
+    result = run_benchmark(root=ROOT, artifact_root=store, run_id="method_trial_symlink")
     outside = tmp_path / "outside.json"
     outside.write_bytes(b"outside sentinel\n")
     output = tmp_path / "view.json"
@@ -200,7 +202,7 @@ def test_method_trial_export_replaces_final_symlink_without_following_it(
     except OSError:
         pytest.skip("file symlinks are unavailable on this host")
 
-    exported = export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path, output=output)
+    exported = export_method_trial(result.run_id, root=ROOT, artifact_root=store, output=output)
 
     assert outside.read_bytes() == b"outside sentinel\n"
     assert not output.is_symlink()
@@ -225,9 +227,12 @@ def test_method_trial_semantics_reject_structural_only_mutations(
     tmp_path: Path, monkeypatch
 ) -> None:
     _permit_test_tree(monkeypatch)
-    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_semantics")
+    store = tmp_path / "artifacts"
+    result = run_benchmark(root=ROOT, artifact_root=store, run_id="method_trial_semantics")
     payload = json.loads(
-        export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path).payload
+        export_method_trial(
+            result.run_id, root=ROOT, artifact_root=store, output=tmp_path / "view.json"
+        ).payload
     )
     schema = json.loads(
         (ROOT / "vendor/developer-lens/method-trial-view/v1/schema.json").read_text(
@@ -306,9 +311,13 @@ def test_method_trial_export_uses_recorded_provenance_and_fails_closed_on_drift(
     tmp_path: Path, monkeypatch
 ) -> None:
     _permit_test_tree(monkeypatch)
-    result = run_benchmark(root=ROOT, artifact_root=tmp_path, run_id="method_trial_provenance")
+    store = tmp_path / "artifacts"
+    result = run_benchmark(root=ROOT, artifact_root=store, run_id="method_trial_provenance")
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
-    view = json.loads(export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path).payload)
+    output = tmp_path / "view.json"
+    view = json.loads(
+        export_method_trial(result.run_id, root=ROOT, artifact_root=store, output=output).payload
+    )
     assert (
         view["reproducibility"]["product_contract_commit"]
         == manifest["provenance"]["method_trial_view"]["product_commit"]
@@ -320,7 +329,7 @@ def test_method_trial_export_uses_recorded_provenance_and_fails_closed_on_drift(
     path.write_text(json.dumps(altered, indent=2) + "\n", encoding="utf-8")
     try:
         with pytest.raises(ValueError, match="MethodTrialView provenance differs"):
-            export_method_trial(result.run_id, root=ROOT, artifact_root=tmp_path)
+            export_method_trial(result.run_id, root=ROOT, artifact_root=store, output=output)
     finally:
         path.write_bytes(original)
 

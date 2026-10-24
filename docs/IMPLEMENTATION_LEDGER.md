@@ -1836,3 +1836,12 @@ hashed package bytes only; the joint tag remains blocked on product
 - PR #159 review: the coordinator reproduced contradictory supported false-alert claims for improved and equal rates. The exporter now emits the higher-rate claim only when the recomputed candidate rate is strictly higher; regressions cover improved, equal, and higher rates without changing the product schema.
 - FR-105 records the raw-runner failure and locked-environment workaround. Completed proving results and publication state belong in the PR; this entry claims no merge.
 - No schema, product contract, data lane, real holdout custody, release, or human decision changes. `HUMAN_TODO.md` stays unchanged; current state and the experiment ledger are unchanged because this is not a phase boundary or experiment decision.
+
+## 2026-10-22 - Refuse MethodTrial output inside its source store
+
+- F1: reject destinations within the resolved effective artifact root before atomic publication,
+  protecting run manifests, custody records, and objects while preserving external final-symlink replacement.
+- Invented regressions reproduced nine pre-fix failures, including a valid run's manifest overwrite.
+  Coverage includes default/custom stores, parent aliases, and external outputs; native symlink cases
+  skip where unavailable. Existing export tests now separate source stores and temporary outputs,
+  avoiding frozen evidence writes. No contract, data lane, experiment, release, or human gate changes.
