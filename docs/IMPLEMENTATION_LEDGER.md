@@ -1855,3 +1855,12 @@ hashed package bytes only; the joint tag remains blocked on product
   Coverage includes default/custom stores, parent aliases, and external outputs; native symlink cases
   skip where unavailable. Existing export tests now separate source stores and temporary outputs,
   avoiding frozen evidence writes. No contract, data lane, experiment, release, or human gate changes.
+
+## 2026-10-22 - Bind full reports to the requested run
+
+- F7: reject non-object or unsupported run manifests, mismatched manifest run IDs, and foreign
+  EvaluationBundle run IDs before rendering or publishing reports.
+- Invented-fixture regressions failed before the fix (11 failed, one valid control passed) and
+  pass afterward (12 passed), including matching report hashes for the original F7 input.
+- No frozen evidence, contract schema, experiment, data lane, or human gate changes. Full-gate
+  and publication status are reported separately; this entry claims no hosted or merge proof.
