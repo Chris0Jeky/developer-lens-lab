@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -47,14 +48,15 @@ def evidence() -> tuple[EvaluationBundle, dict[str, Any], ArtifactRef, dict[str,
         "acceptance_gate_passed": False,
         "reason_codes": view["decision"]["reason_codes"],
     }
+    selections = view["scorecard"]["threshold_selection"]
     receipt = {
         "event": "final_holdout_custody",
         "run_id": raw["run_manifest"]["run_id"],
         "generator_revision": raw["dataset_card"]["generator_revision"],
         "dataset_sha256": "sha256:" + "d" * 64,
         "evaluation_plan_sha256": "sha256:" + "e" * 64,
-        "baseline_threshold": 2.0,
-        "candidate_threshold": 0.5,
+        "baseline_threshold": selections["baseline"]["selected_value"]["value"],
+        "candidate_threshold": selections["candidate"]["selected_value"]["value"],
         "baseline_parameters_sha256": raw["baseline_model_card"]["parameter_sha256"],
         "candidate_parameters_sha256": raw["candidate_model_card"]["parameter_sha256"],
     }
@@ -179,13 +181,68 @@ def test_view_lineage_accepts_only_a_bundle_owned_json_receipt() -> None:
     ],
 )
 def test_custody_record_is_bound_to_the_run(field: str) -> None:
-    bundle, _, _, receipt = evidence()
+    bundle, view, _, receipt = evidence()
     manifest = {"run_id": bundle.run_manifest.run_id, "dataset_sha256": receipt["dataset_sha256"]}
     receipt[field] = "other"
     with pytest.raises(ValueError):
-        validate_custody_record(bundle, manifest, receipt)
+        validate_custody_record(bundle, manifest, receipt, view)
 
 
 def test_custody_record_accepts_original_receipt() -> None:
-    bundle, _, _, receipt = evidence()
-    validate_custody_record(bundle, {"dataset_sha256": receipt["dataset_sha256"]}, receipt)
+    bundle, view, _, receipt = evidence()
+    validate_custody_record(bundle, {"dataset_sha256": receipt["dataset_sha256"]}, receipt, view)
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize("threshold", [0, 0.0, 2, 2.5, 1_000_000])
+def test_custody_threshold_accepts_matching_measured_selection(
+    side: str, threshold: int | float
+) -> None:
+    bundle, view, _, receipt = evidence()
+    receipt[f"{side}_threshold"] = threshold
+    view["scorecard"]["threshold_selection"][side]["selected_value"]["value"] = float(threshold)
+    validate_custody_record(bundle, {"dataset_sha256": receipt["dataset_sha256"]}, receipt, view)
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize("defect", ["different", "zero", "adjacent", "unavailable"])
+def test_custody_threshold_requires_the_same_measured_selection(side: str, defect: str) -> None:
+    bundle, view, _, receipt = evidence()
+    key = f"{side}_threshold"
+    if defect == "different":
+        receipt[key] += 0.5
+    elif defect == "zero":
+        receipt[key] = 0
+    elif defect == "adjacent":
+        receipt[key] = math.nextafter(receipt[key], math.inf)
+    else:
+        view["scorecard"]["threshold_selection"][side]["selected_value"] = {
+            "status": "unavailable",
+            "reason": "not_measured",
+        }
+        receipt[key] = 0
+    with pytest.raises(ValueError, match="threshold"):
+        validate_custody_record(
+            bundle, {"dataset_sha256": receipt["dataset_sha256"]}, receipt, view
+        )
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize(
+    "threshold",
+    [None, True, False, "2.5", -1, math.nan, math.inf, -math.inf, 10**400],
+    ids=["missing", "true", "false", "string", "negative", "nan", "inf", "negative-inf", "huge"],
+)
+def test_custody_threshold_invalid_numbers_raise_controlled_error(
+    side: str, threshold: object
+) -> None:
+    bundle, view, _, receipt = evidence()
+    key = f"{side}_threshold"
+    if threshold is None:
+        receipt.pop(key)
+    else:
+        receipt[key] = threshold
+    with pytest.raises(ValueError, match="invalid selected threshold"):
+        validate_custody_record(
+            bundle, {"dataset_sha256": receipt["dataset_sha256"]}, receipt, view
+        )
