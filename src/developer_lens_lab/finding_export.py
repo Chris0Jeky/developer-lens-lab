@@ -348,7 +348,7 @@ def export_finding(
             validate_view_lineage(
                 bundle, view["reproducibility"], manifest["product_commit"], custody
             )
-            validate_custody_record(bundle, manifest, receipt)
+            validate_custody_record(bundle, manifest, receipt, view)
         destination = output if output is not None else root / "research-finding.json"
         # Resolve the parent only: replacing a final symlink must not overwrite its target.
         destination = destination.parent.resolve() / destination.name

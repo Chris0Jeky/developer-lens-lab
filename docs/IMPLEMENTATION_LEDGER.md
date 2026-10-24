@@ -1837,6 +1837,15 @@ hashed package bytes only; the joint tag remains blocked on product
 - FR-105 records the raw-runner failure and locked-environment workaround. Completed proving results and publication state belong in the PR; this entry claims no merge.
 - No schema, product contract, data lane, real holdout custody, release, or human decision changes. `HUMAN_TODO.md` stays unchanged; current state and the experiment ledger are unchanged because this is not a phase boundary or experiment decision.
 
+## 2026-10-22 - Refuse MethodTrial output inside its source store
+
+- F1: reject destinations within the resolved effective artifact root before atomic publication,
+  protecting run manifests, custody records, and objects while preserving external final-symlink replacement.
+- Invented regressions reproduced nine pre-fix failures, including a valid run's manifest overwrite.
+  Coverage includes default/custom stores, parent aliases, and external outputs; native symlink cases
+  skip where unavailable. Existing export tests now separate source stores and temporary outputs,
+  avoiding frozen evidence writes. No contract, data lane, experiment, release, or human gate changes.
+
 ## 2026-10-22 - Bind full reports to the requested run
 
 - F7: reject non-object or unsupported run manifests, mismatched manifest run IDs, and foreign

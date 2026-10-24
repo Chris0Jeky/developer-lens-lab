@@ -582,8 +582,8 @@ def _build_bundle(
             ),
         ),
         resources=ResourceReport(
-            evaluation_points=expected_observations * 2,
-            candidate_steps=expected_observations,
+            evaluation_points=evaluation.evaluation_points,
+            candidate_steps=evaluation.candidate_steps,
             offline_series=evaluation.pelt.evaluated_series,
             declared_wall_time_budget_ms=120_000,
             declared_peak_rss_budget_bytes=1_000_000_000,
