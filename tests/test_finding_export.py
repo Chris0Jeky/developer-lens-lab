@@ -325,7 +325,10 @@ def test_final_output_symlink_is_replaced_without_following_target(tmp_path: Pat
     target = tmp_path / "keep.txt"
     target.write_bytes(b"untouched")
     destination = tmp_path / "finding.json"
-    destination.symlink_to(target)
+    try:
+        destination.symlink_to(target)
+    except OSError:
+        pytest.skip("file symlinks are unavailable on this host")
     export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
     assert not destination.is_symlink()
     assert target.read_bytes() == b"untouched"
@@ -336,7 +339,10 @@ def test_manifest_symlink_and_oversized_json_are_refused_without_output(tmp_path
     manifest = store.scope_root(RUN_ID) / "run.json"
     moved = tmp_path / "moved.json"
     manifest.rename(moved)
-    manifest.symlink_to(moved)
+    try:
+        manifest.symlink_to(moved)
+    except OSError:
+        pytest.skip("file symlinks are unavailable on this host")
     destination = tmp_path / "absent/finding.json"
     with pytest.raises(FindingError):
         export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
