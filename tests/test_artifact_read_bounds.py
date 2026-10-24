@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tracemalloc
 from io import BytesIO
 from pathlib import Path
 
@@ -65,6 +66,22 @@ def test_object_reads_are_bounded_by_expected_payload(
         else:
             assert store.put_bytes("scope_demo", payload, "application/json") == reference
 
-    assert reads == [limit]
+    assert len(reads) == 1
     assert consumed == min(len(stored), limit)
     assert object_path.read_bytes() == stored
+
+
+def test_forged_size_does_not_size_the_read_buffer(tmp_path: Path) -> None:
+    store = ArtifactStore(tmp_path / ".dllab")
+    reference = store.put_bytes("scope_demo", b"x", "application/json")
+    forged = reference.model_copy(update={"size_bytes": 2_000_000_000})
+
+    tracemalloc.start()
+    try:
+        with pytest.raises(ArtifactError, match="verification"):
+            store.get_bytes("scope_demo", forged)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+
+    assert peak < 10_000_000

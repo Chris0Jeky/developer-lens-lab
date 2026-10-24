@@ -159,7 +159,9 @@ class ArtifactStore:
         self._ensure_no_symlink_parents(path)
         try:
             with path.open("rb") as stream:
-                payload = stream.read(reference.size_bytes + 1)
+                # read(n) preallocates n bytes, so cap by the real size: forged metadata
+                # must not size the buffer.
+                payload = stream.read(min(reference.size_bytes, path.stat().st_size) + 1)
         except FileNotFoundError as exc:
             raise ArtifactError("artifact object is missing") from exc
         actual = "sha256:" + hashlib.sha256(payload).hexdigest()
