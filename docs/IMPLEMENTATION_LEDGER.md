@@ -1,5 +1,15 @@
 # Implementation ledger
 
+## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
+
+- Require each result's full artifact reference to match its manifest entry, preserving digest
+  membership and uniqueness checks without changing transport fields or generated schemas.
+- Six invented size/media-type mismatch cases failed before the fix; all 13 focused tests pass
+  afterward, including missing/duplicate digest rejection and reordered matching references.
+- Full suite: 810 passed, 13 skipped, two unrelated finding-export fixture failures because
+  Windows symlink creation requires an unavailable privilege (`WinError 1314`).
+- No frozen evidence, experiment, phase, data lane, release, or human gate changed.
+
 ## 2026-10-17 - ResearchPack Arrow schema validation (issue #148)
 
 - Pin all seven v1 relation layouts, reject incompatible Arrow types and required nulls, and validate
