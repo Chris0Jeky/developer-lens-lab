@@ -136,7 +136,8 @@ class ArtifactStore:
         path = self._object_path(scope_id, digest)
         self._ensure_no_symlink_parents(path)
         if path.exists():
-            existing = path.read_bytes()
+            with path.open("rb") as stream:
+                existing = stream.read(len(payload) + 1)
             if existing != payload:
                 raise ArtifactError(
                     "existing content-addressed object failed integrity verification"
@@ -157,7 +158,10 @@ class ArtifactStore:
         path = self._object_path(scope_id, reference.sha256)
         self._ensure_no_symlink_parents(path)
         try:
-            payload = path.read_bytes()
+            with path.open("rb") as stream:
+                # read(n) preallocates n bytes, so cap by the real size: forged metadata
+                # must not size the buffer.
+                payload = stream.read(min(reference.size_bytes, path.stat().st_size) + 1)
         except FileNotFoundError as exc:
             raise ArtifactError("artifact object is missing") from exc
         actual = "sha256:" + hashlib.sha256(payload).hexdigest()

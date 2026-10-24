@@ -1864,3 +1864,9 @@ hashed package bytes only; the joint tag remains blocked on product
   pass afterward (12 passed), including matching report hashes for the original F7 input.
 - No frozen evidence, contract schema, experiment, data lane, or human gate changes. Full-gate
   and publication status are reported separately; this entry claims no hosted or merge proof.
+
+## 2026-10-22 - Bound artifact object reads (F6)
+
+- Retrieval and existing-object comparison now read at most the expected payload length plus one byte, preserving digest/size verification and link refusal without adding quota policy.
+- Twelve invented guarded-stream cases failed on unbounded `read(-1)` before the fix and pass afterward, covering oversized, truncated, wrong-digest, exact, and empty objects. Existing artifact/binding tests pass (28 passed, seven host symlink skips); frozen evidence and human gates remain unchanged.
+- Full suite: 811 passed, 13 skipped, three failed. Two symlink-privilege failures reproduce with committed and patched artifact code; the package-smoke cleanup assertion passes in both isolated comparisons, so its full-suite failure remains unresolved. Formatting, lint, types, context, contracts, strict docs, and hygiene pass.
