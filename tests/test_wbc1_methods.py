@@ -1,20 +1,80 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from scipy.special import gammaln
 
 from developer_lens_lab.wbc1.evaluation import (
+    MethodCode,
     _eligible,  # pyright: ignore[reportPrivateUsage] - eligibility floor coverage
+    evaluate_partition,
 )
-from developer_lens_lab.wbc1.generator import WeeklySeries, build_benchmark_dataset
+from developer_lens_lab.wbc1.generator import Partition, WeeklySeries, build_benchmark_dataset
 from developer_lens_lab.wbc1.methods import (
+    BaselineParameters,
+    BocpdOutput,
     BocpdParameters,
+    FloatArray,
     alerts_from_scores,
     bocpd_scores,
     parameters_sha256,
     pelt_segments,
     rolling_median_mad_scores,
 )
+
+
+def test_baseline_export_availability_preserves_legacy_scores() -> None:
+    parameters = BaselineParameters(window=4, minimum_history=3)
+    values = np.asarray([20.0] * 3 + [21.0] + [np.nan] * 3 + [20.0] * 5, dtype=np.float64)
+    legacy = rolling_median_mad_scores(values, parameters)
+    presentation = rolling_median_mad_scores(values, parameters, unavailable_as_nan=True)
+
+    np.testing.assert_array_equal(np.flatnonzero(np.isfinite(presentation)), [3, 10, 11])
+    np.testing.assert_array_equal(presentation[[3, 10, 11]], [4.0, 0.0, 0.0])
+    np.testing.assert_array_equal(legacy, np.where(np.isnan(presentation), 0.0, presentation))
+
+
+def test_bocpd_export_availability_preserves_legacy_scores() -> None:
+    parameters = BocpdParameters(warmup=3)
+    values = np.asarray([20.0] * 4 + [np.nan, np.inf] + [30.0] * 4, dtype=np.float64)
+    legacy = bocpd_scores(values, parameters)
+    presentation = bocpd_scores(values, parameters, unavailable_as_nan=True)
+
+    for original, exported in (
+        (legacy.change_probability, presentation.change_probability),
+        (legacy.surprise, presentation.surprise),
+    ):
+        np.testing.assert_array_equal(np.flatnonzero(np.isnan(exported)), [0, 1, 2, 4, 5])
+        np.testing.assert_array_equal(original, np.where(np.isnan(exported), 0.0, exported))
+
+
+@pytest.mark.parametrize("method", ["rolling_median_mad", "bocpd_gaussian"])
+def test_export_scores_do_not_change_evaluation(
+    monkeypatch: pytest.MonkeyPatch, method: MethodCode
+) -> None:
+    series = _weekly_series(52, 52)
+    scores = np.zeros(52, dtype=np.float64)
+    scores[12:] = 0.5
+
+    def scripted_baseline(_values: object, *, unavailable_as_nan: bool = False) -> FloatArray:
+        assert not unavailable_as_nan
+        return scores.copy()
+
+    def scripted_candidate(_values: object, *, unavailable_as_nan: bool = False) -> BocpdOutput:
+        assert not unavailable_as_nan
+        return BocpdOutput(scores.copy(), scores.copy())
+
+    monkeypatch.setattr(
+        "developer_lens_lab.wbc1.evaluation.rolling_median_mad_scores", scripted_baseline
+    )
+    monkeypatch.setattr("developer_lens_lab.wbc1.evaluation.bocpd_scores", scripted_candidate)
+    partition = Partition(
+        "train", "2020-01-06T00:00:00Z", "2021-01-04T00:00:00Z", (series,), ("pin",)
+    )
+    metrics = evaluate_partition(partition, method, 0.5)
+    assert metrics.false_alerts == 7
+    assert metrics.observed_weeks == 52
+    assert metrics.calibration_brier == (10.0 / 52 if method == "bocpd_gaussian" else None)
 
 
 def test_online_methods_are_prefix_causal_and_finite() -> None:

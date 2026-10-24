@@ -193,6 +193,10 @@ def _case_points(
         )
     )
     boundaries = set(pelt_segments(series.values))
+    # Keep alert/cooldown decisions on the legacy scores; only presentation opts
+    # into explicit missingness. A measured zero remains distinguishable from it.
+    baseline_scores = rolling_median_mad_scores(series.values, unavailable_as_nan=True)
+    candidate_scores = bocpd_scores(series.values, unavailable_as_nan=True).change_probability
     points: list[dict[str, Any]] = []
     for index in range(start, min(start + count, len(series.values))):
         observed = bool(series.observed[index])
@@ -206,14 +210,14 @@ def _case_points(
             baseline_measured = bool(float(baseline_score) == float(baseline_score))
             candidate_measured = bool(float(candidate_score) == float(candidate_score))
             baseline = {
-                "alert": index in baseline_alerts if baseline_measured else False,
+                "alert": index in baseline_alerts,
                 "score": _value(float(baseline_score))
                 if baseline_measured
                 else _unavailable("warmup"),
                 "threshold": _value(baseline_threshold),
             }
             candidate = {
-                "alert": index in candidate_alerts if candidate_measured else False,
+                "alert": index in candidate_alerts,
                 "probability": _value(float(candidate_score))
                 if candidate_measured
                 else _unavailable("warmup"),
@@ -940,5 +944,8 @@ def export_method_trial(
     data = canonical_json_bytes(view) + b"\n"
     requested_output = output or (root / "method-trial-view.json")
     output_path = requested_output.parent.resolve() / requested_output.name
+    store_root = (artifact_root or (root / ".dllab")).resolve()
+    if output_path.is_relative_to(store_root):
+        raise ValueError("MethodTrial output must not overwrite the source artifact store")
     _publish_export(output_path, data)
     return MethodTrialExport(run_id, data, output_path, _sha256(data))

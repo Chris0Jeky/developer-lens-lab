@@ -59,6 +59,7 @@ class ThresholdSelection:
     training_metrics: AggregateMetrics
     viable: bool
     inner_validation_metrics: AggregateMetrics | None = None
+    evaluation_points: int = 0
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,8 @@ class BenchmarkEvaluation:
     pelt: PeltSummary
     decision: Literal["reject", "benchmarked"]
     decision_reasons: tuple[str, ...]
+    evaluation_points: int = 0
+    candidate_steps: int = 0
 
 
 @dataclass(frozen=True)
@@ -234,6 +237,11 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
         )
         for threshold in thresholds
     ]
+    evaluation_points = len(candidates) * sum(
+        len(series.values)
+        for evaluated in (fit_partition, validation_partition)
+        for series in evaluated.series
+    )
     viable = [
         (fit_metrics, validation_metrics)
         for fit_metrics, validation_metrics in candidates
@@ -256,6 +264,7 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
             fit_selected,
             True,
             validation_selected,
+            evaluation_points,
         )
     fit_selected, validation_selected = min(
         candidates,
@@ -277,6 +286,7 @@ def select_threshold(partition: Partition, method: MethodCode) -> ThresholdSelec
         fit_selected,
         False,
         validation_selected,
+        evaluation_points,
     )
 
 
@@ -394,6 +404,9 @@ def run_evaluation(
     candidate_holdout = evaluate_partition(holdout, "bocpd_gaussian", candidate_selection.threshold)
     pelt = evaluate_pelt(holdout)
     decision, reasons = decide_benchmark(baseline_holdout, candidate_holdout, frozen)
+    final_points = sum(
+        len(series.values) for partition in (test, holdout) for series in partition.series
+    )
     return BenchmarkEvaluation(
         baseline_selection,
         candidate_selection,
@@ -404,4 +417,8 @@ def run_evaluation(
         pelt,
         decision,
         reasons,
+        baseline_selection.evaluation_points
+        + candidate_selection.evaluation_points
+        + final_points * 2,
+        candidate_selection.evaluation_points + final_points,
     )
