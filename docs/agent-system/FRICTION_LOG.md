@@ -2982,3 +2982,14 @@ retry, content inspection, or deletion was attempted.
 - **task:** Lab issues #148 and #149.
 - **promotion:** No runner, configuration, authority, or gate changes. Driver retains publication
   and supported-toolchain verification under the explicit edit-only, narrow-test brief.
+
+### FR-112 - Standalone smoke requires a committed tree in an edit-only task
+
+- **first-seen:** 2026-10-25
+- **status:** direct CLI smoke unverified; synthetic runner checks available
+- **symptom:** `uv run dllab benchmark wb-c1 --smoke` refuses the dirty tracked worktree, while
+  the task explicitly prohibits staging or committing.
+- **workaround:** Preserve the clean-tree guard and use the existing invented-fixture runner
+  tests for benchmark/replay/report coverage. The coordinator can run the direct CLI after commit.
+- **task:** Lab issue #193, full-report provenance binding.
+- **promotion:** No guard, Git authority, experiment, or human-gate changes.

@@ -957,8 +957,13 @@ def build_report(
             raise RunnerError("full run manifest must not declare a smoke-only MethodTrialView")
         bundle_ref = _require_ref(manifest, "bundle")
         bundle = EvaluationBundle.model_validate_json(store.get_bytes(run_id, bundle_ref))
-        if bundle.run_manifest.run_id != run_id:
+        if bundle.bundle_id != run_id or bundle.run_manifest.run_id != run_id:
             raise RunnerError("EvaluationBundle identity does not match the requested run")
+        if (
+            manifest.get("lab_commit") != bundle.run_manifest.lab_commit
+            or manifest.get("deterministic_bundle_sha256") != bundle_ref.sha256
+        ):
+            raise RunnerError("run manifest and bundle provenance disagree")
         markdown_text = build_markdown(bundle)
         html_text = build_html(bundle)
     markdown = store.put_text(run_id, markdown_text, "text/markdown")

@@ -18,16 +18,22 @@ from .factories import evaluation_bundle
 RUN_ID = "requested_run"
 
 
-def _full_report_manifest(tmp_path: Path, *, bundle_run_id: str = RUN_ID) -> dict[str, Any]:
+def _full_report_manifest(
+    tmp_path: Path, *, bundle_run_id: str = RUN_ID, bundle_id: str = RUN_ID
+) -> dict[str, Any]:
     payload = evaluation_bundle()
+    payload["bundle_id"] = bundle_id
     payload["run_manifest"]["run_id"] = bundle_run_id
     bundle = EvaluationBundle.model_validate_json(canonical_json_bytes(payload))
     store = ArtifactStore(tmp_path)
+    bundle_ref = store.put_json(RUN_ID, bundle.model_dump(mode="json"))
     return {
         "schema_version": "DeveloperLensWbc1Run.v1",
         "run_id": RUN_ID,
         "smoke": False,
-        "bundle": store.put_json(RUN_ID, bundle.model_dump(mode="json")).model_dump(mode="json"),
+        "bundle": bundle_ref.model_dump(mode="json"),
+        "lab_commit": bundle.run_manifest.lab_commit,
+        "deterministic_bundle_sha256": bundle_ref.sha256,
         "markdown": store.put_text(RUN_ID, build_markdown(bundle), "text/markdown").model_dump(
             mode="json"
         ),
@@ -103,6 +109,37 @@ def test_full_report_rejects_foreign_bundle(
     manifest = _full_report_manifest(tmp_path, bundle_run_id="run_demo")
     _assert_rejected_before_render_or_write(
         tmp_path, monkeypatch, manifest, "EvaluationBundle.*requested run"
+    )
+
+
+def test_full_report_rejects_foreign_bundle_id(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    manifest = _full_report_manifest(tmp_path, bundle_id="other_bundle")
+    _assert_rejected_before_render_or_write(
+        tmp_path, monkeypatch, manifest, "EvaluationBundle.*requested run"
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("lab_commit", "f" * 40),
+        ("lab_commit", None),
+        ("deterministic_bundle_sha256", "sha256:" + "f" * 64),
+        ("deterministic_bundle_sha256", None),
+    ],
+)
+def test_full_report_rejects_bundle_provenance_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, field: str, value: object
+) -> None:
+    manifest = _full_report_manifest(tmp_path)
+    if value is None:
+        del manifest[field]
+    else:
+        manifest[field] = value
+    _assert_rejected_before_render_or_write(
+        tmp_path, monkeypatch, manifest, "run manifest and bundle provenance disagree"
     )
 
 

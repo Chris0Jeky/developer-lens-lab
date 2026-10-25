@@ -75,6 +75,11 @@ Crash durability, hostile same-user races between checks and filesystem operatio
 reparse-point handling, quotas, and artifact signing remain explicitly deferred in
 `HARDENING_BACKLOG.md` while all inputs are regenerable C0.
 
+Full WB-C1 reports require the run manifest, bundle ID, and bundle's run ID to match the requested
+run. Before rendering or writing, the report builder also requires the manifest's `lab_commit` to
+match the bundle's producer commit and `deterministic_bundle_sha256` to match the verified bundle
+object's digest. These checks bind recorded artifacts; they do not authenticate the producer.
+
 The current Developer Lens AnalysisPack 1.0 and proposed Pack 2.0 disagreement is outside this seam.
 The lab must not pretend that either is the ResearchPack contract.
 
