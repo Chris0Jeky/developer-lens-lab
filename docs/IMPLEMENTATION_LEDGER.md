@@ -1870,3 +1870,16 @@ hashed package bytes only; the joint tag remains blocked on product
 - Retrieval and existing-object comparison now read at most the expected payload length plus one byte, preserving digest/size verification and link refusal without adding quota policy.
 - Twelve invented guarded-stream cases failed on unbounded `read(-1)` before the fix and pass afterward, covering oversized, truncated, wrong-digest, exact, and empty objects. Existing artifact/binding tests pass (28 passed, seven host symlink skips); frozen evidence and human gates remain unchanged.
 - Full suite: 811 passed, 13 skipped, three failed. Two symlink-privilege failures reproduce with committed and patched artifact code; the package-smoke cleanup assertion passes in both isolated comparisons, so its full-suite failure remains unresolved. Formatting, lint, types, context, contracts, strict docs, and hygiene pass.
+
+## 2026-10-25 - Preserve finding sources through artifact-root aliases
+
+- Issue #193 (finding-export confinement item): resolve the source artifact root for the output
+  collision check, matching the already-resolved destination parent. Parent-directory aliases
+  previously allowed a successful export to overwrite the source manifest or content-addressed objects.
+- Nine invented regression cases failed before the fix, including the CLI overwrite; the affected
+  exporter/CLI tests pass (94 passed, two native symlink skips), including repeatable sibling exports.
+  The independent read-only review found no blocking defects.
+- Locked local full gate passed: 941 tests passed with 20 host symlink skips; doctor, context,
+  formatting, lint, types, strict docs, hygiene, contract freshness and task checks passed.
+- No contract bytes, experiment definitions, frozen evidence, data lanes, release or human gates
+  change. Other #193 items remain open; current state and experiment ledger stay unchanged.

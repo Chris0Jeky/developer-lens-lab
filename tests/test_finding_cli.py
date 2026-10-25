@@ -52,3 +52,28 @@ def test_finding_command_refuses_unknown_run_without_creating_output(
     assert result.exit_code == 1
     assert "../private" not in result.output
     assert not output.parent.exists()
+
+
+def test_finding_command_refuses_source_overwrite_through_aliased_store(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store, _ = seed_store(tmp_path)
+    monkeypatch.chdir(ROOT)
+    output = store.scope_root(RUN_ID) / "run.json"
+    before = output.read_bytes()
+    result = CliRunner().invoke(
+        app,
+        [
+            "export",
+            "finding",
+            RUN_ID,
+            "--out",
+            str(output),
+            "--artifact-root",
+            str(store.root / ".." / store.root.name),
+        ],
+    )
+    assert result.exit_code == 1, result.output
+    assert "output must not overwrite the source artifact store" in result.output
+    assert str(tmp_path) not in result.output
+    assert output.read_bytes() == before
