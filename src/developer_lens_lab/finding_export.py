@@ -352,7 +352,7 @@ def export_finding(
         destination = output if output is not None else root / "research-finding.json"
         # Resolve the parent only: replacing a final symlink must not overwrite its target.
         destination = destination.parent.resolve() / destination.name
-        if destination.is_relative_to(store.root):
+        if destination.is_relative_to(store.root.resolve()):
             raise FindingError("finding output must not overwrite the source artifact store")
         payload = stable_bytes(value)
         # Reuse the store's same-directory temporary-file and atomic-replace publisher.
