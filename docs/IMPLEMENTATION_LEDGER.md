@@ -1878,5 +1878,22 @@ hashed package bytes only; the joint tag remains blocked on product
   distinguish it from producer authentication.
 - Preserved the existing regression draft and reproduced five pre-fix failures with twelve passing
   controls; focused/full-gate results belong in the handoff. Other issue #193 follow-ups stay open.
+- PR #197 merge refresh preserves both ledger entries and main's finding-export confinement fix.
+  Focused binding/resource/export/CLI tests: 115 passed, two native symlink skips; full suite:
+  946 passed, 20 native symlink skips. The declared local gate and independent review passed.
+  Standalone smoke still refuses the uncommitted merge (FR-112); hosted checks were not queried.
 - No schema, frozen evidence, experiment, data lane, release, or human gate changes; current state
   and the experiment ledger remain unchanged outside a phase boundary.
+
+## 2026-10-25 - Preserve finding sources through artifact-root aliases
+
+- Issue #193 (finding-export confinement item): resolve the source artifact root for the output
+  collision check, matching the already-resolved destination parent. Parent-directory aliases
+  previously allowed a successful export to overwrite the source manifest or content-addressed objects.
+- Nine invented regression cases failed before the fix, including the CLI overwrite; the affected
+  exporter/CLI tests pass (94 passed, two native symlink skips), including repeatable sibling exports.
+  The independent read-only review found no blocking defects.
+- Locked local full gate passed: 941 tests passed with 20 host symlink skips; doctor, context,
+  formatting, lint, types, strict docs, hygiene, contract freshness and task checks passed.
+- No contract bytes, experiment definitions, frozen evidence, data lanes, release or human gates
+  change. Other #193 items remain open; current state and experiment ledger stay unchanged.

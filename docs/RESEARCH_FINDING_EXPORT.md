@@ -43,7 +43,8 @@ All checks finish before the output is replaced atomically through a same-direct
 file. Failed validation preserves an existing destination and creates no output parent directory.
 The destination may not be inside the source artifact store. A final output symlink is replaced
 as a directory entry rather than followed; no source artifact bytes are changed. Parent paths are
-resolved before the source-store collision check.
+resolved before the source-store collision check, including parent-directory aliases in the
+artifact root.
 
 ## Verification boundary
 

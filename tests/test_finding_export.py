@@ -266,15 +266,24 @@ def test_nonreject_states_without_supporting_evidence_are_refused(outcome: str) 
         compose(bundle)
 
 
-def test_atomic_export_is_repeatable_and_does_not_change_stored_evidence(tmp_path: Path) -> None:
+@pytest.mark.parametrize("root_form", ["direct", "absolute_alias", "relative_alias"])
+def test_atomic_export_is_repeatable_and_does_not_change_stored_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, root_form: str
+) -> None:
+    monkeypatch.chdir(tmp_path)
     store, _ = seed_store(tmp_path)
+    artifact_root = store.root
+    if root_form == "absolute_alias":
+        artifact_root = store.root / ".." / store.root.name
+    elif root_form == "relative_alias":
+        artifact_root = Path("store/../store")
     before = {
         p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
     }
-    destination = tmp_path / "published/finding.json"
-    first = export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    destination = tmp_path / "store-copy/finding.json"
+    first = export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=artifact_root)
     payload = destination.read_bytes()
-    second = export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
+    second = export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=artifact_root)
     assert first == second
     assert payload == destination.read_bytes() == (VENDOR / "wbc1.fixture.json").read_bytes()
     assert before == {
@@ -318,6 +327,32 @@ def test_output_cannot_overwrite_source_manifest(tmp_path: Path) -> None:
     with pytest.raises(FindingError):
         export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=store.root)
     assert destination.read_bytes() == before
+
+
+@pytest.mark.parametrize("relative_root", [False, True])
+@pytest.mark.parametrize("target", ["manifest", "bundle", "custody", "new"])
+def test_aliased_store_root_cannot_bypass_output_confinement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, relative_root: bool, target: str
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    store, manifest = seed_store(tmp_path)
+    artifact_root = Path("store/../store") if relative_root else store.root / ".." / store.root.name
+    if target in {"bundle", "custody"}:
+        digest = manifest[target]["sha256"].removeprefix("sha256:")
+        destination = store.scope_root(RUN_ID) / "objects" / digest[:2] / digest
+    else:
+        destination = store.scope_root(RUN_ID) / (
+            "run.json" if target == "manifest" else "new/finding.json"
+        )
+    before = {
+        p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
+    }
+    with pytest.raises(FindingError, match="output must not overwrite the source artifact store"):
+        export_finding(RUN_ID, root=ROOT, output=destination, artifact_root=artifact_root)
+    assert before == {
+        p.relative_to(store.root): p.read_bytes() for p in store.root.rglob("*") if p.is_file()
+    }
+    assert not (store.scope_root(RUN_ID) / "new").exists()
 
 
 def test_final_output_symlink_is_replaced_without_following_target(tmp_path: Path) -> None:
