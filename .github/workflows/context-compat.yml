@@ -31,4 +31,4 @@ jobs:
       - name: Prove context diagnostics on the requested interpreter
         run: |
           uv run --python "${{ matrix.python }}" python --version
-          uv run --python "${{ matrix.python }}" pytest tests/test_context.py tests/test_context_path_compat.py -q
+          uv run --python "${{ matrix.python }}" pytest tests/test_context*.py -q

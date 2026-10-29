@@ -20,6 +20,19 @@ without moving review, CI, or merge gates.
   navigation. The review protocol now agrees with the governor's existing 15-minute aging floor.
 - Frozen release assets, product-owned schemas, experiment outcomes, and owner gates are unchanged.
 
+## 2026-10-29 — Compatibility and current-state phase boundary
+
+- [Embedded schema dialect validation, #181/#128](implementation/2026-10-29-181-mixed-dialects.md).
+- [Compatible optional-null and large-string Arrow columns, #169](implementation/2026-10-29-169-arrow-compatibility.md).
+- [Explicit pack scopes and export caveats, #31](implementation/2026-10-29-31-pack-scopes-and-caveats.md).
+- [Named-home manifest path refusal, #107](implementation/2026-10-29-107-home-paths.md).
+- [Run identity before artifact reservation or holdout access, #6](implementation/2026-10-29-6-run-id-preflight.md).
+- [Unambiguous current-state and governor validation, #34](implementation/2026-10-29-34-state-validation.md).
+- `CURRENT_STATE.md` is a compact October checkpoint. The superseded August checkpoint remains
+  linked in immutable Git history; frozen C0 exhibit hashes and owner gates are preserved.
+- Product-owned reason/gate vocabulary, broader finding evidence, and confound observability
+  remain explicitly separate work. No historical release assets or experiment decisions changed.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest

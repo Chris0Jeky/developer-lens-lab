@@ -7,11 +7,14 @@ import os
 import re
 import subprocess
 import sys
+from collections.abc import Callable, Hashable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import cast
 
 import yaml
+from yaml.constructor import ConstructorError
+from yaml.nodes import MappingNode, Node, SequenceNode
 
 from developer_lens_lab.schemas import check_schemas
 
@@ -160,6 +163,55 @@ def verify_markdown_links(root: Path) -> list[str]:
     return failures
 
 
+class _DuplicateYamlKeyError(ConstructorError):
+    """A duplicate-key failure whose diagnostic contains no document content."""
+
+
+class _UniqueKeySafeLoader(yaml.SafeLoader):
+    """Check explicit keys before safe construction applies YAML merge overrides."""
+
+    def construct_document(self, node: Node) -> object:
+        construct_key = cast(
+            Callable[[Node, bool], object],
+            self.construct_object,  # pyright: ignore[reportUnknownMemberType] - untyped PyYAML hook
+        )
+        pending = [node]
+        visited: set[Node] = set()
+        merge_key = object()
+        while pending:
+            current = pending.pop()
+            if current in visited:
+                continue
+            # Aliases can share nodes or point back to an ancestor. Inspect each node once.
+            visited.add(current)
+            if isinstance(current, MappingNode):
+                keys: set[Hashable] = set()
+                for key_node, value_node in current.value:
+                    if key_node.tag == "tag:yaml.org,2002:merge":
+                        key: object = merge_key
+                    elif key_node.tag == "tag:yaml.org,2002:value":
+                        key = self.construct_scalar(key_node)
+                    else:
+                        key = construct_key(key_node, True)
+                    if not isinstance(key, Hashable):
+                        raise ConstructorError(
+                            None, None, "unhashable mapping key", key_node.start_mark
+                        )
+                    if key in keys:
+                        raise _DuplicateYamlKeyError(
+                            None, None, "duplicate mapping key", key_node.start_mark
+                        )
+                    keys.add(key)
+                    pending.extend((key_node, value_node))
+            elif isinstance(current, SequenceNode):
+                pending.extend(current.value)
+        construct_document = cast(
+            Callable[[Node], object],
+            super().construct_document,  # pyright: ignore[reportUnknownMemberType] - PyYAML hook
+        )
+        return construct_document(node)
+
+
 def verify_current_state_yaml(root: Path) -> list[str]:
     """Validate the single machine-readable CURRENT_STATE.md YAML fence."""
     path = root / "docs" / "CURRENT_STATE.md"
@@ -183,11 +235,15 @@ def verify_current_state_yaml(root: Path) -> list[str]:
         ]
     body = "\n".join(lines[opening + 1 : closing])
     try:
-        payload: object = yaml.safe_load(body)
+        payload: object = yaml.load(body, Loader=_UniqueKeySafeLoader)
     except yaml.YAMLError as exc:
         mark = getattr(exc, "problem_mark", None)
         line = opening + 2 + getattr(mark, "line", 0)
-        problem = getattr(exc, "problem", "invalid YAML")
+        problem = (
+            "duplicate mapping key"
+            if isinstance(exc, _DuplicateYamlKeyError)
+            else "invalid syntax or structure"
+        )
         return [f"docs/CURRENT_STATE.md:{line}: invalid YAML: {problem}"]
     if not isinstance(payload, dict):
         return [f"docs/CURRENT_STATE.md:{opening + 2}: YAML top level must be a mapping"]
@@ -205,13 +261,37 @@ def verify_current_state_yaml(root: Path) -> list[str]:
             failures.append(
                 f"docs/CURRENT_STATE.md:{opening + 2}: YAML key {key!r} must be a mapping"
             )
+    if "exact_resume_point" in values:
+        resume = values["exact_resume_point"]
+        if not isinstance(resume, str) or not resume.strip():
+            failures.append(
+                f"docs/CURRENT_STATE.md:{opening + 2}: YAML key 'exact_resume_point' "
+                "must be a non-empty string"
+            )
     active_wave = values.get("active_wave")
-    if active_wave is not None and not isinstance(active_wave, list):
-        failures.append(
-            f"docs/CURRENT_STATE.md:{opening + 2}: YAML key 'active_wave' must be a list"
-        )
+    if "active_wave" in values:
+        if not isinstance(active_wave, list):
+            failures.append(
+                f"docs/CURRENT_STATE.md:{opening + 2}: YAML key 'active_wave' must be a list"
+            )
+        else:
+            for index, item in enumerate(cast(list[object], active_wave), start=1):
+                if not isinstance(item, dict):
+                    failures.append(
+                        f"docs/CURRENT_STATE.md:{opening + 2}: active_wave entry "
+                        f"{index} must be a mapping"
+                    )
+                    continue
+                wave = cast(dict[object, object], item)
+                for key in ("lane", "writer", "state"):
+                    value = wave.get(key)
+                    if not isinstance(value, str) or not value.strip():
+                        failures.append(
+                            f"docs/CURRENT_STATE.md:{opening + 2}: active_wave entry "
+                            f"{index} {key!r} must be a non-empty string"
+                        )
     delivered = values.get("delivered")
-    if delivered is not None:
+    if "delivered" in values:
         if not isinstance(delivered, list):
             failures.append(
                 f"docs/CURRENT_STATE.md:{opening + 2}: YAML key 'delivered' must be a list"
@@ -283,6 +363,7 @@ def _verify_tier(root: Path) -> list[str]:
 # all, keep the two invariants a silent self-relaxation would target — the locked-invariant list
 # and the model-pin coherence — harness-enforced rather than prose-only.
 GOVERNOR_SCHEMA = "dllab-governor.v1"
+GOVERNOR_PROTOCOL_KEYS = ("prompt_system", "friction_debt", "continuous_execution")
 GOVERNOR_REQUIRED_KEYS = (
     "purpose",
     "authorities",
@@ -295,6 +376,7 @@ GOVERNOR_REQUIRED_KEYS = (
     "review_gates",
     "queues",
     "cross_repo",
+    *GOVERNOR_PROTOCOL_KEYS,
     "self_evolution",
     "generated_indexes",
     "runtime_state",
@@ -611,6 +693,9 @@ def verify_governor(root: Path) -> list[str]:
     for key in GOVERNOR_REQUIRED_KEYS:
         if key not in payload:
             failures.append(f"governor.json is missing required key: {key}")
+    for key in GOVERNOR_PROTOCOL_KEYS:
+        if key in payload and not isinstance(payload[key], dict):
+            failures.append(f"governor.json {key} must be an object")
     authorities_raw = payload.get("authorities")
     if not isinstance(authorities_raw, dict):
         failures.append("governor.json authorities must be an object of repo-relative files")
