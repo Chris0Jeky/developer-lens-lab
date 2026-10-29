@@ -52,12 +52,17 @@ next_safe_slice: >-
   or the broader finding-evidence adapter and paired Product proof in #97. Preserve current C0
   evidence and historical release assets; a changed research method needs its own declared proof.
 release_and_owner_gates: >-
-  Product q-8 concurrent-writer closure was directly verified in the Product HUMAN_TODO source;
-  recheck it before a later merge wave. Product q-10(c) remains open and blocks release tags.
-  Lab q-11 is closed only for its approved media package. The distinct Lab q-7 legal review,
-  q-8 real-study public transformation, q-9 real-data scopes, q-10 telemetry destination,
-  q-12 brand choice, and q-13 host cleanup remain owner-gated. Use each repository's fully
-  qualified HUMAN_TODO references; no implementation merge closes those decisions.
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 concurrent-writer closure was directly verified
+  in that register; recheck it before a later merge wave.
+  Chris0Jeky/developer-lens::HUMAN_TODO.md::q-10(c) remains open and blocks release tags.
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-11 is closed only for its approved media package.
+  The distinct Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-7 legal review,
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8 real-study public transformation,
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-9 real-data scopes,
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-10 telemetry destination,
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-12 brand choice, and
+  Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13 host cleanup remain owner-gated.
+  No implementation merge closes those decisions.
 capabilities:
   network_collection: disabled (authorized in principle; gated on LAB-ACT-01 preconditions)
   external_model: disabled (auto-hypotheses authorized in principle; gated + product-side)
@@ -81,7 +86,8 @@ canonical_evidence:
     not replace its approved bytes.
 blockers: >-
   Release needs the Product-owned visual proof/sign-off sequence. Host-local Windows cleanup
-  (#77 and Lab q-13) cannot be inferred from this managed Linux checkout. Product-owned schemas
+  (issue #77 and Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-13) cannot be inferred from this
+  managed Linux checkout. Product-owned schemas
   (#23 and portions of #31/#97) require producer-first coordination and proof on both sides.
 late_review_debt: >-
   #6 remains open for confound observability and separately recorded export/provenance concerns;
