@@ -3056,3 +3056,22 @@ retry, content inspection, or deletion was attempted.
 - **promotion:** Retain a bounded, tested toolchain instead of deleting version enforcement.
   Toolchain recovery alone does not remediate the locked dependencies or prove alert closure.
   No runtime capability, owner gate, frozen research evidence or release permission changes.
+
+### FR-116 - Hosted package download reaches the existing smoke timeout
+
+- **first-seen:** 2026-10-29
+- **status:** incident recorded; final retry outcome carried by PR #203
+- **symptom:** Check run 40809680128, first-attempt job 123236777868, reached the existing
+  300-second install timeout at head ea4ccd0363f2da35895c4743c38b6fc2ce729cb4. Captured stderr
+  reports dependency resolution followed by `Downloading polars-runtime-32 (47.6MiB)`; no later
+  progress or terminal download error was captured. The download's underlying failure mechanism
+  is not established by this log.
+- **impact:** Hosted Check stopped before its full test suite, despite successful Python 3.12/3.13
+  context jobs and an actual local uv 0.13.5 sdist-to-wheel installation smoke at the same source.
+- **workaround:** Request a rerun of the failed job at the unchanged commit, retain the existing
+  timeout and process-cleanup checks, and require the new exact-head hosted result before merge.
+  Record both attempts in the PR; a local success does not replace the hosted merge gate.
+- **occurrences:** One hosted package-install attempt in the uv migration slice.
+- **task:** Issue #5; toolchain PR #203 and the coordinated dependency-maintenance continuation.
+- **promotion:** No source behavior, dependency constraint, timeout, cleanup requirement or CI
+  gate changes. The bounded captured progress added for issue #177 exposed the stalled phase.
