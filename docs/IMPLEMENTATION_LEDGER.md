@@ -43,6 +43,16 @@ without moving review, CI, or merge gates.
 - Prompt discovery and explicit scout naming in every active body remain separate #34 work.
   Shared prompt bodies and manifest bytes are preserved; no capability or owner gate changes.
 
+## 2026-10-29 — Dependabot toolchain compatibility
+
+- [Bounded uv 0.13.5 migration](implementation/2026-10-29-dependabot-uv013.md) updates the project,
+  package-smoke guard, both CI pins and active bootstrap instructions together.
+- The failed hosted updater rejected the former uv range before changing filelock or virtualenv.
+  FR-115 records the exact failure and separates toolchain recovery from the required dependency
+  update in #5. This slice leaves the lockfile, Python support and historical proof unchanged.
+- Focused tests preserve version refusal and candidate fallback. Actual package smoke, the full
+  gate, independent review and hosted evidence belong to the delivering PR.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest

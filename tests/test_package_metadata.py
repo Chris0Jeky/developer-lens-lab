@@ -208,7 +208,7 @@ def test_package_smoke_falls_back_to_current_python_for_missing_path_uv(
 
     def valid_module_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         del kwargs
-        return subprocess.CompletedProcess(command, 0, stdout="uv 0.12.2\n", stderr="")
+        return subprocess.CompletedProcess(command, 0, stdout="uv 0.13.5\n", stderr="")
 
     monkeypatch.setattr(
         "scripts.verify_package_smoke._run",
@@ -220,7 +220,13 @@ def test_package_smoke_falls_back_to_current_python_for_missing_path_uv(
 
 @pytest.mark.parametrize(
     ("reported_version", "compatible"),
-    [("0.12.2", True), ("0.12.4", True), ("0.12.1", False), ("0.13.0", False)],
+    [
+        ("0.13.5", True),
+        ("0.13.6", True),
+        ("0.13.4", False),
+        ("0.14.0", False),
+        ("0.12.2", False),
+    ],
 )
 def test_package_smoke_validates_uv_version_bounds(
     monkeypatch: pytest.MonkeyPatch,
@@ -235,7 +241,7 @@ def test_package_smoke_validates_uv_version_bounds(
     def version_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         del kwargs
         calls.append(command)
-        version = reported_version if command == [path_uv, "--version"] else "0.12.2"
+        version = reported_version if command == [path_uv, "--version"] else "0.13.5"
         return subprocess.CompletedProcess(command, 0, stdout=f"uv {version}\n", stderr="")
 
     monkeypatch.setattr("scripts.verify_package_smoke._run", version_run)
@@ -269,7 +275,7 @@ def test_package_smoke_invalid_path_uv_uses_valid_module_fallback(
                 # supervised command cannot produce.
                 raise RuntimeError("simulated package-smoke nonzero exit")
             raise RuntimeError("simulated package-smoke timeout")
-        return subprocess.CompletedProcess(command, 0, stdout="uv 0.12.2\n", stderr="")
+        return subprocess.CompletedProcess(command, 0, stdout="uv 0.13.5\n", stderr="")
 
     monkeypatch.setattr("scripts.verify_package_smoke._run", version_run)
 
@@ -288,14 +294,14 @@ def test_package_smoke_rejects_invalid_uv_candidates_with_actionable_range(
     ) -> subprocess.CompletedProcess[str]:
         del kwargs
         calls.append(command)
-        return subprocess.CompletedProcess(command, 0, stdout="uv 0.13.0\n", stderr="")
+        return subprocess.CompletedProcess(command, 0, stdout="uv 0.14.0\n", stderr="")
 
     monkeypatch.setattr(
         "scripts.verify_package_smoke._run",
         invalid_candidates_run,
     )
 
-    with pytest.raises(RuntimeError, match=r">=0\.12\.2,<0\.13"):
+    with pytest.raises(RuntimeError, match=r">=0\.13\.5,<0\.14"):
         resolve_uv_command(cwd=tmp_path, environment={})
     assert calls == [[path_uv, "--version"], [sys.executable, "-m", "uv", "--version"]]
 

@@ -22,8 +22,8 @@ PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT = 2_000
 PACKAGE_SMOKE_DIAGNOSTIC_TRUNCATION_MARKER = "\n...[truncated]"
 _PROCESS_TREE_CLEANUP_UNCONFIRMED = "package smoke process-tree cleanup could not be confirmed"
 UV_VERSION_BOUNDS: tuple[tuple[int, int, int], tuple[int, int, int]] = (
-    (0, 12, 2),
-    (0, 13, 0),
+    (0, 13, 5),
+    (0, 14, 0),
 )
 _UV_VERSION_PATTERN = re.compile(r"^\s*uv\s+(?P<version>\d+\.\d+\.\d+)(?:\s|$)")
 
