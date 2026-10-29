@@ -21,13 +21,13 @@ compatibility, and the failure archive.
 | Worktree/process hygiene | `git worktree list`; no background servers after handoff | every handoff |
 | Late-review sweep | merged PRs re-checked for late comments at the next workflow event | after every merge |
 
-On this estate's current host there is no repository-wide `uv` on PATH, but a **worktree-confined
-bootstrap is proved to work**: create a standard-library virtual environment, install
-`uv>=0.12.2,<0.13` into it, configure a confined worktree-local project environment, and invoke
-that environment's literal `uv` executable. `uv sync --locked --all-groups` and the full declared gate
-both run through it, so dependency re-locking is **not** tooling-blocked — it is unperformed work.
-The bootstrap directory is gitignored and `uv.lock` is never modified as a side effect. Recorded as
-FR-001 in [FRICTION_LOG.md](FRICTION_LOG.md); the superseded "tooling-blocked" claim is FR-002.
+Use a **worktree-confined bootstrap** when `uv` is unavailable on PATH: create a standard-library
+virtual environment, install `uv>=0.13.5,<0.14` into it, configure a confined worktree-local project
+environment, and invoke that environment's literal `uv` executable. Run
+`uv sync --locked --all-groups` and the full declared gate through it. Keep the bootstrap directory
+gitignored; `--locked` prevents an incidental `uv.lock` update. Dependency re-locking is an intentional
+maintenance action. The original bootstrap evidence is FR-001 in [FRICTION_LOG.md](FRICTION_LOG.md);
+the superseded "tooling-blocked" claim is FR-002.
 
 ## Merge gate
 

@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install pinned uv
-        run: python -m pip install --disable-pip-version-check uv==0.12.2
+        run: python -m pip install --disable-pip-version-check uv==0.13.5
       - name: Sync the requested supported interpreter
         run: uv sync --locked --all-groups --python "${{ matrix.python }}"
       - name: Prove context diagnostics on the requested interpreter

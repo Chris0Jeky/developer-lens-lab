@@ -3036,3 +3036,23 @@ retry, content inspection, or deletion was attempted.
 - **promotion:** Ignore the generated `.coverage.*` shard namespace alongside `.coverage`.
   Git ignore checks cover representative shard names and preserve refusal of unrelated untracked
   paths. No tracked-source guard, data/credential boundary, test requirement, or merge gate changes.
+
+### FR-115 - Hosted security updater no longer supports the pinned uv series
+
+- **first-seen:** 2026-10-29
+- **status:** bounded toolchain migration implemented; hosted updater recovery pending
+- **symptom:** Dependabot run 40807635186, job 123230269968, failed both filelock and virtualenv
+  updates with `tool_version_not_supported`. Its uv 0.13.5 did not satisfy the repository's
+  `>=0.12.2,<0.13` requirement. This occurred before dependency changes were produced.
+- **impact:** Automatic security dependency updates could not reach resolution or PR creation.
+  The job selected filelock 4.2.1 and virtualenv 21.14.13 as aggregate security-fix targets.
+- **workaround:** Migrate the declared range and package-smoke bounds together to
+  `>=0.13.5,<0.14`, install exactly uv 0.13.5 in both workflows, and update active bootstrap docs.
+  Preserve strict candidate validation, fallback behavior, Python pins and the existing lockfile.
+  Prove actual package building and the complete declared gate before merge, then inspect a new
+  updater run and review the separate targeted dependency patch.
+- **occurrences:** One hosted security-update job, with the same refusal for both packages.
+- **task:** Issue #5 dependency triage within the #29 release wave.
+- **promotion:** Retain a bounded, tested toolchain instead of deleting version enforcement.
+  Toolchain recovery alone does not remediate the locked dependencies or prove alert closure.
+  No runtime capability, owner gate, frozen research evidence or release permission changes.

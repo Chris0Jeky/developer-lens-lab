@@ -91,7 +91,8 @@ WB-C1 smoke is the runnable vertical. The runner materialises invented `coverage
 
 ## Quickstart
 
-Install [uv](https://docs.astral.sh/uv/) 0.12.x. Python 3.12 or 3.13. Run from a clone of this repository.
+Install [uv](https://docs.astral.sh/uv/) `>=0.13.5,<0.14` and Python 3.12 or 3.13.
+Run from a clone of this repository.
 
 ```powershell
 uv sync --locked --all-groups
@@ -151,7 +152,7 @@ From [`pyproject.toml`](pyproject.toml) and the imports in `src/developer_lens_l
 | Layer | What the Lab uses |
 | --- | --- |
 | Language | Python 3.12 or 3.13 (`requires-python = ">=3.12,<3.14"`) |
-| Packaging | uv `>=0.12.2,<0.13`, hatchling, locked [`uv.lock`](uv.lock) |
+| Packaging | uv `>=0.13.5,<0.14`, hatchling, locked [`uv.lock`](uv.lock) |
 | CLI | Typer |
 | Contracts | Pydantic v2, jsonschema Draft 2020-12 |
 | Series and methods | NumPy, SciPy, [ruptures](https://centre-borelli.github.io/ruptures-docs/) PELT |
