@@ -57,6 +57,13 @@ that invocation was stopped and the include paths were corrected to be configura
 The corrected strict run above is the verification evidence. No environment resynchronization
 or dependency mutation was needed.
 
+The coordinator's full gate passed 1,326 tests with nine native-Windows skips, then stopped at
+the clean-tree benchmark preflight because generated coverage shards remained untracked.
+The exact published commit passed the remaining smoke/replay/export checks in a clean checkout.
+After the same friction occurred independently for PR #200, FR-114 records the bounded promotion:
+ignore only `.coverage.*` generated shards alongside the already ignored combined database.
+Ordinary untracked paths still fail the clean-tree guard; source and experiment checks are unchanged.
+
 ## Boundaries and handoff
 
 Full code/config gates, fresh-context exact-head review, GitHub publication, aging, merge judgment,
