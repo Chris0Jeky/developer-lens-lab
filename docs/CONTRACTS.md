@@ -64,6 +64,10 @@ cross-record invariants such as split disjointness, schema-ID matching, artifact
 failed leakage check blocking a benchmarked decision. Third-party schema-only interoperability is
 not claimed during bootstrap.
 
+Each baseline/candidate result artifact reference must exactly match its artifact-manifest entry
+in digest, `size_bytes`, and `media_type`; digest membership alone is insufficient. This cross-record
+equality is enforced at runtime and is not expressible in the generated structural JSON Schema.
+
 ## Artifact resolution
 
 Manifests carry `{sha256, size_bytes, media_type}` only. `.dllab/scopes/<opaque scope>/objects/`

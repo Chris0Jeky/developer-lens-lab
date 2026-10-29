@@ -2993,3 +2993,24 @@ retry, content inspection, or deletion was attempted.
   tests for benchmark/replay/report coverage. The coordinator can run the direct CLI after commit.
 - **task:** Lab issue #193, full-report provenance binding.
 - **promotion:** No guard, Git authority, experiment, or human-gate changes.
+
+### FR-113 - Uploaded source and managed-toolchain proof need explicit reconciliation
+
+- **first-seen:** 2026-10-29
+- **status:** workaround-verified
+- **symptom:** The uploaded ZIP lacked Git objects needed by the frozen-provenance test, the
+  available uv was outside the pinned range, and Pyright omitted installed dependency paths.
+  The first sandboxed package installation could not reach the configured package proxy.
+- **impact:** Unreconciled source or missing toolchain context would misclassify environmental
+  failures as repository defects and could not support a complete local proof.
+- **workaround:** Use connected GitHub as authority; compare every uploaded blob with the live
+  tree, restore only exact hash-verified commit/tree/blob objects needed for the source and frozen
+  provenance checks, and install the locked Python 3.12 environment with pinned uv through the
+  supported permission path. The frozen-provenance tests then pass. For local Pyright, copy the
+  unchanged strict settings into a temporary config with explicit installed-dependency search
+  paths; retain ordinary hosted Pyright as the final gate.
+- **occurrences:** One coordinated continuation on 2026-10-29; the Pyright symptom reproduced in
+  three isolated worktrees.
+- **task:** Issues #34, #177, #181, and #193.
+- **promotion:** Keep hosted proof and explicit source reconciliation; no repository check,
+  dependency constraint, review gate, or runtime capability was relaxed.

@@ -17,5 +17,6 @@ Reviewers attempt to falsify:
 Fix only confirmed CRITICAL/HIGH correctness, security, data-loss, privacy, or evaluation-integrity
 defects in the bounded review cycle. Track or decline other findings explicitly. After review-driven
 logic changes, rerun affected proof and refresh the final-head lens. Never merge red CI, from draft,
-or before the three-minute post-push floor. Operational outages belong in the implementation ledger;
+or before the 15-minute post-push floor pinned in `.agent-harness/governor.json`.
+Operational outages belong in the implementation ledger;
 only an actual owner decision belongs in `HUMAN_TODO.md`.

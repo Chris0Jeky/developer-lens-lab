@@ -733,6 +733,21 @@ def run_benchmark(
     )
 
 
+def _read_run_manifest(path: Path) -> dict[str, Any]:
+    """Decode a stored run manifest without exposing its contents or local path."""
+    try:
+        if not path.is_file():
+            raise RunnerError("run manifest is missing or unreadable")
+        manifest: object = json.loads(path.read_text(encoding="utf-8"))
+    except OSError:
+        raise RunnerError("run manifest is missing or unreadable") from None
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise RunnerError("run manifest is not valid UTF-8 JSON") from None
+    if not isinstance(manifest, dict):
+        raise RunnerError("run manifest must be an object")
+    return cast(dict[str, Any], manifest)
+
+
 def _require_field(manifest: dict[str, Any], key: str) -> Any:
     """Read a required run-manifest field or fail with a controlled RunnerError."""
     if key not in manifest:
@@ -764,7 +779,7 @@ def _assert_reproduced_reference(
 def reproduce_run(manifest_path: Path, *, root: Path | None = None) -> bool:
     """Recompute a run from recorded inputs and compare deterministic bundle bytes."""
     root = (root or _root()).resolve()
-    manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
+    manifest = _read_run_manifest(manifest_path)
     if manifest.get("schema_version") != "DeveloperLensWbc1Run.v1":
         raise RunnerError("unsupported WB-C1 run manifest")
     smoke = manifest.get("smoke")
@@ -929,11 +944,7 @@ def build_report(
 ) -> tuple[ArtifactRef, ArtifactRef]:
     store = ArtifactStore(artifact_root)
     manifest_path = store.scope_root(run_id) / "run.json"
-    if not manifest_path.is_file():
-        raise RunnerError(f"run manifest not found for {run_id}")
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if not isinstance(manifest, dict):
-        raise RunnerError("run manifest must be an object")
+    manifest = _read_run_manifest(manifest_path)
     if manifest.get("schema_version") != "DeveloperLensWbc1Run.v1":
         raise RunnerError("unsupported WB-C1 run manifest")
     if manifest.get("run_id") != run_id:

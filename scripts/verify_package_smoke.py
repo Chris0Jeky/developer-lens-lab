@@ -158,6 +158,13 @@ def _format_failure_diagnostics(
     return f"\nstdout:\n{stdout_text}\nstderr:\n{stderr_text}"
 
 
+def _timeout_progress_text(output: bytes | str | None) -> str:
+    """Decode captured timeout progress, which may be bytes even with text=True."""
+    if isinstance(output, bytes):
+        output = output.decode("utf-8", errors="replace")
+    return output if output and output.strip("\r\n") else "<no output captured>"
+
+
 def _uv_version_requirement() -> str:
     minimum, maximum = UV_VERSION_BOUNDS
     minimum_text = ".".join(str(part) for part in minimum)
@@ -252,7 +259,11 @@ def assert_doctor_report(output: str) -> dict[str, object]:
 
 
 def _run(
-    command: list[str], *, cwd: Path, environment: dict[str, str]
+    command: list[str],
+    *,
+    cwd: Path,
+    environment: dict[str, str],
+    include_timeout_diagnostics: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     # Deliberately not a `with subprocess.Popen(...)` block: Popen.__exit__ ends in an
     # unbounded wait(), which would turn the fail-closed cleanup-unconfirmed path below
@@ -270,13 +281,22 @@ def _run(
     )
     try:
         stdout, stderr = process.communicate(timeout=PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as exc:
         if not _terminate_process_tree(process):
             raise ProcessTreeCleanupUnconfirmedError(_PROCESS_TREE_CLEANUP_UNCONFIRMED) from None
         rendered = _render_command(command)
+        diagnostics = ""
+        if include_timeout_diagnostics:
+            diagnostics = _format_failure_diagnostics(
+                command=command,
+                cwd=cwd,
+                environment=environment,
+                stdout=_timeout_progress_text(exc.output),
+                stderr=_timeout_progress_text(exc.stderr),
+            )
         raise RuntimeError(
             "package smoke command timed out after "
-            f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}"
+            f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}{diagnostics}"
         ) from None
     except BaseException as exc:
         # Any other exit from communicate — notably KeyboardInterrupt — would otherwise
@@ -421,6 +441,7 @@ def run_package_smoke(root: Path) -> None:
             [*uv, "pip", "install", "--python", str(python_executable), str(wheels[0])],
             cwd=root,
             environment=environment,
+            include_timeout_diagnostics=True,
         )
         dllab_name = "dllab.exe" if os.name == "nt" else "dllab"
         dllab_executable = venv_root / ("Scripts" if os.name == "nt" else "bin") / dllab_name
