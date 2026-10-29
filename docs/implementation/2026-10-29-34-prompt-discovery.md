@@ -94,3 +94,33 @@ proof; production verification remains bounded structural scanning. Prompt-libra
 parity manifest, capability posture, and owner gates are untouched. The earlier checkout remained
 unchanged during its concurrent full gate. Final full-gate and exact-head review evidence remain
 coordinator-owned.
+
+## Second independent-review correction
+
+The second bounded correction starts from `2ecfb54e4432cfb488304b998eaf37b76a6b7e8e` and addresses
+two quoted-boundary cases identified in rereview. A valid Setext underline after a quoted
+paragraph must turn it into a heading, ending lazy continuation; an equals run without a preceding
+paragraph must remain ordinary quoted text. The scanner now distinguishes those cases, including
+one- and two-character underlines. Nested quote prefixes are stripped consistently before testing
+both fenced-code openers and closers, allowing a subsequent quoted paragraph to resume correctly
+at either the nested or outer quote level.
+
+The installed CommonMark renderer confirmed the reviewed boundary expectations and the paired
+top-level-opener controls. The documentation's Python-Markdown renderer agrees that the reported
+nested-quote continuation stays quoted, but retains post-Setext prose inside its quote. This is a
+renderer dialect difference: the discovery check follows the reviewed CommonMark boundary and
+does not claim identical behavior across Markdown dialects.
+
+- RED: **12 failed, 98 passed** in the focused discovery module before the correction.
+- GREEN: **110 passed** in that module and **355 passed** across `tests/test_context*.py`.
+- The added cases cover equals/dash underline lengths, standalone equals text, nested and outer
+  quoted paragraphs after closing fences, variable backtick/tilde fence lengths, and actual
+  top-level prompt openings after those fences.
+- Actual context verification, Ruff formatting/lint, and `git diff --check` passed.
+- Strict Pyright reported **0 errors, 0 warnings, 0 informations**.
+
+Only the verifier, its focused tests, and this proof fragment change. Prompt-library and manifest
+bytes remain unchanged, and no parser dependency, discovery signature, capability, or owner gate
+is added. This completes the second bounded code-fix round; further low-severity findings require
+an explicit tracked disposition under the review protocol. Final full-gate and review evidence
+remain coordinator-owned.

@@ -90,10 +90,12 @@ without moving review, CI, or merge gates.
 - Focused regressions first exposed 37 failures; the completed context suite passed 307 tests.
   The first independent review then reproduced eight Markdown-boundary failures; the bounded
   correction passed all 86 discovery cases and the expanded 331-test context suite.
+  A second bounded correction addressed quoted Setext headings and nested fence closure;
+  12 regressions failed before correction, then all 110 discovery and 355 context tests passed.
   Final full-gate, independent review, hosted compatibility and merge evidence belong to the PR.
 - The same follow-up normalizes FR-113–116 updates into the log's fixed-field/dating convention,
   resolving the LOW record-shape finding from #206 while preserving the inspected proof and history.
-  FR-117 records the independently reproduced parser-boundary corrections and their focused proof.
+  FR-117 records both independently reproduced parser-boundary corrections and their focused proof.
 
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 

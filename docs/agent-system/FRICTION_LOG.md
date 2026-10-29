@@ -3113,11 +3113,23 @@ the outcome evidence added there without introducing an undeclared field or rela
   quoted paragraph continuations until their actual boundary, and accept the stated title prefix
   without imposing an extra space. Keep the deterministic signatures and add paired real-prompt
   controls; no runtime parser dependency or broader semantic classifier is introduced.
-- **occurrences:** One independent review round in #207; focused regressions reproduced eight
-  failures with 78 passing controls before correction. Afterward all 86 discovery cases and all
-  331 context tests passed, with clean strict types, Ruff and actual context verification.
+- **occurrences:** Two independent review rounds in #207. The first focused regressions reproduced
+  eight failures with 78 passing controls before correction. Afterward all 86 discovery cases and all
+  331 context tests passed, with clean strict types, Ruff and actual context verification. The second
+  round reproduced 12 failures with 98 passing controls; its correction passed 110 discovery cases
+  and 355 context tests with the same focused checks.
 - **task:** Issue #34; PR #207 prompt-discovery closeout.
 - **promotion:** Enforce the corrected boundaries with focused regressions in the existing
   Python 3.12/3.13 context matrix. Require final-head full proof and independent re-review in #207.
   Shared prompt blocks, the parity manifest, capabilities, owner gates and frozen evidence remain
-  unchanged; this records the first bounded review correction rather than expanding discovery scope.
+  unchanged; these bounded review corrections do not expand the discovery signatures.
+
+**2026-10-29 — Second bounded correction.** Review of
+2ecfb54e4432cfb488304b998eaf37b76a6b7e8e found that quoted Setext headings could retain paragraph
+state and nested quoted fence closers were checked before removing their nested quote prefixes.
+Setext recognition now requires a preceding quoted paragraph, and opening/closing fence handling
+uses consistent quote-prefix removal. Paired ordinary-paragraph and true-opener controls remain.
+These boundary checks follow the reviewed CommonMark behavior; the project's Python-Markdown
+renderer differs on some quoted Setext boundaries, as recorded in the implementation fragment.
+No parser dependency or new discovery signature was added. The second focused proof above is
+complete; final-head full proof and independent disposition remain required in #207.

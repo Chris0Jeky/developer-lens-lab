@@ -1381,6 +1381,9 @@ def _prompt_document_parts(text: str) -> tuple[list[str], bool]:
         quoted = re.match(r" {0,3}> ?(.*)", expanded)
         if quoted is not None:
             content = quoted.group(1)
+            # Openers and closers must see the same content beneath nested quote prefixes.
+            while (nested := re.match(r" {0,3}> ?(.*)", content)) is not None:
+                content = nested.group(1)
             if quoted_fence is not None:
                 if re.fullmatch(
                     rf" {{0,3}}{re.escape(quoted_fence[0])}{{{len(quoted_fence)},}}[ \t]*",
@@ -1389,14 +1392,21 @@ def _prompt_document_parts(text: str) -> tuple[list[str], bool]:
                     quoted_fence = None
                 quoted_paragraph = False
                 continue
-            while (nested := re.match(r" {0,3}> ?(.*)", content)) is not None:
-                content = nested.group(1)
+            # A Setext underline turns the preceding paragraph into a heading. Without that
+            # paragraph, an equals run is ordinary quoted text and can continue lazily.
+            setext_heading = (
+                quoted_paragraph and re.fullmatch(r" {0,3}(?:=+|-+)[ \t]*", content) is not None
+            )
             quoted_opening = MARKDOWN_FENCE_RE.fullmatch(content)
             if quoted_opening is not None:
                 marker, info = quoted_opening.groups()
                 if marker[0] != "`" or "`" not in info:
                     quoted_fence = marker
-            quoted_paragraph = not content.startswith("    ") and not _ends_lazy_quote(content)
+            quoted_paragraph = (
+                not setext_heading
+                and not content.startswith("    ")
+                and not _ends_lazy_quote(content)
+            )
             continue
         # A missing quote marker can continue only a paragraph, never a quoted code fence.
         quoted_fence = None

@@ -127,6 +127,63 @@ def test_lazy_blockquote_paragraph_continuation_is_inert(tmp_path: Path, quote: 
     assert verify_prompt_classifications(tmp_path) == []
 
 
+@pytest.mark.parametrize("underline", ["=", "==", "===", "-", "--", "---", "   ==\t"])
+def test_quoted_setext_heading_does_not_swallow_top_level_prompt(
+    tmp_path: Path, underline: str
+) -> None:
+    _write(
+        tmp_path,
+        "reviewer-prompt.md",
+        f"# Reviewer prompt\n\n> Example heading\n> {underline}\n{_ROLE}\n",
+    )
+
+    assert any(
+        "requires one prompt-classification" in failure
+        for failure in verify_prompt_classifications(tmp_path)
+    )
+
+
+@pytest.mark.parametrize("prefix", ["", "> Earlier paragraph\n>\n"])
+@pytest.mark.parametrize("equals", ["=", "==", "===", "======="])
+def test_quoted_equals_without_preceding_paragraph_remains_inert(
+    tmp_path: Path, prefix: str, equals: str
+) -> None:
+    _write(tmp_path, "reviewer-prompt.md", f"# Reviewer prompt\n\n{prefix}> {equals}\n{_ROLE}\n")
+
+    assert verify_prompt_classifications(tmp_path) == []
+
+
+@pytest.mark.parametrize("opening, closing", [("```", "```"), ("````", "`````"), ("~~~", "~~~~")])
+@pytest.mark.parametrize("paragraph_prefix", ["> > ", "> "])
+def test_nested_quoted_fence_preserves_following_quoted_paragraph(
+    tmp_path: Path, opening: str, closing: str, paragraph_prefix: str
+) -> None:
+    _write(
+        tmp_path,
+        "reviewer-prompt.md",
+        f"# Reviewer prompt\n\n> > {opening}text\n> > code\n> > {closing}\n"
+        f"{paragraph_prefix}Quoted example:\n{_ROLE}\n",
+    )
+
+    assert verify_prompt_classifications(tmp_path) == []
+
+
+@pytest.mark.parametrize("opening, closing", [("```", "```"), ("````", "`````"), ("~~~", "~~~~")])
+def test_nested_quoted_fence_preserves_following_top_level_prompt(
+    tmp_path: Path, opening: str, closing: str
+) -> None:
+    _write(
+        tmp_path,
+        "reviewer-prompt.md",
+        f"# Reviewer prompt\n\n> > {opening}text\n> > code\n> > {closing}\n{_ROLE}\n",
+    )
+
+    assert any(
+        "requires one prompt-classification" in failure
+        for failure in verify_prompt_classifications(tmp_path)
+    )
+
+
 @pytest.mark.parametrize(
     "body",
     [
