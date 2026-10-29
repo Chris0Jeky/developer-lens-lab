@@ -34,7 +34,8 @@ delivered:
   - contract_and_export_foundation: >-
       ResearchFinding export shipped through PRs #127 and #129, with later custody/threshold
       hardening in #182. Structural mixed-dialect schema work shipped in #126 and #179.
-      The exporter is usable; remaining #97 acceptance is stated below.
+      The exporter is usable and verifies actual written temporary bytes before atomic publication;
+      remaining #97 acceptance is stated below.
   - report_and_artifact_integrity: >-
       PRs #196 and #197 delivered resolved-root output confinement and full-report identity/
       provenance checks. Runtime result references must exactly match artifact-manifest digest,
@@ -94,7 +95,7 @@ late_review_debt: >-
   its LAB-WBC1-06 card covers only the earlier four-fix slice. #31 retains Product gate/reason
   vocabulary and zero-delay caveat work. #34 retains broader prompt discovery, routing/parity,
   and capability cross-checks. #97 retains broader non-reject/revision evidence and paired
-  Product runtime proof; follow its issue for written-output verification status. The #107
+  Product runtime proof; written-output privacy and canonical-byte verification is implemented. The #107
   home-path residual is repaired in source; its issue records the remaining deliberate design dispositions.
 exact_resume_point: >-
   Read the live default-branch head and every open PR's checks, reviews, comments, and threads.

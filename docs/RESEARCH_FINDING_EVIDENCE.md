@@ -20,8 +20,27 @@ claims. A rejection based on an uncarried selection reason is refused as insuffi
 WB-C1 has no registered `revise_once` evidence recipe. The transport schema retains that enum,
 but this adapter refuses it rather than inventing a revision decision. Future non-reject source
 formats need a separately reviewed evidence adapter; the current pinned MethodTrialView is a
-rejection-only exhibit. Issue #97 remains open for any broader outcome support, the explicit
-post-write privacy acceptance item, and paired Product-side verification.
+rejection-only exhibit. Issue #97 remains open for broader outcome support and paired Product-side
+verification.
+
+## Verify written bytes before publication
+
+Finding export validates the in-memory projection, then writes a same-directory temporary file.
+It rereads the actual written bytes through the bounded, link-refusing reader and validates their
+schema, cross-field semantics, and privacy rules. The reread must also match both the intended
+payload and its stable serialization exactly. Only then does atomic replacement publish it.
+
+This is verification after writing the temporary output and before replacing the public destination.
+It satisfies the written-file privacy check without publishing invalid bytes and then trying to
+remove them. A rejected write preserves an existing destination and removes its temporary file.
+The output digest therefore describes the bytes verified for publication. Source run artifacts
+remain unchanged, and a final destination symlink is replaced without changing its target.
+
+Eight new regressions failed on the former publisher and pass with this boundary. Together with
+the existing finding exporter and CLI coverage, the focused selection passes 104 tests, including
+the exact pinned Product golden fixture, repeated-byte equality, and whole-store immutability.
+The tests inject denied serialized content and altered, oversized, malformed, or noncanonical
+written bytes, and verify refusal before replacement. Full proof belongs in the delivering PR.
 
 ## View and receipt linkage
 
@@ -39,10 +58,16 @@ the exact Product golden finding file.
 
 ## Recovery evidence, 2026-10-03
 
+This is a historical recovery record. PR #129 subsequently merged on 2026-10-18 at
+`49cf50fa2ca71cf71b4c1e1c57a0580d05616fc9`; custody/threshold hardening followed through PR #182.
+The environment limits and pending PR state below describe that earlier checkpoint, not the
+current exporter or toolchain.
+
 PR #130 merged at `540edfa568d2f65ed145c544acbadf5a92344087` after successful full Check
 `37125888526`, Python compatibility `37125888506`, and independent review at head
 `8537a1e5aee23856a0d827b0298542a56f304435`. PR #127 remains merged. The current #129 work is
-the second and final bounded semantic review-fix round, addressing 4173283404 and 4173326642.
+the second and final bounded semantic review-fix round at that checkpoint, addressing 4173283404
+and 4173326642.
 
 Twenty-two focused evidence-helper tests pass on installed local dependencies. The new
 integration cases require hosted full CI, including real CLI repeatability and source-store
