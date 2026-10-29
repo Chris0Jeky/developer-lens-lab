@@ -163,6 +163,8 @@ def _load_schema(payload: bytes, label: str) -> dict[str, Any]:
     schema = cast(dict[str, Any], value)
     try:
         _validate_reference_closure(schema)
+    except UnknownDialect as exc:
+        raise ContractSyncError(f"{label} schema declares an unsupported dialect") from exc
     except SchemaError as exc:
         raise ContractSyncError(f"{label} schema is not valid for its declared dialect") from exc
     except (Unresolvable, ValueError, TypeError, AttributeError) as exc:
@@ -184,10 +186,7 @@ def _check_schema_resources(
                 dialect = contents["$schema"]
                 if not isinstance(dialect, str):
                     raise ValueError("schema dialect must be a URI string")
-                try:
-                    specification_with(dialect)
-                except UnknownDialect as exc:
-                    raise ValueError("unsupported schema dialect") from exc
+                specification_with(dialect)
         validator = validator_for(contents, default=inherited)
         resources[id(contents)] = (current, validator)
         # Substitute checked resource boundaries only in the metaschema-check copy.
@@ -207,7 +206,18 @@ def _check_schema_resources(
     return resources
 
 
-def _validate_reference_closure(schema: dict[str, Any]) -> None:
+def _validator_dialect(validator: type[Validator]) -> str:
+    """Read the built-in metaschema identity across old and new identifier keywords."""
+    metaschema = cast(dict[str, object], validator.META_SCHEMA)
+    dialect = metaschema.get("$id", metaschema.get("id"))
+    if not isinstance(dialect, str):
+        raise ValueError("validator metaschema must declare its dialect identity")
+    return dialect
+
+
+def _validate_reference_closure(
+    schema: dict[str, Any],
+) -> dict[int, tuple[Resource[Any], type[Validator]]]:
     """Check schema subresources, not ref-shaped instance examples or constants."""
     resource = Resource.from_contents(schema, default_specification=DRAFT202012)
     resources = _check_schema_resources(resource)
@@ -231,13 +241,14 @@ def _validate_reference_closure(schema: dict[str, Any]) -> None:
                 validator = resources[id(contents)][1]
                 target = Resource.from_contents(
                     resolved.contents,
-                    default_specification=specification_with(validator.META_SCHEMA["$id"]),
+                    default_specification=specification_with(_validator_dialect(validator)),
                 )
                 resources.update(_check_schema_resources(target, validator))
             else:
                 target = known[0]
             pending.append((target, resolved.resolver))
         pending.extend((child, resolver.in_subresource(child)) for child in current.subresources())
+    return resources
 
 
 def _validate_producer_schema(value: object) -> None:
@@ -283,11 +294,20 @@ def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ContractSyncError("producer fixture is not valid JSON") from exc
     try:
-        _validate_reference_closure(schema_doc)
+        resources = _validate_reference_closure(schema_doc)
+        copies: dict[int, Any] = {}
+        validation_schema = deepcopy(schema_doc, copies)
+        # jsonschema evolves from the referring validator when a target omits $schema.
+        # Preserve lexical dialect inheritance in a copy of schema-valued objects only.
+        for contents_id, (resource, validator) in resources.items():
+            if isinstance(resource.contents, dict):
+                copies[contents_id].setdefault("$schema", _validator_dialect(validator))
         # An empty registry refuses external retrieval. Sync must remain offline.
-        Draft202012Validator(schema_doc, registry=Registry()).validate(fixture)
+        Draft202012Validator(validation_schema, registry=Registry()).validate(fixture)
     except ValidationError as exc:
         raise ContractSyncError("producer fixture does not conform to the producer schema") from exc
+    except UnknownDialect as exc:
+        raise ContractSyncError("producer schema declares an unsupported dialect") from exc
     except SchemaError as exc:
         raise ContractSyncError("producer schema is not a valid JSON Schema") from exc
     except (Unresolvable, ValueError, TypeError, AttributeError) as exc:

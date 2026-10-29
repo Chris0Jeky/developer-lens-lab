@@ -27,7 +27,7 @@ FORBIDDEN_KEY_FRAGMENTS = {
     "username",
 }
 FORBIDDEN_EXACT_KEYS = {"environment_name", "environment_value", "environment_variables"}
-ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\|/|~[\\/]|file://)", re.IGNORECASE)
+ABSOLUTE_PATH_RE = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\|/|~[^\\/\s]*[\\/]|file://)", re.IGNORECASE)
 ROOTED_PATH_RE = re.compile(r"^\\(?!\\)")
 LETTER_COLON_RE = re.compile(r"^[A-Za-z]:")
 
@@ -227,7 +227,11 @@ def validate_pack_artifacts(
                     f"{tuple(schema.names)}, got {actual_columns}"
                 )
             for actual, expected in zip(parquet.schema_arrow, schema, strict=True):
-                if actual.type != expected.type:
+                optional_null = expected.nullable and pa.types.is_null(actual.type)
+                compatible_string = pa.types.is_string(expected.type) and pa.types.is_large_string(
+                    actual.type
+                )
+                if actual.type != expected.type and not optional_null and not compatible_string:
                     raise ManifestError(
                         f"relation {relation_name} field {expected.name} has incompatible type"
                     )

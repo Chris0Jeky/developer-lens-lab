@@ -187,12 +187,24 @@ def contracts_sync_method_trial(
 def pack_validate(
     manifest: Annotated[Path, typer.Argument(exists=True, file_okay=True, dir_okay=False)],
     artifact_root: Annotated[Path | None, typer.Option("--artifact-root")] = None,
+    scope: Annotated[
+        str | None,
+        typer.Option(
+            "--scope", help="Opaque artifact scope; defaults to pack ID. Requires --artifact-root."
+        ),
+    ] = None,
 ) -> None:
     """Validate a C0 ResearchPack and optionally verify its scoped Parquet objects."""
     try:
+        if scope is not None and artifact_root is None:
+            raise ManifestError("--scope requires --artifact-root")
         pack = validate_research_pack(manifest)
         if artifact_root is not None:
-            validate_pack_artifacts(pack, ArtifactStore(artifact_root))
+            store = ArtifactStore(artifact_root)
+            read_scope = scope if scope is not None else pack.pack_id
+            # Check the scope even when no present relation needs an object read.
+            store.scope_root(read_scope)
+            validate_pack_artifacts(pack, store, read_scope)
     except (ArtifactError, ManifestError, OSError, ValidationError, json.JSONDecodeError) as exc:
         typer.echo(f"ERROR: {explain_validation_error(exc)}", err=True)
         raise typer.Exit(code=1) from exc

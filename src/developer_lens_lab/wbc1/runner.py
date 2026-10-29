@@ -608,13 +608,21 @@ def run_benchmark(
     run_id: str | None = None,
 ) -> BenchmarkRun:
     root = (root or _root()).resolve()
-    run_id = run_id or ("wbc1_smoke" if smoke else "wbc1_full")
+    if run_id is None:
+        run_id = "wbc1_smoke" if smoke else "wbc1_full"
+    scope = run_id
+    store = ArtifactStore(artifact_root or (root / ".dllab"))
+    try:
+        store.scope_root(scope)
+    except ArtifactError:
+        raise RunnerError("run_id must be an opaque lowercase identifier") from None
+    # Smoke runs also produce the pinned MethodTrialView.v1, whose IDs start at eight characters.
+    if smoke and len(run_id) < 8:
+        raise RunnerError("smoke run_id must contain at least 8 characters")
     _ensure_reproducible_tree(root)
     producer_schema, provenance, vendor_pack = _load_vendor_snapshot(root)
     dataset = build_benchmark_dataset(smoke=smoke)
     plan = prepare_evaluation(dataset.train)
-    scope = run_id
-    store = ArtifactStore(artifact_root or (root / ".dllab"))
     try:
         store.reserve_scope(scope)
     except ArtifactError as exc:

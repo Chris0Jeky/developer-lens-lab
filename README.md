@@ -106,6 +106,15 @@ uv run pytest
 
 The product fixture used above is a compatibility canary and may omit every relation. That is intentional.
 
+For a pack whose Parquet objects belong to a run, select that scope explicitly:
+
+```powershell
+uv run dllab pack validate path/to/pack.json --artifact-root .dllab --scope wbc1_smoke
+```
+
+`--scope` requires `--artifact-root`. Without a scope, artifact validation uses the pack ID;
+without an artifact root, validation checks the manifest alone. The command never scans other scopes.
+
 WB-C1 needs a clean tracked/unignored worktree because the run records the executing lab commit:
 
 ```powershell
@@ -117,6 +126,10 @@ uv run dllab export finding wbc1_smoke --out research-finding.json
 ```
 
 Default smoke identity is `wbc1_smoke`. The command writes an ignored, content-addressed run under `.dllab/scopes/wbc1_smoke/`. Use `--run-id <new_opaque_id>` for another run; the scope is single-use. `run reproduce` verifies stored objects, then regenerates and byte-compares them. Use `uv run dllab benchmark wb-c1 --full` only for the larger opt-in lane. The `--full` lane keeps generic EvaluationBundle reports and replay; it does not record a smoke-only Method Trial projection.
+
+Run IDs start with a lowercase letter and contain only lowercase letters, digits, and underscores,
+up to 64 characters. Smoke runs require at least 8 characters for the pinned Method Trial contract;
+full runs retain the 3-character minimum. Invalid IDs fail before artifact reservation or holdout access.
 
 `export method-trial` reads one already validated local smoke run, selects the no-change, planted-change, and instrumentation-confound windows deterministically, validates the product schema plus the lab's equivalent cross-field rules, and writes ignored `method-trial-view.json` by default. It does not send a request, expose system aliases, install a model, or add an EvaluationBundle parser to the product.
 
