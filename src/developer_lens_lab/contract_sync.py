@@ -206,6 +206,15 @@ def _check_schema_resources(
     return resources
 
 
+def _validator_dialect(validator: type[Validator]) -> str:
+    """Read the built-in metaschema identity across old and new identifier keywords."""
+    metaschema = cast(dict[str, object], validator.META_SCHEMA)
+    dialect = metaschema.get("$id", metaschema.get("id"))
+    if not isinstance(dialect, str):
+        raise ValueError("validator metaschema must declare its dialect identity")
+    return dialect
+
+
 def _validate_reference_closure(
     schema: dict[str, Any],
 ) -> dict[int, tuple[Resource[Any], type[Validator]]]:
@@ -232,9 +241,7 @@ def _validate_reference_closure(
                 validator = resources[id(contents)][1]
                 target = Resource.from_contents(
                     resolved.contents,
-                    default_specification=specification_with(
-                        cast(str, validator.META_SCHEMA["$id"])
-                    ),
+                    default_specification=specification_with(_validator_dialect(validator)),
                 )
                 resources.update(_check_schema_resources(target, validator))
             else:
@@ -294,8 +301,7 @@ def _validate_fixture_against_producer_schema(schema: object, fixture_raw: bytes
         # Preserve lexical dialect inheritance in a copy of schema-valued objects only.
         for contents_id, (resource, validator) in resources.items():
             if isinstance(resource.contents, dict):
-                metaschema = cast(dict[str, Any], validator.META_SCHEMA)
-                copies[contents_id].setdefault("$schema", validator.ID_OF(metaschema))
+                copies[contents_id].setdefault("$schema", _validator_dialect(validator))
         # An empty registry refuses external retrieval. Sync must remain offline.
         Draft202012Validator(validation_schema, registry=Registry()).validate(fixture)
     except ValidationError as exc:
