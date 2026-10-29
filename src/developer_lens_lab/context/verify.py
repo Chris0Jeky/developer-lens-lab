@@ -212,8 +212,12 @@ class _UniqueKeySafeLoader(yaml.SafeLoader):
         return construct_document(node)
 
 
-def verify_current_state_yaml(root: Path) -> list[str]:
-    """Validate the single machine-readable CURRENT_STATE.md YAML fence."""
+def verify_current_state_yaml(root: Path, *, verified_bootstrap_policy: bool = False) -> list[str]:
+    """Validate the YAML shape, plus capability claims after repository policy verification.
+
+    Standalone shape checks need no governor fixture. The repository entry point supplies the
+    verified posture only after the existing tier and governor checks both succeed.
+    """
     path = root / "docs" / "CURRENT_STATE.md"
     if not path.is_file():
         return ["missing docs/CURRENT_STATE.md"]
@@ -271,6 +275,12 @@ def verify_current_state_yaml(root: Path) -> list[str]:
             failures.append(
                 f"docs/CURRENT_STATE.md:{opening + 2}: YAML key {key!r} must be a mapping"
             )
+    if verified_bootstrap_policy and isinstance(values.get("capabilities"), dict):
+        failures.extend(
+            _verify_bootstrap_capability_claims(
+                cast(dict[object, object], values["capabilities"]), opening + 2
+            )
+        )
     if "exact_resume_point" in values:
         resume = values["exact_resume_point"]
         if not isinstance(resume, str) or not resume.strip():
@@ -324,6 +334,41 @@ def verify_current_state_yaml(root: Path) -> list[str]:
                             f"docs/CURRENT_STATE.md:{opening + 2}: delivered entry "
                             f"{index} must contain exactly one string key and value"
                         )
+    return failures
+
+
+def _verify_bootstrap_capability_claims(capabilities: dict[object, object], line: int) -> list[str]:
+    """Check a resume summary of the existing bootstrap policy; never grant authority.
+
+    _verify_tier and verify_governor already pin C0/T1, closed own/curated lanes, activation
+    gates, and the stable-product promotion boundary. The bounded presentation exception is
+    recorded in HUMAN_TODO.md q-4. This vocabulary describes that verified posture, rather than
+    introducing a second configurable policy. LAB-ACT-01 must replace these bootstrap checks
+    together with the existing tier/lane pins before any activation can be represented.
+    """
+    expected = {
+        "network_collection": "disabled",
+        "external_model": "disabled",
+        "real_data": "disabled",
+        "product_integration": "bounded_c0_presentation_approved",
+        "product_promotion": "prohibited",
+    }
+    prefix = f"docs/CURRENT_STATE.md:{line}:"
+    failures: list[str] = []
+    if any(key not in expected for key in capabilities):
+        failures.append(f"{prefix} capabilities must contain only the five governed names")
+    for name, status in expected.items():
+        value = capabilities.get(name)
+        # Keep explanatory prose optional, but do not accept substring/prefix matches such as
+        # `disabled_but_enabled` or `disabled; enabled`. An annotation has no policy authority.
+        if (
+            not isinstance(value, str)
+            or re.fullmatch(rf"{re.escape(status)}(?: \([^()\n]+\))?", value) is None
+        ):
+            failures.append(
+                f"{prefix} capabilities.{name} must declare {status!r} under the verified "
+                "bootstrap policy, optionally followed by a parenthesized explanation"
+            )
     return failures
 
 
@@ -933,6 +978,10 @@ LAB_EXTENSION_PROMPT_IDS = (
     "DL-LX01-LAB-EXPERIMENT-HARNESS",
     "DL-LX02-LAB-EVALUATION-REPRODUCIBILITY",
 )
+PRODUCT_EXTENSION_PROMPT_IDS = (
+    "DL-PX01-PRODUCT-DEEP-DISCOVERY",
+    "DL-PX02-PRODUCT-ANALYTICAL-VERTICAL",
+)
 SHARED_BLOCK_IDS = ("runtime-bootstrap-v1", "friction-tasking-v1")
 CONTINUOUS_PROMPT_ID = "DL-P03-OVERNIGHT-CONTINUOUS"
 
@@ -1098,21 +1147,33 @@ def verify_parity_manifest(payload: object) -> list[str]:
 def _verify_manifest_repository_entry(manifest: dict[str, object]) -> list[str]:
     repositories_raw = manifest.get("repositories")
     if not isinstance(repositories_raw, list):
-        return ["prompt-parity.json: repositories must be a list containing this repository"]
+        return ["prompt-parity.json: repositories must be a list containing both repositories"]
+    expected_repositories = {
+        "Chris0Jeky/developer-lens": ("product", PRODUCT_EXTENSION_PROMPT_IDS),
+        LAB_REPOSITORY_SLUG: ("lab", LAB_EXTENSION_PROMPT_IDS),
+    }
+    failures: list[str] = []
+    seen: set[str] = set()
     for entry_raw in cast(list[object], repositories_raw):
         if not isinstance(entry_raw, dict):
+            failures.append("prompt-parity.json: each repositories entry must be an object")
             continue
         entry = cast(dict[str, object], entry_raw)
-        if entry.get("slug") != LAB_REPOSITORY_SLUG:
+        slug = entry.get("slug")
+        if not isinstance(slug, str) or slug not in expected_repositories:
+            failures.append("prompt-parity.json: repositories contains an unsupported slug")
             continue
-        failures: list[str] = []
-        if entry.get("role") != "lab":
-            failures.append(f"prompt-parity.json: {LAB_REPOSITORY_SLUG} role must be 'lab'")
+        if slug in seen:
+            failures.append(f"prompt-parity.json: repositories must contain {slug} exactly once")
+        seen.add(slug)
+        role, expected_extensions = expected_repositories[slug]
+        if entry.get("role") != role:
+            failures.append(f"prompt-parity.json: {slug} role must be {role!r}")
         extensions = _str_list(entry.get("extension_prompt_ids"))
-        if extensions is None or tuple(extensions) != LAB_EXTENSION_PROMPT_IDS:
+        if extensions is None or tuple(extensions) != expected_extensions:
             failures.append(
-                "prompt-parity.json: lab extension_prompt_ids must equal the code-pinned lab "
-                "extension IDs, in order"
+                f"prompt-parity.json: {role} extension_prompt_ids must equal the code-pinned "
+                f"{role} extension IDs, in order"
             )
         for key, expected in (
             ("prompt_library", PROMPT_LIBRARY),
@@ -1120,9 +1181,10 @@ def _verify_manifest_repository_entry(manifest: dict[str, object]) -> list[str]:
             ("friction_log", "docs/agent-system/FRICTION_LOG.md"),
         ):
             if entry.get(key) != expected:
-                failures.append(f"prompt-parity.json: lab {key} must be {expected!r}")
-        return failures
-    return [f"prompt-parity.json: repositories must contain an entry for {LAB_REPOSITORY_SLUG}"]
+                failures.append(f"prompt-parity.json: {role} {key} must be {expected!r}")
+    for slug in sorted(expected_repositories.keys() - seen):
+        failures.append(f"prompt-parity.json: repositories must contain an entry for {slug}")
+    return failures
 
 
 def verify_prompt_library(library_text: str, digests: dict[str, str]) -> list[str]:
@@ -1440,11 +1502,11 @@ def verify_repository(root: Path) -> VerificationReport:
             failures.append("CURRENT_STATE.md must contain exactly one exact_resume_point")
         if "live git and ci outrank this file" not in text.lower():
             failures.append("CURRENT_STATE.md must state the live-evidence precedence rule")
-    failures.extend(verify_current_state_yaml(root))
+    policy_failures = [*_verify_tier(root), *verify_governor(root)]
+    failures.extend(policy_failures)
+    failures.extend(verify_current_state_yaml(root, verified_bootstrap_policy=not policy_failures))
     if (root / "developer_lens_lab_bootstrap_agent_prompt.md").exists():
         failures.append("the commissioning prompt must not become a competing repo authority")
-    failures.extend(_verify_tier(root))
-    failures.extend(verify_governor(root))
     failures.extend(verify_skill_parity(root))
     failures.extend(verify_agent_friction_parity(root))
     failures.extend(verify_prompt_parity(root))

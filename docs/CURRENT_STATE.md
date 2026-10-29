@@ -28,7 +28,7 @@ active_wave:
     state: >-
       Use live PRs for delivery status. The October implementation fragments record controlled
       run errors, installation timeout diagnostics, mixed-dialect fixtures, compatible Arrow
-      types, explicit pack scopes, and stricter current-state validation. Each merge still
+      types, explicit pack scopes, and stricter current-state and parity validation. Each merge still
       requires exact-head proof, independent review, complete feedback surfaces, and 15-minute aging.
 delivered:
   - contract_and_export_foundation: >-
@@ -45,6 +45,9 @@ delivered:
       Source preserves inherited embedded-schema dialects without changing vendor bytes; accepts
       large_string and optional all-null Arrow columns without numeric coercion; and rejects
       ambiguous YAML, empty resume points, malformed wave entries, and absent governor sections.
+      Both registered repositories' parity metadata and the checkpoint's capability claims are
+      checked against the existing bootstrap policy. Routing prose, scout scope, and taxonomy
+      now describe the actual governed roles; historical parity digests have explicit supersession.
       The dated implementation fragments and delivering PRs carry detailed verification.
 next_safe_slice: >-
   Reconcile live main, open issues/PRs, tools/cards.py, and Product owner gates first. Finish or
@@ -87,8 +90,9 @@ blockers: >-
 late_review_debt: >-
   #6 remains open for confound observability and separately recorded export/provenance concerns;
   its LAB-WBC1-06 card covers only the earlier four-fix slice. #31 retains Product gate/reason
-  vocabulary and zero-delay caveat work. #34 retains broader prompt discovery, routing/parity,
-  and capability cross-checks. #97 retains broader non-reject/revision evidence and paired
+  vocabulary and zero-delay caveat work. #34 retains prompt discovery and explicit scout naming
+  in every active body; repository metadata and capability consistency are now checked. #97
+  retains broader non-reject/revision evidence and paired
   Product runtime proof; written-output privacy and canonical-byte verification is implemented. The #107
   home-path residual is repaired in source; its issue records the remaining deliberate design dispositions.
 exact_resume_point: >-

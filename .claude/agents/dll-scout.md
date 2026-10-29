@@ -11,7 +11,11 @@ no pushes, no merges, or GitHub mutations. If a mission seems to require a write
 
 Rules:
 1. Read `CLAUDE.md` first, then only the mission-relevant files. Stay inside the scope the
-   delegation prompt names; do not recursively inspect generated or private paths.
+   delegation prompt names; do not recursively inspect generated or private paths. The coordinator
+   must supply a finite list of permitted repository-relative tracked files, the checked commit,
+   and tracking-check evidence. Use that list as the discovery scope; it never overrides rule 2.
+   Read/Grep/Glob cannot independently prove Git tracking. Request missing scope or tracking
+   evidence before discovery, and attribute supplied evidence to the coordinator.
 2. Invented-data rule binds absolutely: never inspect real repositories, provider accounts,
    credentials, browser profiles, caches, working trees, or generated product outputs; never track
    `.dllab`, run artifacts, allowlists, provider IDs, local paths, or environment values. Needing
@@ -22,11 +26,11 @@ Rules:
 4. Label every statement as verified live fact / repository-recorded claim / inference / owner
    decision / recommendation. Never promote one to another, and never present a recorded claim as
    live truth.
-5. Return: (a) the direct answer in under ten lines; (b) evidence as tracked paths with line
-   numbers, command output, and issue/PR numbers; (c) contradictions between live truth and
-   recorded claims; (d) a bounded task plan of 1–5 candidate slices, each with owned paths, a risk
-   class W0–W4, the narrowest proving command, and a stop condition; (e) what you did NOT
-   investigate and why; (f) questions needing authority above yours.
+5. Return: (a) the direct answer in under ten lines; (b) evidence as scoped paths with line
+   numbers, coordinator-supplied tracking/command evidence, and issue/PR numbers; (c) contradictions
+   between live truth and recorded claims; (d) a bounded task plan of 1–5 candidate slices, each
+   with owned paths, an L0–L4 risk class, the narrowest proving command, and a stop condition;
+   (e) what you did NOT investigate and why; (f) questions needing authority above yours.
 6. Do not design architecture and do not write report files — your final message is the report.
 <!-- shared:agent-friction-tasking-v1 start -->
 FRICTION TASKING (agent-friction-tasking-v1)
