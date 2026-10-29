@@ -3098,3 +3098,26 @@ complete Check with 1,327 tests passed and nine skipped. Post-merge run 40811322
 158ad173d2f36085c352bca28b74f9be96576b82 also passed. The initiating failure's underlying download
 mechanism remains undetermined; both attempts remain linked in #203. This dated note preserves
 the outcome evidence added there without introducing an undeclared field or relaxing any gate.
+
+### FR-117 - Prompt discovery draft misreads Markdown example boundaries
+
+- **first-seen:** 2026-10-29
+- **status:** workaround-verified
+- **symptom:** Independent review of #207 head 08526698208d60bd72ecedb67cc25fa9f9b80ff7
+  found that mixed space/tab indentation and lazy blockquote continuations were treated as live
+  prompt prose, while the documented `Prompt:` title prefix required an undeclared following space.
+  The installed CommonMark and project Markdown renderers confirmed the example boundaries.
+- **impact:** Valid examples could fail context verification, and an explicitly named prompt
+  could escape the declared classification rule. The current repository did not trigger these cases.
+- **workaround:** Normalize leading indentation to Markdown's four-column tab stops, preserve
+  quoted paragraph continuations until their actual boundary, and accept the stated title prefix
+  without imposing an extra space. Keep the deterministic signatures and add paired real-prompt
+  controls; no runtime parser dependency or broader semantic classifier is introduced.
+- **occurrences:** One independent review round in #207; focused regressions reproduced eight
+  failures with 78 passing controls before correction. Afterward all 86 discovery cases and all
+  331 context tests passed, with clean strict types, Ruff and actual context verification.
+- **task:** Issue #34; PR #207 prompt-discovery closeout.
+- **promotion:** Enforce the corrected boundaries with focused regressions in the existing
+  Python 3.12/3.13 context matrix. Require final-head full proof and independent re-review in #207.
+  Shared prompt blocks, the parity manifest, capabilities, owner gates and frozen evidence remain
+  unchanged; this records the first bounded review correction rather than expanding discovery scope.

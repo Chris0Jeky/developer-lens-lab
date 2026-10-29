@@ -1336,6 +1336,16 @@ def verify_continuous_protocol(text: str) -> list[str]:
     return failures
 
 
+def _ends_lazy_quote(line: str) -> bool:
+    """A blank or new block can end a quoted paragraph's lazy continuation."""
+    return (
+        not line.strip()
+        or re.match(r" {0,3}(?:#{1,6}(?:[ \t]|$)|`{3,}|~{3,}|<!--)", line) is not None
+        or re.fullmatch(r" {0,3}(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})", line)
+        is not None
+    )
+
+
 def _prompt_document_parts(text: str) -> tuple[list[str], bool]:
     """Return document lines and whether a top-level plain-text fence opens as a prompt.
 
@@ -1347,6 +1357,8 @@ def _prompt_document_parts(text: str) -> tuple[list[str], bool]:
     plain_text = False
     body: list[str] = []
     has_prompt_fence = False
+    quoted_paragraph = False
+    quoted_fence: str | None = None
     for line in normalize_newlines(text).splitlines():
         if fence is not None:
             if re.fullmatch(rf" {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*", line):
@@ -1357,8 +1369,40 @@ def _prompt_document_parts(text: str) -> tuple[list[str], bool]:
             elif plain_text:
                 body.append(line)
             continue
-        if re.match(r"(?: {4}|\t| {0,3}>)", line):
+        # Markdown tabs advance to four-column stops, including a tab after 1-3 spaces.
+        expanded = line.expandtabs(4)
+        if not expanded.strip():
+            quoted_paragraph = False
+            quoted_fence = None
+            document.append(line)
             continue
+        if expanded.startswith("    "):
+            continue
+        quoted = re.match(r" {0,3}> ?(.*)", expanded)
+        if quoted is not None:
+            content = quoted.group(1)
+            if quoted_fence is not None:
+                if re.fullmatch(
+                    rf" {{0,3}}{re.escape(quoted_fence[0])}{{{len(quoted_fence)},}}[ \t]*",
+                    content,
+                ):
+                    quoted_fence = None
+                quoted_paragraph = False
+                continue
+            while (nested := re.match(r" {0,3}> ?(.*)", content)) is not None:
+                content = nested.group(1)
+            quoted_opening = MARKDOWN_FENCE_RE.fullmatch(content)
+            if quoted_opening is not None:
+                marker, info = quoted_opening.groups()
+                if marker[0] != "`" or "`" not in info:
+                    quoted_fence = marker
+            quoted_paragraph = not content.startswith("    ") and not _ends_lazy_quote(content)
+            continue
+        # A missing quote marker can continue only a paragraph, never a quoted code fence.
+        quoted_fence = None
+        if quoted_paragraph and not _ends_lazy_quote(expanded):
+            continue
+        quoted_paragraph = False
         opening = MARKDOWN_FENCE_RE.fullmatch(line)
         if opening is not None:
             marker, info = opening.groups()
@@ -1384,7 +1428,7 @@ def _is_named_prompt(relative: Path, document: list[str]) -> bool:
         heading = re.fullmatch(r" {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*", line)
         if heading is not None:
             title = heading.group(1)
-            return bool(re.search(r"\bprompts?$|^prompts?:[ \t]+", title, re.I))
+            return bool(re.search(r"\bprompts?$|^prompts?:", title, re.I))
     return False
 
 

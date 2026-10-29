@@ -68,3 +68,29 @@ No Product-owned schema, shared prompt contract, capability, owner gate, scienti
 holdout, or frozen evidence changes. Roll back this isolated verifier/routing/test/documentation
 patch if its declared signature boundary proves unsuitable; any broader discovery convention
 needs an explicit reviewed rule and examples.
+
+## First independent-review correction
+
+Review of `08526698208d60bd72ecedb67cc25fa9f9b80ff7` reproduced inert-example false positives:
+one to three leading spaces followed by a tab were not recognized as indented code, and an
+unmarked continuation of a quoted paragraph was treated as top-level prose. The installed
+CommonMark renderer and the documentation's Python-Markdown renderer both confirmed the reported
+code-block and blockquote renderings, including termination by a blank line.
+
+The scanner now measures indentation using four-column tab stops and retains quoted-paragraph
+continuation state. Blank lines and relevant heading, fence, thematic-rule, and HTML-metadata
+starts terminate that continuation; quoted code fences never create paragraph-continuation state.
+Tests preserve discovery of actual prose or fences after quote termination. The explicit title
+prefix also now accepts `Prompt:resume`, matching the already declared `Prompt:` convention;
+similar words such as `Prompter:` remain outside the signature.
+
+- RED: **8 failed, 78 passed** in the focused discovery module before the correction.
+- GREEN: **86 passed** in that module, and **331 passed** across `tests/test_context*.py`.
+- Actual context verification, Ruff formatting/lint, and `git diff --check` passed.
+- Strict Pyright reported **0 errors, 0 warnings, 0 informations**.
+
+This correction adds no parser dependency or new discovery signature. Renderer use was read-only
+proof; production verification remains bounded structural scanning. Prompt-library bytes, the
+parity manifest, capability posture, and owner gates are untouched. The earlier checkout remained
+unchanged during its concurrent full gate. Final full-gate and exact-head review evidence remain
+coordinator-owned.

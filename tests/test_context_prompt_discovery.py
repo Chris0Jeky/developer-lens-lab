@@ -113,6 +113,61 @@ def test_routine_documentation_and_examples_are_not_prompt_documents(
     assert verify_prompt_classifications(tmp_path) == []
 
 
+@pytest.mark.parametrize("indent", ["\t", "    ", " \t", "  \t", "   \t", "\t "])
+def test_mixed_tab_indentation_is_an_inert_code_example(tmp_path: Path, indent: str) -> None:
+    _write(tmp_path, "reviewer-prompt.md", f"# Reviewer prompt\n\n{indent}{_ROLE}\n")
+
+    assert verify_prompt_classifications(tmp_path) == []
+
+
+@pytest.mark.parametrize("quote", ["> Quoted example:", "   > Quoted example:", "> > Example:"])
+def test_lazy_blockquote_paragraph_continuation_is_inert(tmp_path: Path, quote: str) -> None:
+    _write(tmp_path, "reviewer-prompt.md", f"# Reviewer prompt\n\n{quote}\n{_ROLE}\n")
+
+    assert verify_prompt_classifications(tmp_path) == []
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        f"> Quoted example:\n\n{_ROLE}",
+        f"> Quoted example:\n>\n{_ROLE}",
+        f"> # Quoted heading\n{_ROLE}",
+        f"> Quoted example:\n# Prompt: later\n{_ROLE}",
+        f"> Quoted example:\n```text\n{_ROLE}\n```",
+        f"> ```text\n> Quoted code\n> ```\n{_ROLE}",
+        f"> ```text\n> Quoted code\n{_ROLE}",
+        "> Quoted example:\n<!-- prompt-id: INVENTED status: active -->",
+    ],
+)
+def test_quote_termination_preserves_real_prompt_discovery(tmp_path: Path, body: str) -> None:
+    _write(tmp_path, "reviewer-prompt.md", f"# Reviewer prompt\n\n{body}\n")
+
+    assert any(
+        "requires one prompt-classification" in failure
+        for failure in verify_prompt_classifications(tmp_path)
+    )
+
+
+@pytest.mark.parametrize("suffix", ["resume", " resume", "\tresume", ""])
+def test_explicit_prompt_title_prefix_needs_no_space_after_colon(
+    tmp_path: Path, suffix: str
+) -> None:
+    _write(tmp_path, "notes.md", f"# Prompt:{suffix}\n\n{_ROLE}\n")
+
+    assert any(
+        "requires one prompt-classification" in failure
+        for failure in verify_prompt_classifications(tmp_path)
+    )
+
+
+@pytest.mark.parametrize("title", ["Prompter:resume", "Promptness:resume", "Prompt format:resume"])
+def test_similar_titles_do_not_broaden_prompt_signature(tmp_path: Path, title: str) -> None:
+    _write(tmp_path, "notes.md", f"# {title}\n\n{_ROLE}\n")
+
+    assert verify_prompt_classifications(tmp_path) == []
+
+
 def test_example_classification_does_not_classify_an_actual_prompt(tmp_path: Path) -> None:
     _write(
         tmp_path,
