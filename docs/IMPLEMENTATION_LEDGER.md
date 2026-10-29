@@ -1,5 +1,25 @@
 # Implementation ledger
 
+## Parallel milestone records
+
+Each implementation PR adds one uniquely named Markdown fragment under `docs/implementation/`,
+using `<date>-<issue>-<slug>.md` (or a unique task slug when there is no issue). Include the user-visible
+behavior, owned paths, focused proof, limitations, and related issue or PR. Parallel writers do not
+edit this shared ledger or `CURRENT_STATE.md` for their individual milestones. At the phase boundary,
+the coordinator adds links here and reconciles current state in one change; keep the fragments as
+the detailed evidence. Historical entries below remain intact. This convention addresses issue #194
+without moving review, CI, or merge gates.
+
+## 2026-10-29 — Stored-run and package-install failure handling
+
+- [Controlled manifest errors, #193](implementation/2026-10-29-193-manifest-errors.md).
+- [Bounded redacted install-timeout progress, #177](implementation/2026-10-29-177-install-timeout-progress.md).
+- Issue #194 uses the fragment convention above, with two independent milestone files in this wave.
+- README now describes the stored finding exporter delivered in PR #129; issue #97's remaining
+  acceptance work stays open. The three operational protocol pages are now in the documentation
+  navigation. The review protocol now agrees with the governor's existing 15-minute aging floor.
+- Frozen release assets, product-owned schemas, experiment outcomes, and owner gates are unchanged.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest

@@ -33,7 +33,7 @@ What the clone actually does today:
 - **Holdout custody.** The runner writes an append-only custody record before the final holdout materialises.
 - **Byte-reproducible replay.** `dllab run reproduce` recomputes the run and compares recorded artifact bytes.
 - **Reports and Method Trial export.** `dllab report build` writes deterministic Markdown and HTML. `dllab export method-trial` projects one validated smoke run into the product-owned `DeveloperLensMethodTrialView.v1` view. `dllab demo export` is the same exporter with an explicit `--output`.
-- **Research-finding transport, validation only.** The Lab can validate the product-owned `ResearchFindingProjection.v1` snapshot. A `dllab export finding` command is [planned](https://github.com/Chris0Jeky/developer-lens-lab/issues/97), not shipped.
+- **Stored research-finding export.** `dllab export finding <run-id> --out <path>` projects validated stored WB-C1 evidence into the pinned product-owned `ResearchFindingProjection.v1` contract. It preserves unavailable evidence and the reject/fallback decision without rerunning analysis or reopening holdout custody. Broader acceptance remains tracked in [issue #97](https://github.com/Chris0Jeky/developer-lens-lab/issues/97).
 
 What it does **not** do: collect GitHub corpora, read credentials, call external models, ingest real repositories, or promote a method into Developer Lens.
 
@@ -58,6 +58,7 @@ flowchart TB
     REPRO["run reproduce"]
     RPT["report build"]
     EXP["export method-trial"]
+    FEXP["export finding"]
   end
 
   subgraph wbc1["src/developer_lens_lab/wbc1"]
@@ -82,6 +83,7 @@ flowchart TB
   REPRO --> STORE
   RPT --> STORE
   STORE --> EXP
+  STORE --> FEXP --> FIND
   EXP -->|"writes ignored local file"| OUT["method-trial-view.json"]
 ```
 
@@ -111,6 +113,7 @@ uv run dllab benchmark wb-c1 --smoke
 uv run dllab run reproduce wbc1_smoke
 uv run dllab report build wbc1_smoke
 uv run dllab export method-trial wbc1_smoke
+uv run dllab export finding wbc1_smoke --out research-finding.json
 ```
 
 Default smoke identity is `wbc1_smoke`. The command writes an ignored, content-addressed run under `.dllab/scopes/wbc1_smoke/`. Use `--run-id <new_opaque_id>` for another run; the scope is single-use. `run reproduce` verifies stored objects, then regenerates and byte-compares them. Use `uv run dllab benchmark wb-c1 --full` only for the larger opt-in lane. The `--full` lane keeps generic EvaluationBundle reports and replay; it does not record a smoke-only Method Trial projection.
@@ -160,7 +163,7 @@ Runtime and tracked inputs remain C0 invented. The current cards (`tools/cards.p
 | BACKLOG | `LAB-SURV-01` ([issue #30](https://github.com/Chris0Jeky/developer-lens-lab/issues/30)) | Integration-tail survival study. Depends on a later product-owned view. |
 | BACKLOG | `LAB-CONTRACT-03` ([issue #23](https://github.com/Chris0Jeky/developer-lens-lab/issues/23)) | MethodTrialView representative-preference reconcile. Product-owned schema change. |
 | BACKLOG | `LAB-CORPUS-01` … `03` | Public-metadata corpus. Parked behind `LAB-ACT-01`. |
-| Planned | [issue #97](https://github.com/Chris0Jeky/developer-lens-lab/issues/97) | `dllab export finding` for the stored research-finding projection. |
+| Implemented, follow-ups open | [issue #97](https://github.com/Chris0Jeky/developer-lens-lab/issues/97) | Stored `dllab export finding`; broader non-reject support and paired Product runtime acceptance remain tracked. |
 
 Milestones M0–M2 (repository OS, contracts, WB-C1 smoke) are implemented. M3 corpus, M4 empirical candidate, and M5 product proposal stay gated. Deferred security and operational debt lives in [`docs/HARDENING_BACKLOG.md`](docs/HARDENING_BACKLOG.md); it does not block the runnable C0 loop.
 

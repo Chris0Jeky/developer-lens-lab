@@ -93,8 +93,8 @@ agents and Codex via `AGENTS.md` then this canon, and writes human refs as
 ## Collaboration and handoff
 
 Keep no server, kernel, or background agent after handoff. Use one fresh-context adversarial review
-for non-trivial code or methodology, against the exact final head. Update the implementation ledger
-for code milestones, the experiment ledger for run/holdout decisions, the failure archive for killed
-approaches, and `docs/CURRENT_STATE.md` only at a phase boundary. Close with changed / verified /
-NOT verified / failures and workarounds / docs-state sync / residual risk / human actions / exact
-branch-HEAD-PR-check-worktree state / exact resume point.
+for non-trivial code or methodology, against the exact final head. Record code milestones in unique
+`docs/implementation/<date>-<issue>-<slug>.md` fragments; the coordinator links them in the ledger at
+phase boundaries. Update experiment/failure ledgers for run/holdout decisions and killed approaches,
+and current state at phase boundaries. Close with changed / verified / NOT verified / failures and
+workarounds / docs-state sync / residual risk / human actions / branch-HEAD-PR-check-worktree / resume.

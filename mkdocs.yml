@@ -28,6 +28,9 @@ nav:
       - Maintenance protocol: agent-system/MAINTENANCE_PROTOCOL.md
       - Idea protocol: agent-system/IDEA_PROTOCOL.md
       - Prompt library: agent-system/PROMPT_LIBRARY.md
+      - Continuous work: agent-system/CONTINUOUS_WORK_PROTOCOL.md
+      - Cross-repository contracts: agent-system/CROSS_REPO_CONTRACT.md
+      - Friction log: agent-system/FRICTION_LOG.md
   - Decisions:
       - Product/lab boundary: DECISIONS/0001-product-lab-boundary.md
 strict: true

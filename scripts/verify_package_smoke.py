@@ -110,7 +110,12 @@ def _escape_terminal_controls(value: str) -> str:
 
 
 def _bounded_diagnostic_stream(
-    output: str, *, cwd: Path, command: list[str], environment: dict[str, str]
+    output: str,
+    *,
+    cwd: Path,
+    command: list[str],
+    environment: dict[str, str],
+    redact_line_fragments: bool = False,
 ) -> str:
     """Normalize, redact, and cap one subprocess diagnostic stream."""
     normalized = _canonicalize_line_endings(output)
@@ -123,6 +128,16 @@ def _bounded_diagnostic_stream(
     replacements.extend(
         (argument, "<task-path>", 2) for argument in command if Path(argument).is_absolute()
     )
+    if redact_line_fragments:
+        # A timeout can interrupt a multiline value after one of its complete lines.
+        # Redact those fragments even when the whole value was never captured.
+        fragments = {
+            (fragment, replacement, priority)
+            for source, replacement, priority in replacements
+            for fragment in _canonicalize_line_endings(source).split("\n")
+            if fragment
+        }
+        replacements = sorted(set(replacements) | fragments)
     for source, replacement, _ in sorted(
         replacements, key=lambda candidate: (-len(candidate[0]), candidate[2])
     ):
@@ -146,16 +161,43 @@ def _render_command(command: list[str]) -> str:
 
 
 def _format_failure_diagnostics(
-    *, command: list[str], cwd: Path, environment: dict[str, str], stdout: str, stderr: str
+    *,
+    command: list[str],
+    cwd: Path,
+    environment: dict[str, str],
+    stdout: str,
+    stderr: str,
+    redact_line_fragments: bool = False,
 ) -> str:
     """Format deterministic bounded diagnostics for a failed subprocess."""
     stdout_text = _bounded_diagnostic_stream(
-        stdout, cwd=cwd, command=command, environment=environment
+        stdout,
+        cwd=cwd,
+        command=command,
+        environment=environment,
+        redact_line_fragments=redact_line_fragments,
     )
     stderr_text = _bounded_diagnostic_stream(
-        stderr, cwd=cwd, command=command, environment=environment
+        stderr,
+        cwd=cwd,
+        command=command,
+        environment=environment,
+        redact_line_fragments=redact_line_fragments,
     )
     return f"\nstdout:\n{stdout_text}\nstderr:\n{stderr_text}"
+
+
+def _timeout_progress_text(output: bytes | str | None) -> str:
+    """Retain only completed progress lines; a timeout may split a sensitive value."""
+    if isinstance(output, bytes):
+        output = output.decode("utf-8", errors="replace")
+    if not output or not output.strip("\r\n"):
+        return "<no output captured>"
+    normalized = _canonicalize_line_endings(output)
+    complete, separator, tail = normalized.rpartition("\n")
+    if tail:
+        return complete + separator + "<incomplete output omitted>"
+    return normalized
 
 
 def _uv_version_requirement() -> str:
@@ -252,7 +294,11 @@ def assert_doctor_report(output: str) -> dict[str, object]:
 
 
 def _run(
-    command: list[str], *, cwd: Path, environment: dict[str, str]
+    command: list[str],
+    *,
+    cwd: Path,
+    environment: dict[str, str],
+    include_timeout_diagnostics: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     # Deliberately not a `with subprocess.Popen(...)` block: Popen.__exit__ ends in an
     # unbounded wait(), which would turn the fail-closed cleanup-unconfirmed path below
@@ -270,13 +316,23 @@ def _run(
     )
     try:
         stdout, stderr = process.communicate(timeout=PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as exc:
         if not _terminate_process_tree(process):
             raise ProcessTreeCleanupUnconfirmedError(_PROCESS_TREE_CLEANUP_UNCONFIRMED) from None
         rendered = _render_command(command)
+        diagnostics = ""
+        if include_timeout_diagnostics:
+            diagnostics = _format_failure_diagnostics(
+                command=command,
+                cwd=cwd,
+                environment=environment,
+                stdout=_timeout_progress_text(exc.output),
+                stderr=_timeout_progress_text(exc.stderr),
+                redact_line_fragments=True,
+            )
         raise RuntimeError(
             "package smoke command timed out after "
-            f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}"
+            f"{PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS} seconds: {rendered}{diagnostics}"
         ) from None
     except BaseException as exc:
         # Any other exit from communicate — notably KeyboardInterrupt — would otherwise
@@ -421,6 +477,7 @@ def run_package_smoke(root: Path) -> None:
             [*uv, "pip", "install", "--python", str(python_executable), str(wheels[0])],
             cwd=root,
             environment=environment,
+            include_timeout_diagnostics=True,
         )
         dllab_name = "dllab.exe" if os.name == "nt" else "dllab"
         dllab_executable = venv_root / ("Scripts" if os.name == "nt" else "bin") / dllab_name

@@ -17,6 +17,8 @@ import os
 import subprocess
 import sys
 import tomllib
+import traceback
+from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol, cast
 
@@ -78,6 +80,88 @@ class _CompletedPopen:
     def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
         del timeout
         return self._stdout, self._stderr
+
+
+class _TimeoutProgressPopen(_CompletedPopen):
+    """Invented timeout whose cleanup still exercises the bounded supervisor."""
+
+    def __init__(
+        self,
+        progress: Callable[[list[str]], tuple[bytes | str | None, bytes | str | None]],
+        *,
+        cleanup_confirmed: bool,
+    ) -> None:
+        super().__init__(None)
+        self.command: list[str] = []
+        self.timeouts: list[float | None] = []
+        self.kill_requested = False
+        self.progress = progress
+        self.cleanup_confirmed = cleanup_confirmed
+
+    def communicate(self, *, timeout: float | None = None) -> tuple[str, str]:
+        self.timeouts.append(timeout)
+        if len(self.timeouts) > 1:
+            assert self.kill_requested
+            if self.cleanup_confirmed:
+                self.returncode = -9
+                return super().communicate(timeout=timeout)
+        stdout, stderr = self.progress(self.command)
+        raise subprocess.TimeoutExpired(self.command, timeout or 0, output=stdout, stderr=stderr)
+
+
+def _prepare_smoke_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+    progress: Callable[[list[str]], tuple[bytes | str | None, bytes | str | None]],
+    *,
+    stage: str = "install",
+    environment: dict[str, str] | None = None,
+    cleanup_confirmed: bool = True,
+) -> _TimeoutProgressPopen:
+    """Keep _run and cleanup real while replacing process and build side effects."""
+    process = _TimeoutProgressPopen(progress, cleanup_confirmed=cleanup_confirmed)
+
+    def fake_popen(command: list[str], **_kwargs: object) -> _CompletedPopen:
+        if command[-1] == "--version":
+            current_stage = "probe"
+        elif command[1:3] == ["build", "--sdist"]:
+            current_stage = "sdist"
+        elif command[1] == "build":
+            current_stage = "wheel"
+        elif command[1] == "venv":
+            current_stage = "venv"
+        elif command[1:3] == ["pip", "install"]:
+            current_stage = "install"
+        elif command[-2:] == ["doctor", "--json"]:
+            current_stage = "doctor"
+        else:
+            pytest.fail("unexpected package-smoke command")
+        if current_stage == stage:
+            process.command = command
+            return process
+        if current_stage == "sdist":
+            (Path(command[-1]) / "invented.tar.gz").write_bytes(b"invented sdist")
+        elif current_stage == "wheel":
+            (Path(command[-1]) / "invented.whl").write_bytes(b"invented wheel")
+        return _CompletedPopen(
+            0, stdout='{"failures": [], "network_collection": "disabled", "ok": true}'
+        )
+
+    def killpg(pid: int, _signal: int) -> None:
+        assert pid == process.pid
+        process.kill_requested = True
+
+    def synthetic_environment(_root: Path) -> dict[str, str]:
+        return environment or {}
+
+    monkeypatch.setattr("scripts.verify_package_smoke.resolve_uv_command", _stub_uv_command)
+    monkeypatch.setattr(
+        "scripts.verify_package_smoke.build_smoke_environment", synthetic_environment
+    )
+    monkeypatch.setattr("scripts.verify_package_smoke.subprocess.Popen", fake_popen)
+    monkeypatch.setattr("scripts.verify_package_smoke._is_windows", lambda: False)
+    monkeypatch.setattr("scripts.verify_package_smoke.os.killpg", killpg, raising=False)
+    monkeypatch.setattr("scripts.verify_package_smoke.signal.SIGKILL", 9, raising=False)
+    return process
 
 
 def test_package_metadata_declares_license_identity() -> None:
@@ -485,6 +569,316 @@ def test_package_smoke_run_reports_timeout_without_environment(
         PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS,
     ]
     assert processes[0].returncode == -9
+
+
+@pytest.mark.parametrize(
+    ("stdout", "stderr", "expected_stdout", "expected_stderr"),
+    [
+        (
+            b"Resolving invented wheel\r\n",
+            b"Downloading invented dependency \xff\r\n",
+            "Resolving invented wheel",
+            "Downloading invented dependency \ufffd",
+        ),
+        (
+            "Resolving invented wheel\r\n",
+            "Downloading invented dependency\r\n",
+            "Resolving invented wheel",
+            "Downloading invented dependency",
+        ),
+    ],
+    ids=["bytes-with-invalid-utf8", "text"],
+)
+def test_package_smoke_install_timeout_reports_progress_after_bounded_cleanup(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    stdout: bytes | str,
+    stderr: bytes | str,
+    expected_stdout: str,
+    expected_stderr: str,
+) -> None:
+    process = _prepare_smoke_timeout(monkeypatch, lambda _command: (stdout, stderr))
+
+    with pytest.raises(RuntimeError, match="timed out after") as exc_info:
+        run_package_smoke(tmp_path)
+
+    message = str(exc_info.value)
+    assert f"\nstdout:\n{expected_stdout}\nstderr:\n{expected_stderr}" in message
+    assert process.timeouts == [
+        PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+        PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS,
+    ]
+    assert process.returncode == -9
+    assert exc_info.value.__cause__ is None
+    assert exc_info.value.__suppress_context__
+
+
+@pytest.mark.parametrize(
+    ("stdout", "stderr", "expected_stdout", "expected_stderr"),
+    [
+        (None, None, "<no output captured>", "<no output captured>"),
+        (b"", b"", "<no output captured>", "<no output captured>"),
+        ("", "", "<no output captured>", "<no output captured>"),
+        (b"\r\n", "\n", "<no output captured>", "<no output captured>"),
+        (None, "Downloading\n", "<no output captured>", "Downloading"),
+        ("Resolving\n", None, "Resolving", "<no output captured>"),
+    ],
+    ids=["missing", "empty-bytes", "empty-text", "line-breaks", "missing-stdout", "missing-stderr"],
+)
+def test_package_smoke_install_timeout_identifies_uncaptured_progress(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    stdout: bytes | str | None,
+    stderr: bytes | str | None,
+    expected_stdout: str,
+    expected_stderr: str,
+) -> None:
+    _prepare_smoke_timeout(monkeypatch, lambda _command: (stdout, stderr))
+
+    with pytest.raises(RuntimeError) as exc_info:
+        run_package_smoke(tmp_path)
+
+    assert f"\nstdout:\n{expected_stdout}\nstderr:\n{expected_stderr}" in str(exc_info.value)
+
+
+def test_package_smoke_install_timeout_redacts_secrets_and_task_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    secret = "invented-package-token"
+    environment_path = r"C:\Invented\package-cache"
+
+    def progress(command: list[str]) -> tuple[bytes, str]:
+        return (
+            f"cwd={tmp_path}\nwheel={command[-1]}\ntoken={secret}\nkey=ab\n".encode(),
+            f"python={command[-2]}\ncache=C:/Invented/package-cache\n",
+        )
+
+    _prepare_smoke_timeout(
+        monkeypatch,
+        progress,
+        environment={"TOKEN": secret, "API_KEY": "ab", "CACHE": environment_path},
+    )
+
+    with pytest.raises(RuntimeError) as exc_info:
+        run_package_smoke(tmp_path)
+
+    message = str(exc_info.value)
+    assert "cwd=<task-cwd>\nwheel=<task-path>\ntoken=<redacted>\nkey=<redacted>" in message
+    assert "python=<task-path>\ncache=<redacted>" in message
+    assert secret not in message
+    assert str(tmp_path) not in message
+    assert environment_path not in message
+    assert "C:/Invented/package-cache" not in message
+    assert "TimeoutExpired" not in "".join(traceback.format_exception(exc_info.value))
+
+
+@pytest.mark.parametrize(
+    ("environment", "tail", "expected_tail"),
+    [
+        pytest.param(
+            {"TOKEN": "invented-arbitrary-token-1234"},
+            "invented-arbitrary-token-123",
+            "<incomplete output omitted>",
+            id="token-prefix",
+        ),
+        pytest.param(
+            {
+                "UV_INDEX_URL": "https://invented-user:invented-credential-1234@invented.example/simple/"
+            },
+            "https://invented-user:invented-credential-1234@invented.example/simple",
+            "<incomplete output omitted>",
+            id="credential-url-prefix",
+        ),
+        pytest.param(
+            {"CACHE": r"C:\Invented\private-cache\entry"},
+            r"C:\Invented\private-cache\entr",
+            "<incomplete output omitted>",
+            id="native-path-prefix",
+        ),
+        pytest.param(
+            {"CACHE": r"C:\Invented\private-cache\entry"},
+            "C:/Invented/private-cache/entr",
+            "<incomplete output omitted>",
+            id="slash-path-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-token-秘密"},
+            "invented-token-秘密".encode()[:-1],
+            "<incomplete output omitted>",
+            id="utf8-character-prefix",
+        ),
+        pytest.param(
+            {"API_KEY": "ab"},
+            "a",
+            "<incomplete output omitted>",
+            id="short-token-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\ninvented-second-secret"},
+            "invented-first-secret\ninvented-second-secr",
+            "<redacted>\n<incomplete output omitted>",
+            id="multiline-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\r\ninvented-second-secret"},
+            "invented-first-secret\ninvented-second-secr",
+            "<redacted>\n<incomplete output omitted>",
+            id="normalized-crlf-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\ninvented-second-secret"},
+            "invented-first-secret\rinvented-second-secr",
+            "<redacted>\n<incomplete output omitted>",
+            id="normalized-bare-cr-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\r\ninvented-second-secret"},
+            "invented-first-secret\r",
+            "<redacted>",
+            id="multiline-prefix-ends-at-line-break",
+        ),
+        pytest.param(
+            {"TOKEN": "ab\ncd"},
+            "ab\nc",
+            "<redacted>\n<incomplete output omitted>",
+            id="short-multiline-prefix",
+        ),
+        pytest.param(
+            {"CACHE": "C:\\Invented\\first-cache\r\nC:\\Invented\\second-cache"},
+            "C:/Invented/first-cache\nC:/Invented/second-cac",
+            "<redacted>\n<incomplete output omitted>",
+            id="multiline-slash-path-prefix",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "completed_progress", [False, True], ids=["tail-only", "completed-progress"]
+)
+def test_package_smoke_install_timeout_suppresses_partial_sensitive_values(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    environment: dict[str, str],
+    tail: bytes | str,
+    expected_tail: str,
+    completed_progress: bool,
+) -> None:
+    # TimeoutExpired snapshots can end inside a value, including a UTF-8 character.
+    # A multiline value can also expose an earlier, newline-completed secret line.
+    raw_tail = tail if isinstance(tail, bytes) else tail.encode()
+    text_tail = tail.decode("utf-8", errors="replace") if isinstance(tail, bytes) else tail
+    stdout_prefix = b"Resolved invented wheel\r\n" if completed_progress else b""
+    stderr_prefix = "Downloaded invented wheel\r" if completed_progress else ""
+    process = _prepare_smoke_timeout(
+        monkeypatch,
+        lambda _command: (stdout_prefix + raw_tail, stderr_prefix + text_tail),
+        environment=environment,
+    )
+
+    with pytest.raises(RuntimeError, match="timed out after") as exc_info:
+        run_package_smoke(tmp_path)
+
+    stdout, stderr = str(exc_info.value).split("\nstdout:\n", 1)[1].split("\nstderr:\n", 1)
+    assert stdout == (
+        f"Resolved invented wheel\n{expected_tail}" if completed_progress else expected_tail
+    )
+    assert stderr == (
+        f"Downloaded invented wheel\n{expected_tail}" if completed_progress else expected_tail
+    )
+    assert "TimeoutExpired" not in "".join(traceback.format_exception(exc_info.value))
+    assert process.returncode == -9
+
+
+def test_package_smoke_install_timeout_escapes_controls_and_preserves_lines(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _prepare_smoke_timeout(
+        monkeypatch,
+        lambda _command: ("\x1b[31mResolving\x1b[0m\x07\x00\r\nnext\n", "\u202eDownloading\t\n"),
+    )
+
+    with pytest.raises(RuntimeError) as exc_info:
+        run_package_smoke(tmp_path)
+
+    message = str(exc_info.value)
+    assert r"\x1b[31mResolving\x1b[0m\x07\x00" + "\nnext" in message
+    assert r"\u202eDownloading\x09" in message
+    assert all(control not in message for control in ("\x1b", "\x07", "\x00", "\r", "\u202e", "\t"))
+
+
+def test_package_smoke_install_timeout_bounds_each_progress_stream(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _prepare_smoke_timeout(monkeypatch, lambda _command: (b"x" * 3_000 + b"\n", "y" * 3_000 + "\n"))
+
+    with pytest.raises(RuntimeError) as exc_info:
+        run_package_smoke(tmp_path)
+
+    message = str(exc_info.value)
+    assert "\nstdout:\n" in message
+    assert "\nstderr:\n" in message
+    stdout, stderr = message.split("\nstdout:\n", 1)[1].split("\nstderr:\n", 1)
+    for output in (stdout, stderr):
+        assert len(output) == PACKAGE_SMOKE_DIAGNOSTIC_STREAM_LIMIT
+        assert output.endswith("\n...[truncated]")
+
+
+@pytest.mark.parametrize("stage", ["sdist", "wheel", "venv", "install", "doctor"])
+def test_package_smoke_timeout_diagnostics_are_install_only(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stage: str
+) -> None:
+    _prepare_smoke_timeout(
+        monkeypatch,
+        lambda _command: ("invented-stage-progress\n", "invented-detail\n"),
+        stage=stage,
+    )
+
+    with pytest.raises(RuntimeError, match="timed out after") as exc_info:
+        run_package_smoke(tmp_path)
+
+    message = str(exc_info.value)
+    assert ("invented-stage-progress" in message) is (stage == "install")
+    assert ("invented-detail" in message) is (stage == "install")
+    assert ("\nstdout:\n" in message) is (stage == "install")
+    assert str(tmp_path) not in message
+
+
+@pytest.mark.parametrize("uv", [["uv"], [sys.executable, "-m", "uv"]])
+def test_package_smoke_probe_timeout_does_not_report_progress(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, uv: list[str]
+) -> None:
+    _prepare_smoke_timeout(
+        monkeypatch, lambda _command: ("invented-probe-progress", "invented-detail"), stage="probe"
+    )
+
+    with pytest.raises(RuntimeError, match="timed out after") as exc_info:
+        _run([*uv, "--version"], cwd=tmp_path, environment={})
+
+    assert "invented-probe-progress" not in str(exc_info.value)
+    assert "invented-detail" not in str(exc_info.value)
+    assert "\nstdout:\n" not in str(exc_info.value)
+
+
+def test_package_smoke_install_timeout_cleanup_unconfirmed_suppresses_progress(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    process = _prepare_smoke_timeout(
+        monkeypatch,
+        lambda _command: (b"invented-private-progress", "invented-private-detail"),
+        cleanup_confirmed=False,
+    )
+
+    with pytest.raises(ProcessTreeCleanupUnconfirmedError) as exc_info:
+        run_package_smoke(tmp_path)
+
+    assert str(exc_info.value) == "package smoke process-tree cleanup could not be confirmed"
+    assert exc_info.value.__cause__ is None
+    assert exc_info.value.__suppress_context__
+    assert "TimeoutExpired" not in "".join(traceback.format_exception(exc_info.value))
+    assert process.timeouts == [
+        PACKAGE_SMOKE_COMMAND_TIMEOUT_SECONDS,
+        PACKAGE_SMOKE_CLEANUP_TIMEOUT_SECONDS,
+    ]
+    assert process.returncode is None
 
 
 def test_package_smoke_timeout_uses_taskkill_and_reaps_direct_child(
