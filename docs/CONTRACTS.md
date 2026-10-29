@@ -11,16 +11,21 @@ declared `present`, `absent`, `unsupported`, or `intentionally_omitted`; missing
 Timestamps are canonical UTC, feature availability is distinct from event/collection time, and
 identifiers are opaque and bundle-local.
 
+The manifest path guard rejects named-home prefixes such as `~invented/private.json` and their
+backslash equivalents, including surrounding whitespace. Rejections do not echo the supplied path.
+
 ResearchPack has exactly seven relation slots: `coverage`, `repository_week`, `pr_episode`,
 `ci_attempt`, `release_episode`, `collection_probe`, and `system_event`. A present relation names a
 closed schema ID, observed row count, and content-addressed Parquet object. Every other state has a
 controlled reason and no count or artifact. The bootstrap validator accepts C0 only. Parquet
-validation checks each versioned relation's exact column order and Arrow types: strings for
-identifiers/codes and canonical UTC instants (including week/window boundaries), `int64` for counts,
-and `float64` for metric values. Values must be finite and counts non-negative. Only `expected_units`,
-`ready_at`, `merged_at`, and `completed_at` allow nulls; required fields reject null values even when
-the producer's inferred Parquet schema marks them optional. Type/value errors name only the trusted
-relation and field, never the rejected value or local path.
+validation checks each versioned relation's exact column order and compatible Arrow types:
+`string` or `large_string` for identifiers/codes and canonical UTC instants (including week/window
+boundaries), `int64` for counts, and `float64` for metric values. Values must be finite and counts
+non-negative. Only `expected_units`, `ready_at`, `merged_at`, and `completed_at` allow nulls,
+including an all-null column inferred as Arrow `null`. Required fields reject null physical types
+and null values even when the producer's inferred Parquet schema marks them optional. Numeric types
+remain exact. Type/value errors name only the trusted relation and field, never the rejected value
+or local path.
 
 `schemas/research-pack/v1/consumer.schema.json` is the lab's generated strict-reader mirror, not the
 canonical producer schema. Developer Lens publishes its canonical schema and invented fixture at
@@ -31,6 +36,12 @@ canonical producer schema. Developer Lens publishes its canonical schema and inv
 and invented-fixture boundary. It records the product commit and snapshot byte checksums as
 provenance. Those values are not cross-repository identity or join keys. Snapshots are generated and
 must not be hand-edited.
+
+Producer fixture validation preserves declared and inherited dialects in embedded Draft 7 and
+Draft 2019-09 resources under the Draft 2020-12 root. The validator annotates an in-memory copy of
+schema objects only; instance-valued keywords and the synchronized source bytes remain unchanged.
+Unsupported dialects and unresolved or external references fail before snapshot writes. Reference
+retrieval remains disabled.
 
 The synchronized product fixture is a compatibility canary and may intentionally omit every
 relation. WB-C1 separately materializes its invented `coverage` and `repository_week` Parquet
@@ -75,9 +86,16 @@ derives the storage location from the digest, so no path enters a portable manif
 through a same-directory temporary file and atomic replace; reads verify digest and size. Scope
 invalidation is confined to the validated scope root. Store admission and operations reject existing
 or dangling symlinks and Windows junctions along the lexical root/parent chain before following them.
+Select a real directory path with non-link ancestors; a symlinked temporary or home directory is
+not an admitted artifact root. This lexical boundary is deliberate.
 Crash durability, hostile same-user races between checks and filesystem operations, other Windows
 reparse-point handling, quotas, and artifact signing remain explicitly deferred in
 `HARDENING_BACKLOG.md` while all inputs are regenerable C0.
+
+`dllab pack validate <pack.json>` validates the manifest alone. Add `--artifact-root <store>` to
+validate referenced objects in the pack-ID scope, or add `--scope <opaque-id>` to select the exact
+run-owned scope. `--scope` requires `--artifact-root`. The CLI validates the scope identifier even
+when all relations are omitted; it never searches other scopes or infers one from the input path.
 
 Full WB-C1 reports require the run manifest, bundle ID, and bundle's run ID to match the requested
 run. Before rendering or writing, the report builder also requires the manifest's `lab_commit` to

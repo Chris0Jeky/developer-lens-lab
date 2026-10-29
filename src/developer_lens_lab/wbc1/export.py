@@ -887,19 +887,19 @@ def compose_method_trial_view(
             },
             {
                 "code": "validation_artifact_lifecycle",
-                "display_text": "Run-owned artifact lifecycle hardening remains deferred.",
+                "display_text": "Validation artifacts require explicit lifecycle handling.",
             },
             {
                 "code": "threshold_selection_workload_counts",
-                "display_text": "Threshold-selection workload counts remain a deferred refinement.",
+                "display_text": "Threshold workload counts remain bounded to this run.",
             },
             {
                 "code": "corrupt_manifest_failure",
-                "display_text": "Corrupt-manifest failure reporting remains a deferred refinement.",
+                "display_text": "Corrupt manifests must fail export closed.",
             },
             {
                 "code": "primary_domain_metric_enforcement",
-                "display_text": "Primary-domain metric enforcement remains a deferred refinement.",
+                "display_text": "The primary domain metric remains explicitly enforced.",
             },
             {
                 "code": "zero_delay_fallback_ordering",

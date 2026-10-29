@@ -41,3 +41,41 @@ def test_dot_segments_rejected(value: str) -> None:
 )
 def test_benign_names_pass_through(value: str) -> None:
     assert_path_free_manifest(value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "~invented/out.parquet",
+        r"~invented\out.parquet",
+        "~invented_name/out.parquet",
+        r"~invented-name\out.parquet",
+        "~invented.name/",
+        "~invented\\",
+        "  ~invented/out.parquet  ",
+        "\t~invented\\out.parquet\r\n",
+    ],
+)
+def test_user_home_prefixes_are_rejected_without_echoing_values(value: str) -> None:
+    for candidate in (value, {"note": value}, {"nested": [{"note": value}]}):
+        with pytest.raises(ManifestError) as exc_info:
+            assert_path_free_manifest(candidate)
+        assert str(exc_info.value) == "manifest contains a local path"
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "~",
+        "~invented",
+        "  ~invented  ",
+        "notes~invented/out.parquet",
+        r"reports\~invented\out.parquet",
+        "reports/~invented/out.parquet",
+        "about ~invented/out.parquet",
+        "~approximate value/ratio",
+    ],
+)
+def test_embedded_tildes_and_bare_names_remain_path_free(value: str) -> None:
+    for candidate in (value, {"note": value}, {"nested": [{"note": value}]}):
+        assert_path_free_manifest(candidate)
