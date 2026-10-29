@@ -53,6 +53,18 @@ without moving review, CI, or merge gates.
 - Focused tests preserve version refusal and candidate fallback. Actual package smoke, the full
   gate, independent review and hosted evidence belong to the delivering PR.
 
+## 2026-10-29 — Targeted development dependency security update
+
+- [Filelock and virtualenv update, #5](implementation/2026-10-29-5-security-dependencies.md)
+  records the two updater-selected targets and the complete resolver delta.
+- The lock pins filelock 4.2.1 and virtualenv 21.14.13. Its other 87 package records are unchanged;
+  virtualenv adds an edge to the already locked packaging 26.3, and uv writes lock revision 5.
+- Hash-pinned compatibility checks exercise both lock implementations, real virtualenv creation
+  and an invented local pre-commit hook. Full lab/package/hosted proof belongs to the delivering
+  PR. Version remediation is distinct from a claim that every live alert record is closed.
+- Runtime dependencies, Python support, project constraints, frozen evidence and owner gates
+  are unchanged. This updates the development dependency closure only.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest
