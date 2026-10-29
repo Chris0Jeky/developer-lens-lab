@@ -267,6 +267,20 @@ def test_current_state_wave_accepts_additional_operational_fields(tmp_path: Path
     assert verify_current_state_yaml(tmp_path) == []
 
 
+@pytest.mark.parametrize("as_key", [False, True])
+def test_current_state_contains_overflowing_sexagesimal_float(tmp_path: Path, as_key: bool) -> None:
+    scalar = "!!float 1" + ":0" * 180
+    entry = f"{scalar}: invented" if as_key else f"invented: {scalar}"
+    _write_state(
+        tmp_path,
+        _VALID_STATE.replace("canonical_evidence: {}", f"canonical_evidence: {{{entry}}}"),
+    )
+
+    assert verify_current_state_yaml(tmp_path) == [
+        "docs/CURRENT_STATE.md:4: invalid YAML: invalid syntax or structure"
+    ]
+
+
 def _write_governor(root: Path, field: str, value: object, *, omit: bool = False) -> None:
     payload = cast(
         dict[str, object], json.loads((ROOT / ".agent-harness/governor.json").read_text())

@@ -27,6 +27,12 @@ Sixteen new cases failed before the correction; the final focused context select
 tests. Valid tagged scalars, recursive aliases, merge overrides, and precise duplicate-key line
 numbers remain covered. There is no blanket exception catch.
 
+A second bounded review correction covers overflowing sexagesimal floats, whose native
+`OverflowError` also escaped SafeLoader's YAML exception hierarchy. Both mapping-key and
+mapping-value regressions failed before the explicit catch; the complete focused context
+selection now passes 200 tests. This closes the observed scalar-construction residual without
+expanding the exception policy or changing valid YAML semantics.
+
 The current-state checkpoint is also refreshed from live GitHub evidence and the verified code.
 Its former August snapshot remains available in immutable Git history. This is a phase-boundary
 reconciliation, not a release, Product sign-off, or experiment decision. Broader prompt discovery,

@@ -243,6 +243,7 @@ def verify_current_state_yaml(root: Path) -> list[str]:
         IndexError,
         AttributeError,
         RecursionError,
+        OverflowError,
     ) as exc:
         # SafeLoader scalar conversion and excessive nesting can raise native exceptions.
         # Their messages may contain document content, so report only fixed diagnostics.
