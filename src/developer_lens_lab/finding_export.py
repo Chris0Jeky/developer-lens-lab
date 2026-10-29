@@ -5,7 +5,9 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import stat
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -308,6 +310,24 @@ def _artifact_json(store: ArtifactStore, run_id: str, raw_ref: object) -> bytes:
     return payload
 
 
+def _publish_finding(destination: Path, payload: bytes, *, root: Path) -> None:
+    """Validate the written temporary file before replacing the public destination."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, name = tempfile.mkstemp(prefix=".dllab-finding-", dir=destination.parent)
+    temporary = Path(name)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+        written = _read_confined(temporary, destination.parent)
+        value = validate_research_finding(_json_object(written), root=root)
+        if written != payload or stable_bytes(value) != payload:
+            raise FindingError("written finding does not match its canonical payload")
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def export_finding(
     run_id: str,
     *,
@@ -355,8 +375,7 @@ def export_finding(
         if destination.is_relative_to(store.root.resolve()):
             raise FindingError("finding output must not overwrite the source artifact store")
         payload = stable_bytes(value)
-        # Reuse the store's same-directory temporary-file and atomic-replace publisher.
-        ArtifactStore._atomic_write(destination, payload)  # pyright: ignore[reportPrivateUsage]
+        _publish_finding(destination, payload, root=root)
     except FindingError:
         raise
     except (ArtifactError, OSError, ValueError, RecursionError) as exc:

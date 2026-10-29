@@ -28,6 +28,7 @@ without moving review, CI, or merge gates.
 - [Named-home manifest path refusal, #107](implementation/2026-10-29-107-home-paths.md).
 - [Run identity before artifact reservation or holdout access, #6](implementation/2026-10-29-6-run-id-preflight.md).
 - [Unambiguous current-state and governor validation, #34](implementation/2026-10-29-34-state-validation.md).
+- [Verify written finding bytes before publication, #97](implementation/2026-10-29-97-written-finding-verification.md).
 - `CURRENT_STATE.md` is a compact October checkpoint. The superseded August checkpoint remains
   linked in immutable Git history; frozen C0 exhibit hashes and owner gates are preserved.
 - Product-owned reason/gate vocabulary, broader finding evidence, and confound observability
