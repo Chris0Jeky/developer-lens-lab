@@ -8,6 +8,7 @@
 __pycache__/
 *.py[cod]
 .coverage
+.coverage.*
 htmlcov/
 /site/assets
 /site

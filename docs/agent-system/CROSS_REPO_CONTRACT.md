@@ -50,9 +50,12 @@ capture as a record rather than a licence to detour). Both must be **byte-for-by
 both repositories, which is why the digest is pinned rather than the prose merely being "kept in
 sync".
 
-The shared block names the repo-neutral `dl-*` spine. The lab's own agent files — `dll-implementer`,
-`dll-reviewer`, `dll-mechanic` — are named by each prompt's lab runtime-routing clause, which lives
-**outside** the shared block precisely so the block can stay byte-identical.
+The shared runtime block delegates agent names to each repository's routing clause; it contains
+no `dl-*` prefix. Those clauses live **outside** the shared block so the block can stay
+byte-identical. Lab clauses name `dll-implementer`, `dll-reviewer` and `dll-mechanic`, while
+referring to discovery as "Opus 5 low scouts". The governor pins that scout route to
+`.claude/agents/dll-scout.md`; the remaining explicit-name gap is recorded in the
+[prompt library](PROMPT_LIBRARY.md#shared-blocks).
 
 Editing a shared block is therefore a `cross-repo` change, and it runs like one:
 
@@ -78,7 +81,7 @@ verifier for exactly that reason.
 Concretely, and this is the pair most often conflated:
 
 - `Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` is the **product** register's concurrent-writer
-  gate. It is what blocks agent merges in this repository (see below).
+  gate. Its recorded owner closure is summarized under Current status below.
 - `Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-8` is this repository's own gate on approving the
   final public transformation of a real-data study. It has nothing to do with merges.
 

@@ -65,9 +65,12 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 ```
 
-The shared runtime block requires each repository's named agent files; each prompt's lab
-runtime-routing clause names `dll-scout`, `dll-implementer`, `dll-reviewer` and `dll-mechanic`
-explicitly, outside the shared block.
+The shared runtime block calls for each repository's named agent files. The current lab clauses,
+outside that block, name `dll-implementer`, `dll-reviewer` and `dll-mechanic`, and describe
+discovery as "Opus 5 low scouts". The governor's `model_routing.scout` selects
+`.claude/agents/dll-scout.md`; the clauses do not spell out that name. Requiring `dll-scout` in
+every active body and in the verifier remains tracked in
+[issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34).
 
 ## Common prompts
 

@@ -34,6 +34,15 @@ without moving review, CI, or merge gates.
 - Product-owned reason/gate vocabulary, broader finding evidence, and confound observability
   remain explicitly separate work. No historical release assets or experiment decisions changed.
 
+## 2026-10-29 — Context consistency and routing follow-up
+
+- [Exact repository membership and capability consistency, #34](implementation/2026-10-29-34-context-consistency.md).
+- [Routing, scout scope, taxonomy, and superseded parity digests, #34](implementation/2026-10-29-34-prompt-routing-evidence.md).
+- Both manifest entries are checked against their registered metadata. Resume capability claims
+  must match the bootstrap posture established by the existing tier and governor checks.
+- Prompt discovery and explicit scout naming in every active body remain separate #34 work.
+  Shared prompt bodies and manifest bytes are preserved; no capability or owner gate changes.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest

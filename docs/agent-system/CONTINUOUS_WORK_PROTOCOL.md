@@ -335,7 +335,7 @@ Regardless of queue state, a continuous unattended session does **not** open a l
 or extends: real-data collection, an external model request, telemetry destinations, or credential
 handling. Every non-C0 lane stays closed until the activation preconditions in
 `.agent-harness/governor.json` are mechanically true **and** the owner sign-off is recorded; those
-are W3/W4 in [WORK_CLASSES.md](WORK_CLASSES.md) and belong to a coordinator session or the owner.
+are L3/L4 in [WORK_CLASSES.md](WORK_CLASSES.md) and belong to a coordinator session or the owner.
 Encountering one is a queue item to record, not to execute.
 
 Likewise it never self-relaxes a locked invariant from

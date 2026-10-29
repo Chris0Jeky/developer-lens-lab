@@ -3016,3 +3016,23 @@ retry, content inspection, or deletion was attempted.
 - **task:** Issues #34, #177, #181, and #193.
 - **promotion:** Keep hosted proof and explicit source reconciliation; no repository check,
   dependency constraint, review gate, or runtime capability was relaxed.
+
+### FR-114 - Coverage shards block clean-tree smoke after successful tests
+
+- **first-seen:** 2026-10-29
+- **status:** workaround-verified; generated-output ignore promoted
+- **symptom:** Coverage-enabled test runs passed, but temporary parallel coverage shards remained
+  or reappeared as untracked files while multiple isolated verification worktrees were active.
+  The subsequent smoke benchmark correctly refused the unclean worktree. The existing ignore
+  rule covered the combined coverage database only.
+- **impact:** The full local gates for PRs #200 and #202 stopped at the benchmark cleanliness
+  preflight despite passing their complete test suites. The shard reappearance mechanism is not
+  established; no repository logic failure is inferred from it.
+- **workaround:** Run the post-test smoke, stored replay, report, repeated finding export, and
+  whole-store immutability proof in a separate clean checkout of the exact published commit.
+  Both sequences passed without bypassing the clean-tree guard or changing source evidence.
+- **occurrences:** Two independently completed coverage-enabled suites in this continuation.
+- **task:** Issue #34; PRs #200 and #202 verification closeout.
+- **promotion:** Ignore the generated `.coverage.*` shard namespace alongside `.coverage`.
+  Git ignore checks cover representative shard names and preserve refusal of unrelated untracked
+  paths. No tracked-source guard, data/credential boundary, test requirement, or merge gate changes.

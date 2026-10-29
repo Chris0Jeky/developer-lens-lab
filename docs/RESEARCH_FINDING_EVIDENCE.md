@@ -20,8 +20,8 @@ claims. A rejection based on an uncarried selection reason is refused as insuffi
 WB-C1 has no registered `revise_once` evidence recipe. The transport schema retains that enum,
 but this adapter refuses it rather than inventing a revision decision. Future non-reject source
 formats need a separately reviewed evidence adapter; the current pinned MethodTrialView is a
-rejection-only exhibit. Issue #97 remains open for broader outcome support and paired Product-side
-verification.
+rejection-only exhibit. Issue #97 remains open for broader outcome support; each future adapter
+needs paired runtime proof for its newly supported outputs.
 
 ## Verify written bytes before publication
 
@@ -41,6 +41,26 @@ the existing finding exporter and CLI coverage, the focused selection passes 104
 the exact pinned Product golden fixture, repeated-byte equality, and whole-store immutability.
 The tests inject denied serialized content and altered, oversized, malformed, or noncanonical
 written bytes, and verify refusal before replacement. Full proof belongs in the delivering PR.
+
+## Paired runtime proof for the canonical C0 fixture
+
+The pinned Product commit is `d8961cdbe794edb40d2ca221a267fe2728ade5d6`.
+Its [successful hosted run 37083651542](https://github.com/Chris0Jeky/developer-lens/actions/runs/37083651542/job/111089338799)
+checked out that exact commit and ran `npm run check`, including `check:research-finding`.
+The runtime fixture suite passed nine tests; derived-gate, hardening, and model-promotion suites
+passed six, four, and one tests respectively. The complete Product run passed 1,938 tests with
+three skips.
+
+The [runtime test at the pin](https://github.com/Chris0Jeky/developer-lens/blob/d8961cdbe794edb40d2ca221a267fe2728ade5d6/shared/researchFinding.test.ts)
+reads the published fixture and calls `ResearchFindingSchema.parse`, then verifies round-trip
+equality, its body hash, and semantic/privacy refusals. Product and Lab share the exact schema
+Git blob `21f243c1d9f6fd73a42771100e645ca2de34fd58` and fixture Git blob
+`2e159c7fc1610271a9f7d491de2c47a9d52f992f`. Lab conformance/export tests require those canonical
+fixture bytes, including their recorded timestamp and provenance.
+
+This establishes paired runtime validation for the canonical invented rejection fixture.
+It does not establish support for every possible finding or for the future non-reject adapter.
+Rendering remains outside issue #97's scope; it is not an additional acceptance blocker here.
 
 ## View and receipt linkage
 
