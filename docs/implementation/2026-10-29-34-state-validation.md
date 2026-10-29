@@ -20,6 +20,13 @@ the repository's strict settings were unchanged.
 The supported Python 3.12/3.13 context matrix now runs the complete `test_context*.py` selection,
 including the new malformed-state regressions, instead of only the two older context files.
 
+Independent review found that SafeLoader scalar constructors can raise ordinary Python exceptions
+outside `YAMLError`. The bounded correction catches the observed integer/boolean/float/timestamp
+construction and nesting failures explicitly, preserving fixed diagnostics and normal conversion.
+Sixteen new cases failed before the correction; the final focused context selection passes 198
+tests. Valid tagged scalars, recursive aliases, merge overrides, and precise duplicate-key line
+numbers remain covered. There is no blanket exception catch.
+
 The current-state checkpoint is also refreshed from live GitHub evidence and the verified code.
 Its former August snapshot remains available in immutable Git history. This is a phase-boundary
 reconciliation, not a release, Product sign-off, or experiment decision. Broader prompt discovery,

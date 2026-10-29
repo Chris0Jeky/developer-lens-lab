@@ -15,3 +15,8 @@ Changed-file Ruff and strict Pyright passed. Integrated and hosted evidence belo
 
 Earlier structural work landed in PRs #126 and #179; this closes their runtime validation follow-up.
 No Product schema or vendor bytes changed. Revert the source/test change to roll back this slice.
+
+The integrated strict gate exposed that the bundled typing protocol omits the concrete validators'
+`ID_OF` attribute. A typed metaschema-identity helper now reads `$id` or legacy `id` directly and is
+also used by reference-closure fallback. Runtime dialect selection is unchanged; strict checking
+retains the normal bundled stubs and no repository type setting is relaxed.

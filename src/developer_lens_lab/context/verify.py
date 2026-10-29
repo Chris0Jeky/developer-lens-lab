@@ -236,7 +236,16 @@ def verify_current_state_yaml(root: Path) -> list[str]:
     body = "\n".join(lines[opening + 1 : closing])
     try:
         payload: object = yaml.load(body, Loader=_UniqueKeySafeLoader)
-    except yaml.YAMLError as exc:
+    except (
+        yaml.YAMLError,
+        ValueError,
+        KeyError,
+        IndexError,
+        AttributeError,
+        RecursionError,
+    ) as exc:
+        # SafeLoader scalar conversion and excessive nesting can raise native exceptions.
+        # Their messages may contain document content, so report only fixed diagnostics.
         mark = getattr(exc, "problem_mark", None)
         line = opening + 2 + getattr(mark, "line", 0)
         problem = (

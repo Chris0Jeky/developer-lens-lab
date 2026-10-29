@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import cast
 
@@ -107,6 +108,77 @@ def test_current_state_parse_errors_have_bounded_content_free_diagnostics(
     assert "invalid YAML" in failures[0]
     assert "invented" not in failures[0]
     assert len(failures[0]) < 160
+
+
+@pytest.mark.parametrize("position", ["key", "value"])
+@pytest.mark.parametrize(
+    "scalar",
+    [
+        "!!int invented-private-content",
+        "!!bool invented-private-content",
+        "!!float invented-private-content",
+        "!!timestamp invented-private-content",
+        "!!timestamp 2026-13-40",
+        "!!int ''",
+        "!!float ''",
+    ],
+    ids=["int", "bool", "float", "timestamp", "invalid-date", "empty-int", "empty-float"],
+)
+def test_current_state_scalar_constructor_errors_have_fixed_diagnostics(
+    tmp_path: Path, position: str, scalar: str
+) -> None:
+    entry = f"{scalar}: invented-private-value" if position == "key" else f"item: {scalar}"
+    _write_state(
+        tmp_path,
+        _VALID_STATE.replace("canonical_evidence: {}", f"canonical_evidence: {{{entry}}}"),
+    )
+
+    assert verify_current_state_yaml(tmp_path) == [
+        "docs/CURRENT_STATE.md:4: invalid YAML: invalid syntax or structure"
+    ]
+
+
+def test_current_state_oversized_integer_has_fixed_diagnostic(tmp_path: Path) -> None:
+    _write_state(tmp_path, "canonical_evidence: {item: !!int " + "7" * 641 + "}\n")
+    previous_limit = sys.get_int_max_str_digits()
+    try:
+        sys.set_int_max_str_digits(640)
+        failures = verify_current_state_yaml(tmp_path)
+    finally:
+        sys.set_int_max_str_digits(previous_limit)
+
+    assert failures == ["docs/CURRENT_STATE.md:4: invalid YAML: invalid syntax or structure"]
+
+
+def test_current_state_excessive_nesting_has_fixed_diagnostic(tmp_path: Path) -> None:
+    depth = sys.getrecursionlimit()
+    nested = "[" * depth + "invented-private-content" + "]" * depth
+    _write_state(tmp_path, f"canonical_evidence: {{item: {nested}}}\n")
+
+    assert verify_current_state_yaml(tmp_path) == [
+        "docs/CURRENT_STATE.md:4: invalid YAML: invalid syntax or structure"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("tag", "value"),
+    [("int", "12"), ("bool", "true"), ("float", "1.25"), ("timestamp", "2026-10-29")],
+)
+def test_current_state_preserves_tagged_scalar_conversions(
+    tmp_path: Path, tag: str, value: str
+) -> None:
+    _write_state(
+        tmp_path,
+        _VALID_STATE.replace(
+            "canonical_evidence: {}", f"canonical_evidence: {{item: !!{tag} {value}}}"
+        ),
+    )
+    assert verify_current_state_yaml(tmp_path) == []
+
+    _write_state(tmp_path, f"canonical_evidence:\n  !!{tag} {value}: first\n  {value}: second\n")
+    assert verify_current_state_yaml(tmp_path) == [
+        "docs/CURRENT_STATE.md:6: invalid YAML: duplicate mapping key"
+    ]
 
 
 def test_current_state_preserves_aliases_merge_overrides_and_recursive_values(
