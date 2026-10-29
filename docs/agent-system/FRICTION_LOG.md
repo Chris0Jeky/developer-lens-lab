@@ -3019,10 +3019,14 @@ retry, content inspection, or deletion was attempted.
 - **promotion:** Keep hosted proof and explicit source reconciliation; no repository check,
   dependency constraint, review gate, or runtime capability was relaxed.
 
+**2026-10-29 — Dependency-maintenance recurrence.** The occurrence update above records the
+same bounded package-network workaround during #204 and the virtualenv follow-up. It does not
+introduce a new bypass or change the environment/source reconciliation requirements.
+
 ### FR-114 - Coverage shards block clean-tree smoke after successful tests
 
 - **first-seen:** 2026-10-29
-- **status:** workaround-verified; generated-output ignore promoted
+- **status:** promoted
 - **symptom:** Coverage-enabled test runs passed, but temporary parallel coverage shards remained
   or reappeared as untracked files while multiple isolated verification worktrees were active.
   The subsequent smoke benchmark correctly refused the unclean worktree. The existing ignore
@@ -3039,10 +3043,13 @@ retry, content inspection, or deletion was attempted.
   Git ignore checks cover representative shard names and preserve refusal of unrelated untracked
   paths. No tracked-source guard, data/credential boundary, test requirement, or merge gate changes.
 
+**2026-10-29 — Status normalization.** The status uses the declared `promoted` value for the
+generated-output ignore already delivered in #202; the original observation and proof remain intact.
+
 ### FR-115 - Hosted security updater no longer supports the pinned uv series
 
 - **first-seen:** 2026-10-29
-- **status:** resolved for the observed updater failure; version enforcement retained
+- **status:** resolved
 - **symptom:** Dependabot run 40807635186, job 123230269968, failed both filelock and virtualenv
   updates with `tool_version_not_supported`. Its uv 0.13.5 did not satisfy the repository's
   `>=0.12.2,<0.13` requirement. This occurred before dependency changes were produced.
@@ -3053,21 +3060,24 @@ retry, content inspection, or deletion was attempted.
   Preserve strict candidate validation, fallback behavior, Python pins and the existing lockfile.
   Prove actual package building and the complete declared gate before merge, then inspect a new
   updater run and review the separate targeted dependency patch.
-- **verified outcome:** After #203 merged at 158ad173d2f36085c352bca28b74f9be96576b82,
-  [run 40811433180, job 123242419597](https://github.com/Chris0Jeky/developer-lens-lab/actions/runs/40811433180/job/123242419597)
-  succeeded and created #205. Resolving filelock 4.2.1 also selected compatible virtualenv 21.15.1;
-  that later choice is carried separately from #204's tested virtualenv 21.14.13 security minimum.
-  Successful updater operation does not establish every live alert record's closure.
 - **occurrences:** One hosted security-update job, with the same refusal for both packages.
 - **task:** Issue #5 dependency triage within the #29 release wave.
 - **promotion:** Retain a bounded, tested toolchain instead of deleting version enforcement.
+  Recovery is proved by successful [run 40811433180, job 123242419597](https://github.com/Chris0Jeky/developer-lens-lab/actions/runs/40811433180/job/123242419597).
   Toolchain recovery alone does not remediate the locked dependencies or prove alert closure.
   No runtime capability, owner gate, frozen research evidence or release permission changes.
+
+**2026-10-29 — Verified recovery.** After #203 merged at
+158ad173d2f36085c352bca28b74f9be96576b82, the updater run named in `promotion` succeeded and
+created #205. Resolving filelock 4.2.1 also selected compatible virtualenv 21.15.1; that later
+choice is carried separately from #204's tested virtualenv 21.14.13 security minimum. Successful
+updater operation does not establish every live alert record's closure. This dated note preserves
+the outcome evidence added in #206 using the declared record shape.
 
 ### FR-116 - Hosted package download reaches the existing smoke timeout
 
 - **first-seen:** 2026-10-29
-- **status:** unchanged-head retry verified; no timeout or gate relaxation
+- **status:** workaround-verified
 - **symptom:** Check run 40809680128, first-attempt job 123236777868, reached the existing
   300-second install timeout at head ea4ccd0363f2da35895c4743c38b6fc2ce729cb4. Captured stderr
   reports dependency resolution followed by `Downloading polars-runtime-32 (47.6MiB)`; no later
@@ -3078,11 +3088,48 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Request a rerun of the failed job at the unchanged commit, retain the existing
   timeout and process-cleanup checks, and require the new exact-head hosted result before merge.
   Record both attempts in the PR; a local success does not replace the hosted merge gate.
-- **verified outcome:** The unchanged-head retry, job 123239603178 in the same run, passed the
-  complete Check with 1,327 tests passed and nine skipped. Post-merge run 40811322012 at
-  158ad173d2f36085c352bca28b74f9be96576b82 also passed. The initiating failure's underlying
-  download mechanism remains undetermined; both attempts remain linked in #203.
 - **occurrences:** One hosted package-install attempt in the uv migration slice.
 - **task:** Issue #5; toolchain PR #203 and the coordinated dependency-maintenance continuation.
 - **promotion:** No source behavior, dependency constraint, timeout, cleanup requirement or CI
   gate changes. The bounded captured progress added for issue #177 exposed the stalled phase.
+
+**2026-10-29 — Verified unchanged-head retry.** Job 123239603178 in the same run passed the
+complete Check with 1,327 tests passed and nine skipped. Post-merge run 40811322012 at
+158ad173d2f36085c352bca28b74f9be96576b82 also passed. The initiating failure's underlying download
+mechanism remains undetermined; both attempts remain linked in #203. This dated note preserves
+the outcome evidence added there without introducing an undeclared field or relaxing any gate.
+
+### FR-117 - Prompt discovery draft misreads Markdown example boundaries
+
+- **first-seen:** 2026-10-29
+- **status:** workaround-verified
+- **symptom:** Independent review of #207 head 08526698208d60bd72ecedb67cc25fa9f9b80ff7
+  found that mixed space/tab indentation and lazy blockquote continuations were treated as live
+  prompt prose, while the documented `Prompt:` title prefix required an undeclared following space.
+  The installed CommonMark and project Markdown renderers confirmed the example boundaries.
+- **impact:** Valid examples could fail context verification, and an explicitly named prompt
+  could escape the declared classification rule. The current repository did not trigger these cases.
+- **workaround:** Normalize leading indentation to Markdown's four-column tab stops, preserve
+  quoted paragraph continuations until their actual boundary, and accept the stated title prefix
+  without imposing an extra space. Keep the deterministic signatures and add paired real-prompt
+  controls; no runtime parser dependency or broader semantic classifier is introduced.
+- **occurrences:** Two independent review rounds in #207. The first focused regressions reproduced
+  eight failures with 78 passing controls before correction. Afterward all 86 discovery cases and all
+  331 context tests passed, with clean strict types, Ruff and actual context verification. The second
+  round reproduced 12 failures with 98 passing controls; its correction passed 110 discovery cases
+  and 355 context tests with the same focused checks.
+- **task:** Issue #34; PR #207 prompt-discovery closeout.
+- **promotion:** Enforce the corrected boundaries with focused regressions in the existing
+  Python 3.12/3.13 context matrix. Require final-head full proof and independent re-review in #207.
+  Shared prompt blocks, the parity manifest, capabilities, owner gates and frozen evidence remain
+  unchanged; these bounded review corrections do not expand the discovery signatures.
+
+**2026-10-29 — Second bounded correction.** Review of
+2ecfb54e4432cfb488304b998eaf37b76a6b7e8e found that quoted Setext headings could retain paragraph
+state and nested quoted fence closers were checked before removing their nested quote prefixes.
+Setext recognition now requires a preceding quoted paragraph, and opening/closing fence handling
+uses consistent quote-prefix removal. Paired ordinary-paragraph and true-opener controls remain.
+These boundary checks follow the reviewed CommonMark behavior; the project's Python-Markdown
+renderer differs on some quoted Setext boundaries, as recorded in the implementation fragment.
+No parser dependency or new discovery signature was added. The second focused proof above is
+complete; final-head full proof and independent disposition remain required in #207.

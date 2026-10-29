@@ -51,6 +51,9 @@ delivered:
       Both registered repositories' parity metadata and the checkpoint's capability claims are
       checked against the existing bootstrap policy. Routing prose, scout scope, and taxonomy
       now describe the actual governed roles; historical parity digests have explicit supersession.
+      Explicit prompt artifacts outside the canonical library require a redirect/historical
+      classification, and every active local body names dll-scout. Quoted/fenced examples remain
+      documentation; arbitrary unlabelled prose is outside this deterministic discovery rule.
       The dated implementation fragments and delivering PRs carry detailed verification.
   - toolchain_and_development_dependencies: >-
       The project and package-smoke guard require uv >=0.13.5,<0.14; both workflows install 0.13.5.
@@ -106,8 +109,8 @@ blockers: >-
 late_review_debt: >-
   #6 remains open for confound observability and separately recorded export/provenance concerns;
   its LAB-WBC1-06 card covers only the earlier four-fix slice. #31 retains Product gate/reason
-  vocabulary and zero-delay caveat work. #34 retains prompt discovery and explicit scout naming
-  in every active body; repository metadata and capability consistency are now checked. #97
+  vocabulary and zero-delay caveat work. #34's explicit prompt discovery, per-body scout naming,
+  repository metadata and capability consistency are implemented; its PR records final delivery. #97
   retains the broader non-reject/revision evidence adapter. Paired canonical-fixture Product runtime
   proof is recorded, and written-output privacy and canonical-byte verification is implemented. The #107
   home-path residual is repaired in source; its issue records the remaining deliberate design dispositions.

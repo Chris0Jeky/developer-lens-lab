@@ -52,10 +52,10 @@ sync".
 
 The shared runtime block delegates agent names to each repository's routing clause; it contains
 no `dl-*` prefix. Those clauses live **outside** the shared block so the block can stay
-byte-identical. Lab clauses name `dll-implementer`, `dll-reviewer` and `dll-mechanic`, while
-referring to discovery as "Opus 5 low scouts". The governor pins that scout route to
-`.claude/agents/dll-scout.md`; the remaining explicit-name gap is recorded in the
-[prompt library](PROMPT_LIBRARY.md#shared-blocks).
+byte-identical. Every active Lab clause names `dll-scout` with the Opus 5 low route alongside
+`dll-implementer`, `dll-reviewer` and `dll-mechanic`. The verifier requires these names outside
+the shared blocks; the governor pins the scout route to `.claude/agents/dll-scout.md`.
+The [prompt library](PROMPT_LIBRARY.md#shared-blocks) describes this local routing boundary.
 
 Editing a shared block is therefore a `cross-repo` change, and it runs like one:
 

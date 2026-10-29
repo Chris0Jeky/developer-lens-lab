@@ -78,6 +78,25 @@ without moving review, CI, or merge gates.
 - FR-115 now records observed updater recovery; FR-116 records the unchanged-head retry's success.
   The earlier security fragment, runtime constraints, frozen evidence and owner gates are preserved.
 
+## 2026-10-29 — Prompt discovery and scout-name closeout
+
+- [Explicit prompt discovery and local scout routing, #34](implementation/2026-10-29-34-prompt-discovery.md)
+  defines deterministic signatures for prompt-shaped Markdown outside the registered library.
+  Those artifacts require exactly one redirect/historical classification; fenced, quoted and
+  indented examples remain documentation. Arbitrary unlabelled prose is outside this rule.
+- All 14 active local bodies now name `dll-scout`, and the verifier requires that token outside
+  the unchanged shared blocks. The manifest, shared source blocks and repeated copies retain
+  their exact bytes and digests; no Product-first shared-contract change is needed.
+- Focused regressions first exposed 37 failures; the completed context suite passed 307 tests.
+  The first independent review then reproduced eight Markdown-boundary failures; the bounded
+  correction passed all 86 discovery cases and the expanded 331-test context suite.
+  A second bounded correction addressed quoted Setext headings and nested fence closure;
+  12 regressions failed before correction, then all 110 discovery and 355 context tests passed.
+  Final full-gate, independent review, hosted compatibility and merge evidence belong to the PR.
+- The same follow-up normalizes FR-113–116 updates into the log's fixed-field/dating convention,
+  resolving the LOW record-shape finding from #206 while preserving the inspected proof and history.
+  FR-117 records both independently reproduced parser-boundary corrections and their focused proof.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest

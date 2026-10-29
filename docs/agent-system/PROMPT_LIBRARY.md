@@ -25,12 +25,20 @@ Angle-bracket placeholders (`<like this>`) are filled in by whoever pastes the p
 - Every active body contains exactly one copy of each shared block below. The blocks are pinned by
   SHA-256 in the parity manifest, so editing one in a single prompt fails the verifier.
 - Every active body carries the lab runtime-routing clause: Claude reads `CLAUDE.md` and delegates
-  to Opus 5 low scouts, `dll-implementer`, `dll-reviewer` and `dll-mechanic`; Codex reads
+  to `dll-scout` (Opus 5 low), `dll-implementer`, `dll-reviewer` and `dll-mechanic`; Codex reads
   `AGENTS.md`, then the shared `CLAUDE.md` canon, invokes `developer-lens-lab-continuation`, and
   follows Sol/Terra/Luna routing.
 - Human actions are always written as fully qualified cross-repository refs
   (`<owner>/<repo>::HUMAN_TODO.md::q-N`). A bare `q-N` inside an active body fails the verifier,
   because product `q-8` and lab `q-8` are different gates.
+
+Outside this file, discovery recognizes document-level `prompt-id` or `shared-block` metadata,
+or an explicitly named prompt with a role/bootstrap opening in prose or a plain-text fence.
+Names are a filename ending in a `prompt`/`prompts` token, a `prompts` directory, or a document
+title ending in `prompt`/`prompts` or starting with `Prompt:`. Such documents require one
+standalone `prompt-classification` marker with value `redirect` or `historical`; malformed and
+duplicate declarations fail. Fenced, quoted, and indented examples are not document metadata,
+and generated run reports are excluded. Arbitrary imperative prose is not semantically classified.
 
 ## Shared blocks
 
@@ -65,12 +73,10 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 ```
 
-The shared runtime block calls for each repository's named agent files. The current lab clauses,
-outside that block, name `dll-implementer`, `dll-reviewer` and `dll-mechanic`, and describe
-discovery as "Opus 5 low scouts". The governor's `model_routing.scout` selects
-`.claude/agents/dll-scout.md`; the clauses do not spell out that name. Requiring `dll-scout` in
-every active body and in the verifier remains tracked in
-[issue #34](https://github.com/Chris0Jeky/developer-lens-lab/issues/34).
+The shared runtime block calls for each repository's named agent files. Every lab routing clause,
+outside that block, names `dll-scout` (Opus 5 low), `dll-implementer`, `dll-reviewer`, and
+`dll-mechanic`. The verifier requires all four names in each active local body; the governor's
+`model_routing.scout` selects `.claude/agents/dll-scout.md`. The shared block remains unchanged.
 
 ## Common prompts
 
@@ -104,8 +110,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -165,8 +171,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -238,8 +244,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -329,8 +335,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -390,8 +396,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -457,8 +463,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -524,8 +530,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -582,8 +588,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -648,8 +654,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -716,8 +722,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -783,8 +789,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -845,8 +851,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -913,8 +919,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.
@@ -985,8 +991,8 @@ At the second independent occurrence, choose or propose the cheapest layer that 
 the fix, or record why it stays task debt.
 
 LAB RUNTIME ROUTING
-Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded implementation to
-dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
+Claude: read CLAUDE.md first; delegate large reads to dll-scout (Opus 5 low), bounded implementation
+to dll-implementer, fresh-context adversarial review to dll-reviewer, deterministic sweeps to
 dll-mechanic.
 Codex: read AGENTS.md first, then the shared CLAUDE.md canon; invoke the
 developer-lens-lab-continuation skill; follow Sol/Terra/Luna routing.

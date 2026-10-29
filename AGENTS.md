@@ -29,7 +29,7 @@ rules.
 Executable prompts live only in `docs/agent-system/PROMPT_LIBRARY.md` behind stable IDs pinned by
 `.agent-harness/prompt-parity.json`. Every active prompt tells Codex to read `AGENTS.md` first, then
 the shared `CLAUDE.md` canon, invoke `$developer-lens-lab-continuation`, and follow Sol/Terra/Luna
-routing — and tells Claude to read `CLAUDE.md` and delegate to Opus 5 low scouts, `dll-implementer`,
+routing — and tells Claude to read `CLAUDE.md` and use `dll-scout` (Opus 5 low), `dll-implementer`,
 `dll-reviewer` and `dll-mechanic`. Human refs are always
 `<owner>/<repo>::HUMAN_TODO.md::q-N`; a bare `q-N` fails the verifier, because product `q-8` and lab
 `q-8` are different gates. Log material friction in `docs/agent-system/FRICTION_LOG.md` in the SAME
