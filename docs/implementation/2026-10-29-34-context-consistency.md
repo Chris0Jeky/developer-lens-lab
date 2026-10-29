@@ -69,7 +69,7 @@ Ordinary untracked paths still fail the clean-tree guard; source and experiment 
 Full code/config gates, fresh-context exact-head review, GitHub publication, aging, merge judgment,
 and shared ledger/current-state synchronization remain coordinator-owned. No Product schema,
 paired runtime contract, frozen exhibit, prompt digest, owner gate, or capability activation changes.
-No benchmark, holdout opening, or data collection occurred.
+No benchmark, holdout opening, or data collection occurred during the initial implementation slice.
 
 Rollback is this isolated three-file change. Stop if review requires changing Product-owned
 contracts or capability authority; reconcile that scope before proceeding. Resume with exact-head

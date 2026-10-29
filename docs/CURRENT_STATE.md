@@ -35,7 +35,8 @@ delivered:
       ResearchFinding export shipped through PRs #127 and #129, with later custody/threshold
       hardening in #182. Structural mixed-dialect schema work shipped in #126 and #179.
       The exporter is usable and verifies actual written temporary bytes before atomic publication;
-      remaining #97 acceptance is stated below.
+      the canonical C0 fixture has paired Product runtime proof at its exact pinned contract.
+      Remaining #97 outcome-adapter work is stated below.
   - report_and_artifact_integrity: >-
       PRs #196 and #197 delivered resolved-root output confinement and full-report identity/
       provenance checks. Runtime result references must exactly match artifact-manifest digest,
@@ -53,7 +54,7 @@ next_safe_slice: >-
   Reconcile live main, open issues/PRs, tools/cards.py, and Product owner gates first. Finish or
   re-review any in-flight hardening before starting another lane. For subsequent work, scope the
   remaining confound-observability methodology in #6, Product-owned presentation changes in #31,
-  or the broader finding-evidence adapter and paired Product proof in #97. Preserve current C0
+  or the broader finding-evidence adapter and paired proof for new outputs in #97. Preserve current C0
   evidence and historical release assets; a changed research method needs its own declared proof.
 release_and_owner_gates: >-
   Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8 concurrent-writer closure was directly verified
@@ -98,8 +99,8 @@ late_review_debt: >-
   its LAB-WBC1-06 card covers only the earlier four-fix slice. #31 retains Product gate/reason
   vocabulary and zero-delay caveat work. #34 retains prompt discovery and explicit scout naming
   in every active body; repository metadata and capability consistency are now checked. #97
-  retains broader non-reject/revision evidence and paired
-  Product runtime proof; written-output privacy and canonical-byte verification is implemented. The #107
+  retains the broader non-reject/revision evidence adapter. Paired canonical-fixture Product runtime
+  proof is recorded, and written-output privacy and canonical-byte verification is implemented. The #107
   home-path residual is repaired in source; its issue records the remaining deliberate design dispositions.
 exact_resume_point: >-
   Read the live default-branch head and every open PR's checks, reviews, comments, and threads.
