@@ -12,8 +12,8 @@ The live Product `.agent-harness/prompt-parity.json` was read through the connec
 Blob `2d4e274f55ee2438230eda0b621c761dd554757e` declares the same two repository identities,
 roles, paths, and extension IDs as the Lab manifest. No manifest or shared prompt bytes change.
 The current capability vocabulary follows the existing T1/C0 checks, governor lane and gate pins,
-stable-product promotion boundary, and the bounded presentation approval in `HUMAN_TODO.md`
-q-4. No new configurable policy source is added.
+stable-product promotion boundary, and the bounded presentation approval in
+`Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-4`. No new configurable policy source is added.
 
 ## Changed behavior
 
@@ -32,7 +32,8 @@ complete policy fixture.
 This is a consistency check for the currently supported bootstrap posture, not an activation
 engine. LAB-ACT-01 must update it together with the existing tier/lane pins before a future
 activation can be represented. Owner-decision prose still requires review; this check does not
-infer new approval from a summary, replace live owner gates, or independently authenticate q-4.
+infer new approval from a summary, replace live owner gates, or independently authenticate
+`Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-4`.
 
 ## Verification
 

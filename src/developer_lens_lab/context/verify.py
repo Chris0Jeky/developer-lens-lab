@@ -342,8 +342,9 @@ def _verify_bootstrap_capability_claims(capabilities: dict[object, object], line
 
     _verify_tier and verify_governor already pin C0/T1, closed own/curated lanes, activation
     gates, and the stable-product promotion boundary. The bounded presentation exception is
-    recorded in HUMAN_TODO.md q-4. This vocabulary describes that verified posture, rather than
-    introducing a second configurable policy. LAB-ACT-01 must replace these bootstrap checks
+    recorded in Chris0Jeky/developer-lens-lab::HUMAN_TODO.md::q-4. This vocabulary describes
+    that verified posture, rather than introducing a second configurable policy.
+    LAB-ACT-01 must replace these bootstrap checks
     together with the existing tier/lane pins before any activation can be represented.
     """
     expected = {

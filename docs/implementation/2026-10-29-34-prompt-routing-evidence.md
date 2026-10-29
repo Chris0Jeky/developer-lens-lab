@@ -37,8 +37,9 @@ the [manifest bytes](https://github.com/Chris0Jeky/developer-lens-lab/blob/4b0ab
 and the [shared block source](https://github.com/Chris0Jeky/developer-lens-lab/blob/4b0ab8b7d1f971b41a18959337b60c71d5615eaf/docs/agent-system/PROMPT_LIBRARY.md).
 
 No shared block, registered prompt-library body, parity-manifest byte, source verifier, test,
-Product schema, or owner gate changes in this slice. Product q-8's existing closure remains in
-force. Local context verification, strict MkDocs, and whitespace checks passed. A base comparison
+Product schema, or owner gate changes in this slice.
+`Chris0Jeky/developer-lens::HUMAN_TODO.md::q-8` retains its existing closure.
+Local context verification, strict MkDocs, and whitespace checks passed. A base comparison
 confirmed all 14 registered prompt bodies, both shared blocks, and the manifest bytes unchanged;
 final gate and review evidence belong to the delivering PR.
 Explicit scout naming in active bodies, prompt discovery, and other remaining #34 work stay open.
