@@ -30,8 +30,8 @@ active_wave:
       run errors, installation timeout diagnostics, mixed-dialect fixtures, compatible Arrow
       types, explicit pack scopes, and stricter current-state and parity validation. Each merge still
       requires exact-head proof, independent review, complete feedback surfaces, and 15-minute aging.
-      The uv toolchain migration restores compatibility with the hosted security updater; the
-      targeted filelock/virtualenv dependency update remains separate issue #5 work.
+      Source supports the hosted updater's uv 0.13.5 toolchain and pins its targeted development
+      dependency updates. Issue #5 carries exact delivery proof and live updater/alert status.
 delivered:
   - contract_and_export_foundation: >-
       ResearchFinding export shipped through PRs #127 and #129, with later custody/threshold
@@ -52,10 +52,15 @@ delivered:
       checked against the existing bootstrap policy. Routing prose, scout scope, and taxonomy
       now describe the actual governed roles; historical parity digests have explicit supersession.
       The dated implementation fragments and delivering PRs carry detailed verification.
+  - toolchain_and_development_dependencies: >-
+      The project and package-smoke guard require uv >=0.13.5,<0.14; both workflows install 0.13.5.
+      The lock updates filelock to 4.2.1 and virtualenv to 21.14.13, with 87 other package records
+      unchanged and a dependency edge to the already locked packaging 26.3. These are the failed
+      updater's selected targets; package-version proof does not establish all live alert closure.
 next_safe_slice: >-
   Reconcile live main, open issues/PRs, tools/cards.py, and Product owner gates first. Finish or
-  re-review any in-flight hardening before starting another lane. Complete the uv toolchain proof
-  and targeted security-dependency update in #5. For subsequent research work, scope the
+  re-review any in-flight hardening before starting another lane. Read #5 for the final toolchain
+  and security-dependency verification and current updater status. For subsequent research work, scope the
   remaining confound-observability methodology in #6, Product-owned presentation changes in #31,
   or the broader finding-evidence adapter and paired proof for new outputs in #97. Preserve current C0
   evidence and historical release assets; a changed research method needs its own declared proof.
@@ -98,8 +103,6 @@ blockers: >-
   managed Linux checkout. Product-owned schemas
   (#23 and portions of #31/#97) require producer-first coordination and proof on both sides.
 late_review_debt: >-
-  #5 tracks the hosted updater's unsupported-uv failure and the separate filelock/virtualenv update;
-  changing the supported toolchain does not establish alert closure.
   #6 remains open for confound observability and separately recorded export/provenance concerns;
   its LAB-WBC1-06 card covers only the earlier four-fix slice. #31 retains Product gate/reason
   vocabulary and zero-delay caveat work. #34 retains prompt discovery and explicit scout naming
