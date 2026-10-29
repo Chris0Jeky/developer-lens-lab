@@ -110,7 +110,12 @@ def _escape_terminal_controls(value: str) -> str:
 
 
 def _bounded_diagnostic_stream(
-    output: str, *, cwd: Path, command: list[str], environment: dict[str, str]
+    output: str,
+    *,
+    cwd: Path,
+    command: list[str],
+    environment: dict[str, str],
+    redact_line_fragments: bool = False,
 ) -> str:
     """Normalize, redact, and cap one subprocess diagnostic stream."""
     normalized = _canonicalize_line_endings(output)
@@ -123,6 +128,16 @@ def _bounded_diagnostic_stream(
     replacements.extend(
         (argument, "<task-path>", 2) for argument in command if Path(argument).is_absolute()
     )
+    if redact_line_fragments:
+        # A timeout can interrupt a multiline value after one of its complete lines.
+        # Redact those fragments even when the whole value was never captured.
+        fragments = {
+            (fragment, replacement, priority)
+            for source, replacement, priority in replacements
+            for fragment in _canonicalize_line_endings(source).split("\n")
+            if fragment
+        }
+        replacements = sorted(set(replacements) | fragments)
     for source, replacement, _ in sorted(
         replacements, key=lambda candidate: (-len(candidate[0]), candidate[2])
     ):
@@ -146,23 +161,43 @@ def _render_command(command: list[str]) -> str:
 
 
 def _format_failure_diagnostics(
-    *, command: list[str], cwd: Path, environment: dict[str, str], stdout: str, stderr: str
+    *,
+    command: list[str],
+    cwd: Path,
+    environment: dict[str, str],
+    stdout: str,
+    stderr: str,
+    redact_line_fragments: bool = False,
 ) -> str:
     """Format deterministic bounded diagnostics for a failed subprocess."""
     stdout_text = _bounded_diagnostic_stream(
-        stdout, cwd=cwd, command=command, environment=environment
+        stdout,
+        cwd=cwd,
+        command=command,
+        environment=environment,
+        redact_line_fragments=redact_line_fragments,
     )
     stderr_text = _bounded_diagnostic_stream(
-        stderr, cwd=cwd, command=command, environment=environment
+        stderr,
+        cwd=cwd,
+        command=command,
+        environment=environment,
+        redact_line_fragments=redact_line_fragments,
     )
     return f"\nstdout:\n{stdout_text}\nstderr:\n{stderr_text}"
 
 
 def _timeout_progress_text(output: bytes | str | None) -> str:
-    """Decode captured timeout progress, which may be bytes even with text=True."""
+    """Retain only completed progress lines; a timeout may split a sensitive value."""
     if isinstance(output, bytes):
         output = output.decode("utf-8", errors="replace")
-    return output if output and output.strip("\r\n") else "<no output captured>"
+    if not output or not output.strip("\r\n"):
+        return "<no output captured>"
+    normalized = _canonicalize_line_endings(output)
+    complete, separator, tail = normalized.rpartition("\n")
+    if tail:
+        return complete + separator + "<incomplete output omitted>"
+    return normalized
 
 
 def _uv_version_requirement() -> str:
@@ -293,6 +328,7 @@ def _run(
                 environment=environment,
                 stdout=_timeout_progress_text(exc.output),
                 stderr=_timeout_progress_text(exc.stderr),
+                redact_line_fragments=True,
             )
         raise RuntimeError(
             "package smoke command timed out after "

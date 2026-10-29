@@ -14,7 +14,16 @@ from developer_lens_lab.wbc1 import runner
 
 RUN_ID = "manifest_error_run"
 CANARY = "invented-private-manifest-content"
-FAILURES = ("malformed_json", "invalid_utf8", "non_object", "missing", "directory", "unreadable")
+FAILURES = (
+    "malformed_json",
+    "invalid_utf8",
+    "integer_limit",
+    "nesting_limit",
+    "non_object",
+    "missing",
+    "directory",
+    "unreadable",
+)
 
 
 def _stored_manifest(root: Path, monkeypatch: pytest.MonkeyPatch, failure: str) -> Path:
@@ -28,6 +37,8 @@ def _stored_manifest(root: Path, monkeypatch: pytest.MonkeyPatch, failure: str) 
     payloads = {
         "malformed_json": f'{{"note":"{CANARY}",'.encode(),
         "invalid_utf8": CANARY.encode() + b"\xff",
+        "integer_limit": b'{"unused":' + b"1" * 5_000 + b"}",
+        "nesting_limit": b'{"unused":' + b"[" * 10_000 + b"0" + b"]" * 10_000 + b"}",
         "non_object": f'"{CANARY}"'.encode(),
         "unreadable": b"{}",
     }
@@ -65,6 +76,8 @@ def test_stored_manifest_failure_is_controlled_and_does_not_write(
     diagnostic = "".join(traceback.format_exception(caught.value))
     assert str(tmp_path) not in diagnostic
     assert CANARY not in diagnostic
+    assert "ValueError:" not in diagnostic
+    assert "RecursionError:" not in diagnostic
     assert _files(tmp_path) == before
 
 
@@ -86,10 +99,11 @@ def test_report_cli_manifest_failure_has_sanitized_diagnostic(
     assert _files(tmp_path) == before
 
 
+@pytest.mark.parametrize("failure", ["malformed_json", "integer_limit", "nesting_limit"])
 def test_corrupt_manifest_cannot_overwrite_existing_reports_with_force(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
 ) -> None:
-    manifest_path = _stored_manifest(tmp_path, monkeypatch, "malformed_json")
+    manifest_path = _stored_manifest(tmp_path, monkeypatch, failure)
     (manifest_path.parent / "report.md").write_bytes(b"existing markdown\n")
     (manifest_path.parent / "report.html").write_bytes(b"existing html\n")
     before = _files(tmp_path)

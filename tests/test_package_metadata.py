@@ -620,8 +620,8 @@ def test_package_smoke_install_timeout_reports_progress_after_bounded_cleanup(
         (b"", b"", "<no output captured>", "<no output captured>"),
         ("", "", "<no output captured>", "<no output captured>"),
         (b"\r\n", "\n", "<no output captured>", "<no output captured>"),
-        (None, "Downloading", "<no output captured>", "Downloading"),
-        ("Resolving", None, "Resolving", "<no output captured>"),
+        (None, "Downloading\n", "<no output captured>", "Downloading"),
+        ("Resolving\n", None, "Resolving", "<no output captured>"),
     ],
     ids=["missing", "empty-bytes", "empty-text", "line-breaks", "missing-stdout", "missing-stderr"],
 )
@@ -649,8 +649,8 @@ def test_package_smoke_install_timeout_redacts_secrets_and_task_paths(
 
     def progress(command: list[str]) -> tuple[bytes, str]:
         return (
-            f"cwd={tmp_path}\nwheel={command[-1]}\ntoken={secret}\nkey=ab".encode(),
-            f"python={command[-2]}\ncache=C:/Invented/package-cache",
+            f"cwd={tmp_path}\nwheel={command[-1]}\ntoken={secret}\nkey=ab\n".encode(),
+            f"python={command[-2]}\ncache=C:/Invented/package-cache\n",
         )
 
     _prepare_smoke_timeout(
@@ -672,12 +672,128 @@ def test_package_smoke_install_timeout_redacts_secrets_and_task_paths(
     assert "TimeoutExpired" not in "".join(traceback.format_exception(exc_info.value))
 
 
+@pytest.mark.parametrize(
+    ("environment", "tail", "expected_tail"),
+    [
+        pytest.param(
+            {"TOKEN": "invented-arbitrary-token-1234"},
+            "invented-arbitrary-token-123",
+            "<incomplete output omitted>",
+            id="token-prefix",
+        ),
+        pytest.param(
+            {
+                "UV_INDEX_URL": "https://invented-user:invented-credential-1234@invented.example/simple/"
+            },
+            "https://invented-user:invented-credential-1234@invented.example/simple",
+            "<incomplete output omitted>",
+            id="credential-url-prefix",
+        ),
+        pytest.param(
+            {"CACHE": r"C:\Invented\private-cache\entry"},
+            r"C:\Invented\private-cache\entr",
+            "<incomplete output omitted>",
+            id="native-path-prefix",
+        ),
+        pytest.param(
+            {"CACHE": r"C:\Invented\private-cache\entry"},
+            "C:/Invented/private-cache/entr",
+            "<incomplete output omitted>",
+            id="slash-path-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-token-秘密"},
+            "invented-token-秘密".encode()[:-1],
+            "<incomplete output omitted>",
+            id="utf8-character-prefix",
+        ),
+        pytest.param(
+            {"API_KEY": "ab"},
+            "a",
+            "<incomplete output omitted>",
+            id="short-token-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\ninvented-second-secret"},
+            "invented-first-secret\ninvented-second-secr",
+            "<redacted>\n<incomplete output omitted>",
+            id="multiline-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\r\ninvented-second-secret"},
+            "invented-first-secret\ninvented-second-secr",
+            "<redacted>\n<incomplete output omitted>",
+            id="normalized-crlf-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\ninvented-second-secret"},
+            "invented-first-secret\rinvented-second-secr",
+            "<redacted>\n<incomplete output omitted>",
+            id="normalized-bare-cr-prefix",
+        ),
+        pytest.param(
+            {"TOKEN": "invented-first-secret\r\ninvented-second-secret"},
+            "invented-first-secret\r",
+            "<redacted>",
+            id="multiline-prefix-ends-at-line-break",
+        ),
+        pytest.param(
+            {"TOKEN": "ab\ncd"},
+            "ab\nc",
+            "<redacted>\n<incomplete output omitted>",
+            id="short-multiline-prefix",
+        ),
+        pytest.param(
+            {"CACHE": "C:\\Invented\\first-cache\r\nC:\\Invented\\second-cache"},
+            "C:/Invented/first-cache\nC:/Invented/second-cac",
+            "<redacted>\n<incomplete output omitted>",
+            id="multiline-slash-path-prefix",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "completed_progress", [False, True], ids=["tail-only", "completed-progress"]
+)
+def test_package_smoke_install_timeout_suppresses_partial_sensitive_values(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    environment: dict[str, str],
+    tail: bytes | str,
+    expected_tail: str,
+    completed_progress: bool,
+) -> None:
+    # TimeoutExpired snapshots can end inside a value, including a UTF-8 character.
+    # A multiline value can also expose an earlier, newline-completed secret line.
+    raw_tail = tail if isinstance(tail, bytes) else tail.encode()
+    text_tail = tail.decode("utf-8", errors="replace") if isinstance(tail, bytes) else tail
+    stdout_prefix = b"Resolved invented wheel\r\n" if completed_progress else b""
+    stderr_prefix = "Downloaded invented wheel\r" if completed_progress else ""
+    process = _prepare_smoke_timeout(
+        monkeypatch,
+        lambda _command: (stdout_prefix + raw_tail, stderr_prefix + text_tail),
+        environment=environment,
+    )
+
+    with pytest.raises(RuntimeError, match="timed out after") as exc_info:
+        run_package_smoke(tmp_path)
+
+    stdout, stderr = str(exc_info.value).split("\nstdout:\n", 1)[1].split("\nstderr:\n", 1)
+    assert stdout == (
+        f"Resolved invented wheel\n{expected_tail}" if completed_progress else expected_tail
+    )
+    assert stderr == (
+        f"Downloaded invented wheel\n{expected_tail}" if completed_progress else expected_tail
+    )
+    assert "TimeoutExpired" not in "".join(traceback.format_exception(exc_info.value))
+    assert process.returncode == -9
+
+
 def test_package_smoke_install_timeout_escapes_controls_and_preserves_lines(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     _prepare_smoke_timeout(
         monkeypatch,
-        lambda _command: ("\x1b[31mResolving\x1b[0m\x07\x00\r\nnext", "\u202eDownloading\t"),
+        lambda _command: ("\x1b[31mResolving\x1b[0m\x07\x00\r\nnext\n", "\u202eDownloading\t\n"),
     )
 
     with pytest.raises(RuntimeError) as exc_info:
@@ -692,7 +808,7 @@ def test_package_smoke_install_timeout_escapes_controls_and_preserves_lines(
 def test_package_smoke_install_timeout_bounds_each_progress_stream(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    _prepare_smoke_timeout(monkeypatch, lambda _command: (b"x" * 3_000, "y" * 3_000))
+    _prepare_smoke_timeout(monkeypatch, lambda _command: (b"x" * 3_000 + b"\n", "y" * 3_000 + "\n"))
 
     with pytest.raises(RuntimeError) as exc_info:
         run_package_smoke(tmp_path)
@@ -711,7 +827,9 @@ def test_package_smoke_timeout_diagnostics_are_install_only(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stage: str
 ) -> None:
     _prepare_smoke_timeout(
-        monkeypatch, lambda _command: ("invented-stage-progress", "invented-detail"), stage=stage
+        monkeypatch,
+        lambda _command: ("invented-stage-progress\n", "invented-detail\n"),
+        stage=stage,
     )
 
     with pytest.raises(RuntimeError, match="timed out after") as exc_info:

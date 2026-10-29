@@ -3007,8 +3007,10 @@ retry, content inspection, or deletion was attempted.
   tree, restore only exact hash-verified commit/tree/blob objects needed for the source and frozen
   provenance checks, and install the locked Python 3.12 environment with pinned uv through the
   supported permission path. The frozen-provenance tests then pass. For local Pyright, copy the
-  unchanged strict settings into a temporary config with explicit installed-dependency search
-  paths; retain ordinary hosted Pyright as the final gate.
+  unchanged strict settings into a temporary config with explicit `venvPath`/`venv` and the
+  worktree source path. Do not add site-packages to `extraPaths`: that puts implementations before
+  bundled stubs and creates false unknown-type reports. Full local strict Pyright then passes;
+  retain ordinary hosted Pyright as the final gate.
 - **occurrences:** One coordinated continuation on 2026-10-29; the Pyright symptom reproduced in
   three isolated worktrees.
 - **task:** Issues #34, #177, #181, and #193.

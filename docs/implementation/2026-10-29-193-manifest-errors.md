@@ -16,4 +16,7 @@ paths for Pyright, recorded in FR-113. Exact integrated/hosted proof belongs in 
 The other #193 code findings were already delivered by PRs #196 and #197. `CONTRACTS.md` now
 also states that result references must match their manifest entries in digest, size, and media
 type. No stored evidence or product schema changed. Reverting this bounded change restores the
-previous manifest-reading behavior.
+previous manifest-reading behavior. Independent review also exposed JSON integer-conversion and
+nesting-limit failures outside `JSONDecodeError`. The same boundary now translates those parser
+limits to controlled errors, including CLI refusal and preservation of existing forced-rebuild
+reports; the review-fix regressions exercise both direct and CLI entrypoints.

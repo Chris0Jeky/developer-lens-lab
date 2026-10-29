@@ -741,7 +741,8 @@ def _read_run_manifest(path: Path) -> dict[str, Any]:
         manifest: object = json.loads(path.read_text(encoding="utf-8"))
     except OSError:
         raise RunnerError("run manifest is missing or unreadable") from None
-    except (UnicodeDecodeError, json.JSONDecodeError):
+    except (ValueError, RecursionError):
+        # JSON decoding also raises plain ValueError/RecursionError at parser limits.
         raise RunnerError("run manifest is not valid UTF-8 JSON") from None
     if not isinstance(manifest, dict):
         raise RunnerError("run manifest must be an object")
