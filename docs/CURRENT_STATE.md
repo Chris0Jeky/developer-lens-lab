@@ -54,9 +54,10 @@ delivered:
       The dated implementation fragments and delivering PRs carry detailed verification.
   - toolchain_and_development_dependencies: >-
       The project and package-smoke guard require uv >=0.13.5,<0.14; both workflows install 0.13.5.
-      The lock updates filelock to 4.2.1 and virtualenv to 21.14.13, with 87 other package records
-      unchanged and a dependency edge to the already locked packaging 26.3. These are the failed
-      updater's selected targets; package-version proof does not establish all live alert closure.
+      The lock updates filelock to 4.2.1 and virtualenv to 21.15.1, with 87 other package records
+      unchanged from the pre-maintenance lock and an edge to already locked packaging 26.3.
+      The recovered updater opened PR #205; its exact lock is adopted after the separately proved
+      21.14.13 security minimum. Package-version proof does not establish all live alert closure.
 next_safe_slice: >-
   Reconcile live main, open issues/PRs, tools/cards.py, and Product owner gates first. Finish or
   re-review any in-flight hardening before starting another lane. Read #5 for the final toolchain
