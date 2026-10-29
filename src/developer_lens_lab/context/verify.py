@@ -991,6 +991,7 @@ CONTINUOUS_PROMPT_ID = "DL-P03-OVERNIGHT-CONTINUOUS"
 REQUIRED_CLAUDE_CLAUSE = (
     "CLAUDE.md",
     "Opus 5 low",
+    "dll-scout",
     "dll-implementer",
     "dll-reviewer",
     "dll-mechanic",
@@ -1040,6 +1041,15 @@ PROMPT_STATUS_ACTIVE = "active"
 PROMPT_MARKER_RE = re.compile(r"<!-- prompt-id: (\S+) status: (\S+) -->")
 TEXT_FENCE_RE = re.compile(r"^```text$", re.M)
 PROMPT_CLASSIFICATION_RE = re.compile(r"<!-- prompt-classification: (\S+) -->")
+PROMPT_METADATA_RE = re.compile(
+    r" {0,3}<!--\s*(prompt-classification|prompt-id|shared-block)\b", re.I
+)
+MARKDOWN_FENCE_RE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
+PROMPT_OPENING_RE = re.compile(
+    r"(?:You are\b|Act as\b|Read (?:AGENTS|CLAUDE)\.md\b|"
+    r"RUNTIME BOOTSTRAP \(runtime-bootstrap-v1\))",
+    re.I,
+)
 # A bare q-N and its fully qualified form. Counting both and comparing is what makes an unqualified
 # ref fail: product q-8 and lab q-8 are different gates, so an ambiguous ref is a real defect.
 BARE_HUMAN_REF_RE = re.compile(r"q-\d+")
@@ -1326,11 +1336,63 @@ def verify_continuous_protocol(text: str) -> list[str]:
     return failures
 
 
-def verify_prompt_classifications(root: Path) -> list[str]:
-    """Any prompt-shaped document that declares a classification must declare a supported one.
+def _prompt_document_parts(text: str) -> tuple[list[str], bool]:
+    """Return document lines and whether a top-level plain-text fence opens as a prompt.
 
-    The library is the only executable-prompt surface; other prompt-shaped documents opt into
-    `redirect` or `historical` so a reader can tell at a glance that they are not to be pasted.
+    Fenced, indented, and quoted examples are not document metadata. Closing fences must use
+    the opening character and at least its run length, so nested Markdown examples stay inert.
+    """
+    document: list[str] = []
+    fence: str | None = None
+    plain_text = False
+    body: list[str] = []
+    has_prompt_fence = False
+    for line in normalize_newlines(text).splitlines():
+        if fence is not None:
+            if re.fullmatch(rf" {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*", line):
+                has_prompt_fence |= plain_text and bool(
+                    PROMPT_OPENING_RE.match("\n".join(body).lstrip())
+                )
+                fence = None
+            elif plain_text:
+                body.append(line)
+            continue
+        if re.match(r"(?: {4}|\t| {0,3}>)", line):
+            continue
+        opening = MARKDOWN_FENCE_RE.fullmatch(line)
+        if opening is not None:
+            marker, info = opening.groups()
+            if marker[0] != "`" or "`" not in info:
+                fence = marker
+                plain_text = info.strip().lower() in {"", "text", "plaintext"}
+                body = []
+                continue
+        document.append(line)
+    if fence is not None:
+        has_prompt_fence |= plain_text and bool(PROMPT_OPENING_RE.match("\n".join(body).lstrip()))
+    return document, has_prompt_fence
+
+
+def _is_named_prompt(relative: Path, document: list[str]) -> bool:
+    """Recognize explicit artifact names, not discussion of prompts in ordinary prose."""
+    if re.search(r"(?:^|[-_.])prompts?$", relative.stem, re.I) or any(
+        part.lower() == "prompts" for part in relative.parts[:-1]
+    ):
+        return True
+    # Only the document title counts; a guide's 'Example prompt' subsection does not rename it.
+    for line in document:
+        heading = re.fullmatch(r" {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*", line)
+        if heading is not None:
+            title = heading.group(1)
+            return bool(re.search(r"\bprompts?$|^prompts?:[ \t]+", title, re.I))
+    return False
+
+
+def verify_prompt_classifications(root: Path) -> list[str]:
+    """Classify explicit prompt artifacts outside the sole registered executable library.
+
+    Discovery uses unfenced prompt metadata, or a prompt name/title plus a role/bootstrap
+    opening in prose or a plain-text fence. It deliberately does not infer arbitrary imperatives.
     """
     failures: list[str] = []
     for path in _markdown_files(root):
@@ -1339,12 +1401,48 @@ def verify_prompt_classifications(root: Path) -> list[str]:
         except (OSError, UnicodeDecodeError) as exc:
             failures.append(f"broken/unreadable file in {path.relative_to(root)}: {exc}")
             continue
-        for classification in PROMPT_CLASSIFICATION_RE.findall(text):
+        relative = path.relative_to(root)
+        document, has_prompt_fence = _prompt_document_parts(text)
+        declarations = 0
+        valid_classifications = 0
+        prompt_metadata = False
+        for line in document:
+            metadata = PROMPT_METADATA_RE.match(line)
+            if metadata is None:
+                continue
+            if metadata.group(1).lower() != "prompt-classification":
+                prompt_metadata = True
+                continue
+            declarations += 1
+            marker = PROMPT_CLASSIFICATION_RE.fullmatch(line.strip())
+            if marker is None:
+                failures.append(f"{relative}: malformed prompt-classification marker")
+                continue
+            classification = marker.group(1)
             if classification not in ALLOWED_PROMPT_CLASSIFICATIONS:
                 failures.append(
-                    f"{path.relative_to(root)}: prompt-classification {classification!r} must be "
+                    f"{relative}: prompt-classification {classification!r} must be "
                     f"one of {list(ALLOWED_PROMPT_CLASSIFICATIONS)}"
                 )
+            else:
+                valid_classifications += 1
+        if declarations > 1:
+            failures.append(f"{relative}: duplicate prompt-classification markers")
+        prose = "\n".join(
+            line for line in document if not re.match(r" {0,3}(?:#|<!--)", line)
+        ).lstrip()
+        named_prompt = _is_named_prompt(relative, document) and (
+            has_prompt_fence or bool(PROMPT_OPENING_RE.match(prose))
+        )
+        if (
+            relative.as_posix() != PROMPT_LIBRARY
+            and (prompt_metadata or named_prompt)
+            and valid_classifications != 1
+        ):
+            failures.append(
+                f"{relative}: prompt-shaped document requires one prompt-classification "
+                "marker: redirect or historical"
+            )
     return failures
 
 

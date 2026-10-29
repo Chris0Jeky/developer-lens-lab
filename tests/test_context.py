@@ -798,7 +798,7 @@ def test_governor_boolean_gate_values_fail(tmp_path: Path) -> None:
 _ALL_PROMPT_IDS = COMMON_PROMPT_IDS + LAB_EXTENSION_PROMPT_IDS
 _CLAUDE_LINE = (
     "LAB RUNTIME ROUTING\n"
-    "Claude: read CLAUDE.md first; delegate large reads to Opus 5 low scouts, bounded work to "
+    "Claude: read CLAUDE.md first; delegate reads to dll-scout (Opus 5 low), bounded work to "
     "dll-implementer, review to dll-reviewer, sweeps to dll-mechanic."
 )
 _CODEX_LINE = (
