@@ -3012,7 +3012,9 @@ retry, content inspection, or deletion was attempted.
   bundled stubs and creates false unknown-type reports. Full local strict Pyright then passes;
   retain ordinary hosted Pyright as the final gate.
 - **occurrences:** One coordinated continuation on 2026-10-29; the Pyright symptom reproduced in
-  three isolated worktrees.
+  three isolated worktrees. The same package-network boundary recurred during the dependency
+  closure and Python-hook checks for #204 and its virtualenv follow-up; identical bounded package
+  commands passed through the supported permission path without shared-environment changes.
 - **task:** Issues #34, #177, #181, and #193.
 - **promotion:** Keep hosted proof and explicit source reconciliation; no repository check,
   dependency constraint, review gate, or runtime capability was relaxed.
@@ -3040,7 +3042,7 @@ retry, content inspection, or deletion was attempted.
 ### FR-115 - Hosted security updater no longer supports the pinned uv series
 
 - **first-seen:** 2026-10-29
-- **status:** bounded toolchain migration implemented; hosted updater recovery pending
+- **status:** resolved for the observed updater failure; version enforcement retained
 - **symptom:** Dependabot run 40807635186, job 123230269968, failed both filelock and virtualenv
   updates with `tool_version_not_supported`. Its uv 0.13.5 did not satisfy the repository's
   `>=0.12.2,<0.13` requirement. This occurred before dependency changes were produced.
@@ -3051,6 +3053,11 @@ retry, content inspection, or deletion was attempted.
   Preserve strict candidate validation, fallback behavior, Python pins and the existing lockfile.
   Prove actual package building and the complete declared gate before merge, then inspect a new
   updater run and review the separate targeted dependency patch.
+- **verified outcome:** After #203 merged at 158ad173d2f36085c352bca28b74f9be96576b82,
+  [run 40811433180, job 123242419597](https://github.com/Chris0Jeky/developer-lens-lab/actions/runs/40811433180/job/123242419597)
+  succeeded and created #205. Resolving filelock 4.2.1 also selected compatible virtualenv 21.15.1;
+  that later choice is carried separately from #204's tested virtualenv 21.14.13 security minimum.
+  Successful updater operation does not establish every live alert record's closure.
 - **occurrences:** One hosted security-update job, with the same refusal for both packages.
 - **task:** Issue #5 dependency triage within the #29 release wave.
 - **promotion:** Retain a bounded, tested toolchain instead of deleting version enforcement.
@@ -3060,7 +3067,7 @@ retry, content inspection, or deletion was attempted.
 ### FR-116 - Hosted package download reaches the existing smoke timeout
 
 - **first-seen:** 2026-10-29
-- **status:** incident recorded; final retry outcome carried by PR #203
+- **status:** unchanged-head retry verified; no timeout or gate relaxation
 - **symptom:** Check run 40809680128, first-attempt job 123236777868, reached the existing
   300-second install timeout at head ea4ccd0363f2da35895c4743c38b6fc2ce729cb4. Captured stderr
   reports dependency resolution followed by `Downloading polars-runtime-32 (47.6MiB)`; no later
@@ -3071,6 +3078,10 @@ retry, content inspection, or deletion was attempted.
 - **workaround:** Request a rerun of the failed job at the unchanged commit, retain the existing
   timeout and process-cleanup checks, and require the new exact-head hosted result before merge.
   Record both attempts in the PR; a local success does not replace the hosted merge gate.
+- **verified outcome:** The unchanged-head retry, job 123239603178 in the same run, passed the
+  complete Check with 1,327 tests passed and nine skipped. Post-merge run 40811322012 at
+  158ad173d2f36085c352bca28b74f9be96576b82 also passed. The initiating failure's underlying
+  download mechanism remains undetermined; both attempts remain linked in #203.
 - **occurrences:** One hosted package-install attempt in the uv migration slice.
 - **task:** Issue #5; toolchain PR #203 and the coordinated dependency-maintenance continuation.
 - **promotion:** No source behavior, dependency constraint, timeout, cleanup requirement or CI

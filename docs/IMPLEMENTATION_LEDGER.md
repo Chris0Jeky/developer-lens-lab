@@ -65,6 +65,19 @@ without moving review, CI, or merge gates.
 - Runtime dependencies, Python support, project constraints, frozen evidence and owner gates
   are unchanged. This updates the development dependency closure only.
 
+## 2026-10-29 — Recovered updater and virtualenv follow-up
+
+- [Virtualenv 21.15.1 follow-up, #5](implementation/2026-10-29-5-virtualenv-refresh.md) adopts the
+  exact lock proposed by Dependabot #205 after the toolchain repair in #203 and security slice #204.
+- The new updater completed successfully and created its PR. Relative to #204, only virtualenv's
+  version and artifact metadata change; all 88 other package records and dependency edges remain
+  unchanged. This is a compatible resolver-selected refresh, not a newly asserted security floor.
+- Hash-pinned verification exercised real virtualenv creation and a Python-language pre-commit
+  hook through virtualenv 21.15.1. The delivering PR carries the complete lab, package and hosted
+  proof, independent review, and final merge status. Private alert inventory remains unverified.
+- FR-115 now records observed updater recovery; FR-116 records the unchanged-head retry's success.
+  The earlier security fragment, runtime constraints, frozen evidence and owner gates are preserved.
+
 ## 2026-10-22 - Complete EvaluationBundle artifact-reference agreement (F4)
 
 - Require each result's full artifact reference to match its manifest entry, preserving digest
